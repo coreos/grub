@@ -27,6 +27,12 @@
 /* Add an underscore to a C symbol in assembler code if needed. */
 #ifndef GRUB_UTIL
 
+#ifdef __APPLE__
+#define MACRO_DOLLAR(x) $$ ## x
+#else
+#define MACRO_DOLLAR(x) $ ## x
+#endif
+
 #if HAVE_ASM_USCORE
 #ifdef ASM_FILE
 # define EXT_C(sym)	_ ## sym

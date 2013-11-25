@@ -27,6 +27,7 @@
 
 /* Dummy __gnu_local_gp. Resolved by linker.  */
 static char __gnu_local_gp_dummy;
+static char _gp_disp_dummy;
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -51,6 +52,58 @@ grub_arch_dl_check_header (void *ehdr)
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got)
+{
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
+  /* FIXME: suboptimal.  */
+  grub_size_t gp_size = 0;
+
+  *tramp = 0;
+  *got = 0;
+
+  /* Find a symbol table.  */
+  for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_SYMTAB)
+      break;
+
+  if (i == e->e_shnum)
+    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
+
+  for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL)
+      {
+	const Elf_Rel *rel, *max;
+
+	for (rel = (const Elf_Rel *) ((const char *) e + s->sh_offset),
+	       max = rel + s->sh_size / s->sh_entsize;
+	     rel < max;
+	     rel++)
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_MIPS_GOT16:
+	    case R_MIPS_CALL16:
+	    case R_MIPS_GPREL32:
+	      gp_size += 4;
+	      break;
+	    }
+      }
+
+  if (gp_size > 0x08000)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, "__gnu_local_gp is too big\n");
+
+  *got = gp_size;
+
+  return GRUB_ERR_NONE;
+}
+
 /* Relocate symbols.  */
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
@@ -59,7 +112,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
   Elf_Shdr *s;
   Elf_Word entsize;
   unsigned i;
-  grub_size_t gp_size = 0;
   /* FIXME: suboptimal.  */
   grub_uint32_t *gp, *gpptr;
   grub_uint32_t gp0;
@@ -88,43 +140,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 
   gp0 = ((grub_uint32_t *)((char *) e + s->sh_offset))[5];
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_REL)
-      {
-	grub_dl_segment_t seg;
-
-	/* Find the target segment.  */
-	for (seg = mod->segment; seg; seg = seg->next)
-	  if (seg->section == s->sh_info)
-	    break;
-
-	if (seg)
-	  {
-	    Elf_Rel *rel, *max;
-
-	    for (rel = (Elf_Rel *) ((char *) e + s->sh_offset),
-		   max = rel + s->sh_size / s->sh_entsize;
-		 rel < max;
-		 rel++)
-		switch (ELF_R_TYPE (rel->r_info))
-		  {
-		  case R_MIPS_GOT16:
-		  case R_MIPS_CALL16:
-		  case R_MIPS_GPREL32:
-		    gp_size += 4;
-		    break;
-		  }
-	  }
-      }
-
-  if (gp_size > 0x08000)
-    return grub_error (GRUB_ERR_OUT_OF_RANGE, "__gnu_local_gp is too big\n");
-
-  gpptr = gp = grub_malloc (gp_size);
-  if (!gp)
-    return grub_errno;
+  gpptr = gp = mod->got;
 
   for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -149,6 +165,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 	      {
 		grub_uint8_t *addr;
 		Elf_Sym *sym;
+		grub_uint32_t sym_value;
 
 		if (seg->size < rel->r_offset)
 		  return grub_error (GRUB_ERR_BAD_MODULE,
@@ -157,9 +174,17 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		addr = (grub_uint8_t *) ((char *) seg->addr + rel->r_offset);
 		sym = (Elf_Sym *) ((char *) mod->symtab
 				     + entsize * ELF_R_SYM (rel->r_info));
-		if (sym->st_value == (grub_addr_t) &__gnu_local_gp_dummy)
-		  sym->st_value = (grub_addr_t) gp;
-
+		sym_value = sym->st_value;
+		if (sym_value == (grub_addr_t) &__gnu_local_gp_dummy)
+		  sym_value = (grub_addr_t) gp;
+		else if (sym_value == (grub_addr_t) &_gp_disp_dummy)
+		  {
+		    sym_value = (grub_addr_t) gp - (grub_addr_t) addr;
+		    if (ELF_R_TYPE (rel->r_info) == R_MIPS_LO16)
+		      /* ABI mandates +4 even if partner lui doesn't
+			 immediately precede addiu.  */
+		      sym_value += 4;
+		  }
 		switch (ELF_R_TYPE (rel->r_info))
 		  {
 		  case R_MIPS_HI16:
@@ -175,7 +200,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 			 treated as signed. Hence add 0x8000 to compensate. 
 		       */
 		      value = (*(grub_uint16_t *) addr << 16)
-			+ sym->st_value + 0x8000;
+			+ sym_value + 0x8000;
 		      for (rel2 = rel + 1; rel2 < max; rel2++)
 			if (ELF_R_SYM (rel2->r_info)
 			    == ELF_R_SYM (rel->r_info)
@@ -196,13 +221,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
 		    addr += 2;
 #endif
-		    *(grub_uint16_t *) addr += (sym->st_value) & 0xffff;
+		    *(grub_uint16_t *) addr += sym_value & 0xffff;
 		    break;
 		  case R_MIPS_32:
-		    *(grub_uint32_t *) addr += sym->st_value;
+		    *(grub_uint32_t *) addr += sym_value;
 		    break;
 		  case R_MIPS_GPREL32:
-		    *(grub_uint32_t *) addr = sym->st_value
+		    *(grub_uint32_t *) addr = sym_value
 		      + *(grub_uint32_t *) addr + gp0 - (grub_uint32_t)gp;
 		    break;
 
@@ -212,7 +237,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      grub_uint32_t raw;
 		      raw = (*(grub_uint32_t *) addr) & 0x3ffffff;
 		      value = raw << 2;
-		      value += sym->st_value;
+		      value += sym_value;
 		      raw = (value >> 2) & 0x3ffffff;
 			
 		      *(grub_uint32_t *) addr = 
@@ -220,12 +245,36 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    }
 		    break;
 		  case R_MIPS_GOT16:
+		    if (ELF_ST_BIND (sym->st_info) == STB_LOCAL)
+		      {
+			Elf_Rel *rel2;
+			/* Handle partner lo16 relocation. Lower part is
+			   treated as signed. Hence add 0x8000 to compensate.
+			*/
+			sym_value += (*(grub_uint16_t *) addr << 16)
+			  + 0x8000;
+			for (rel2 = rel + 1; rel2 < max; rel2++)
+			  if (ELF_R_SYM (rel2->r_info)
+			      == ELF_R_SYM (rel->r_info)
+			      && ELF_R_TYPE (rel2->r_info) == R_MIPS_LO16)
+			    {
+			      sym_value += *(grub_int16_t *)
+				((char *) seg->addr + rel2->r_offset
+#ifdef GRUB_CPU_WORDS_BIGENDIAN
+				 + 2
+#endif
+				 );
+			      break;
+			    }
+			sym_value &= 0xffff0000;
+			*(grub_uint16_t *) addr = 0;
+		      }
 		  case R_MIPS_CALL16:
 		    /* FIXME: reuse*/
 #ifdef GRUB_CPU_WORDS_BIGENDIAN
 		    addr += 2;
 #endif
-		    *gpptr = sym->st_value + *(grub_uint16_t *) addr;
+		    *gpptr = sym_value + *(grub_uint16_t *) addr;
 		    *(grub_uint16_t *) addr
 		      = sizeof (grub_uint32_t) * (gpptr - gp);
 		    gpptr++;
@@ -234,7 +283,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		    break;
 		  default:
 		    {
-		      grub_free (gp);
 		      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 					 N_("relocation 0x%x is not implemented yet"),
 					 ELF_R_TYPE (rel->r_info));
@@ -252,5 +300,6 @@ void
 grub_arch_dl_init_linker (void)
 {
   grub_dl_register_symbol ("__gnu_local_gp", &__gnu_local_gp_dummy, 0, 0);
+  grub_dl_register_symbol ("_gp_disp", &_gp_disp_dummy, 0, 0);
 }
 

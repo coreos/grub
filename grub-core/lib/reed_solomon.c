@@ -69,16 +69,23 @@ typedef grub_uint8_t gf_single_t;
 #define GF_POLYNOMIAL 0x1d
 #define GF_INVERT2 0x8e
 #if defined (STANDALONE) && !defined (TEST)
-static gf_single_t * const gf_powx __attribute__ ((section(".text"))) = (void *) 0x100000;
-static gf_single_t * const gf_powx_inv __attribute__ ((section(".text"))) = (void *) 0x100200;
-static int *const chosenstat __attribute__ ((section(".text"))) = (void *) 0x100300;
-static gf_single_t *const sigma __attribute__ ((section(".text"))) = (void *) 0x100700;
-static gf_single_t *const errpot __attribute__ ((section(".text"))) = (void *) 0x100800;
-static int *const errpos __attribute__ ((section(".text"))) = (void *) 0x100900;
-static gf_single_t *const sy __attribute__ ((section(".text"))) = (void *) 0x100d00;
-static gf_single_t *const mstat __attribute__ ((section(".text"))) = (void *) 0x100e00;
-static gf_single_t *const errvals __attribute__ ((section(".text"))) = (void *) 0x100f00;
-static gf_single_t *const eqstat __attribute__ ((section(".text"))) = (void *) 0x101000;
+
+#ifdef __APPLE__
+#define ATTRIBUTE_TEXT __attribute__ ((section("_text,_text")))
+#else
+#define ATTRIBUTE_TEXT __attribute__ ((section(".text")))
+#endif
+
+static gf_single_t * const gf_powx ATTRIBUTE_TEXT = (void *) 0x100000;
+static gf_single_t * const gf_powx_inv ATTRIBUTE_TEXT = (void *) 0x100200;
+static int *const chosenstat ATTRIBUTE_TEXT = (void *) 0x100300;
+static gf_single_t *const sigma ATTRIBUTE_TEXT = (void *) 0x100700;
+static gf_single_t *const errpot ATTRIBUTE_TEXT = (void *) 0x100800;
+static int *const errpos ATTRIBUTE_TEXT = (void *) 0x100900;
+static gf_single_t *const sy ATTRIBUTE_TEXT = (void *) 0x100d00;
+static gf_single_t *const mstat ATTRIBUTE_TEXT = (void *) 0x100e00;
+static gf_single_t *const errvals ATTRIBUTE_TEXT = (void *) 0x100f00;
+static gf_single_t *const eqstat ATTRIBUTE_TEXT = (void *) 0x101000;
 /* Next available address: (void *) 0x112000.  */
 #else
 

@@ -341,6 +341,14 @@ page2offset (grub_uint64_t page)
   return page << 12;
 }
 
+#if defined (__x86_64__) && defined (__code_model_large__)
+#define MAX_TOTAL_PAGES (1LL << (64 - 12))
+#elif defined (__x86_64__)
+#define MAX_TOTAL_PAGES (1LL << (31 - 12))
+#else
+#define MAX_TOTAL_PAGES (1LL << (32 - 12))
+#endif
+
 static void
 map_all_pages (void)
 {
@@ -354,6 +362,9 @@ map_all_pages (void)
   struct gnttab_set_version gnttab_setver;
   grub_size_t n_unusable_pages = 0;
   struct mmu_update m2p_updates[2 * MAX_N_UNUSABLE_PAGES];
+
+  if (total_pages > MAX_TOTAL_PAGES - 4)
+    total_pages = MAX_TOTAL_PAGES - 4;
 
   grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
 

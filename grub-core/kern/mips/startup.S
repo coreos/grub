@@ -116,10 +116,10 @@ bsscont:
 	bne $t3, $0, bsscont
          nop
 
-	lui $t1, %hi(grub_main)
-	addiu $t1, %lo(grub_main)
+	lui $t9, %hi(grub_main)
+	addiu $t9, %lo(grub_main)
 
 	lui $sp, %hi(GRUB_MACHINE_MEMORY_STACK_HIGH)
-	jr $t1
+	jr $t9
 	 addiu $sp, $sp, %lo(GRUB_MACHINE_MEMORY_STACK_HIGH)
 

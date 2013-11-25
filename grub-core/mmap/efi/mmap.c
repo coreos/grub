@@ -184,8 +184,8 @@ grub_mmap_register (grub_uint64_t start, grub_uint64_t size, int type)
     return 0;
 
   b = grub_efi_system_table->boot_services;
-  address = start & (~0x3ffULL);
-  pages = (end - address  + 0x3ff) >> 12;
+  address = start & (~0xfffULL);
+  pages = (end - address + 0xfff) >> 12;
   status = efi_call_2 (b->free_pages, address, pages);
   if (status != GRUB_EFI_SUCCESS && status != GRUB_EFI_NOT_FOUND)
     {
@@ -263,7 +263,7 @@ grub_mmap_malign_and_register (grub_uint64_t align __attribute__ ((unused)),
   atype = GRUB_EFI_ALLOCATE_ANY_PAGES;
 #endif
 
-  pages = (size + 0x3ff) >> 12;
+  pages = (size + 0xfff) >> 12;
   status = efi_call_4 (b->allocate_pages, atype,
 		       make_efi_memtype (type), pages, &address);
   if (status != GRUB_EFI_SUCCESS)

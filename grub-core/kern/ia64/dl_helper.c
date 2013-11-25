@@ -170,7 +170,7 @@ grub_ia64_make_trampoline (struct grub_ia64_trampoline *tr, grub_uint64_t addr)
   grub_memcpy (tr->jump, jump, sizeof (tr->jump));
 }
 
-void
+grub_err_t
 grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)
 {
@@ -187,7 +187,7 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
       break;
 
   if (i == grub_le_to_cpu16 (e->e_shnum))
-    return;
+    return GRUB_ERR_NONE;
 
   for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu64 (e->e_shoff));
        i < grub_le_to_cpu16 (e->e_shnum);
@@ -211,7 +211,9 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	      break;
 	    }
       }
-  *tramp = cntt;
-  *got = cntg;
+  *tramp = cntt * sizeof (struct grub_ia64_trampoline);
+  *got = cntg * sizeof (grub_uint64_t);
+
+  return GRUB_ERR_NONE;
 }
 

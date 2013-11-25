@@ -433,7 +433,7 @@ def kernel(platform):
    else cp $< $@; fi""",
 """if test x$(TARGET_APPLE_LINKER) = x1; then \
   $(TARGET_STRIP) -S -x $(""" + cname() + """) -o $@.bin $<; \
-  $(TARGET_OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -wd1106 -nu -nd $@.bin $@; \
+  $(TARGET_OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -ed2016 -wd1106 -nu -nd $@.bin $@; \
 else """  + "$(TARGET_STRIP) $(" + cname() + "_STRIPFLAGS) -o $@ $<; \
 fi"""))
     return r
@@ -542,8 +542,8 @@ def script(platform):
     r += "[+ IF mansection +]" + manpage("grub-mkconfig_lib") + "[+ ENDIF +]"
     r += "[+ ENDIF +]"
 
-    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform), """
-(skip=1; for x in $^; do if [ $$skip = 1 ]; then skip=0; else cat "$$x"; fi; done) | $(top_builddir)/config.status --file=$@:-
+    r += rule("[+ name +]", "$(top_builddir)/config.status " + platform_sources(platform) + platform_dependencies(platform), """
+(for x in """ + platform_sources(platform) + """; do cat $(srcdir)/"$$x"; done) | $(top_builddir)/config.status --file=$@:-
 chmod a+x [+ name +]
 """)
 

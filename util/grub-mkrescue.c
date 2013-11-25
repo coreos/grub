@@ -396,11 +396,12 @@ main (int argc, char *argv[])
 
   if (!grub_install_source_directory)
     {
+      const char *pkglibdir = grub_util_get_pkglibdir ();
       enum grub_install_plat plat;
 
       for (plat = 0; plat < GRUB_INSTALL_PLATFORM_MAX; plat++)
 	{
-	  char *platdir = grub_util_path_concat (2, pkgdatadir,
+	  char *platdir = grub_util_path_concat (2, pkglibdir,
 						 grub_install_get_platform_name (plat));
 
 	  if (!grub_util_is_directory (platdir))

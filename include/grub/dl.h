@@ -179,7 +179,7 @@ struct grub_dl
   Elf_Sym *symtab;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
-#if defined (__ia64__) || defined (__powerpc__)
+#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
   void *got;
   void *tramp;
 #endif
@@ -243,23 +243,21 @@ void grub_arch_dl_init_linker (void);
 #define GRUB_IA64_DL_TRAMP_SIZE 48
 #define GRUB_IA64_DL_GOT_ALIGN 16
 
-void
+grub_err_t
 grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 
 #if defined (__ia64__)
 #define GRUB_ARCH_DL_TRAMP_ALIGN GRUB_IA64_DL_TRAMP_ALIGN
 #define GRUB_ARCH_DL_GOT_ALIGN GRUB_IA64_DL_GOT_ALIGN
-#define GRUB_ARCH_DL_TRAMP_SIZE GRUB_IA64_DL_TRAMP_SIZE
 #define grub_arch_dl_get_tramp_got_size grub_ia64_dl_get_tramp_got_size
 #else
-void
+grub_err_t
 grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 #endif
 
-#ifdef __powerpc__
-#define GRUB_ARCH_DL_TRAMP_SIZE 16
+#if defined (__powerpc__) || defined (__mips__)
 #define GRUB_ARCH_DL_TRAMP_ALIGN 4
 #define GRUB_ARCH_DL_GOT_ALIGN 4
 #endif

@@ -216,6 +216,7 @@ export GRUB_DEFAULT \
   GRUB_SAVEDEFAULT \
   GRUB_ENABLE_CRYPTODISK \
   GRUB_BADRAM \
+  GRUB_OS_PROBER_SKIP_LIST \
   GRUB_DISABLE_SUBMENU
 
 if test "x${grub_cfg}" != "x"; then
@@ -224,7 +225,7 @@ if test "x${grub_cfg}" != "x"; then
   exec > "${grub_cfg}.new"
   umask $oldumask
 fi
-gettext "Generating grub.cfg ..." >&2
+gettext "Generating grub configuration file ..." >&2
 echo >&2
 
 cat << EOF

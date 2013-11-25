@@ -12,7 +12,9 @@ EXTRA_DIST += util/import_gcry.py
 EXTRA_DIST += util/import_unicode.py
 
 EXTRA_DIST += docs/man
+EXTRA_DIST += docs/autoiso.cfg
 EXTRA_DIST += docs/grub.cfg
+EXTRA_DIST += docs/osdetect.cfg
 
 EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
 
@@ -25,6 +27,11 @@ EXTRA_DIST += grub-core/gensyminfo.sh.in
 EXTRA_DIST += grub-core/gensymlist.sh
 EXTRA_DIST += grub-core/genemuinit.sh
 EXTRA_DIST += grub-core/genemuinitheader.sh
+
+EXTRA_DIST += grub-core/gnulib-fix-null-deref.diff
+EXTRA_DIST += grub-core/gnulib-fix-width.diff
+EXTRA_DIST += grub-core/gnulib-no-abort.diff
+EXTRA_DIST += grub-core/gnulib-no-gets.diff
 
 EXTRA_DIST += grub-core/lib/libgcrypt
 EXTRA_DIST += grub-core/lib/libgcrypt-grub/mpi/generic
@@ -103,3 +110,4 @@ EXTRA_DIST += grub-core/osdep/windows/sleep.c
 EXTRA_DIST += tests/dfly-mbr-mbexample.mbr.img.gz
 EXTRA_DIST += tests/dfly-mbr-mbexample.dfly.img.gz
 
+EXTRA_DIST += coreboot.cfg

@@ -161,13 +161,13 @@ mmap_iterate_hook (grub_uint64_t addr, grub_uint64_t size,
 		   void *data __attribute__ ((unused)))
 {
   /* Avoid the lower memory.  */
-  if (addr < 0x100000)
+  if (addr < GRUB_MEMORY_MACHINE_UPPER_START)
     {
-      if (size <= 0x100000 - addr)
+      if (size <= GRUB_MEMORY_MACHINE_UPPER_START - addr)
 	return 0;
 
-      size -= 0x100000 - addr;
-      addr = 0x100000;
+      size -= GRUB_MEMORY_MACHINE_UPPER_START - addr;
+      addr = GRUB_MEMORY_MACHINE_UPPER_START;
     }
 
   /* Ignore >4GB.  */

@@ -558,7 +558,7 @@ copy_locales (const char *dstd)
   grub_util_fd_dirent_t de;
   const char *locale_dir = grub_util_get_localedir ();
 
-  d = grub_util_fd_opendir (LOCALEDIR);
+  d = grub_util_fd_opendir (locale_dir);
   if (!d)
     {
       grub_util_warn (_("cannot open directory `%s': %s"),
@@ -597,6 +597,8 @@ static struct
     [GRUB_INSTALL_PLATFORM_I386_MULTIBOOT] =   { "i386",    "multiboot" },
     [GRUB_INSTALL_PLATFORM_I386_IEEE1275] =    { "i386",    "ieee1275"  },
     [GRUB_INSTALL_PLATFORM_X86_64_EFI] =       { "x86_64",  "efi"       },
+    [GRUB_INSTALL_PLATFORM_I386_XEN] =         { "i386",    "xen"       },
+    [GRUB_INSTALL_PLATFORM_X86_64_XEN] =       { "x86_64",  "xen"       },
     [GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON] =  { "mipsel",  "loongson"  },
     [GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS] = { "mipsel",  "qemu_mips" },
     [GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS] =   { "mips",    "qemu_mips" },
@@ -707,6 +709,8 @@ grub_install_copy_files (const char *src,
     }
   else
     {
+      const char *locale_dir = grub_util_get_localedir ();
+
       for (i = 0; i < install_locales.n_entries; i++)
 	{
 	  char *srcf = grub_util_path_concat_ext (3, src,
@@ -724,7 +728,7 @@ grub_install_copy_files (const char *src,
 	    }
 	  free (srcf);
 	  srcf = grub_util_path_concat_ext (4,
-						 LOCALEDIR,
+						 locale_dir,
 						 install_locales.entries[i],
 						 "LC_MESSAGES",
 						 PACKAGE,

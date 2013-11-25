@@ -229,9 +229,10 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   unsigned i;
   Elf_Shdr *s;
   grub_size_t tsize = 0, talign = 1;
-#if defined (__ia64__) || defined (__powerpc__)
+#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
   grub_size_t tramp;
   grub_size_t got;
+  grub_err_t err;
 #endif
   char *ptr;
 
@@ -244,10 +245,10 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	talign = s->sh_addralign;
     }
 
-#if defined (__ia64__) || defined (__powerpc__)
-  grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
-  tramp *= GRUB_ARCH_DL_TRAMP_SIZE;
-  got *= sizeof (grub_uint64_t);
+#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
+  err = grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
+  if (err)
+    return err;
   tsize += ALIGN_UP (tramp, GRUB_ARCH_DL_TRAMP_ALIGN);
   if (talign < GRUB_ARCH_DL_TRAMP_ALIGN)
     talign = GRUB_ARCH_DL_TRAMP_ALIGN;
@@ -313,7 +314,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
-#if defined (__ia64__) || defined (__powerpc__)
+#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
   ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
   mod->tramp = ptr;
   ptr += tramp;

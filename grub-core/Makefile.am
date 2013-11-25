@@ -396,7 +396,7 @@ efiemu32.o: efiemu/runtime/efiemu.c $(TARGET_OBJ2ELF)
 	-rm -f $@; \
 	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m32 -Wall -Werror -nostdlib -O2 -c -o $@.bin $< || exit 1; \
-	  $(OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
+	  $(TARGET_OBJCONV) -felf32 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
 	else \
 	  $(TARGET_CC) $(DEFS) $(INCLUDES) $(CPPFLAGS_EFIEMU) $(CPPFLAGS_DEFAULT) -m32 -Wall -Werror -nostdlib -O2 -c -o $@ $< || exit 1; \
@@ -423,7 +423,7 @@ efiemu64.o: efiemu64_c.o efiemu64_s.o $(TARGET_OBJ2ELEF)
 	if test "x$(TARGET_APPLE_LINKER)" = x1; then \
 	  rm -f $@.bin; \
 	  $(TARGET_CC) -m64 -Wl,-r -nostdlib -o $@.bin $^ || exit 1; \
-	  $(OBJCONV) -felf64 -nu -nd $@.bin $@ || exit 1; \
+	  $(TARGET_OBJCONV) -felf64 -nu -nd $@.bin $@ || exit 1; \
 	  rm -f $@.bin; \
 	else \
 	  $(TARGET_CC) -m64 -Wl,-melf_x86_64 -nostdlib -Wl,-r -o $@ $^ || exit 1; \

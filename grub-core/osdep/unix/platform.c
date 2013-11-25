@@ -31,11 +31,11 @@
 static char *
 get_ofpathname (const char *dev)
 {
-  char *ret = xmalloc (2 * PATH_MAX);
-  char *end = ret + 2 * PATH_MAX - 1;
+  size_t alloced = 4096;
+  char *ret = xmalloc (alloced);
+  size_t offset = 0;
   int fd;
   pid_t pid;
-  char *ptr = ret;
 
   pid = grub_util_exec_pipe ((const char * []){ "ofpathname", dev, NULL }, &fd);
   if (!pid)
@@ -45,12 +45,28 @@ get_ofpathname (const char *dev)
   if (!fp)
     goto fail;
 
-  while (!feof (fp) && ptr < end)
+  while (!feof (fp))
     {
       size_t r;
-      r = fread (ptr, 1, end - ptr, fp);
-      ptr += r;
+      if (alloced == offset)
+       {
+         alloced *= 2;
+         ret = xrealloc (ret, alloced);
+       }
+      r = fread (ret + offset, 1, alloced - offset, fp);
+      offset += r;
     }
+
+  if (offset > 0 && ret[offset - 1] == '\n')
+    offset--;
+  if (offset > 0 && ret[offset - 1] == '\r')
+    offset--;
+  if (alloced == offset)
+    {
+      alloced++;
+      ret = xrealloc (ret, alloced);
+    }
+  ret[offset] = '\0';
 
   fclose (fp);
 

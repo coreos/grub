@@ -31,27 +31,32 @@
 	.macro floppy
 part_start:
 
-probe_values:
+LOCAL(probe_values):
 	.byte	36, 18, 15, 9, 0
 
 LOCAL(floppy_probe):
+	pushw	%dx
 /*
  *  Perform floppy probe.
  */
-
-	movw	$probe_values - 1, %si
+#ifdef __APPLE__
+	LOCAL(probe_values_minus_one) = LOCAL(probe_values) - 1
+	movw	MACRO_DOLLAR(LOCAL(probe_values_minus_one)), %si
+#else
+	movw	MACRO_DOLLAR(LOCAL(probe_values)) - 1, %si
+#endif
 
 LOCAL(probe_loop):
 	/* reset floppy controller INT 13h AH=0 */
 	xorw	%ax, %ax
-	int	$0x13
+	int	MACRO_DOLLAR(0x13)
 
 	incw	%si
 	movb	(%si), %cl
 
 	/* if number of sectors is 0, display error and die */
-	cmpb	$0, %cl
-	jne	1f
+	testb	%cl, %cl
+	jnz	1f
 
 /*
  * Floppy disk probe failure.
@@ -64,20 +69,20 @@ fd_probe_error_string:	.asciz "Floppy"
 
 1:
 	/* perform read */
-	movw	$GRUB_BOOT_MACHINE_BUFFER_SEG, %bx
+	movw	MACRO_DOLLAR(GRUB_BOOT_MACHINE_BUFFER_SEG), %bx
 	movw	%bx, %es
 	xorw	%bx, %bx
-	movw	$0x201, %ax
-	movb	$0, %ch
-	movb	$0, %dh
-	int	$0x13
+	movw	MACRO_DOLLAR(0x201), %ax
+	movb	MACRO_DOLLAR(0), %ch
+	movb	MACRO_DOLLAR(0), %dh
+	int	MACRO_DOLLAR(0x13)
 
 	/* if error, jump to "LOCAL(probe_loop)" */
 	jc	LOCAL(probe_loop)
 
 	/* %cl is already the correct value! */
-	movb	$1, %dh
-	movb	$79, %ch
+	movb	MACRO_DOLLAR(1), %dh
+	movb	MACRO_DOLLAR(79), %ch
 
 	jmp	LOCAL(final_init)
 	.endm
@@ -180,7 +185,9 @@ kernel_address:
 #ifndef HYBRID_BOOT
 	. = _start + GRUB_BOOT_MACHINE_KERNEL_SECTOR
 kernel_sector:
-	.long	1, 0
+	.long	1
+kernel_sector_high:
+	.long	0
 #endif
 
 	. = _start + GRUB_BOOT_MACHINE_BOOT_DRIVE
@@ -285,7 +292,7 @@ lba_mode:
 	/* the absolute address */
 	movl	kernel_sector, %ebx
 	movl	%ebx, 8(%si)
-	movl	kernel_sector + 4, %ebx
+	movl	kernel_sector_high, %ebx
 	movl	%ebx, 12(%si)
 
 	/* the segment of buffer address */
@@ -318,11 +325,12 @@ LOCAL(chs_mode):
 	int	$0x13
 	jnc	LOCAL(final_init)
 
+	popw	%dx
 	/*
 	 *  The call failed, so maybe use the floppy probe instead.
 	 */
-	testb	$GRUB_BOOT_MACHINE_BIOS_HD_FLAG, %dl
-	jz	LOCAL(floppy_probe)
+	testb	%dl, %dl
+	jnb	LOCAL(floppy_probe)
 
 	/* Nope, we definitely have a hard disk, and we're screwed. */
 	ERR(hd_probe_error_string)
@@ -353,7 +361,7 @@ LOCAL(final_init):
 
 setup_sectors:
 	/* load logical sector start (top half) */
-	movl	kernel_sector + 4, %eax
+	movl	kernel_sector_high, %eax
 
 	orl	%eax, %eax
 	jnz	LOCAL(geometry_error)
@@ -505,7 +513,9 @@ LOCAL(message):
 #ifdef HYBRID_BOOT
 	. = _start + 0x1b0
 kernel_sector:
-	.long	1, 0
+	.long	1
+kernel_sector_high:
+	.long	0
 #endif
 	. = _start + GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC
 nt_magic:

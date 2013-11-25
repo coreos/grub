@@ -396,8 +396,8 @@ grub_machine_get_bootlocation (char **device, char **path)
       const char *syspart = 0;
 
       if (GRUB_ARC_SYSTEM_PARAMETER_BLOCK->firmware_vector_length
-	  >= ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
-	      - (char *) GRUB_ARC_FIRMWARE_VECTOR)
+	  >= (unsigned) ((char *) (&GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable + 1)
+			 - (char *) GRUB_ARC_FIRMWARE_VECTOR)
 	  && GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable)
 	syspart = GRUB_ARC_FIRMWARE_VECTOR->getenvironmentvariable ("SystemPartition");
       if (!syspart)

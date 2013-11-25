@@ -1,3 +1,286 @@
+2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/unix/platform.c (get_ofpathname): Trim ending newline.
+	Don't rely on PATH_MAX.
+
+2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/genmoddep.awk: Use more portable && rather than and.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/pc/startup.S [__APPLE__]: Create _edata by placing
+	an object after data. While it doesn't seem right solution, it
+	works well enough and OSX isn't main compilation platform.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gentpl.py: Add -ed2016 in order to make objconv accept our binary.
+	While it doesn't seem right solution, it works well enough and
+	OSX isn't main compilation platform.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add -static to LDFLAGS when using apple linker to
+	prevent it from pulling in dynamic linker.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Apple assembly doesn't handle symbol arithmetic well. So define an
+	offset symbol in boot.S and use it.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Apple assembly doesn't handle symbol arithmetic well. So instead
+	of getting addres of kernel_sector + 4 define kernel_sector_high.
+	It also makes code more readable.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	With Apple assembly in .macro environvemnt you have to use $$ instead
+	of $. So introduce new preprocessor macro MACRO_DOLLAR(x) which expands
+	to $$x on Apple and to $x on everything else.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am: Use correct TARGET_OBJCONV rather than
+	OBJCONV.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gdb/i386/machdep.S: Use xorl %eax, %eax on both Apple
+	and non-Apple. This instruction is shorter and faster,
+	so no reason not to use it on both.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/reed_solomon.c: Use section _text, _text rather than
+	.text when compiling for Apple.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/arc/console.c: Add missing cast to silence warning.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/i386/pc/boot.S: Fix floppy probe. Due to missing
+	%dx restore the probe worked on non-existant drive. Reorganize the
+	code a little bit to free 2 bytes necessary for push/pop.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/mips/arc/init.c (grub_machine_get_bootlocation):
+	Add missing cast to silence warning.
+
+2013-11-23  Keshav Padram Amburay <the.ridikulus.rat@gmail.com>
+
+	* util/grub-install.c (update_nvram): Support --no-nvram flag
+	for EFI targets.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* INSTALL: Add note about sparc64/ia64 with clang (unsupported).
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/garbage-gen.c: Add missing include of sys/time.h.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't add -mflush-func if it's not supported by compiler.
+
+2013-11-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Move common BIOS/coreboot memory map declarations to
+	include/grub/i386/memory_raw.h and eliminate duplicate declarations.
+
+2013-11-22  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* Makefile.am: Add util/garbage-gen.c to EXTRA_DIST.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* INSTALL: Document why older clang versions aren't appropriate.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* INSTALL: Document about clang for mips.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/libgcrypt/mpi/longlong.h: Use C version with mips
+	clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add *-xen to the list of grub-install-common platforms.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Do not enforce -mcmodel=large. It's not necessarry with
+	3 last commits.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/xen/init.c: Do not map more pages than we can address.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/efi/mm.c: Limit allocations to 2GiB when not compiling
+	with -mcmodel=large.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Add
+	range-checking for 32-bit quantities.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Compile with -fPIC when compiling with clang on
+	mips.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Add -no-integrated-as on mips(el) to TARGET_CCASFLAGS
+	when compiling with clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	clang emits calls to abort () under some unknown conditions.
+	Export abort () when compiling with clang.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* docs/grub-dev.texi: Document stack and heap sizes.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/i386/pc/memory.h: Decrease
+	GRUB_MEMORY_MACHINE_SCRATCH_SIZE and increase
+	GRUB_MEMORY_MACHINE_PROT_STACK_SIZE.
+	The binary doesn't change (checked). It's more to better reflect actual
+	usage.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_open): Ensure
+	at compile time that enough of scratch size is available.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/x86_64/efi/callwrap.S: Fix stack alignment.
+	Previously we misaligned stack by 8 in startup.S and compensated
+	for it in callwrap.S. According to ABI docs (EFI and sysv amd64)
+	right behaviour is to align stack in startup.S and keep it aligned
+	in callwrap.S. startup.S part was committed few commits before. This
+	takes care of callwrap.S.
+	Reported by: Gary Lin.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/boot/mips/startup_raw.S: Handle the case of gap between
+	.data and .bss. May happen if compiler and assembly use different
+	alignment.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	On MIPS handle got16 relocations to local symbols in an ABI-compliant
+	way.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add support for a new magic symbol _gp_disp on mips to handle PIC
+	binaries.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Use $t9 for indirect calls from asm to C as PIC ABI requires.
+
+2013-11-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove -march=mips3 from TARGET_CCASFLAGS as it creates linking problem
+	when rest of GRUB is compiled for hisher stepping. Instead use
+	.set mips3/.set mips1 around cache and sync opcodes.
+
+2013-11-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Unify GOT/trampoline handling between PPC, MIPS and IA64 as they
+	do essentially the same thing, do it in similar way.
+
+2013-11-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-mkrescue.c (main): If a source directory is not
+	specified, read platform-specific files from subdirectories of
+	pkglibdir, not pkgdatadir.
+
+2013-11-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/normal/progress.c: Remove unused file.
+
+2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/crypto.c (grub_crypto_hash): Remove variable length
+	array.
+
+2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkconfig.in: Say explicit "grub configuration" rather
+	than grub.cfg.
+
+2013-11-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* coreboot.cfg: Add missing file.
+
+2013-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am: Allow STRIP to be empty when creating windowszip.
+
+2013-11-19  Axel Kellermann <axel.kellermann@gmx.de>
+
+	* util/grub.d/30_os-prober.in: Add GRUB_OS_PROBER_SKIP_LIST to
+	selectively skipping systems.
+
+2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-mkimage): Add
+	grub-core/osdep/aros/config.c to extra_dist.
+	* conf/Makefile.extra-dist (EXTRA_DIST): Add docs/autoiso.cfg,
+	docs/osdetect.cfg, grub-core/gnulib-fix-null-deref.diff,
+	grub-core/gnulib-fix-width.diff, grub-core/gnulib-no-abort.diff, and
+	grub-core/gnulib-no-gets.diff.
+
+2013-11-19  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add automated filesystem checking based on scripts I've used now for
+	quite some time locally. Most of the test require root so they are
+	skipped when run without necessarry privelegies.
+
+2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install.c (main): Adjust info messages to match
+	installed paths of grub-bios-setup and grub-sparc64-setup.
+
+2013-11-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-install-common.c (copy_locales): Consistently use
+	grub_util_get_localedir () rather than LOCALEDIR.
+	(grub_install_copy_files): Likewise.
+
+2013-11-19  Josh Triplett  <josh@joshtriplett.org>
+
+	* grub-core/kern/x86_64/efi/startup.S (_start): Align the stack to a
+	16-byte boundary, as required by the x86-64 ABI, before calling
+	grub_main.  In some cases, GCC emits code that assumes this
+	alignment, which crashes if not aligned.  The EFI firmware is also
+	entitled to assume that stack alignment without checking.
+
+2013-11-18  Josh Triplett  <josh@joshtriplett.org>
+
+	* grub-core/mmap/efi/mmap.c (grub_mmap_register): Round up/down to
+	4k page boundaries as expected by firmware rather than 1k
+	boundaries.
+	(grub_mmap_malign_and_register): Likewise.
+
 2013-11-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* tests/grub_func_test.in: Decrease RAM size to 512M. With less

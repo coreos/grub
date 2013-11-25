@@ -23,7 +23,7 @@ BEGIN {
     } else if ($1 == "undefined") {
       if ($3 in symtab)
 	modtab[$2] = modtab[$2] " " symtab[$3];
-      else if ($3 != "__gnu_local_gp") {
+      else if ($3 != "__gnu_local_gp" && $3 != "_gp_disp") {
 	printf "%s in %s is not defined\n", $3, $2 >"/dev/stderr";
 	error++;
       }

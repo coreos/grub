@@ -137,11 +137,13 @@ for cipher_file in cipher_files:
 
         ciphernames = []
         mdnames = []
+        mdctxsizes = []
         pknames = []
         hold = False
         skip = 0
         skip2 = False
         ismd = False
+        mdarg = 0
         ispk = False
         iscipher = False
         iscryptostart = False
@@ -174,6 +176,11 @@ for cipher_file in cipher_files:
                     sg = s.groups()[0]
                     cryptolist.write (("%s: %s\n") % (sg, modname))
                     iscryptostart = False
+            if ismd:
+                spl = line.split (",")
+                if mdarg + len (spl) > 9 and mdarg <= 9 and ("sizeof" in spl[9-mdarg]):
+                    mdctxsizes.append (spl[9-mdarg].lstrip ().rstrip())
+                mdarg = mdarg + len (spl) - 1
             if ismd or iscipher or ispk:
                 if not re.search (" *};", line) is None:
                     if not iscomma:
@@ -189,6 +196,7 @@ for cipher_file in cipher_files:
                         fw.write ("    .blocksize = %s\n"
                                   % mdblocksizes [mdname])
                     ismd = False
+                    mdarg = 0
                     iscipher = False
                     ispk = False
                 iscomma = not re.search (",$", line) is None
@@ -283,6 +291,7 @@ for cipher_file in cipher_files:
                 mdname = re.match("[a-zA-Z0-9_]*",mdname).group ()
                 mdnames.append (mdname)
                 ismd = True
+                mdarg = 0
                 iscryptostart = True
             m = re.match ("static const char \*selftest.*;$", line)
             if not m is None:
@@ -423,6 +432,8 @@ for cipher_file in cipher_files:
                 chmsg = "Register cipher %s" % ciphername
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
                 fw.write ("  grub_cipher_register (&%s);\n" % ciphername)
+            for ctxsize in mdctxsizes:
+                fw.write ("  COMPILE_TIME_ASSERT(%s <= GRUB_CRYPTO_MAX_MD_CONTEXT_SIZE);\n" % ctxsize)
             for mdname in mdnames:
                 chmsg = "Register digest %s" % mdname
                 chlognew = "%s\n	%s" % (chlognew, chmsg)
