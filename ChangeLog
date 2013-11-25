@@ -1,5 +1,10 @@
 2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/platform.c (get_ofpathname): Trim ending newline.
+	Don't rely on PATH_MAX.
+
+2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmoddep.awk: Use more portable && rather than and.
 
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
