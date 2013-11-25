@@ -673,8 +673,8 @@ if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
       if test x${target_cpu} != xi386 && test x$format = x${target_cpu}pe; then
         continue
       fi
-      CFLAGS="$TARGET_CFLAGS -static"
-      LDFLAGS="$TARGET_LDFLAGS -Wl,$format -nostdlib"
+      CFLAGS="$TARGET_CFLAGS"
+      LDFLAGS="$TARGET_LDFLAGS -Wl,$format -nostdlib -static"
       AC_LINK_IFELSE([AC_LANG_PROGRAM([[
       asm (".globl start; start:");
       asm (".globl _start; _start:");
@@ -825,7 +825,7 @@ fi
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
 if test "x$TARGET_APPLE_LINKER" = x1 ; then
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
+CFLAGS="$TARGET_CFLAGS -nostdlib -static -Wno-error"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
 fi
@@ -851,7 +851,7 @@ fi
 AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x)
 
 if test "x$TARGET_APPLE_LINKER" = x1 ; then
-CFLAGS="$TARGET_CFLAGS -nostdlib"
+CFLAGS="$TARGET_CFLAGS -nostdlib -static"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
 fi

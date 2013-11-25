@@ -1,5 +1,10 @@
 2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -static to LDFLAGS when using apple linker to
+	prevent it from pulling in dynamic linker.
+
+2013-11-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Apple assembly doesn't handle symbol arithmetic well. So define an
 	offset symbol in boot.S and use it.
 
