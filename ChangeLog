@@ -1,3 +1,10 @@
+2013-11-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	*  configure.ac: Add explicit check for linking format of
+	efiemu64; save it as EFIEMU64_LINK_FORMAT.
+	* grub-core/Makefile.am: Use EFIEMU64_LINK_FORMAT instead of
+	hardcoding linking format.
+
 2013-11-25  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mknetdir.c: Look for platform directories under pkglibdir
