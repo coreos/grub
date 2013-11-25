@@ -31,7 +31,7 @@ void grub_arch_invalidate_icache_range (grub_addr_t beg, grub_addr_t end,
 static void
 probe_caches (void)
 {
-  grub_uint32_t cache_type;
+  grub_uint64_t cache_type;
 
   /* Read Cache Type Register */
   asm volatile ("mrs 	%0, ctr_el0": "=r"(cache_type));
@@ -46,17 +46,17 @@ probe_caches (void)
 void
 grub_arch_sync_caches (void *address, grub_size_t len)
 {
-  grub_uint64_t start, end, max;
+  grub_uint64_t start, end, max_align;
 
   if (dlinesz == 0)
     probe_caches();
   if (dlinesz == 0)
     grub_fatal ("Unknown cache line size!");
 
-  max = dlinesz > ilinesz ? dlinesz : ilinesz;
+  max_align = dlinesz > ilinesz ? dlinesz : ilinesz;
 
-  start = ALIGN_DOWN ((grub_uint64_t) address, max);
-  end = ALIGN_UP ((grub_uint64_t) address + len, max);
+  start = ALIGN_DOWN ((grub_uint64_t) address, max_align);
+  end = ALIGN_UP ((grub_uint64_t) address + len, max_align);
 
   grub_arch_clean_dcache_range (start, end, dlinesz);
   grub_arch_invalidate_icache_range (start, end, ilinesz);
