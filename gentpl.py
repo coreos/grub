@@ -106,9 +106,11 @@ for platform in GRUB_PLATFORMS:
 #
 
 # We support a subset of the AutoGen definitions file syntax.  Specifically,
-# compound names are disallowed; C-style comments and preprocessing
-# directives are disallowed; and shell-generated strings, Scheme-generated
-# strings, and here strings are disallowed.
+# compound names are disallowed; some preprocessing directives are
+# disallowed (though #if/#endif are allowed; note that, like AutoGen, #if
+# skips everything to the next #endif regardless of the value of the
+# conditional); and shell-generated strings, Scheme-generated strings, and
+# here strings are disallowed.
 
 class AutogenToken:
     (autogen, definitions, eof, var_name, other_name, string, number,
@@ -189,7 +191,27 @@ class AutogenParser:
             if offset >= end:
                 break
             c = data[offset]
-            if c == "{":
+            if c == "#":
+                offset += 1
+                try:
+                    end_directive = data.index("\n", offset)
+                    directive = data[offset:end_directive]
+                    offset = end_directive
+                except ValueError:
+                    directive = data[offset:]
+                    offset = end
+                name, value = directive.split(None, 1)
+                if name == "if":
+                    try:
+                        end_if = data.index("\n#endif", offset)
+                        new_offset = end_if + len("\n#endif")
+                        self.cur_line += data[offset:new_offset].count("\n")
+                        offset = new_offset
+                    except ValueError:
+                        self.error("#if without matching #endif")
+                else:
+                    self.error("Unhandled directive '#%s'" % name)
+            elif c == "{":
                 yield AutogenToken.lbrace, c
                 offset += 1
             elif c == "=":
@@ -234,6 +256,22 @@ class AutogenParser:
                     else:
                         s.append(data[offset])
                 yield AutogenToken.string, "".join(s)
+            elif c == "/":
+                offset += 1
+                if data[offset] == "*":
+                    offset += 1
+                    try:
+                        end_comment = data.index("*/", offset)
+                        new_offset = end_comment + len("*/")
+                        self.cur_line += data[offset:new_offset].count("\n")
+                        offset = new_offset
+                    except ValueError:
+                        self.error("/* without matching */")
+                elif data[offset] == "/":
+                    try:
+                        offset = data.index("\n", offset)
+                    except ValueError:
+                        pass
             elif (c.isdigit() or
                   (c == "-" and offset < end - 1 and
                    data[offset + 1].isdigit())):
