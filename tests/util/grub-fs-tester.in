@@ -950,28 +950,28 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    xorriso -compliance rec_mtime -set_filter_r --zisofs -- -zisofs default -as mkisofs -iso-level 3 -graft-points -R -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}"  -- -set_filter_r --zisofs -- -zisofs default -add /="$MASTER" ;;
 		x"iso9660")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"joliet")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"rockridge")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"rockridge_joliet")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"iso9660_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"joliet_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"rockridge_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"rockridge_joliet_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    /usr/local/bin/xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
 		x"romfs")
 		    genromfs -V "$FSLABEL" -f "${FSIMAGES[0]}" -d "$MASTER" ;;
 		xsquash4_*)

@@ -1,3 +1,8 @@
+2013-11-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* tests/util/grub-fs-tester.in: Execute xorriso from $PATH rather
+	than hardcoding /usr/local/bin/xorriso.
+
 2013-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Add PCI command activation to all PCI drivers as required for coreboot
