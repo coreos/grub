@@ -1,3 +1,8 @@
+2013-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am: Reduce gratuituous differences between Apple
+	and non-Apple variants of efiemu compile.
+
 2013-11-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	*  configure.ac: Add explicit check for linking format of
