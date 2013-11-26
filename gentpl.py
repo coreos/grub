@@ -119,14 +119,15 @@ class AutogenState:
      need_idx, need_rbracket, indx_name, have_value, done) = range(12)
 
 class AutogenParseError(Exception):
-    def __init__(self, message, line):
+    def __init__(self, message, path, line):
         super(AutogenParseError, self).__init__(message)
+        self.path = path
         self.line = line
 
     def __str__(self):
         return (
             super(AutogenParseError, self).__str__() +
-            " at line %d" % self.line)
+            " at file %s line %d" % (self.path, self.line))
 
 class AutogenDefinition(list):
     def __getitem__(self, key):
@@ -161,6 +162,7 @@ class AutogenParser:
         self.def_stack = [("", self.definitions)]
         self.curdef = None
         self.new_name = None
+        self.cur_path = None
         self.cur_line = 0
 
     @staticmethod
@@ -171,6 +173,9 @@ class AutogenParser:
     @staticmethod
     def is_value_name_char(c):
         return c in ":^-_" or c.isalnum()
+
+    def error(self, message):
+        raise AutogenParseError(message, self.cur_file, self.cur_line)
 
     def read_tokens(self, f):
         data = f.read()
@@ -210,15 +215,13 @@ class AutogenParser:
                 while True:
                     offset += 1
                     if offset >= end:
-                        raise AutogenParseError(
-                            "EOF in quoted string", self.cur_line)
+                        self.error("EOF in quoted string")
                     if data[offset] == "\n":
                         self.cur_line += 1
                     if data[offset] == "\\":
                         offset += 1
                         if offset >= end:
-                            raise AutogenParseError(
-                                "EOF in quoted string", self.cur_line)
+                            self.error("EOF in quoted string")
                         if data[offset] == "\n":
                             self.cur_line += 1
                         # Proper escaping unimplemented; this can be filled
@@ -260,21 +263,19 @@ class AutogenParser:
                         yield AutogenToken.var_name, s
                     offset = end_name
             else:
-                raise AutogenParseError(
-                    "Invalid input character '%s'" % c, self.cur_line)
+                self.error("Invalid input character '%s'" % c)
         yield AutogenToken.eof, None
 
     def do_need_name_end(self, token):
         if len(self.def_stack) > 1:
-            raise AutogenParseError(
-                "Definition blocks were left open", self.cur_line)
+            self.error("Definition blocks were left open")
 
     def do_need_name_var_name(self, token):
         self.new_name = token
 
     def do_end_block(self, token):
         if len(self.def_stack) <= 1:
-            raise AutogenParseError("Too many close braces", self.cur_line)
+            self.error("Too many close braces")
         new_name, parent_def = self.def_stack.pop()
         parent_def.append((new_name, self.curdef))
         self.curdef = parent_def
@@ -292,7 +293,7 @@ class AutogenParser:
     def do_indexed_name(self, token):
         self.new_name = token
 
-    def read_definitions(self, f):
+    def read_definitions_file(self, f):
         self.curdef = self.definitions
         self.cur_line = 0
         state = AutogenState.init
@@ -367,11 +368,16 @@ class AutogenParser:
                 if handler is not None:
                     handler(token)
             else:
-                raise AutogenParseError(
+                self.error(
                     "Parse error in state %s: unexpected token '%s'" % (
-                        state, token), self.cur_line)
+                        state, token))
             if state == AutogenState.done:
                 break
+
+    def read_definitions(self, path):
+        self.cur_file = path
+        with open(path) as f:
+            self.read_definitions_file(f)
 
 defparser = AutogenParser()
 
@@ -791,8 +797,7 @@ parser = OptionParser(usage="%prog DEFINITION-FILES")
 _, args = parser.parse_args()
 
 for arg in args:
-    with open(arg) as f:
-        defparser.read_definitions(f)
+    defparser.read_definitions(arg)
 
 rules("module", module)
 rules("kernel", kernel)
