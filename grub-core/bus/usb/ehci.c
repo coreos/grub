@@ -534,11 +534,20 @@ grub_ehci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
 			"EHCI grub_ehci_pci_iter: registers above 4G are not supported\n");
 	  return 0;
 	}
+      base &= GRUB_PCI_ADDR_MEM_MASK;
+      if (!base)
+	{
+	  grub_dprintf ("ehci",
+			"EHCI: EHCI is not mapped\n");
+	  return 0;
+	}
 
       /* Set bus master - needed for coreboot, VMware, broken BIOSes etc. */
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
       grub_pci_write_word(addr,
-          GRUB_PCI_COMMAND_BUS_MASTER | grub_pci_read_word(addr));
+			  GRUB_PCI_COMMAND_MEM_ENABLED
+			  | GRUB_PCI_COMMAND_BUS_MASTER
+			  | grub_pci_read_word(addr));
       
       grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: 32-bit EHCI OK\n");
     }

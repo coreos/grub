@@ -1,5 +1,10 @@
 2013-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add PCI command activation to all PCI drivers as required for coreboot
+	and maybe some other firmwares.
+
+2013-11-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am: Reduce gratuituous differences between Apple
 	and non-Apple variants of efiemu compile.
 

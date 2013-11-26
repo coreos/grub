@@ -217,12 +217,6 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
   if (class != 0x0c || subclass != 0x03 || interf != 0x00)
     return 0;
 
-  /* Set bus master - needed for coreboot or broken BIOSes */
-  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-  grub_pci_write_word(addr, GRUB_PCI_COMMAND_IO_ENABLED
-		      | GRUB_PCI_COMMAND_BUS_MASTER
-		      | grub_pci_read_word (addr));
-
   /* Determine IO base address.  */
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG4);
   base = grub_pci_read (addr);
@@ -232,6 +226,13 @@ grub_uhci_pci_iter (grub_pci_device_t dev,
 
   if ((base & GRUB_UHCI_IOMASK) == 0)
     return 0;
+
+  /* Set bus master - needed for coreboot or broken BIOSes */
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write_word(addr, GRUB_PCI_COMMAND_IO_ENABLED
+		      | GRUB_PCI_COMMAND_BUS_MASTER
+		      | GRUB_PCI_COMMAND_MEM_ENABLED
+		      | grub_pci_read_word (addr));
 
   grub_dprintf ("uhci", "base = %x\n", base);
 

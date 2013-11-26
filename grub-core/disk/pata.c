@@ -402,9 +402,15 @@ grub_pata_pciinit (grub_pci_device_t dev,
 	  bar2 = grub_pci_read (addr);
 
 	  /* Check if the BARs describe an IO region.  */
-	  if ((bar1 & 1) && (bar2 & 1))
+	  if ((bar1 & 1) && (bar2 & 1) && (bar1 & ~3))
 	    {
 	      rega = bar1 & ~3;
+	      addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+	      grub_pci_write_word (addr, grub_pci_read_word (addr)
+				   | GRUB_PCI_COMMAND_IO_ENABLED
+				   | GRUB_PCI_COMMAND_MEM_ENABLED
+				   | GRUB_PCI_COMMAND_BUS_MASTER);
+
 	    }
 	}
 

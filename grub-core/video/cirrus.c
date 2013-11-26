@@ -248,11 +248,18 @@ find_card (grub_pci_device_t dev, grub_pci_id_t pciid, void *data)
 
   if (((class >> 16) & 0xffff) != 0x0300 || pciid != 0x00b81013)
     return 0;
-  
-  *found = 1;
 
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
   framebuffer.base = grub_pci_read (addr) & GRUB_PCI_ADDR_MEM_MASK;
+  if (!framebuffer.base)
+    return 0;
+
+  *found = 1;
+
+  /* Enable address spaces.  */
+  addr = grub_pci_make_address (framebuffer.dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write (addr, 0x7);
+
   framebuffer.dev = dev;
 
   return 1;

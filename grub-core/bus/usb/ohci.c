@@ -265,16 +265,20 @@ grub_ohci_pci_iter (grub_pci_device_t dev, grub_pci_id_t pciid,
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_ADDRESS_REG0);
       base = grub_pci_read (addr);
 
-#if 0
-      /* Stop if there is no IO space base address defined.  */
-      if (! (base & 1))
-	return 0;
-#endif
+      base &= GRUB_PCI_ADDR_MEM_MASK;
+      if (!base)
+	{
+	  grub_dprintf ("ehci",
+			"EHCI: EHCI is not mapper\n");
+	  return 0;
+	}
 
       /* Set bus master - needed for coreboot, VMware, broken BIOSes etc. */
       addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
       grub_pci_write_word(addr,
-          GRUB_PCI_COMMAND_BUS_MASTER | grub_pci_read_word(addr));
+			  GRUB_PCI_COMMAND_MEM_ENABLED
+			  | GRUB_PCI_COMMAND_BUS_MASTER
+			  | grub_pci_read_word(addr));
 
       grub_dprintf ("ohci", "class=0x%02x 0x%02x interface 0x%02x\n",
 		    class, subclass, interf);
