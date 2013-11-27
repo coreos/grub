@@ -79,10 +79,4 @@ grub_util_utf8_to_tchar (const char *in);
 char *
 grub_util_tchar_to_utf8 (LPCTSTR in);
 
-#ifdef __MINGW32__
-
-int fsync (int fno);
-
-#endif
-
 #endif

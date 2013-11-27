@@ -1,5 +1,10 @@
 2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Introduce grub_util_file_sync and use it instead of fsync(fileno(f)).
+	Fixes build for windows.
+
+2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* gentpl.py: Don't generate platform-dependent conditionals for
 	platform-independent targets.
 

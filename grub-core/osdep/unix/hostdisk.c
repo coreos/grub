@@ -201,6 +201,15 @@ grub_util_fd_sync (grub_util_fd_t fd)
 }
 
 void
+grub_util_file_sync (FILE *f)
+{
+  fflush (f);
+  if (!allow_fd_syncs)
+    return;
+  fsync (fileno (f));
+}
+
+void
 grub_util_disable_fd_syncs (void)
 {
   allow_fd_syncs = 0;

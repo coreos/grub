@@ -53,7 +53,8 @@ grub_util_create_envblk_file (const char *name)
     grub_util_error (_("cannot write to `%s': %s"), namenew,
 		     strerror (errno));
 
-  fsync (fileno (fp));
+
+  grub_util_file_sync (fp);
   free (buf);
   fclose (fp);
 

@@ -285,8 +285,7 @@ main (int argc, char *argv[])
 			       arguments.image_target, arguments.note,
 			       arguments.comp);
 
-  fflush (fp);
-  fsync (fileno (fp));
+  grub_util_file_sync  (fp);
   fclose (fp);
 
   if (arguments.dir)
