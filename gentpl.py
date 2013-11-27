@@ -638,6 +638,28 @@ def first_time(defn, snippet):
         return snippet
     return ''
 
+def is_platform_independent(defn):
+    if 'enable' in defn:
+        return False
+    for suffix in [ "", "_nodist" ]:
+        template = platform_values(defn, GRUB_PLATFORMS[0], suffix)
+        for platform in GRUB_PLATFORMS[1:]:
+            if template != platform_values(defn, platform, suffix):
+                return False
+
+    for suffix in [ "startup", "ldadd", "dependencies", "cflags", "ldflags", "cppflags", "ccasflags", "stripflags", "objcopyflags", "condition" ]:
+        template = platform_specific_values(defn, GRUB_PLATFORMS[0], "_" + suffix, suffix)
+        for platform in GRUB_PLATFORMS[1:]:
+            if template != platform_specific_values(defn, platform, "_" + suffix, suffix):
+                return False
+    for tag in [ "nostrip" ]:
+        template = platform_tagged(defn, GRUB_PLATFORMS[0], tag)
+        for platform in GRUB_PLATFORMS[1:]:
+            if template != platform_tagged(defn, platform, tag):
+                return False
+
+    return True
+
 def module(defn, platform):
     name = defn['name']
     set_canonical_name_suffix(".module")
@@ -825,9 +847,12 @@ def rules(target, closure):
     seen_vars.clear()
 
     for defn in defparser.definitions.find_all(target):
-        foreach_enabled_platform(
-            defn,
-            lambda p: under_platform_specific_conditionals(defn, p, closure))
+        if is_platform_independent(defn):
+            under_platform_specific_conditionals(defn, GRUB_PLATFORMS[0], closure)
+        else:
+            foreach_enabled_platform(
+                defn,
+                lambda p: under_platform_specific_conditionals(defn, p, closure))
         # Remember that we've seen this target.
         seen_target.add(defn['name'])
 

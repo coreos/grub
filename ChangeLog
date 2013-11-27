@@ -1,3 +1,8 @@
+2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* gentpl.py: Don't generate platform-dependent conditionals for
+	platform-independent targets.
+
 2013-11-27  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/osdep/unix/exec.c (grub_util_exec_redirect): Remove
