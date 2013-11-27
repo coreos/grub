@@ -240,10 +240,19 @@ grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
   return real_read;
 }
 
+static int allow_fd_syncs = 1;
+
 void
 grub_util_fd_sync (grub_util_fd_t fd)
 {
-  FlushFileBuffers (fd);
+  if (allow_fd_syncs)
+    FlushFileBuffers (fd);
+}
+
+void
+grub_util_disable_fd_syncs (void)
+{
+  allow_fd_syncs = 0;
 }
 
 void

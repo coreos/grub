@@ -50,6 +50,8 @@ EXPORT_FUNC(grub_util_fd_strerror) (void);
 void
 grub_util_fd_sync (grub_util_fd_t fd);
 void
+grub_util_disable_fd_syncs (void);
+void
 EXPORT_FUNC(grub_util_fd_close) (grub_util_fd_t fd);
 
 grub_uint64_t

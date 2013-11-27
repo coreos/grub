@@ -369,6 +369,7 @@ main (int argc, char *argv[])
   const char *pkgdatadir;
 
   grub_util_host_init (&argc, &argv);
+  grub_util_disable_fd_syncs ();
 
   pkgdatadir = grub_util_get_pkgdatadir ();
 
@@ -529,7 +530,7 @@ main (int argc, char *argv[])
 					    GRUB_COMPRESSION_AUTO);
 	      sz = ftello (sa);
 	      fflush (sa);
-	      fsync (fileno (sa));
+	      grub_util_fd_sync (fileno (sa));
 	      fclose (sa);
 	      
 	      if (sz > 32768)

@@ -455,6 +455,8 @@ grub_util_fd_close (grub_util_fd_t fd)
     }
 }
 
+static int allow_fd_syncs = 1;
+
 static void
 grub_util_fd_sync_volume (grub_util_fd_t fd)
 {
@@ -469,15 +471,24 @@ grub_util_fd_sync_volume (grub_util_fd_t fd)
 void
 grub_util_fd_sync (grub_util_fd_t fd)
 {
-  switch (fd->type)
+  if (allow_fd_syncs)
     {
-    case GRUB_UTIL_FD_FILE:
-      fsync (fd->fd);
-      return;
-    case GRUB_UTIL_FD_DISK:
-      grub_util_fd_sync_volume (fd);
-      return;
+      switch (fd->type)
+	{
+	case GRUB_UTIL_FD_FILE:
+	  fsync (fd->fd);
+	  return;
+	case GRUB_UTIL_FD_DISK:
+	  grub_util_fd_sync_volume (fd);
+	  return;
+	}
     }
+}
+
+void
+grub_util_disable_fd_syncs (void)
+{
+  allow_fd_syncs = 0;
 }
 
 void

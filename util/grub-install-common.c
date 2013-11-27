@@ -492,7 +492,7 @@ grub_install_make_image_wrap (const char *dir, const char *prefix,
 				     memdisk_path, config_path,
 				     mkimage_target, note, comp);
   fflush (fp);
-  fsync (fileno (fp));
+  grub_util_fd_sync (fileno (fp));
   fclose (fp);
 }
 

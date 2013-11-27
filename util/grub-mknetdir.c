@@ -171,6 +171,7 @@ main (int argc, char *argv[])
   const char *pkglibdir;
 
   grub_util_host_init (&argc, &argv);
+  grub_util_disable_fd_syncs ();
   rootdir = xstrdup ("/srv/tftp");
   pkglibdir = grub_util_get_pkglibdir ();
 

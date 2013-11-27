@@ -191,10 +191,19 @@ grub_util_fd_strerror (void)
   return strerror (errno);
 }
 
+static int allow_fd_syncs = 1;
+
 void
 grub_util_fd_sync (grub_util_fd_t fd)
 {
-  fsync (fd);
+  if (allow_fd_syncs)
+    fsync (fd);
+}
+
+void
+grub_util_disable_fd_syncs (void)
+{
+  allow_fd_syncs = 0;
 }
 
 void
