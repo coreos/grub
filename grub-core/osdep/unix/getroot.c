@@ -567,7 +567,7 @@ grub_util_pull_lvm_by_command (const char *os_dev)
   const char *argv[8];
   int fd;
   pid_t pid;
-  FILE *mdadm;
+  FILE *vgs;
   char *buf = NULL;
   size_t len = 0;
   char *vgname = NULL;
@@ -622,16 +622,16 @@ grub_util_pull_lvm_by_command (const char *os_dev)
   if (!pid)
     return;
 
-  /* Parent.  Read mdadm's output.  */
-  mdadm = fdopen (fd, "r");
-  if (! mdadm)
+  /* Parent.  Read vgs' output.  */
+  vgs = fdopen (fd, "r");
+  if (! vgs)
     {
       grub_util_warn (_("Unable to open stream from %s: %s"),
 		      "vgs", strerror (errno));
       goto out;
     }
 
-  while (getline (&buf, &len, mdadm) > 0)
+  while (getline (&buf, &len, vgs) > 0)
     {
       char *ptr;
       /* LVM adds two spaces as standard prefix */

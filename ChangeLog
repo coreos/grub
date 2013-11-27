@@ -1,5 +1,15 @@
 2013-11-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/osdep/unix/exec.c (grub_util_exec_redirect): Remove
+	references to mdadm from otherwise generic code.
+	(grub_util_exec_pipe): Likewise.
+	(grub_util_exec_pipe_stderr): Likewise.
+	* grub-core/osdep/unix/getroot.c (grub_util_pull_lvm_by_command):
+	This function calls vgs, not mdadm; adjust variable names
+	accordingly.
+
+2013-11-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	Generate Makefile.*.am directly from gentpl.py, eliminating the use
 	of Autogen.  The Autogen definitions files remain intact as they
 	offer a useful abstraction.

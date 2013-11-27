@@ -86,7 +86,7 @@ int
 grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
 			 const char *stdout_file)
 {
-  pid_t mdadm_pid;
+  pid_t pid;
   int status = -1;
   char *str, *pstr;
   const char *const *ptr;
@@ -112,10 +112,10 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
   grub_util_info ("executing %s", str);
   grub_free (str);
 
-  mdadm_pid = fork ();
-  if (mdadm_pid < 0)
+  pid = fork ();
+  if (pid < 0)
     grub_util_error (_("Unable to fork: %s"), strerror (errno));
-  else if (mdadm_pid == 0)
+  else if (pid == 0)
     {
       int in, out;
       /* Child.  */
@@ -145,7 +145,7 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
       execvp ((char *) argv[0], (char **) argv);
       exit (127);
     }
-  waitpid (mdadm_pid, &status, 0);
+  waitpid (pid, &status, 0);
   if (!WIFEXITED (status))
     return -1;
   return WEXITSTATUS (status);
@@ -160,21 +160,21 @@ grub_util_exec_redirect_null (const char *const *argv)
 pid_t
 grub_util_exec_pipe (const char *const *argv, int *fd)
 {
-  int mdadm_pipe[2];
-  pid_t mdadm_pid;
+  int pipe_fd[2];
+  pid_t pid;
 
   *fd = 0;
 
-  if (pipe (mdadm_pipe) < 0)
+  if (pipe (pipe_fd) < 0)
     {
       grub_util_warn (_("Unable to create pipe: %s"),
 		      strerror (errno));
       return 0;
     }
-  mdadm_pid = fork ();
-  if (mdadm_pid < 0)
+  pid = fork ();
+  if (pid < 0)
     grub_util_error (_("Unable to fork: %s"), strerror (errno));
-  else if (mdadm_pid == 0)
+  else if (pid == 0)
     {
       /* Child.  */
 
@@ -187,39 +187,39 @@ grub_util_exec_pipe (const char *const *argv, int *fd)
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
 
-      close (mdadm_pipe[0]);
-      dup2 (mdadm_pipe[1], STDOUT_FILENO);
-      close (mdadm_pipe[1]);
+      close (pipe_fd[0]);
+      dup2 (pipe_fd[1], STDOUT_FILENO);
+      close (pipe_fd[1]);
 
       execvp ((char *) argv[0], (char **) argv);
       exit (127);
     }
   else
     {
-      close (mdadm_pipe[1]);
-      *fd = mdadm_pipe[0];
-      return mdadm_pid;
+      close (pipe_fd[1]);
+      *fd = pipe_fd[0];
+      return pid;
     }
 }
 
 pid_t
 grub_util_exec_pipe_stderr (const char *const *argv, int *fd)
 {
-  int mdadm_pipe[2];
-  pid_t mdadm_pid;
+  int pipe_fd[2];
+  pid_t pid;
 
   *fd = 0;
 
-  if (pipe (mdadm_pipe) < 0)
+  if (pipe (pipe_fd) < 0)
     {
       grub_util_warn (_("Unable to create pipe: %s"),
 		      strerror (errno));
       return 0;
     }
-  mdadm_pid = fork ();
-  if (mdadm_pid < 0)
+  pid = fork ();
+  if (pid < 0)
     grub_util_error (_("Unable to fork: %s"), strerror (errno));
-  else if (mdadm_pid == 0)
+  else if (pid == 0)
     {
       /* Child.  */
 
@@ -232,18 +232,18 @@ grub_util_exec_pipe_stderr (const char *const *argv, int *fd)
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
 
-      close (mdadm_pipe[0]);
-      dup2 (mdadm_pipe[1], STDOUT_FILENO);
-      dup2 (mdadm_pipe[1], STDERR_FILENO);
-      close (mdadm_pipe[1]);
+      close (pipe_fd[0]);
+      dup2 (pipe_fd[1], STDOUT_FILENO);
+      dup2 (pipe_fd[1], STDERR_FILENO);
+      close (pipe_fd[1]);
 
       execvp ((char *) argv[0], (char **) argv);
       exit (127);
     }
   else
     {
-      close (mdadm_pipe[1]);
-      *fd = mdadm_pipe[0];
-      return mdadm_pid;
+      close (pipe_fd[1]);
+      *fd = pipe_fd[0];
+      return pid;
     }
 }
