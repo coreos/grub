@@ -1,5 +1,11 @@
 2013-11-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	Generate Makefile.*.am directly from gentpl.py, eliminating the use
+	of Autogen.  The Autogen definitions files remain intact as they
+	offer a useful abstraction.
+
+2013-11-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	Add grub_util_disable_fd_syncs call to turn grub_util_fd_sync calls
 	into no-ops, and use it in programs that copy files but do not need
 	to take special care to sync writes (grub-mknetdir, grub-rescue,
