@@ -1,5 +1,15 @@
 2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Eliminate variable length arrays in grub_vsnprintf_real.
+
+	A bit tricky because this function has to continue to work without
+	heap for short strings. Fixing prealloc to 32 arguments is reasonable
+	but make all stack references use 32-bit offset rather than 8-bit one.
+	So split va_args preparsing to separate function and put the prealloc
+	into the caller.
+
+2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Introduce grub_util_file_sync and use it instead of fsync(fileno(f)).
 	Fixes build for windows.
 
