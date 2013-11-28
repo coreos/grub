@@ -4420,7 +4420,7 @@ List devices or files.
 With no arguments, print all devices known to GRUB.
 
 If the argument is a device name enclosed in parentheses (@pxref{Device
-syntax}), then list all files at the root directory of that device.
+syntax}), then print the name of the filesystem of that device.
 
 If the argument is a directory given as an absolute file name (@pxref{File
 name syntax}), then list the contents of that directory.
