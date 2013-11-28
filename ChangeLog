@@ -1,3 +1,17 @@
+2013-11-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add a new timeout_style environment variable and a corresponding
+	GRUB_TIMEOUT_STYLE configuration key for grub-mkconfig.  This
+	controls hidden-timeout handling more simply than the previous
+	arrangements, and pressing any hotkeys associated with menu entries
+	during the hidden timeout will now boot the corresponding menu entry
+	immediately.
+
+	GRUB_HIDDEN_TIMEOUT=<non-empty> + GRUB_TIMEOUT=<non-zero> now
+	generates a warning, and if it shows the menu it will do so as if
+	the second timeout were not present.  Other combinations are
+	translated into reasonable equivalents.
+
 2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Eliminate variable length arrays in grub_vsnprintf_real.

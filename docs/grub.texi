@@ -1298,19 +1298,46 @@ a key is pressed.  The default is @samp{5}.  Set to @samp{0} to boot
 immediately without displaying the menu, or to @samp{-1} to wait
 indefinitely.
 
+If @samp{GRUB_TIMEOUT_STYLE} is set to @samp{countdown} or @samp{hidden},
+the timeout is instead counted before the menu is displayed.
+
+@item GRUB_TIMEOUT_STYLE
+If this option is unset or set to @samp{menu}, then GRUB will display the
+menu and then wait for the timeout set by @samp{GRUB_TIMEOUT} to expire
+before booting the default entry.  Pressing a key interrupts the timeout.
+
+If this option is set to @samp{countdown} or @samp{hidden}, then, before
+displaying the menu, GRUB will wait for the timeout set by
+@samp{GRUB_TIMEOUT} to expire.  If @key{ESC} is pressed during that time, it
+will display the menu and wait for input according to @samp{GRUB_TIMEOUT}.
+If a hotkey associated with a menu entry is pressed, it will boot the
+associated menu entry immediately.  If the timeout expires before either of
+these happens, it will display the menu.  In the @samp{countdown} case, it
+will show a one-line indication of the remaining time.
+
 @item GRUB_HIDDEN_TIMEOUT
-Wait this many seconds for @key{ESC} to be pressed before displaying the menu.
-If no @key{ESC} is pressed during that time, display the menu for the number of
-seconds specified in GRUB_TIMEOUT before booting the default entry. We expect
-that most people who use GRUB_HIDDEN_TIMEOUT will want to have GRUB_TIMEOUT set 
-to @samp{0} so that the menu is not displayed at all unless @key{ESC} is
-pressed.
-Unset by default.
+Wait this many seconds before displaying the menu.  If @key{ESC} is pressed
+during that time, display the menu and wait for input according to
+@samp{GRUB_TIMEOUT}.  If a hotkey associated with a menu entry is pressed,
+boot the associated menu entry immediately.  If the timeout expires before
+either of these happens, display the menu for the number of seconds
+specified in @samp{GRUB_TIMEOUT} before booting the default entry.
+
+If you set @samp{GRUB_HIDDEN_TIMEOUT}, you should also set
+@samp{GRUB_TIMEOUT=0} so that the menu is not displayed at all unless
+@key{ESC} is pressed.
+
+This option is unset by default, and is deprecated in favour of the less
+confusing @samp{GRUB_TIMEOUT_STYLE=countdown} or
+@samp{GRUB_TIMEOUT_STYLE=hidden}.
 
 @item GRUB_HIDDEN_TIMEOUT_QUIET
 In conjunction with @samp{GRUB_HIDDEN_TIMEOUT}, set this to @samp{true} to
 suppress the verbose countdown while waiting for a key to be pressed before
-displaying the menu.  Unset by default.
+displaying the menu.
+
+This option is unset by default, and is deprecated in favour of the less
+confusing @samp{GRUB_TIMEOUT_STYLE=countdown}.
 
 @item GRUB_DEFAULT_BUTTON
 @itemx GRUB_TIMEOUT_BUTTON
@@ -3030,6 +3057,7 @@ These variables have special meaning to GRUB.
 * superusers::
 * theme::
 * timeout::
+* timeout_style::
 @end menu
 
 
@@ -3462,8 +3490,21 @@ keyboard input before booting the default menu entry.  A timeout of @samp{0}
 means to boot the default entry immediately without displaying the menu; a
 timeout of @samp{-1} (or unset) means to wait indefinitely.
 
+If @samp{timeout_style} (@pxref{timeout_style}) is set to @samp{countdown}
+or @samp{hidden}, the timeout is instead counted before the menu is
+displayed.
+
 This variable is often set by @samp{GRUB_TIMEOUT} or
 @samp{GRUB_HIDDEN_TIMEOUT} (@pxref{Simple configuration}).
+
+
+@node timeout_style
+@subsection timeout_style
+
+This variable may be set to @samp{menu}, @samp{countdown}, or @samp{hidden}
+to control the way in which the timeout (@pxref{timeout}) interacts with
+displaying the menu.  See the documentation of @samp{GRUB_TIMEOUT_STYLE}
+(@pxref{Simple configuration}) for details.
 
 
 @node Environment block
