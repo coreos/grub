@@ -1312,8 +1312,8 @@ displaying the menu, GRUB will wait for the timeout set by
 will display the menu and wait for input according to @samp{GRUB_TIMEOUT}.
 If a hotkey associated with a menu entry is pressed, it will boot the
 associated menu entry immediately.  If the timeout expires before either of
-these happens, it will display the menu.  In the @samp{countdown} case, it
-will show a one-line indication of the remaining time.
+these happens, it will boot the default entry.  In the @samp{countdown}
+case, it will show a one-line indication of the remaining time.
 
 @item GRUB_HIDDEN_TIMEOUT
 Wait this many seconds before displaying the menu.  If @key{ESC} is pressed
