@@ -519,7 +519,9 @@ main (int argc, char *argv[])
 	      if (!bi)
 		grub_util_error (_("cannot open `%s': %s"), bin,
 				 strerror (errno));
-	      fread (buf, 1, 512, bi);
+	      if (fread (buf, 1, 512, bi) != 512)
+		grub_util_error (_("cannot read `%s': %s"), bin,
+				 strerror (errno));
 	      fclose (bi);
 	      fwrite (buf, 1, 512, sa);
 	      
@@ -729,10 +731,18 @@ main (int argc, char *argv[])
       cdboot = grub_util_path_concat (2, source_dirs[GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275],
 				      "cdboot.img");
       in = grub_util_fopen (cdboot, "rb");
+      if (!in)
+	grub_util_error (_("cannot open `%s': %s"), cdboot,
+			 strerror (errno));
       out = grub_util_fopen (sysarea_img, "wb");
+      if (!out)
+	grub_util_error (_("cannot open `%s': %s"), sysarea_img,
+			 strerror (errno));
       memset (buf, 0, 512);
       fwrite (buf, 1, 512, out);
-      fread (buf, 1, 512, in);
+      if (fread (buf, 1, 512, in) != 512)
+	grub_util_error (_("cannot read `%s': %s"), cdboot,
+			 strerror (errno));
       fwrite (buf, 1, 512, out);
       fclose (in);
       fclose (out);

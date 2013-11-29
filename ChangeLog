@@ -1,5 +1,9 @@
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkrescue.c (main): Check that fread succeeded.
+
+2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common: Remove -mexplicit-relocs and
 	-DUSE_ASCII_FALLBACK on yeeloong.
 
