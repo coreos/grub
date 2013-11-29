@@ -1660,7 +1660,6 @@ grub_install_generate_image (const char *dir, const char *prefix,
     case IMAGE_UBOOT:
     {
       struct grub_uboot_image_header *hdr;
-      GRUB_PROPERLY_ALIGNED_ARRAY (crc32_context, GRUB_MD_CRC32->contextsize);
 
       hdr = xmalloc (core_size + sizeof (struct grub_uboot_image_header));
       memcpy (hdr + 1, core_img, core_size);
@@ -1676,15 +1675,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       hdr->ih_arch = GRUB_UBOOT_IH_ARCH_ARM;
       hdr->ih_comp = GRUB_UBOOT_IH_COMP_NONE;
 
-      GRUB_MD_CRC32->init(crc32_context);
-      GRUB_MD_CRC32->write(crc32_context, hdr + 1, core_size);
-      GRUB_MD_CRC32->final(crc32_context);
-      hdr->ih_dcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
-
-      GRUB_MD_CRC32->init(crc32_context);
-      GRUB_MD_CRC32->write(crc32_context, hdr, sizeof (*hdr));
-      GRUB_MD_CRC32->final(crc32_context);
-      hdr->ih_hcrc = grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context));
+      grub_crypto_hash (GRUB_MD_CRC32, &hdr->ih_dcrc, hdr + 1, core_size);
+      grub_crypto_hash (GRUB_MD_CRC32, &hdr->ih_hcrc, hdr, sizeof (*hdr));
 
       free (core_img);
       core_img = (char *) hdr;
