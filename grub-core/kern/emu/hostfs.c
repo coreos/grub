@@ -39,8 +39,9 @@ is_dir (const char *path, const char *name)
 {
   int len1 = strlen(path);
   int len2 = strlen(name);
+  int ret;
 
-  char pathname[len1 + 1 + len2 + 1 + 13];
+  char *pathname = xmalloc (len1 + 1 + len2 + 1 + 13);
   strcpy (pathname, path);
 
   /* Avoid UNC-path "//name" on Cygwin.  */
@@ -49,7 +50,9 @@ is_dir (const char *path, const char *name)
 
   strcat (pathname, name);
 
-  return grub_util_is_directory (pathname);
+  ret = grub_util_is_directory (pathname);
+  free (pathname);
+  return ret;
 }
 
 struct grub_hostfs_data
