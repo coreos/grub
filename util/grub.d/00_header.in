@@ -282,17 +282,17 @@ fi
 
 make_timeout ()
 {
-    if [ "x${GRUB_TIMEOUT_STYLE}" != "x" ] ; then
+    if [ "x${3}" != "x" ] ; then
 	cat << EOF
 if [ x\$feature_timeout_style = xy ] ; then
-  set timeout_style=${GRUB_TIMEOUT_STYLE}
+  set timeout_style=${3}
   set timeout=${2}
 EOF
-	if [ "x${GRUB_TIMEOUT_STYLE}" != "xmenu" ] ; then
+	if [ "x${3}" != "xmenu" ] ; then
 	    # Fallback hidden-timeout code in case the timeout_style feature
 	    # is unavailable.  Note that we now ignore GRUB_HIDDEN_TIMEOUT
 	    # and take the hidden-timeout from GRUB_TIMEOUT instead.
-	    if [ "x${GRUB_TIMEOUT_STYLE}" = "xhidden" ] ; then
+	    if [ "x${3}" = "xhidden" ] ; then
 		verbose=
 	    else
 		verbose=" --verbose"
@@ -335,12 +335,12 @@ if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ]; then
     cat <<EOF
 if cmostest $GRUB_BUTTON_CMOS_ADDRESS ; then
 EOF
-make_timeout "${GRUB_HIDDEN_TIMEOUT_BUTTON}" "${GRUB_TIMEOUT_BUTTON}"
+make_timeout "${GRUB_HIDDEN_TIMEOUT_BUTTON}" "${GRUB_TIMEOUT_BUTTON}" "${GRUB_TIMEOUT_STYLE_BUTTON}"
 echo else
-make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
+make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}" "${GRUB_TIMEOUT_STYLE}"
 echo fi
 else
-make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}"
+make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}" "${GRUB_TIMEOUT_STYLE}"
 fi
 
 if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ] && [ "x$GRUB_BUTTON_CMOS_CLEAN" = "xyes" ]; then
