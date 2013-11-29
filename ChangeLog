@@ -1,5 +1,10 @@
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/mkimage.c (grub_install_generate_image): Use grub_crypto_hash for
+	checking fwstart.img rather than md fundtions directly.
+
+2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.c (main): Check that fread succeeded.
 
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
