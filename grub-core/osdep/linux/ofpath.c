@@ -143,7 +143,12 @@ find_obppath (const char *sysfs_path_orig)
       size = st.st_size;
       of_path = xmalloc (size + MAX_DISK_CAT + 1);
       memset(of_path, 0, size + MAX_DISK_CAT + 1);
-      read(fd, of_path, size);
+      if (read(fd, of_path, size) < 0)
+	{
+	  grub_util_info (_("cannot read `%s': %s"), path, strerror (errno));
+	  close(fd);
+	  return NULL;
+	}
       close(fd);
 
       trim_newline(of_path);
@@ -353,7 +358,9 @@ check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
     grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   memset (phy, 0, sizeof (phy));
-  read (fd, phy, sizeof (phy) - 1);
+  if (read (fd, phy, sizeof (phy) - 1) < 0)
+    grub_util_error (_("cannot read `%s': %s"), path, strerror (errno));
+
   close (fd);
 
   sscanf (phy, "%d", tgt);
@@ -361,10 +368,11 @@ check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
   snprintf (path, path_size, "%s/sas_device/%s/sas_address", p, ed);
   fd = open (path, O_RDONLY);
   if (fd < 0)
-  grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
 
   memset (phy, 0, sizeof (phy));
-  read (fd, phy, sizeof (phy) - 1);
+  if (read (fd, phy, sizeof (phy) - 1) < 0)
+    grub_util_error (_("cannot read `%s': %s"), path, strerror (errno));
   sscanf (phy, "%lx", sas_address);
 
   free (path);
