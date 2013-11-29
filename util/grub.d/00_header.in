@@ -321,7 +321,7 @@ if [ x\$feature_timeout_style = xy ] ; then
   set timeout_style=$style
   set timeout=${1}
 elif sleep$verbose --interruptible ${1} ; then
-  set timeout=${2}
+  set timeout=0
 fi
 EOF
     else
