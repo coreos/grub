@@ -1,5 +1,16 @@
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common: Remove -mexplicit-relocs and
+	-DUSE_ASCII_FALLBACK on yeeloong.
+
+	-DUSE_ASCII_FALLBACK is already added by font snippets.
+	-mexplicit-relocs isn't needed is compiler/assemblera are
+	configured properly.
+	If they're not we shouldn't attempt to fix it by ourselves.
+	Binary compare between before and after shows no difference.
+
+2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.core.def: Remove libgnulib.a and use its
 	sources in dependencies directly.
 

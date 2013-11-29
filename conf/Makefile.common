@@ -6,10 +6,6 @@ export LC_COLLATE := C
 unexport LC_ALL
 
 # Platform specific options
-if COND_mips_loongson
-  CFLAGS_PLATFORM += -mexplicit-relocs
-  CPPFLAGS_PLATFORM = -DUSE_ASCII_FALLBACK
-endif
 if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
