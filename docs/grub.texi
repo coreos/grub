@@ -1309,11 +1309,11 @@ before booting the default entry.  Pressing a key interrupts the timeout.
 If this option is set to @samp{countdown} or @samp{hidden}, then, before
 displaying the menu, GRUB will wait for the timeout set by
 @samp{GRUB_TIMEOUT} to expire.  If @key{ESC} is pressed during that time, it
-will display the menu and wait for input according to @samp{GRUB_TIMEOUT}.
-If a hotkey associated with a menu entry is pressed, it will boot the
-associated menu entry immediately.  If the timeout expires before either of
-these happens, it will boot the default entry.  In the @samp{countdown}
-case, it will show a one-line indication of the remaining time.
+will display the menu and wait for input.  If a hotkey associated with a
+menu entry is pressed, it will boot the associated menu entry immediately.
+If the timeout expires before either of these happens, it will boot the
+default entry.  In the @samp{countdown} case, it will show a one-line
+indication of the remaining time.
 
 @item GRUB_DEFAULT_BUTTON
 @itemx GRUB_TIMEOUT_BUTTON
