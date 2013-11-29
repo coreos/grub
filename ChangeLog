@@ -1,5 +1,9 @@
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-fstest.c: Remove variable length arrays.
+
+2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/linux/ofpath.c: Check return value of read.
 
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>

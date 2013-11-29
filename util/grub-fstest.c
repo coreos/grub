@@ -344,13 +344,14 @@ crc_hook (grub_off_t ofs, char *buf, int len, void *crc_ctx)
 static void
 cmd_crc (char *pathname)
 {
-  grub_uint8_t crc32_context[GRUB_MD_CRC32->contextsize];
+  grub_uint8_t *crc32_context = xmalloc (GRUB_MD_CRC32->contextsize);
   GRUB_MD_CRC32->init(crc32_context);
 
   read_file (pathname, crc_hook, crc32_context);
   GRUB_MD_CRC32->final(crc32_context);
   printf ("%08x\n",
 	  grub_be_to_cpu32 (grub_get_unaligned32 (GRUB_MD_CRC32->read (crc32_context))));
+  free (crc32_context);
 }
 
 static const char *root = NULL;
