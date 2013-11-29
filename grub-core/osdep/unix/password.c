@@ -51,7 +51,9 @@ grub_password_get (char buf[], unsigned buf_size)
     }
   else
     tty_changed = 0;
-  fgets (buf, buf_size, stdin);
+  grub_memset (buf, 0, buf_size);
+  if (!fgets (buf, buf_size, stdin))
+    return 0;
   ptr = buf + strlen (buf) - 1;
   while (buf <= ptr && (*ptr == '\n' || *ptr == '\r'))
     *ptr-- = 0;
