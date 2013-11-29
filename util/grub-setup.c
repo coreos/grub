@@ -209,23 +209,9 @@ DEVICE must be an OS device (e.g. /dev/sda)."),
   NULL, help_filter, NULL
 };
 
-static char *
-get_device_name (char *dev)
-{
-  size_t len = strlen (dev);
-
-  if (dev[0] != '(' || dev[len - 1] != ')')
-    return 0;
-
-  dev[len - 1] = '\0';
-  return dev + 1;
-}
-
 int
 main (int argc, char *argv[])
 {
-  char *root_dev = NULL;
-  char *dest_dev = NULL;
   struct arguments arguments;
 
   grub_util_host_init (&argc, &argv);
@@ -264,34 +250,11 @@ main (int argc, char *argv[])
   grub_mdraid1x_init ();
   grub_lvm_init ();
 
-  dest_dev = get_device_name (arguments.device);
-  if (! dest_dev)
-    {
-      /* Possibly, the user specified an OS device file.  */
-      dest_dev = grub_util_get_grub_dev (arguments.device);
-      if (! dest_dev)
-        {
-          char *program = xstrdup(program_name);
-          fprintf (stderr, _("Invalid device `%s'.\n"), arguments.device);
-          argp_help (&argp, stderr, ARGP_HELP_STD_USAGE, program);
-          free(program);
-          exit(1);
-        }
-      grub_util_info ("transformed OS device `%s' into GRUB device `%s'",
-                      arguments.device, dest_dev);
-    }
-  else
-    {
-      /* For simplicity.  */
-      dest_dev = xstrdup (dest_dev);
-      grub_util_info ("Using `%s' as GRUB device", dest_dev);
-    }
-
   /* Do the real work.  */
   GRUB_SETUP_FUNC (arguments.dir ? : DEFAULT_DIRECTORY,
 		   arguments.boot_file ? : DEFAULT_BOOT_FILE,
 		   arguments.core_file ? : DEFAULT_CORE_FILE,
-		   dest_dev, arguments.force,
+		   arguments.device, arguments.force,
 		   arguments.fs_probe, arguments.allow_floppy);
 
   /* Free resources.  */
@@ -303,8 +266,6 @@ main (int argc, char *argv[])
   free (arguments.dir);
   free (arguments.dev_map);
   free (arguments.device);
-  free (root_dev);
-  free (dest_dev);
 
   return 0;
 }

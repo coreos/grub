@@ -247,12 +247,13 @@ identify_partmap (grub_disk_t disk __attribute__ ((unused)),
 void
 SETUP (const char *dir,
        const char *boot_file, const char *core_file,
-       const char *dest, int force,
+       const char *dev, int force,
        int fs_probe, int allow_floppy)
 {
   char *core_path;
   char *boot_img, *core_img, *boot_path;
   char *root = 0;
+  char *dest = 0;
   size_t boot_size, core_size;
 #ifdef GRUB_SETUP_BIOS
   grub_uint16_t core_sectors;
@@ -268,6 +269,28 @@ SETUP (const char *dir,
     GRUB_BOOT_I386_PC_KERNEL_SEG + (GRUB_DISK_SECTOR_SIZE >> 4);
 #endif
   bl.last_length = 0;
+
+  {
+    size_t len = strlen (dev);
+
+    if (len > 2 && dev[0] == '(' && dev[len - 1] == ')')
+      {
+	dest = xmalloc (len - 1);
+	strncpy (dest, dev + 1, len - 2);
+	dest[len - 2] = '\0';
+      }
+  }
+
+  if (! dest)
+    {
+      /* Possibly, the user specified an OS device file.  */
+      dest = grub_util_get_grub_dev (dev);
+      if (! dest)
+          grub_util_error (_("Invalid device `%s'.\n"), dev);
+      grub_util_info ("transformed OS device `%s' into GRUB device `%s'",
+                      dev, dest);
+    }
+
 
   /* Read the boot image by the OS service.  */
   boot_path = grub_util_get_path (dir, boot_file);
@@ -303,6 +326,7 @@ SETUP (const char *dir,
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
+  free (dest);
 
   core_dev = dest_dev;
 
