@@ -1,5 +1,15 @@
 2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/Makefile.core.def: Remove libgnulib.a and use its
+	sources in dependencies directly.
+
+	This was the only instance of "library" in core config. A bug was
+	reported that -fno-stack-protector wasn't passed to it. Instead of
+	figuring out why it failed just remove this construction used
+	needlessly.
+
+2013-11-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/password.c (grub_password_get): Check that
 	fgets succeeded.
 

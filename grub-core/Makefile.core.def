@@ -609,13 +609,6 @@ module = {
   common = commands/i386/nthibr.c;
 };
 
-library = {
-  name = libgnulib.a;
-  common = gnulib/regex.c;
-  cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
-  cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
-};
-
 module = {
   name = cmostest;
   common = commands/i386/cmostest.c;
@@ -667,8 +660,7 @@ module = {
   name = regexp;
   common = commands/regexp.c;
   common = commands/wildcard.c;
-  ldadd = libgnulib.a;
-  dependencies = libgnulib.a;
+  common = gnulib/regex.c;
   cflags = '$(CFLAGS_POSIX) $(CFLAGS_GNULIB)';
   cppflags = '$(CPPFLAGS_POSIX) $(CPPFLAGS_GNULIB)';
 };
