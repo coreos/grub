@@ -4883,7 +4883,8 @@ Alias for @code{hashsum --hash sha512 arg @dots{}}. See command @command{hashsum
 @deffn Command sleep [@option{--verbose}] [@option{--interruptible}] count
 Sleep for @var{count} seconds. If option @option{--interruptible} is given,
 allow @key{ESC} to interrupt sleep. With @option{--verbose} show countdown
-of remaining seconds.
+of remaining seconds. Exit code is set to 0 if timeout expired and to 1
+if timeout was interrupted by @key{ESC}.
 @end deffn
 
 
