@@ -1,3 +1,7 @@
+2013-11-30  Leif Lindholm <leif.lindholm@linaro.org>
+
+	New port arm64-efi.
+
 2013-11-30  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* docs/grub.texi (sleep): Document exit codes.
