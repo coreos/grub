@@ -18,6 +18,8 @@ configuring the GRUB.
 	earlier versions not tested
   Note: clang 3.2 or later works for arm
 	earlier versions not tested
+  Note: clang 3.3 or later works for arm64
+	earlier versions have no arm64 support
   Note: clang 3.3 or later works for mips(el)
 	earlier versions fail to generate .reginfo and hence gprel relocations
 	fail.

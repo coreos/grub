@@ -99,6 +99,9 @@ case "$target_cpu" in
   arm*)
 		target_cpu=arm;
 		;;
+  aarch64*)
+		target_cpu=arm64;
+		;;
 esac
 
 # Specify the platform (such as firmware).
@@ -120,6 +123,7 @@ if test "x$with_platform" = x; then
     mips-*) platform=arc ;;
     ia64-*) platform=efi ;;
     arm-*) platform=uboot ;;
+    arm64-*) platform=efi ;;
     *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
   esac
 else
@@ -160,6 +164,7 @@ case "$target_cpu"-"$platform" in
   mipsel-loongson) ;;
   arm-uboot) ;;
   arm-efi) ;;
+  arm64-efi) ;;
   *-emu) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
@@ -210,6 +215,7 @@ case "$platform" in
 esac
 case "$target_cpu" in
   arm)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARM=1" ;;
+  arm64)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARM64=1" ;;
   mips |mipsel)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
   sparc64)      machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
@@ -1498,6 +1504,8 @@ AM_CONDITIONAL([COND_mipseb], [test x$target_cpu = xmips])
 AM_CONDITIONAL([COND_arm], [test x$target_cpu = xarm ])
 AM_CONDITIONAL([COND_arm_uboot], [test x$target_cpu = xarm -a x$platform = xuboot])
 AM_CONDITIONAL([COND_arm_efi], [test x$target_cpu = xarm -a x$platform = xefi])
+AM_CONDITIONAL([COND_arm64], [test x$target_cpu = xarm64 ])
+AM_CONDITIONAL([COND_arm64_efi], [test x$target_cpu = xarm64 -a x$platform = xefi])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])

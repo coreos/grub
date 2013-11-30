@@ -156,6 +156,8 @@ library = {
   common = grub-core/io/gzio.c;
   common = grub-core/io/lzopio.c;
   common = grub-core/kern/ia64/dl_helper.c;
+  common = grub-core/kern/arm/dl_helper.c;
+  common = grub-core/kern/arm64/dl_helper.c;
   common = grub-core/lib/minilzo/minilzo.c;
   common = grub-core/lib/xzembed/xz_dec_bcj.c;
   common = grub-core/lib/xzembed/xz_dec_lzma2.c;
@@ -176,8 +178,6 @@ program = {
   extra_dist = grub-core/osdep/windows/config.c;
   extra_dist = grub-core/osdep/unix/config.c;
   common = util/config.c;
-
-  common = grub-core/kern/arm/dl_helper.c;
 
   extra_dist = util/grub-mkimagexx.c;
 
@@ -512,8 +512,6 @@ program = {
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
 
-  common = grub-core/kern/arm/dl_helper.c;
-
   common = util/resolve.c;
 
   common = grub-core/kern/emu/argp_common.c;
@@ -558,8 +556,6 @@ program = {
   common = grub-core/kern/emu/hostfs.c;
   common = grub-core/disk/host.c;
 
-  common = grub-core/kern/arm/dl_helper.c;
-
   common = util/resolve.c;
 
   common = grub-core/kern/emu/argp_common.c;
@@ -595,8 +591,6 @@ program = {
   common = grub-core/osdep/config.c;
   common = util/config.c;
 
-  common = grub-core/kern/arm/dl_helper.c;
-
   common = util/resolve.c;
   enable = noemu;
   common = grub-core/kern/emu/argp_common.c;
@@ -631,8 +625,6 @@ program = {
   common = grub-core/osdep/blocklist.c;
   common = grub-core/osdep/config.c;
   common = util/config.c;
-
-  common = grub-core/kern/arm/dl_helper.c;
 
   common = util/resolve.c;
   common = grub-core/kern/emu/argp_common.c;

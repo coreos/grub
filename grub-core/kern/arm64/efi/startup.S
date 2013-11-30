@@ -1,7 +1,6 @@
-/* efi.c - generic EFI support */
 /*
  *  GRUB  --  GRand Unified Bootloader
- *  Copyright (C) 2006,2007,2008,2009,2010  Free Software Foundation, Inc.
+ *  Copyright (C) 2013  Free Software Foundation, Inc.
  *
  *  GRUB is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,23 +16,24 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/efi/api.h>
-#include <grub/efi/efi.h>
-#include <grub/misc.h>
-#include <grub/mm.h>
-#include <grub/kernel.h>
-#include <grub/acpi.h>
-#include <grub/loader.h>
+#include <grub/symbol.h>
 
-void
-grub_halt (void)
-{
-  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
-#if !defined(__ia64__) && !defined(__arm__) && !defined(__aarch64__)
-  grub_acpi_halt ();
-#endif
-  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
-              GRUB_EFI_RESET_SHUTDOWN, GRUB_EFI_SUCCESS, 0, NULL);
+	.file 	"startup.S"
+	.text
+FUNCTION(_start)
+	/*
+	 *  EFI_SYSTEM_TABLE and EFI_HANDLE are passed in x1/x0.
+	 */
+	ldr	x2, efi_image_handle_val
+	str	x0, [x2]
+	ldr	x2, efi_system_table_val
+	str	x1, [x2]
+	ldr	x2, grub_main_val
+	br	x2
+grub_main_val:
+	.quad	EXT_C(grub_main)
+efi_system_table_val:
+	.quad	EXT_C(grub_efi_system_table)
+efi_image_handle_val:
+	.quad	EXT_C(grub_efi_image_handle)
 
-  while (1);
-}

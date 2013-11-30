@@ -718,6 +718,35 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  break;
 		}
 	       break;
+	     case EM_AARCH64:
+	       {
+		 sym_addr += addend;
+		 switch (ELF_R_TYPE (info))
+		   {
+		   case R_AARCH64_ABS64:
+		     {
+		       *target = grub_host_to_target64 (grub_target_to_host64 (*target) + sym_addr);
+		     }
+		     break;
+		   case R_AARCH64_JUMP26:
+		   case R_AARCH64_CALL26:
+		     {
+		       grub_err_t err;
+		       sym_addr -= offset;
+		       sym_addr -= SUFFIX (entry_point);
+		       err = grub_arm64_reloc_xxxx26((grub_uint32_t *)target,
+						     sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
+		     }
+		     break;
+		   default:
+		     grub_util_error (_("relocation %d is not implemented yet"),
+				      (unsigned long long) ELF_R_TYPE (info));
+		     break;
+		   }
+	       break;
+	       }
 #endif
 #if defined(MKIMAGE_ELF32)
 	     case EM_ARM:
@@ -994,6 +1023,32 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		  		   (unsigned long long) ELF_R_TYPE (info));
 		  break;
 		}
+		break;
+	      case EM_AARCH64:
+		switch (ELF_R_TYPE (info))
+		  {
+		  case R_AARCH64_ABS64:
+		    {
+		      Elf_Addr addr;
+
+		      addr = section_address + offset;
+		      current_address
+			= SUFFIX (add_fixup_entry) (&lst,
+						    GRUB_PE32_REL_BASED_DIR64,
+						    addr, 0, current_address,
+						    image_target);
+		    }
+		    break;
+		    /* Relative relocations do not require fixup entries. */
+		  case R_AARCH64_CALL26:
+		  case R_AARCH64_JUMP26:
+		    break;
+		  default:
+		    grub_util_error (_("fixup for relocation %d is not implemented yet"),
+				     (unsigned long long) ELF_R_TYPE (info));
+		    break;
+		  }
+		break;
 		break;
 #if defined(MKIMAGE_ELF32)
 	      case EM_ARM:
@@ -1357,7 +1412,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 					  image_target);
       if (*start == 0)
 	grub_util_error ("start symbol is not defined");
-      
+
       SUFFIX (entry_point) = (Elf_Addr) *start;
 
       /* Resolve addresses in the virtual address space.  */
@@ -1366,7 +1421,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 				   num_sections, strtab,
 				   out_img, ia64_toff, ia64_got_off,
 				   image_target);
-	  
+
       *reloc_size = SUFFIX (make_reloc_section) (e, reloc_section,
 						 section_vaddresses, sections,
 						 section_entsize, num_sections,
