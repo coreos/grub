@@ -839,11 +839,26 @@ fi
 
 CFLAGS="$TARGET_CFLAGS"
 
-# -mno-unaligned-access
+# -mno-unaligned-access -mstrict-align
 if test "$target_cpu" = arm; then
-  grub_CHECK_NO_UNALIGNED_ACCESS
-  if test x"$nua_possible" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -mno-unaligned-access"
+  AC_CACHE_CHECK([for compile options to get strict alignment], [grub_cv_target_cc_strict_align], [
+    grub_cv_target_cc_strict_align=unknown
+    for arg in -mno-unaligned-access "-Xclang -mstrict-align" -mstrict-align; do
+      CFLAGS="$TARGET_CFLAGS $arg -Werror"
+      LDFLAGS="$TARGET_LDFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])], [flag=1], [flag=0])
+      if test x"$flag" = x1; then
+        grub_cv_target_cc_strict_align="$arg"
+	break;
+      fi
+    done])
+
+  if test x"$grub_cv_target_cc_strict_align" = xunknown; then
+    AC_MSG_ERROR([couldnt instruct compiler not to use unaligned access])
+  fi
+  TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_strict_align"
+  if test x"$grub_cv_target_cc_strict_align" = x"-Xclang -mstrict-align"; then
+    TARGET_LDFLAGS="$TARGET_LDFLAGS -Qunused-arguments"
   fi
 fi
 

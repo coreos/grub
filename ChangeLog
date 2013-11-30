@@ -1,5 +1,9 @@
 2013-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Ensure that -mno-unaligned-access or some equivalent option is used.
+
+2013-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/libgcrypt/mpi/longlong.h: Fix compilation error with
 	-march=armv3.
 
