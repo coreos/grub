@@ -240,7 +240,6 @@ void grub_arch_dl_init_linker (void);
 #endif
 
 #define GRUB_IA64_DL_TRAMP_ALIGN 16
-#define GRUB_IA64_DL_TRAMP_SIZE 48
 #define GRUB_IA64_DL_GOT_ALIGN 16
 
 grub_err_t

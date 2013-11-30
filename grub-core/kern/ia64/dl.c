@@ -115,7 +115,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
 		      grub_uint64_t noff;
 		      grub_ia64_make_trampoline (tr, value);
 		      noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
-		      tr = (struct grub_ia64_trampoline *) ((char *) tr + GRUB_IA64_DL_TRAMP_SIZE);
+		      tr++;
+
 		      if (noff & ~MASK19)
 			return grub_error (GRUB_ERR_BAD_OS,
 					   "trampoline offset too big (%lx)", noff);

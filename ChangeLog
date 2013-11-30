@@ -1,3 +1,7 @@
+2013-11-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove leftover GRUB_IA64_DL_TRAMP_SIZE.
+
 2013-11-29  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub-dev.texi (Font Metrics): Exclude @image command from DVI

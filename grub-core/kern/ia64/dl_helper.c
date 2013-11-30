@@ -152,8 +152,6 @@ static const grub_uint8_t jump[0x20] =
 void
 grub_ia64_make_trampoline (struct grub_ia64_trampoline *tr, grub_uint64_t addr)
 {
-  COMPILE_TIME_ASSERT (sizeof (struct grub_ia64_trampoline)
-		       == GRUB_IA64_DL_TRAMP_SIZE);
   grub_memcpy (tr->nop, nopm, sizeof (tr->nop));
   tr->addr_hi[0] = ((addr & 0xc00000) >> 16);
   tr->addr_hi[1] = (addr >> 24) & 0xff;
