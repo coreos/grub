@@ -23,7 +23,7 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 #include <grub/i18n.h>
-#include <grub/cpu/reloc.h>
+#include <grub/arm64/reloc.h>
 
 static grub_ssize_t
 sign_compress_offset (grub_ssize_t offset, int bitpos)

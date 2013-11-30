@@ -1,3 +1,8 @@
+2013-11-30  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/kern/arm64/dl_helper.c: Include grub/arm64/reloc.h
+	directly, not via `cpu' link, to fix libgrub.pp generation.
+
 2013-11-30  Leif Lindholm <leif.lindholm@linaro.org>
 
 	New port arm64-efi.
