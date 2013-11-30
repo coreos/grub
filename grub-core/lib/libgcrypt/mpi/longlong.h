@@ -247,7 +247,7 @@ extern UDItype __udiv_qrnnd ();
 	     "=r" ((xl))                                                \
 	   : "r" ((USItype)(a)),                                        \
 	     "r" ((USItype)(b))                                         \
-	   : "r0", "r1", "r2" __CLOBBER_CC)
+	   : "r0", "r1", "r2" __AND_CLOBBER_CC)
 #else /* __ARM_ARCH >= 4 */
 #define umul_ppmm(xh, xl, a, b)                                         \
   __asm__ ("@ Inlined umul_ppmm\n"                                      \
