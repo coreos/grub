@@ -47,6 +47,9 @@ grub_util_parse_config (FILE *f, struct grub_util_config *cfg, int simple)
 	{
 	  char *optr;
 	  enum { NONE, SNGLQUOT, DBLQUOT } state;
+
+	  ptr += sizeof ("GRUB_DISTRIBUTOR=") - 1;
+
 	  if (simple)
 	    {
 	      free (cfg->grub_distributor);

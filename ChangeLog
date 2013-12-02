@@ -1,3 +1,8 @@
+2013-12-02  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/config.c: Add missing pointer adjustment.
+	Reported by: qwertial
+
 2013-11-30  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/kern/arm64/dl_helper.c: Include grub/arm64/reloc.h
