@@ -523,7 +523,7 @@ static const char *features[] = {
   "feature_chainloader_bpb", "feature_ntldr", "feature_platform_search_hint",
   "feature_default_font_path", "feature_all_video_module",
   "feature_menuentry_id", "feature_menuentry_options", "feature_200_final",
-  "feature_nativedisk_cmd"
+  "feature_nativedisk_cmd", "feature_timeout_style"
 };
 
 GRUB_MOD_INIT(normal)
