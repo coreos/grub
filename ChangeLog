@@ -1,5 +1,10 @@
 2013-12-03  Colin Watson  <cjwatson@ubuntu.com>
 
+	* grub-core/Makefile.core.def (setjmp): Distribute
+	lib/arm64/setjmp.S.
+
+2013-12-03  Colin Watson  <cjwatson@ubuntu.com>
+
 	Add a new timeout_style environment variable and a corresponding
 	GRUB_TIMEOUT_STYLE configuration key for grub-mkconfig.  This
 	controls hidden-timeout handling more simply than the previous

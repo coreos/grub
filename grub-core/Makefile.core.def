@@ -1571,6 +1571,7 @@ module = {
   extra_dist = lib/ia64/setjmp.S;
   extra_dist = lib/ia64/longjmp.S;
   extra_dist = lib/arm/setjmp.S;
+  extra_dist = lib/arm64/setjmp.S;
 };
 
 module = {
