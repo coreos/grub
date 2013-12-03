@@ -110,10 +110,12 @@ get_timeout_style (void)
   struct timeout_style_name *style_name;
 
   val = grub_env_get ("timeout_style");
-  if (val)
-    for (style_name = timeout_style_names; style_name->name; style_name++)
-      if (grub_strcmp (style_name->name, val) == 0)
-	return style_name->style;
+  if (!val)
+    return TIMEOUT_STYLE_MENU;
+
+  for (style_name = timeout_style_names; style_name->name; style_name++)
+    if (grub_strcmp (style_name->name, val) == 0)
+      return style_name->style;
 
   return TIMEOUT_STYLE_MENU;
 }
