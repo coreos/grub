@@ -12,6 +12,8 @@
 	the second timeout were not present.  Other combinations are
 	translated into reasonable equivalents.
 
+	Based loosely on work by Franz Hsieh.  Fixes Ubuntu bug #1178618.
+
 2013-11-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Eliminate variable length arrays in grub_vsnprintf_real.
