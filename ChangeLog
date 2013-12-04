@@ -1,5 +1,11 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/emuconsole.c (grub_console_putchar):
+	Remove variable length arrays.
+	* grub-core/term/efi/console.c (grub_console_putchar): Likewise.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/qemu/init.c: Remove variable length arrays.
 
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>

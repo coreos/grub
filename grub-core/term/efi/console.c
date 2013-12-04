@@ -69,7 +69,7 @@ static void
 grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
 		      const struct grub_unicode_glyph *c)
 {
-  grub_efi_char16_t str[2 + c->ncomb];
+  grub_efi_char16_t str[2 + 30];
   grub_efi_simple_text_output_interface_t *o;
   unsigned i, j;
 
@@ -84,7 +84,7 @@ grub_console_putchar (struct grub_term_output *term __attribute__ ((unused)),
   else
     str[0] = (grub_efi_char16_t)  map_char (c->base & 0xffff);
   j = 1;
-  for (i = 0; i < c->ncomb; i++)
+  for (i = 0; i < c->ncomb && j + 1 < ARRAY_SIZE (str); i++)
     if (c->base < 0xffff)
       str[j++] = grub_unicode_get_comb (c)[i].code;
   str[j] = 0;
