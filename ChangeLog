@@ -1,5 +1,13 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/types.h: Declare all byteswaps as inline functions
+	except compile-time ones.
+
+	Solves variable shadowing in constructions like
+	cpu_to_le (le_to_cpu(x) + 1).
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/efi.c: Remove variable length arrays.
 
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
