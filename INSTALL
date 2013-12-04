@@ -23,8 +23,8 @@ configuring the GRUB.
   Note: clang 3.3 or later works for mips(el)
 	earlier versions fail to generate .reginfo and hence gprel relocations
 	fail.
-  Note: clang 3.4 or later works for powerpc
-	earlier versions suffer from vacopy bug (#15286)
+  Note: clang 3.2 or later works for powerpc
+	earlier versions not tested
   Note: clang has no support for generating 64-bit sparc code and hence you
 	can't compile GRUB for sparc64 with clang
   Note: clang has no support for ia64 and hence you can't compile GRUB

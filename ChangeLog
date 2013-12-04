@@ -1,5 +1,11 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -no-integrated-as if {addme|ame} isn't supported.
+	* INSTALL: Note that GRUBwas successfully compiled with clang 3.2 for
+	ppc.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/main.c: Ignore missing prototype for main.
 
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>

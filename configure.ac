@@ -515,7 +515,9 @@ AC_CACHE_CHECK([which extra warnings work], [grub_cv_target_cc_w_extra_flags], [
 TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_w_extra_flags"
 
 AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
-[AC_COMPILE_IFELSE(
+[
+CFLAGS="$TARGET_CFLAGS"
+AC_COMPILE_IFELSE(
 [AC_LANG_PROGRAM([], [[
 #ifdef __clang__
 #error "is clang"
@@ -531,6 +533,26 @@ if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 \
    || test "x$target_cpu" = xx86_64 || test "x$target_cpu" = xarm \
    || test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ); then
    TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+fi
+
+if test "x$grub_cv_cc_target_clang" = xyes && test "x$target_cpu" = xpowerpc; then
+AC_CACHE_CHECK([if clang can handle ame instruction], [grub_cv_cc_target_clang_ame]
+[
+CFLAGS="$TARGET_CFLAGS"
+AC_COMPILE_IFELSE(
+[AC_LANG_PROGRAM([], [[
+   unsigned int a = 0, b = 0;
+   asm volatile ("{ame|addme} %0,%1" : "=r" (a) : "r" (b));
+   if (a)
+     return 1;
+]])],
+[grub_cv_cc_target_clang_ame=yes], [grub_cv_cc_target_clang_ame=no])])
+   # clang <= 3.3 doesn't handle most of ppc assembly, not even inline assembly
+   # used by gcrypt
+   if test x$grub_cv_cc_target_clang_ame = xno ; then
+     TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+     TARGET_CFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+   fi
 fi
 
 if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
