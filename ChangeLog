@@ -1,5 +1,9 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -Wvla if compiler supports it.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/emuconsole.c (grub_console_putchar):
 	Remove variable length arrays.
 	* grub-core/term/efi/console.c (grub_console_putchar): Likewise.

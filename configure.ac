@@ -422,6 +422,26 @@ esac
 # For gnulib.
 gl_INIT
 
+WARN_FLAGS="-Wall -W -Wshadow -Wold-style-definition -Wpointer-arith -Wundef -Wextra -Wattributes -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmultichar -Wnonnull -Woverflow -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
+EXTRA_WARN_FLAGS="-Wvla"
+
+HOST_CFLAGS="$HOST_CFLAGS $WARN_FLAGS -Wcast-align"
+
+AC_CACHE_CHECK([which extra warnings work], [grub_cv_cc_w_extra_flags], [
+  SAVED_CFLAGS="$CFLAGS"
+  grub_cv_cc_w_extra_flags=
+  for x in $EXTRA_WARN_FLAGS; do
+      CFLAGS="$HOST_CFLAGS $x -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])], [flag=1], [flag=0])
+      if test x$flag = x1 ; then
+         grub_cv_cc_w_extra_flags="$grub_cv_cc_w_extra_flags $x"
+      fi
+  done
+  CFLAGS="$SAVED_CFLAGS"
+])
+
+HOST_CFLAGS="$HOST_CFLAGS $grub_cv_cc_w_extra_flags"
+
 #
 # Check for target programs.
 #
@@ -472,14 +492,27 @@ LDFLAGS="$TARGET_LDFLAGS"
 LIBS=""
 
 # debug flags.
-WARN_FLAGS="-Wall -W -Wshadow -Wold-style-definition -Wpointer-arith -Wundef -Wextra -Wattributes -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmultichar -Wnonnull -Woverflow -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
-HOST_CFLAGS="$HOST_CFLAGS $WARN_FLAGS -Wcast-align"
 TARGET_CFLAGS="$TARGET_CFLAGS $WARN_FLAGS -g -Wredundant-decls -Wmissing-prototypes -Wmissing-declarations"
 TARGET_CCASFLAGS="$TARGET_CCASFLAGS -g"
 
 if test "x$target_cpu" != xi386 && test "x$target_cpu" != xx86_64; then
 TARGET_CFLAGS="$TARGET_CFLAGS -Wcast-align"
 fi
+
+AC_CACHE_CHECK([which extra warnings work], [grub_cv_target_cc_w_extra_flags], [
+  LDFLAGS="$TARGET_LDFLAGS -nostdlib -static"
+
+  grub_cv_target_cc_w_extra_flags=
+  for x in $EXTRA_WARN_FLAGS; do
+      CFLAGS="$TARGET_CFLAGS $x -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])], [flag=1], [flag=0])
+      if test x$flag = x1 ; then
+         grub_cv_target_cc_w_extra_flags="$grub_cv_target_cc_w_extra_flags $x"
+      fi
+  done
+])
+
+TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_w_extra_flags"
 
 AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
 [AC_COMPILE_IFELSE(
