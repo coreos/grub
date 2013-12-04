@@ -1,5 +1,10 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/sparc64/ieee1275/boot.S [CDBOOT]: Move scratchpad
+	so it doesn't land in the middle of loaded image.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Move all warning options that may be absent in
 	gcc >= 3.1 to optional.
 

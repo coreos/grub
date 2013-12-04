@@ -27,6 +27,7 @@
 
 #define	SCRATCH_PAD_BOOT		0x5000
 #define	SCRATCH_PAD_DISKBOOT		0x4000
+#define	SCRATCH_PAD_BOOT_SIZE		0x110
 
 #define GET_ABS(symbol, reg)	\
 	add	PIC_REG, (symbol - pic_base), reg

@@ -48,7 +48,7 @@ kernel_byte:		.xword (2 << 9)
 boot_path_end:
 kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
 #else
-#define boot_path (_start + 512)
+#define boot_path (_start + 512 + SCRATCH_PAD_BOOT_SIZE)
 #define boot_path_end (_start + 1024)
 #include <grub/offsets.h>
 
@@ -140,7 +140,11 @@ prom_call:
 
 boot_continue:
 	mov	%o7, PIC_REG		/* PIC base */
+#ifndef CDBOOT
 	sethi	%hi(SCRATCH_PAD_BOOT), %l1	/* OF argument slots */
+#else
+	GET_ABS(_start + 512, %l1)	/* OF argument slots */
+#endif
 
 	/* Find the /chosen node so we can fetch the stdout handle,
 	 * and thus perform console output.
