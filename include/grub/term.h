@@ -398,7 +398,7 @@ grub_term_cls (struct grub_term_output *term)
     }
 }
 
-#ifdef HAVE_UNIFONT_WIDTHSPEC
+#if HAVE_FONT_SOURCE
 
 grub_size_t
 grub_unicode_estimate_width (const struct grub_unicode_glyph *c);

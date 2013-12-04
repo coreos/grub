@@ -49,7 +49,7 @@
 #include <grub/term.h>
 #include <grub/normal.h>
 
-#ifdef HAVE_UNIFONT_WIDTHSPEC
+#if HAVE_FONT_SOURCE
 #include "widthspec.h"
 #endif
 
@@ -387,7 +387,7 @@ grub_unicode_get_comb_type (grub_uint32_t c)
   return GRUB_UNICODE_COMB_NONE;
 }
 
-#ifdef HAVE_UNIFONT_WIDTHSPEC
+#if HAVE_FONT_SOURCE
 
 grub_size_t
 grub_unicode_estimate_width (const struct grub_unicode_glyph *c)

@@ -1555,6 +1555,12 @@ AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
 AM_CONDITIONAL([COND_GRUB_MOUNT], [test x$enable_grub_mount = xyes])
 AM_CONDITIONAL([COND_HAVE_FONT_SOURCE], [test x$FONT_SOURCE != x])
+if test x$FONT_SOURCE != x ; then
+   HAVE_FONT_SOURCE=1
+else
+   HAVE_FONT_SOURCE=0
+fi
+AC_SUBST(HAVE_FONT_SOURCE)
 AM_CONDITIONAL([COND_APPLE_LINKER], [test x$TARGET_APPLE_LINKER = x1])
 AM_CONDITIONAL([COND_ENABLE_EFIEMU], [test x$enable_efiemu = xyes])
 AM_CONDITIONAL([COND_ENABLE_CACHE_STATS], [test x$DISK_CACHE_STATS = x1])

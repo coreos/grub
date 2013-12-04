@@ -28,6 +28,7 @@
 #elif defined (GRUB_UTIL) || !defined (GRUB_MACHINE)
 #include <config-util.h>
 #else
+#define HAVE_FONT_SOURCE @HAVE_FONT_SOURCE@
 /* Define if C symbols get an underscore after compilation. */
 #define HAVE_ASM_USCORE @HAVE_ASM_USCORE@
 /* Define it to \"addr32\" or \"addr32;\" to make GAS happy.  */
