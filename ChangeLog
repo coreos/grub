@@ -1,5 +1,9 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/main.c: Ignore missing prototype for main.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Pass font config to config.h and not by TARGET_CFLAGS as adding
 	arguments doesn't work if TARGET_CFLAGS is specified on command
 	line.

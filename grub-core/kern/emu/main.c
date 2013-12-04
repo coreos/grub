@@ -166,6 +166,8 @@ static struct argp argp = {
 
 
 
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 int
 main (int argc, char *argv[])
 {
