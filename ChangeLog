@@ -1,3 +1,11 @@
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* configure.ac: Move all warning options that may be absent in
+	gcc >= 3.1 to optional.
+
+	Note: while this allows to compile with older GCC, official requirements
+	remain the same and no support for older GCC.
+
 2013-12-04  Colin Watson  <cjwatson@ubuntu.com>
 
 	Copying the themes directory in grub-shell isn't

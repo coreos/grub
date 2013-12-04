@@ -422,8 +422,8 @@ esac
 # For gnulib.
 gl_INIT
 
-WARN_FLAGS="-Wall -W -Wshadow -Wold-style-definition -Wpointer-arith -Wundef -Wextra -Wattributes -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wendif-labels -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmain -Wmissing-braces -Wmissing-field-initializers -Wmissing-format-attribute -Wmultichar -Wnonnull -Woverflow -Wparentheses -Wpointer-arith -Wpointer-to-int-cast -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wstrict-aliasing -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wvariadic-macros -Wvolatile-register-var -Wwrite-strings -Wnested-externs -Wstrict-prototypes -Wpointer-sign"
-EXTRA_WARN_FLAGS="-Wvla"
+WARN_FLAGS="-Wall -W -Wshadow -Wpointer-arith -Wundef -Wchar-subscripts -Wcomment -Wdeprecated-declarations -Wdisabled-optimization -Wdiv-by-zero -Wfloat-equal -Wformat-extra-args -Wformat-security -Wformat-y2k -Wimplicit -Wimplicit-function-declaration -Wimplicit-int -Wmain -Wmissing-braces -Wmissing-format-attribute -Wmultichar -Wparentheses -Wpointer-arith -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wswitch -Wtrigraphs -Wundef -Wunknown-pragmas -Wunused -Wunused-function -Wunused-label -Wunused-parameter -Wunused-value  -Wunused-variable -Wwrite-strings -Wnested-externs -Wstrict-prototypes"
+EXTRA_WARN_FLAGS="-Wold-style-definition -Wextra -Wattributes -Wendif-labels -Winit-self -Wint-to-pointer-cast -Winvalid-pch -Wmissing-field-initializers -Wnonnull -Woverflow -Wvla -Wpointer-to-int-cast -Wstrict-aliasing -Wvariadic-macros -Wvolatile-register-var -Wpointer-sign"
 
 HOST_CFLAGS="$HOST_CFLAGS $WARN_FLAGS -Wcast-align"
 
