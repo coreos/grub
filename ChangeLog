@@ -1,3 +1,8 @@
+2013-12-05  Mike Gilbert  <floppym@gentoo.org>
+
+	* INSTALL: Raise minimum python version to 2.6.
+	* gentpl.py: Use python3-style print function.
+
 2013-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.c: Mention Boot* variable.

@@ -15,6 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 __metaclass__ = type
 
 from optparse import OptionParser
@@ -434,7 +436,7 @@ def output(s, section=''):
 
 def write_output(section=''):
     for s in outputs.get(section, []):
-        print s,
+        print(s, end='')
 
 #
 # Global variables
