@@ -1,3 +1,11 @@
+2013-12-04  Colin Watson  <cjwatson@ubuntu.com>
+
+	Copying the themes directory in grub-shell isn't
+	parallel-test-friendly and breaks on the second test when the source
+	directory is read-only (as in "make distcheck").  Instead, add a
+	hidden --themes-directory option to grub-mkrescue et al, and use it
+	in grub-shell.
+
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* conf/Makefile.common (CFLAGS_GNULIB): Remove -Wno-old-style-definition

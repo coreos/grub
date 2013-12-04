@@ -347,9 +347,10 @@ if test -z "$debug"; then
 fi
 
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
-    cp -R "@srcdir@/themes" "@builddir@"
     pkgdatadir="@builddir@" "@builddir@/grub-mkrescue" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
-	--rom-directory="${rom_directory}" $mkimage_extra_arg ${mkrescue_args} \
+	--rom-directory="${rom_directory}" \
+	--themes-directory="@srcdir@/themes" \
+	$mkimage_extra_arg ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
 	${files} >/dev/null 2>&1
 fi

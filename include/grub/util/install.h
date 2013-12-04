@@ -50,6 +50,9 @@
   { "locale-directory", GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY,		\
       N_("DIR"), 0,							\
     N_("use translations under DIR [default=%s]"), 1 },			\
+  { "themes-directory", GRUB_INSTALL_OPTIONS_THEMES_DIRECTORY,		\
+      N_("DIR"), OPTION_HIDDEN,						\
+    N_("use themes under DIR [default=%s]"), 1 },			\
   { "grub-mkimage", GRUB_INSTALL_OPTIONS_GRUB_MKIMAGE,		\
       "FILE", OPTION_HIDDEN, 0, 1 },					\
     /* TRANSLATORS: "embed" is a verb (command description).  "*/	\
@@ -107,6 +110,7 @@ enum grub_install_options {
   GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS,
   GRUB_INSTALL_OPTIONS_DIRECTORY2,
   GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY,
+  GRUB_INSTALL_OPTIONS_THEMES_DIRECTORY,
   GRUB_INSTALL_OPTIONS_GRUB_MKIMAGE
 };
 
