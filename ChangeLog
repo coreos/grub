@@ -1,5 +1,10 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/uboot/init.c (uboot_timer_ms): Fix overflow after 71
+	minutes.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/ofdisk.c: Remove variable length arrays.
 	* grub-core/net/drivers/ieee1275/ofnet.c: Likewise.
 

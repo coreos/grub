@@ -61,7 +61,13 @@ grub_uboot_get_boot_data (void)
 static grub_uint64_t
 uboot_timer_ms (void)
 {
-  return (grub_uint64_t) grub_uboot_get_timer (timer_start) / 1000;
+  static grub_uint32_t last = 0, high = 0;
+  grub_uint32_t cur = grub_uboot_get_timer (timer_start);
+  if (cur < last)
+    high++;
+  last = cur;
+  return grub_divmod64 ((((grub_uint64_t) high) << 32) | cur,
+			1000, 0);
 }
 
 void
