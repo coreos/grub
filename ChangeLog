@@ -1,3 +1,8 @@
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/ofdisk.c: Remove variable length arrays.
+	* grub-core/net/drivers/ieee1275/ofnet.c: Likewise.
+
 2013-12-03  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/Makefile.core.def (setjmp): Distribute

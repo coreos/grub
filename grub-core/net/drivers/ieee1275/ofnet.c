@@ -28,6 +28,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 struct grub_ofnetcard_data
 {
   char *path;
+  char *suffix;
   grub_ieee1275_ihandle_t handle;
 };
 
@@ -37,18 +38,7 @@ card_open (struct grub_net_card *dev)
   int status;
   struct grub_ofnetcard_data *data = dev->data;
 
-  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
-    {
-      char path[grub_strlen (data->path) +
-		sizeof (":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512")];
-      
-      /* The full string will prevent a bootp packet to be sent. Just put some valid ip in there.  */
-      grub_snprintf (path, sizeof (path), "%s%s", data->path,
-		     ":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512");
-      status = grub_ieee1275_open (path, &(data->handle));
-    }
-  else
-    status = grub_ieee1275_open (data->path, &(data->handle));
+  status = grub_ieee1275_open (data->path, &(data->handle));
 
   if (status)
     return grub_error (GRUB_ERR_IO, "Couldn't open network card.");
@@ -146,8 +136,9 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
   FOR_NET_CARDS (card)
   {
     char *bootp_response;
-    char *cardpath;
     char *canon;
+    char c;
+    struct grub_ofnetcard_data *data;
 
     grub_ssize_t size = -1;
     unsigned int i;
@@ -155,8 +146,11 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path)
     if (card->driver != &ofdriver)
       continue;
 
-    cardpath = ((struct grub_ofnetcard_data *) card->data)->path;
-    canon = grub_ieee1275_canonicalise_devname (cardpath);
+    data = card->data;
+    c = *data->suffix;
+    *data->suffix = '\0';
+    canon = grub_ieee1275_canonicalise_devname (data->path);
+    *data->suffix = c;
     if (grub_strcmp (devpath, canon) != 0)
       {
 	grub_free (canon);
@@ -224,7 +218,22 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
       return 1;
     }
 
-  ofdata->path = grub_strdup (alias->path);
+#define SUFFIX ":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512"
+
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+    ofdata->path = grub_malloc (grub_strlen (alias->path) + sizeof (SUFFIX));
+  else
+    ofdata->path = grub_malloc (grub_strlen (alias->path) + 1);
+  if (!ofdata->path)
+    {
+      grub_print_error ();
+      return 0;
+    }
+  ofdata->suffix = grub_stpcpy (ofdata->path, alias->path);
+  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+    grub_memcpy (ofdata->suffix, SUFFIX, sizeof (SUFFIX));
+  else
+    *ofdata->suffix = '\0';
 
   grub_ieee1275_finddevice (ofdata->path, &devhandle);
 

@@ -31,11 +31,14 @@ static grub_ieee1275_ihandle_t last_ihandle;
 struct ofdisk_hash_ent
 {
   char *devpath;
+  char *open_path;
+  char *grub_devpath;
   int is_boot;
   int is_cdrom;
   /* Pointer to shortest available name on nodes representing canonical names,
      otherwise NULL.  */
   const char *shortest;
+  const char *grub_shortest;
   struct ofdisk_hash_ent *next;
 };
 
@@ -70,12 +73,50 @@ ofdisk_hash_add_real (char *devpath)
 {
   struct ofdisk_hash_ent *p;
   struct ofdisk_hash_ent **head = &ofdisk_hash[ofdisk_hash_fn(devpath)];
+  const char *iptr;
+  char *optr;
 
   p = grub_zalloc (sizeof (*p));
   if (!p)
     return NULL;
 
   p->devpath = devpath;
+
+  p->grub_devpath = grub_malloc (sizeof ("ieee1275/")
+				 + 2 * grub_strlen (p->devpath));
+
+  if (!p->grub_devpath)
+    {
+      grub_free (p);
+      return NULL;
+    }
+
+  if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
+    {
+      p->open_path = grub_malloc (grub_strlen (p->devpath) + 3);
+      if (!p->open_path)
+	{
+	  grub_free (p->grub_devpath);
+	  grub_free (p);
+	  return NULL;
+	}
+      optr = grub_stpcpy (p->open_path, p->devpath);
+      *optr++ = ':';
+      *optr++ = '0';
+      *optr = '\0';
+    }
+  else
+    p->open_path = p->devpath;
+
+  optr = grub_stpcpy (p->grub_devpath, "ieee1275/");
+  for (iptr = p->devpath; *iptr; )
+    {
+      if (*iptr == ',')
+	*optr++ = '\\';
+      *optr++ = *iptr++;
+    }
+  *optr = 0;
+
   p->next = *head;
   *head = p;
   return p;
@@ -104,7 +145,8 @@ ofdisk_hash_add (char *devpath, char *curcan)
 
   if (!curcan)
     {
-      p->shortest = devpath;
+      p->shortest = p->devpath;
+      p->grub_shortest = p->grub_devpath;
       if (check_string_cdrom (devpath))
 	p->is_cdrom = 1;  
       return p;
@@ -125,7 +167,10 @@ ofdisk_hash_add (char *devpath, char *curcan)
     {
       if (!pcan->shortest
 	  || grub_strlen (pcan->shortest) > grub_strlen (devpath))
-	pcan->shortest = devpath;
+	{
+	  pcan->shortest = p->devpath;
+	  pcan->grub_shortest = p->grub_devpath;
+	}
     }
 
   return p;
@@ -288,21 +333,8 @@ grub_ofdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 	  if (!ent->is_boot && ent->is_cdrom)
 	    continue;
 
-	  {
-	    char buffer[sizeof ("ieee1275/") + 2 * grub_strlen (ent->shortest)];
-	    const char *iptr;
-	    char *optr;
-	    optr = grub_stpcpy (buffer, "ieee1275/");
-	    for (iptr = ent->shortest; *iptr; )
-	      {
-		if (*iptr == ',')
-		  *optr++ = '\\';
-		*optr++ = *iptr++;
-	      }
-	    *optr = 0;
-	    if (hook (buffer, hook_data))
-	      return 1;
-	  }
+	  if (hook (ent->grub_shortest, hook_data))
+	    return 1;
 	}
     }	  
   return 0;
@@ -396,7 +428,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     if (!op)
       return grub_errno;
     disk->id = (unsigned long) op;
-    disk->data = op->devpath;
+    disk->data = op->open_path;
   }
 
   return 0;
@@ -428,20 +460,7 @@ grub_ofdisk_prepare (grub_disk_t disk, grub_disk_addr_t sector)
       last_ihandle = 0;
       last_devpath = NULL;
 
-      if (! grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PARTITION_0))
-	{
-	  char name2[grub_strlen (disk->data) + 3];
-	  char *p;
-	  
-	  grub_strcpy (name2, disk->data);
-	  p = name2 + grub_strlen (name2);
-	  *p++ = ':';
-	  *p++ = '0';
-	  *p = 0;
-	  grub_ieee1275_open (name2, &last_ihandle);
-	}
-      else
-	grub_ieee1275_open (disk->data, &last_ihandle);
+      grub_ieee1275_open (disk->data, &last_ihandle);
       if (! last_ihandle)
 	return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "can't open device");
       last_devpath = disk->data;      
