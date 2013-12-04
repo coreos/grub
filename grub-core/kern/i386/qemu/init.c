@@ -96,17 +96,8 @@ struct iterator_ctx
   grub_size_t nresources;
 };
 
-static int
-count_cards (grub_pci_device_t dev __attribute__ ((unused)),
-	     grub_pci_id_t pciid __attribute__ ((unused)),
-	     void *data)
-{
-  int *cnt = data;
-
-  (*cnt)++;
-
-  return 0;
-}
+/* We don't support bridges, so can't have more than 32 devices.  */
+#define MAX_DEVICES 32
 
 static int
 find_resources (grub_pci_device_t dev,
@@ -115,6 +106,9 @@ find_resources (grub_pci_device_t dev,
 {
   struct iterator_ctx *ctx = data;
   int bar;
+
+  if (ctx->nresources >= MAX_DEVICES * 6)
+    return 1;
 
   for (bar = 0; bar < 6; bar++)
     {
@@ -190,13 +184,10 @@ enable_cards (grub_pci_device_t dev,
 static void
 grub_pci_assign_addresses (void)
 {
-  int ncards = 0;
   struct iterator_ctx ctx;
 
-  grub_pci_iterate (count_cards, &ncards);
-
   {
-    struct resource resources[ncards * 6];
+    struct resource resources[MAX_DEVICES * 6];
     int done;
     unsigned i;
     ctx.nresources = 0;

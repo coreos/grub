@@ -1,5 +1,9 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/qemu/init.c: Remove variable length arrays.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/types.h: Declare all byteswaps as inline functions
 	except compile-time ones.
 
