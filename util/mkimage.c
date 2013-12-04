@@ -383,7 +383,8 @@ static const struct grub_install_image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR,
+      .mod_align = GRUB_KERNEL_SPARC64_IEEE1275_MOD_ALIGN,
     },
     {
       .dirname = "sparc64-ieee1275",
@@ -398,7 +399,8 @@ static const struct grub_install_image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR,
+      .mod_align = GRUB_KERNEL_SPARC64_IEEE1275_MOD_ALIGN,
     },
     {
       .dirname = "sparc64-ieee1275",
@@ -413,7 +415,8 @@ static const struct grub_install_image_target_desc image_targets[] =
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = 1,
       .vaddr_offset = 0,
-      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR
+      .link_addr = GRUB_KERNEL_SPARC64_IEEE1275_LINK_ADDR,
+      .mod_align = GRUB_KERNEL_SPARC64_IEEE1275_MOD_ALIGN,
     },
     {
       .dirname = "ia64-efi",

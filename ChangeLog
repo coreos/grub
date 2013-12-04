@@ -1,3 +1,11 @@
+2013-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Handle unaligned .bss on sparc64.
+
+	Current code improperly assumes that both __bss_start and _end are
+	aligned to 8-bytes. Eliminating this assumption and explicitly align
+	modules.
+
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/boot/sparc64/ieee1275/boot.S [CDBOOT]: Move scratchpad

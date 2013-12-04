@@ -1356,6 +1356,11 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
   else
     *bss_size = 0;
 
+  if (image_target->id == IMAGE_SPARC64_AOUT
+      || image_target->id == IMAGE_SPARC64_RAW
+      || image_target->id == IMAGE_SPARC64_CDCORE)
+    *kernel_sz = ALIGN_UP (*kernel_sz, image_target->mod_align);
+
   if (image_target->id == IMAGE_EFI)
     {
       symtab_section = NULL;
