@@ -1,5 +1,9 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/efi.c: Remove variable length arrays.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/uboot/init.c (uboot_timer_ms): Fix overflow after 71
 	minutes.
 

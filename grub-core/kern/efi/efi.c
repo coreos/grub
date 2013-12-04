@@ -741,12 +741,17 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	    case GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE:
 	      {
 		grub_efi_file_path_device_path_t *fp;
-		grub_uint8_t buf[(len - 4) * 2 + 1];
+		grub_uint8_t *buf;
 		fp = (grub_efi_file_path_device_path_t *) dp;
-		*grub_utf16_to_utf8 (buf, fp->path_name,
-				     (len - 4) / sizeof (grub_efi_char16_t))
-		  = '\0';
+		buf = grub_malloc ((len - 4) * 2 + 1);
+		if (buf)
+		  *grub_utf16_to_utf8 (buf, fp->path_name,
+				       (len - 4) / sizeof (grub_efi_char16_t))
+		    = '\0';
+		else
+		  grub_errno = GRUB_ERR_NONE;
 		grub_printf ("/File(%s)", buf);
+		grub_free (buf);
 	      }
 	      break;
 	    case GRUB_EFI_PROTOCOL_DEVICE_PATH_SUBTYPE:
