@@ -36,6 +36,19 @@ typedef struct {
 	grub_uint32_t size_dt_struct;
 } grub_fdt_header_t;
 
+struct grub_fdt_empty_tree {
+  grub_fdt_header_t header;
+  grub_uint64_t empty_rsvmap[2];
+  struct {
+    grub_uint32_t node_start;
+    grub_uint8_t name[1];
+    grub_uint32_t node_end;
+    grub_uint32_t tree_end;
+  } empty_node;
+};
+
+#define GRUB_FDT_EMPTY_TREE_SZ  sizeof (struct grub_fdt_empty_tree)
+
 #define grub_fdt_get_header(fdt, field)	\
 	grub_be_to_cpu32(((const grub_fdt_header_t *)(fdt))->field)
 #define grub_fdt_set_header(fdt, field, value)	\
@@ -82,6 +95,7 @@ typedef struct {
 #define grub_fdt_set_size_dt_struct(fdt, value)	\
 	grub_fdt_set_header(fdt, size_dt_struct, value)
 
+int grub_fdt_create_empty_tree (void *fdt, unsigned int size);
 int grub_fdt_check_header (void *fdt, unsigned int size);
 int grub_fdt_check_header_nosize (void *fdt);
 int grub_fdt_find_subnode (const void *fdt, unsigned int parentoffset,
@@ -95,6 +109,12 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
 ({ \
   grub_uint32_t _val = grub_cpu_to_be32(val); \
   grub_fdt_set_prop ((fdt), (nodeoffset), (name), &_val, 4);	\
+})
+
+#define grub_fdt_set_prop64(fdt, nodeoffset, name, val)        \
+({ \
+  grub_uint64_t _val = grub_cpu_to_be64(val); \
+  grub_fdt_set_prop ((fdt), (nodeoffset), (name), &_val, 8);   \
 })
 
 #endif	/* ! GRUB_FDT_HEADER */

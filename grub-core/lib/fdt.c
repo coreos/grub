@@ -431,3 +431,32 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
   grub_memcpy (prop + 3, val, len);
   return 0;
 }
+
+int
+grub_fdt_create_empty_tree (void *fdt, unsigned int size)
+{
+  struct grub_fdt_empty_tree *et;
+
+  if (size < GRUB_FDT_EMPTY_TREE_SZ)
+    return -1;
+
+  grub_memset (fdt, 0, size);
+  et = fdt;
+
+  et->empty_node.tree_end = grub_cpu_to_be32_compile_time (FDT_END);
+  et->empty_node.node_end = grub_cpu_to_be32_compile_time (FDT_END_NODE);
+  et->empty_node.node_start = grub_cpu_to_be32_compile_time (FDT_BEGIN_NODE);
+  ((struct grub_fdt_empty_tree *) fdt)->header.off_mem_rsvmap =
+    grub_cpu_to_be32 (ALIGN_UP (sizeof (grub_fdt_header_t), 8));
+
+  grub_fdt_set_off_dt_strings (fdt, sizeof (*et));
+  grub_fdt_set_off_dt_struct (fdt,
+			      sizeof (et->header) + sizeof (et->empty_rsvmap));
+  grub_fdt_set_version (fdt, FDT_SUPPORTED_VERSION);
+  grub_fdt_set_last_comp_version (fdt, FDT_SUPPORTED_VERSION);
+  grub_fdt_set_size_dt_struct (fdt, sizeof (et->empty_node));
+  grub_fdt_set_totalsize (fdt, size);
+  grub_fdt_set_magic (fdt, FDT_MAGIC);
+
+  return 0;
+}
