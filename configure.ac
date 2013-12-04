@@ -903,7 +903,7 @@ CFLAGS="$TARGET_CFLAGS"
 # -mno-unaligned-access -mstrict-align
 if test "$target_cpu" = arm; then
   AC_CACHE_CHECK([for compile options to get strict alignment], [grub_cv_target_cc_strict_align], [
-    grub_cv_target_cc_strict_align=unknown
+    grub_cv_target_cc_strict_align=
     for arg in -mno-unaligned-access "-Xclang -mstrict-align" -mstrict-align; do
       CFLAGS="$TARGET_CFLAGS $arg -Werror"
       LDFLAGS="$TARGET_LDFLAGS"
@@ -914,12 +914,20 @@ if test "$target_cpu" = arm; then
       fi
     done])
 
-  if test x"$grub_cv_target_cc_strict_align" = xunknown; then
-    AC_MSG_ERROR([couldnt instruct compiler not to use unaligned access])
-  fi
   TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_strict_align"
   if test x"$grub_cv_target_cc_strict_align" = x"-Xclang -mstrict-align"; then
     TARGET_LDFLAGS="$TARGET_LDFLAGS -Qunused-arguments"
+  fi
+  AC_CACHE_CHECK([if compiler generates unaligned accesses], [grub_cv_cc_target_emits_unaligned],
+  [CFLAGS="$TARGET_CFLAGS"
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [[
+#ifdef __ARM_FEATURE_UNALIGNED
+#error "unaligned"
+#endif
+     ]])],
+     [grub_cv_cc_target_emits_unaligned=no], [grub_cv_cc_target_emits_unaligned=yes])])
+  if test x$grub_cv_cc_target_emits_unaligned = xyes; then
+    AC_MSG_ERROR([compiler generates unaligned accesses])
   fi
 fi
 

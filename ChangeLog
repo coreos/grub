@@ -1,5 +1,9 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Allow compilation with older GCC for ARM.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -no-integrated-as if {addme|ame} isn't supported.
 	* INSTALL: Note that GRUBwas successfully compiled with clang 3.2 for
 	ppc.
