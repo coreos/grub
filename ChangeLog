@@ -1,5 +1,10 @@
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common (CFLAGS_GNULIB): Remove -Wno-old-style-definition
+	as it's no longer necessarry.
+
+2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Allow compilation with older GCC for ARM.
 
 2013-12-04  Vladimir Serbinenko  <phcoder@gmail.com>
