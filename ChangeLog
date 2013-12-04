@@ -1,5 +1,9 @@
 2013-12-22  Leif Lindholm <leif.lindholm@linaro.org>
 
+	Add arm64 Linux loader.
+
+2013-12-22  Leif Lindholm <leif.lindholm@linaro.org>
+
 	Add grub_fdt_create_empty_tree() and grub_fdt_set_prop64().
 
 2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
