@@ -132,6 +132,7 @@ static int add_subnode (void *fdt, int parentoffset, const char *name)
                                    + parentoffset);
   grub_uint32_t *end = (void *) struct_end (fdt);
   unsigned int entry_size = node_entry_size (name);
+  unsigned int struct_size = grub_fdt_get_size_dt_struct(fdt);
   char *node_name;
 
   SKIP_NODE_NAME(node_name, token, end);
@@ -167,6 +168,7 @@ insert:
   token[entry_size / sizeof(*token) - 2] = 0;	/* padding bytes */
   grub_strcpy((char *) (token + 1), name);
   token[entry_size / sizeof(*token) - 1] = grub_cpu_to_be32(FDT_END_NODE);
+  grub_fdt_set_size_dt_struct (fdt, struct_size + entry_size);
   return ((grub_addr_t) token - (grub_addr_t) fdt
           - grub_fdt_get_off_dt_struct(fdt));
 }
