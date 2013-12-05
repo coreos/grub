@@ -27,6 +27,7 @@
 #include <grub/emu/misc.h>
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
+#include <grub/emu/exec.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
 #include <grub/list.h>
@@ -39,6 +40,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
@@ -93,11 +95,98 @@ grub_util_get_fd_size_os (grub_util_fd_t fd, const char *name, unsigned *log_sec
   return nr;
 }
 
+static char *
+sysfs_partition_path (const char *dev, const char *entry)
+{
+  const char *argv[7];
+  int fd;
+  pid_t pid;
+  FILE *udevadm;
+  char *buf = NULL;
+  size_t len = 0;
+  char *path = NULL;
+
+  argv[0] = "udevadm";
+  argv[1] = "info";
+  argv[2] = "--query";
+  argv[3] = "path";
+  argv[4] = "--name";
+  argv[5] = dev;
+  argv[6] = NULL;
+
+  pid = grub_util_exec_pipe (argv, &fd);
+
+  if (!pid)
+    return NULL;
+
+  /* Parent.  Read udevadm's output.  */
+  udevadm = fdopen (fd, "r");
+  if (!udevadm)
+    {
+      grub_util_warn (_("Unable to open stream from %s: %s"),
+		      "udevadm", strerror (errno));
+      close (fd);
+      goto out;
+    }
+
+  if (getline (&buf, &len, udevadm) > 0)
+    {
+      char *newline;
+
+      newline = strchr (buf, '\n');
+      if (newline)
+	*newline = '\0';
+      path = xasprintf ("/sys%s/%s", buf, entry);
+    }
+
+out:
+  if (udevadm)
+    fclose (udevadm);
+  waitpid (pid, NULL, 0);
+  free (buf);
+
+  return path;
+}
+
+static int
+sysfs_partition_start (const char *dev, grub_disk_addr_t *start)
+{
+  char *path;
+  FILE *fp;
+  unsigned long long val;
+  int ret = 0;
+
+  path = sysfs_partition_path (dev, "start");
+  if (!path)
+    return 0;
+
+  fp = grub_util_fopen (path, "r");
+  if (!fp)
+    goto out;
+
+  if (fscanf (fp, "%llu", &val) == 1)
+    {
+      *start = (grub_disk_addr_t) val;
+      ret = 1;
+    }
+
+out:
+  free (path);
+  if (fp)
+    fclose (fp);
+
+  return ret;
+}
+
 grub_disk_addr_t
 grub_util_find_partition_start_os (const char *dev)
 {
+  grub_disk_addr_t start;
   grub_util_fd_t fd;
   struct hd_geometry hdg;
+
+  if (sysfs_partition_start (dev, &start))
+    return start;
 
   fd = open (dev, O_RDONLY);
   if (fd == -1)

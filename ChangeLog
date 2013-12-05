@@ -1,3 +1,15 @@
+2013-12-05  Colin Watson  <cjwatson@ubuntu.com>
+
+	On Linux, read partition start offsets from sysfs if possible, to
+	cope with block device drivers that don't implement HDIO_GETGEO.
+	Fixes Ubuntu bug #1237519.
+
+	* grub-core/osdep/linux/hostdisk.c (sysfs_partition_path): New
+	function.
+	(sysfs_partition_start): Likewise.
+	(grub_util_find_partition_start_os): Try sysfs_partition_start
+	before HDIO_GETGEO.
+
 2013-12-05  Leif Lindholm  <leif.lindholm@linaro.org>
 
 	* grub-core/kern/fdt.c: Update struct size when adding node.
