@@ -1432,7 +1432,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 						 section_entsize, num_sections,
 						 strtab, ia64jmp_off
 						 + image_target->vaddr_offset,
-						 2 * ia64jmpnum + got,
+						 2 * ia64jmpnum + (got / 8),
 						 image_target);
     }
 
