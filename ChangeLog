@@ -1,3 +1,7 @@
+2013-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.c: Mention Boot* variable.
+
 2013-12-05  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/osdep/linux/hostdisk.c

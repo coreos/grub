@@ -232,7 +232,7 @@ static struct argp_option options[] = {
    N_("disk module to use (biosdisk or native). "
       "This option is only available on BIOS target."), 2},
   {"no-nvram", OPTION_NO_NVRAM, 0, 0,
-   N_("don't update the `boot-device' NVRAM variable. "
+   N_("don't update the `boot-device'/`Boot*' NVRAM variables. "
       "This option is only available on EFI and IEEE1275 targets."), 2},
   {"skip-fs-probe",'s',0,      0,
    N_("do not probe for filesystems in DEVICE"), 0},
