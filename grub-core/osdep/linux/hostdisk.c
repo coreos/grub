@@ -181,7 +181,7 @@ out:
 grub_disk_addr_t
 grub_util_find_partition_start_os (const char *dev)
 {
-  grub_disk_addr_t start;
+  grub_disk_addr_t start = 0;
   grub_util_fd_t fd;
   struct hd_geometry hdg;
 
