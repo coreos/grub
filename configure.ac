@@ -551,7 +551,7 @@ AC_COMPILE_IFELSE(
    # used by gcrypt
    if test x$grub_cv_cc_target_clang_ame = xno ; then
      TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
-     TARGET_CFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+     TARGET_CFLAGS="$TARGET_CFLAGS -no-integrated-as"
    fi
 fi
 
