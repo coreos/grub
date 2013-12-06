@@ -25,45 +25,113 @@
 #include <grub/i18n.h>
 #include <grub/arm/reloc.h>
 
+struct trampoline_arm
+{
+#define ARM_LOAD_IP 0xe59fc000
+#define ARM_BX 0xe12fff1c
+#define ARM_MOV_PC 0xe1a0f00c
+  grub_uint32_t load_ip;  /* ldr ip, [pc] */
+  grub_uint32_t bx; /* bx ip or mov pc, ip*/
+  grub_uint32_t addr;
+};
+
+static grub_uint16_t thumb_template[8] =
+  {
+    0x468c, /* mov	ip, r1 */
+    0x4903, /* ldr	r1, [pc, #12]	; (10 <.text+0x10>) */
+    /* Exchange R1 and IP in limited Thumb instruction set.
+       IP gets negated but we compensate it by C code.  */
+                                     /* R1   IP */
+                                     /* -A   R1 */
+    0x4461, /* add	r1, ip */    /* R1-A R1 */
+    0x4249, /* negs	r1, r1 */    /* A-R1 R1 */
+    0x448c, /* add	ip, r1 */    /* A-R1 A  */
+    0x4249, /* negs	r1, r1 */    /* R1-A A  */
+    0x4461, /* add	r1, ip */    /* R1   A  */
+    0x4760  /* bx	ip */
+  };
+
+struct trampoline_thumb
+{
+  grub_uint16_t template[8];
+  grub_uint32_t neg_addr;
+};
+
+#pragma GCC diagnostic ignored "-Wcast-align"
+
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got)
+{
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
+
+  *tramp = 0;
+  *got = 0;
+
+  for (i = 0, s = (const Elf_Shdr *) ((grub_addr_t) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((grub_addr_t) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL)
+      {
+	const Elf_Rel *rel, *max;
+
+	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
+	       max = rel + s->sh_size / s->sh_entsize;
+	     rel < max;
+	     rel++)
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_ARM_CALL:
+	    case R_ARM_JUMP24:
+	      {
+		*tramp += sizeof (struct trampoline_arm);
+		break;
+	      }
+	    case R_ARM_THM_CALL:
+	    case R_ARM_THM_JUMP24:
+	    case R_ARM_THM_JUMP19:
+	      {
+		*tramp += sizeof (struct trampoline_thumb);
+		break;
+	      }
+	    }
+      }
+
+  grub_dprintf ("dl", "trampoline size %x\n", *tramp);
+
+  return GRUB_ERR_NONE;
+}
+
 /*************************************************
  * Runtime dynamic linker with helper functions. *
  *************************************************/
-static grub_err_t
-do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
+			       Elf_Shdr *s, grub_dl_segment_t seg)
 {
-  grub_dl_segment_t seg;
-  Elf_Rel *rel;
-  Elf_Sym *sym;
-  int i, entnum;
+  Elf_Rel *rel, *max;
 
-  entnum = relhdr->sh_size / sizeof (Elf_Rel);
-
-  /* Find the target segment for this relocation section. */
-  for (seg = mod->segment ; seg ; seg = seg->next)
-    if (seg->section == relhdr->sh_info)
-      break;
-  if (!seg)
-    return grub_error (GRUB_ERR_EOF, N_("relocation segment not found"));
-
-  rel = (Elf_Rel *) ((grub_addr_t) e + relhdr->sh_offset);
-
-  /* Step through all relocations */
-  for (i = 0, sym = mod->symtab; i < entnum; i++)
+  for (rel = (Elf_Rel *) ((char *) ehdr + s->sh_offset),
+	 max = (Elf_Rel *) ((char *) rel + s->sh_size);
+       rel < max;
+       rel = (Elf_Rel *) ((char *) rel + s->sh_entsize))
     {
       Elf_Addr *target, sym_addr;
-      int relsym, reltype;
       grub_err_t retval;
+      Elf_Sym *sym;
 
-      if (seg->size < rel[i].r_offset)
+      if (seg->size < rel->r_offset)
 	return grub_error (GRUB_ERR_BAD_MODULE,
 			   "reloc offset is out of the segment");
-      relsym = ELF_R_SYM (rel[i].r_info);
-      reltype = ELF_R_TYPE (rel[i].r_info);
-      target = (void *) ((grub_addr_t) seg->addr + rel[i].r_offset);
+      target = (void *) ((char *) seg->addr + rel->r_offset);
+      sym = (Elf_Sym *) ((char *) mod->symtab
+			 + mod->symsize * ELF_R_SYM (rel->r_info));
 
-      sym_addr = sym[relsym].st_value;
+      sym_addr = sym->st_value;
 
-      switch (reltype)
+      switch (ELF_R_TYPE (rel->r_info))
 	{
 	case R_ARM_ABS32:
 	  {
@@ -76,16 +144,58 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	case R_ARM_CALL:
 	case R_ARM_JUMP24:
 	  {
-	    retval = grub_arm_reloc_jump24 (target, sym_addr);
-	    if (retval != GRUB_ERR_NONE)
-	      return retval;
+	    grub_int32_t offset;
+
+	    sym_addr += grub_arm_jump24_get_offset (target);
+	    offset = sym_addr - (grub_uint32_t) target;
+
+	    if ((sym_addr & 1) || !grub_arm_jump24_check_offset (offset))
+	      {
+		struct trampoline_arm *tp = mod->trampptr;
+		mod->trampptr = tp + 1;
+		tp->load_ip = ARM_LOAD_IP;
+		tp->bx = (sym_addr & 1) ? ARM_BX : ARM_MOV_PC;
+		tp->addr = sym_addr + 8;
+		offset = (grub_uint8_t *) tp - (grub_uint8_t *) target - 8;
+	      }
+	    if (!grub_arm_jump24_check_offset (offset))
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "trampoline out of range");
+	    grub_arm_jump24_set_offset (target, offset);
 	  }
 	  break;
 	case R_ARM_THM_CALL:
 	case R_ARM_THM_JUMP24:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */
-	    retval = grub_arm_reloc_thm_call ((grub_uint16_t *) target, sym_addr);
+	    grub_int32_t offset;
+
+	    sym_addr += grub_arm_thm_call_get_offset ((grub_uint16_t *) target);
+
+	    grub_dprintf ("dl", "    sym_addr = 0x%08x\n", sym_addr);
+
+	    offset = sym_addr - (grub_uint32_t) target;
+
+	    grub_dprintf("dl", " BL*: target=%p, sym_addr=0x%08x, offset=%d\n",
+			 target, sym_addr, offset);
+
+	    if (!(sym_addr & 1) || (offset < -0x200000 || offset >= 0x200000))
+	      {
+		struct trampoline_thumb *tp = mod->trampptr;
+		mod->trampptr = tp + 1;
+		grub_memcpy (tp->template, thumb_template, sizeof (tp->template));
+		tp->neg_addr = -sym_addr - 4;
+		offset = ((grub_uint8_t *) tp - (grub_uint8_t *) target - 4) | 1;
+	      }
+
+	    if (offset < -0x200000 || offset >= 0x200000)
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "trampoline out of range");
+
+	    grub_dprintf ("dl", "    relative destination = %p\n",
+			  (char *) target + offset);
+
+	    retval = grub_arm_thm_call_set_offset ((grub_uint16_t *) target, offset);
 	    if (retval != GRUB_ERR_NONE)
 	      return retval;
 	  }
@@ -98,15 +208,37 @@ do_relocations (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	case R_ARM_THM_JUMP19:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */
-	    retval = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
-	    if (retval != GRUB_ERR_NONE)
-	      return retval;
+	    grub_int32_t offset;
+
+	    if (!(sym_addr & 1))
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 N_("Relocation targeting wrong execution state"));
+
+	    sym_addr += grub_arm_thm_jump19_get_offset ((grub_uint16_t *) target);
+
+	    offset = sym_addr - (grub_uint32_t) target;
+
+	    if (!grub_arm_thm_jump19_check_offset (offset)
+		|| !(sym_addr & 1))
+	      {
+		struct trampoline_thumb *tp = mod->gotptr;
+		mod->gotptr = tp + 1;
+		grub_memcpy (tp->template, thumb_template, sizeof (tp->template));
+		tp->neg_addr = -sym_addr - 4;
+		offset = ((grub_uint8_t *) tp - (grub_uint8_t *) target - 4) | 1;
+	      }
+
+	    if (!grub_arm_thm_jump19_check_offset (offset))
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "trampoline out of range");
+
+	    grub_arm_thm_jump19_set_offset ((grub_uint16_t *) target, offset);
 	  }
 	  break;
 	default:
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			     N_("relocation 0x%x is not implemented yet"),
-			     reltype);
+			     ELF_R_TYPE (rel->r_info));
 	}
     }
 
@@ -127,80 +259,6 @@ grub_arch_dl_check_header (void *ehdr)
       || e->e_ident[EI_DATA] != ELFDATA2LSB || e->e_machine != EM_ARM)
     return grub_error (GRUB_ERR_BAD_OS,
 		       N_("invalid arch-dependent ELF magic"));
-
-  return GRUB_ERR_NONE;
-}
-
-/*
- * Verify that provided ELF header contains reference to a symbol table
- */
-static int
-has_symtab (Elf_Ehdr * e)
-{
-  int i;
-  Elf_Shdr *s;
-
-  for (i = 0, s = (Elf_Shdr *) ((grub_uint32_t) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((grub_uint32_t) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      return 1;
-
-  return 0;
-}
-
-/*
- * grub_arch_dl_relocate_symbols():
- *   Only externally visible function in this file.
- *   Locates the relocations section of the ELF object, and calls
- *   do_relocations() to deal with it.
- */
-grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
-{
-  Elf_Ehdr *e = ehdr;
-  Elf_Shdr *s;
-  unsigned i;
-
-  if (!has_symtab (e))
-    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
-
-#define FIRST_SHDR(x) ((Elf_Shdr *) ((grub_addr_t)(x) + (x)->e_shoff))
-#define NEXT_SHDR(x, y) ((Elf_Shdr *) ((grub_addr_t)(y) + (x)->e_shentsize))
-
-  for (i = 0, s = FIRST_SHDR (e); i < e->e_shnum; i++, s = NEXT_SHDR (e, s))
-    {
-      grub_err_t ret;
-
-      switch (s->sh_type)
-	{
-	case SHT_REL:
-	  {
-	    /* Relocations, no addends */
-	    ret = do_relocations (s, e, mod);
-	    if (ret != GRUB_ERR_NONE)
-	      return ret;
-	  }
-	  break;
-	case SHT_NULL:
-	case SHT_PROGBITS:
-	case SHT_SYMTAB:
-	case SHT_STRTAB:
-	case SHT_NOBITS:
-	case SHT_ARM_ATTRIBUTES:
-	  break;
-	case SHT_RELA:
-	default:
-	  {
-	    grub_dprintf ("dl", "unhandled section_type: %d (0x%08x)\n",
-			 s->sh_type, s->sh_type);
-	    return GRUB_ERR_NOT_IMPLEMENTED_YET;
-	  };
-	}
-    }
-
-#undef FIRST_SHDR
-#undef NEXT_SHDR
 
   return GRUB_ERR_NONE;
 }

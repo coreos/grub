@@ -1,3 +1,10 @@
+2013-12-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Revamp relocation handling.
+
+	Move more code to common dl.c. Add missing veneers for arm and arm64.
+	Decreases kernel size by 70 bytes on i386-pc (40-50 compressed)
+
 2013-12-05  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkimagexx.c: Fix reloc section generation for ia64.

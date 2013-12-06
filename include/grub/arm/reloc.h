@@ -20,8 +20,27 @@
 #define GRUB_ARM_RELOC_H 1
 
 grub_err_t grub_arm_reloc_abs32 (grub_uint32_t *addr, Elf32_Addr sym_addr);
-grub_err_t grub_arm_reloc_jump24 (grub_uint32_t *addr, Elf32_Addr sym_addr);
-grub_err_t grub_arm_reloc_thm_call (grub_uint16_t *addr, Elf32_Addr sym_addr);
-grub_err_t grub_arm_reloc_thm_jump19 (grub_uint16_t *addr, Elf32_Addr sym_addr);
+
+int
+grub_arm_thm_call_check_offset (grub_int32_t offset, int is_thumb);
+grub_int32_t
+grub_arm_thm_call_get_offset (grub_uint16_t *target);
+grub_err_t
+grub_arm_thm_call_set_offset (grub_uint16_t *target, grub_int32_t offset);
+
+grub_int32_t
+grub_arm_thm_jump19_get_offset (grub_uint16_t *target);
+void
+grub_arm_thm_jump19_set_offset (grub_uint16_t *target, grub_int32_t offset);
+int
+grub_arm_thm_jump19_check_offset (grub_int32_t offset);
+
+grub_int32_t
+grub_arm_jump24_get_offset (grub_uint32_t *target);
+int
+grub_arm_jump24_check_offset (grub_int32_t offset);
+void
+grub_arm_jump24_set_offset (grub_uint32_t *target,
+			    grub_int32_t offset);
 
 #endif

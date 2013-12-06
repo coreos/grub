@@ -101,109 +101,77 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 
 /* Relocate symbols.  */
 grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
+			       Elf_Shdr *s, grub_dl_segment_t seg)
 {
-  Elf_Ehdr *e = ehdr;
-  Elf_Shdr *s;
-  Elf_Word entsize;
-  unsigned i;
-  struct trampoline *tptr = mod->tramp;
+  Elf_Rela *rel, *max;
 
-  /* Find a symbol table.  */
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      break;
+  for (rel = (Elf_Rela *) ((char *) ehdr + s->sh_offset),
+	 max = (Elf_Rela *) ((char *) rel + s->sh_size);
+       rel < max;
+       rel = (Elf_Rela *) ((char *) rel + s->sh_entsize))
+    {
+      Elf_Word *addr;
+      Elf_Sym *sym;
+      grub_uint32_t value;
 
-  if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
+      if (seg->size < rel->r_offset)
+	return grub_error (GRUB_ERR_BAD_MODULE,
+			   "reloc offset is out of the segment");
 
-  entsize = s->sh_entsize;
+      addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
+      sym = (Elf_Sym *) ((char *) mod->symtab
+			 + mod->symsize * ELF_R_SYM (rel->r_info));
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_RELA)
-      {
-	grub_dl_segment_t seg;
+      /* On the PPC the value does not have an explicit
+	 addend, add it.  */
+      value = sym->st_value + rel->r_addend;
+      switch (ELF_R_TYPE (rel->r_info))
+	{
+	case GRUB_ELF_R_PPC_ADDR16_LO:
+	  *(Elf_Half *) addr = value;
+	  break;
 
-	/* Find the target segment.  */
-	for (seg = mod->segment; seg; seg = seg->next)
-	  if (seg->section == s->sh_info)
-	    break;
-
-	if (seg)
+	case GRUB_ELF_R_PPC_REL24:
 	  {
-	    Elf_Rela *rel, *max;
+	    Elf_Sword delta = value - (Elf_Word) addr;
 
-	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
-		   max = rel + s->sh_size / s->sh_entsize;
-		 rel < max;
-		 rel++)
+	    if (delta << 6 >> 6 != delta)
 	      {
-		Elf_Word *addr;
-		Elf_Sym *sym;
-		grub_uint32_t value;
-
-		if (seg->size < rel->r_offset)
-		  return grub_error (GRUB_ERR_BAD_MODULE,
-				     "reloc offset is out of the segment");
-
-		addr = (Elf_Word *) ((char *) seg->addr + rel->r_offset);
-		sym = (Elf_Sym *) ((char *) mod->symtab
-				     + entsize * ELF_R_SYM (rel->r_info));
-
-		/* On the PPC the value does not have an explicit
-		   addend, add it.  */
-		value = sym->st_value + rel->r_addend;
-		switch (ELF_R_TYPE (rel->r_info))
-		  {
-		  case GRUB_ELF_R_PPC_ADDR16_LO:
-		    *(Elf_Half *) addr = value;
-		    break;
-
-		  case GRUB_ELF_R_PPC_REL24:
-		    {
-		      Elf_Sword delta = value - (Elf_Word) addr;
-
-		      if (delta << 6 >> 6 != delta)
-			{
-			  grub_memcpy (tptr, &trampoline_template,
-				       sizeof (*tptr));
-			  delta = (grub_uint8_t *) tptr - (grub_uint8_t *) addr;
-			  tptr->lis |= (((value) >> 16) & 0xffff);
-			  tptr->ori |= ((value) & 0xffff);
-			  tptr++;
-			}
-			
-		      if (delta << 6 >> 6 != delta)
-			return grub_error (GRUB_ERR_BAD_MODULE,
-					   "relocation overflow");
-		      *addr = (*addr & 0xfc000003) | (delta & 0x3fffffc);
-		      break;
-		    }
-
-		  case GRUB_ELF_R_PPC_ADDR16_HA:
-		    *(Elf_Half *) addr = (value + 0x8000) >> 16;
-		    break;
-
-		  case GRUB_ELF_R_PPC_ADDR32:
-		    *addr = value;
-		    break;
-
-		  case GRUB_ELF_R_PPC_REL32:
-		    *addr = value - (Elf_Word) addr;
-		    break;
-
-		  default:
-		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       N_("relocation 0x%x is not implemented yet"),
-				       ELF_R_TYPE (rel->r_info));
-		  }
+		struct trampoline *tptr = mod->trampptr;
+		grub_memcpy (tptr, &trampoline_template,
+			     sizeof (*tptr));
+		delta = (grub_uint8_t *) tptr - (grub_uint8_t *) addr;
+		tptr->lis |= (((value) >> 16) & 0xffff);
+		tptr->ori |= ((value) & 0xffff);
+		mod->trampptr = tptr + 1;
 	      }
+			
+	    if (delta << 6 >> 6 != delta)
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "relocation overflow");
+	    *addr = (*addr & 0xfc000003) | (delta & 0x3fffffc);
+	    break;
 	  }
-      }
+
+	case GRUB_ELF_R_PPC_ADDR16_HA:
+	  *(Elf_Half *) addr = (value + 0x8000) >> 16;
+	  break;
+
+	case GRUB_ELF_R_PPC_ADDR32:
+	  *addr = value;
+	  break;
+
+	case GRUB_ELF_R_PPC_REL32:
+	  *addr = value - (Elf_Word) addr;
+	  break;
+
+	default:
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			     N_("relocation 0x%x is not implemented yet"),
+			     ELF_R_TYPE (rel->r_info));
+	}
+    }
 
   return GRUB_ERR_NONE;
 }

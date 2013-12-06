@@ -38,8 +38,6 @@ grub_arm_reloc_abs32 (Elf32_Word *target, Elf32_Addr sym_addr)
   tmp = grub_le_to_cpu32 (*target);
   tmp += sym_addr;
   *target = grub_cpu_to_le32 (tmp);
-  grub_dprintf ("dl", "  %s:  reloc_abs32 0x%08x => 0x%08x", __FUNCTION__,
-		(unsigned int) sym_addr, (unsigned int) tmp);
 
   return GRUB_ERR_NONE;
 }
@@ -51,37 +49,16 @@ grub_arm_reloc_abs32 (Elf32_Word *target, Elf32_Addr sym_addr)
  * little-endian, requiring some additional fiddling.               *
  ********************************************************************/
 
-/*
- * R_ARM_THM_CALL/THM_JUMP24
- *
- * Relocate Thumb (T32) instruction set relative branches:
- *   B.W, BL and BLX
- */
-grub_err_t
-grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
+grub_int32_t
+grub_arm_thm_call_get_offset (grub_uint16_t *target)
 {
-  grub_int32_t offset, offset_low, offset_high;
-  grub_uint32_t sign, j1, j2, is_blx;
-  grub_uint32_t insword, insmask;
+  grub_uint32_t sign, j1, j2;
+  grub_uint32_t insword;
+  grub_int32_t offset;
 
   /* Extract instruction word in alignment-safe manner */
   insword = (grub_le_to_cpu16 (*target) << 16)
     | (grub_le_to_cpu16(*(target + 1)));
-  insmask = 0xf800d000;
-
-  /* B.W/BL or BLX? Affects range and expected target state */
-  if (((insword >> 12) & 0xd) == 0xc)
-    is_blx = 1;
-  else
-    is_blx = 0;
-
-  /* If BLX, target symbol must be ARM (target address LSB == 0) */
-  if (is_blx && (sym_addr & 1))
-    return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("Relocation targeting wrong execution state"));
-
-  offset_low = -16777216;
-  offset_high = is_blx ? 16777212 : 16777214;
 
   /* Extract bitfields from instruction words */
   sign = (insword >> 26) & 1;
@@ -95,22 +72,32 @@ grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
   if (offset & (1 << 24))
     offset -= (1 << 25);
 
-  grub_dprintf ("dl", "    sym_addr = 0x%08x", sym_addr);
+  return offset;
+}
 
-  offset += sym_addr;
-#ifndef GRUB_UTIL
-  offset -= (grub_uint32_t) target;
-#endif
+grub_err_t
+grub_arm_thm_call_set_offset (grub_uint16_t *target, grub_int32_t offset)
+{
+  grub_uint32_t sign, j1, j2;
+  const grub_uint32_t insmask = 0xf800d000;
+  grub_uint32_t insword;
+  int is_blx;
 
-  grub_dprintf("dl", " %s: target=%p, sym_addr=0x%08x, offset=%d\n",
-	      is_blx ? "BLX" : "BL", target, sym_addr, offset);
+  /* Extract instruction word in alignment-safe manner */
+  insword = (grub_le_to_cpu16 (*target) << 16)
+    | (grub_le_to_cpu16(*(target + 1)));
 
-  if ((offset < offset_low) || (offset > offset_high))
-    return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("THM_CALL Relocation out of range."));
+  if (((insword >> 12) & 0xd) == 0xc)
+    is_blx = 1;
+  else
+    is_blx = 0;
 
-  grub_dprintf ("dl", "    relative destination = %p",
-		(char *) target + offset);
+  if (!is_blx && !(offset & 1))
+    return grub_error (GRUB_ERR_BAD_MODULE, "bl/b.w targettting ARM");
+
+  /* Transform blx into bl if necessarry.  */
+  if (is_blx && (offset & 1))
+    insword |= (1 << 12);
 
   /* Reassemble instruction word */
   sign = (offset >> 24) & 1;
@@ -130,21 +117,15 @@ grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
   return GRUB_ERR_NONE;
 }
 
-/*
- * R_ARM_THM_JUMP19
- *
- * Relocate conditional Thumb (T32) B<c>.W
- */
-grub_err_t
-grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
+grub_int32_t
+grub_arm_thm_jump19_get_offset (grub_uint16_t *target)
 {
   grub_int32_t offset;
-  grub_uint32_t insword, insmask;
+  grub_uint32_t insword;
 
   /* Extract instruction word in alignment-safe manner */
-  insword = grub_le_to_cpu16 ((*target)) << 16
-    | grub_le_to_cpu16 (*(target + 1));
-  insmask = 0xfbc0d000;
+  insword = (grub_le_to_cpu16 (*target) << 16)
+    | (grub_le_to_cpu16(*(target + 1)));
 
   /* Extract and sign extend offset */
   offset = ((insword >> 26) & 1) << 19
@@ -156,17 +137,21 @@ grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
   if (offset & (1 << 20))
     offset -= (1 << 21);
 
-  /* Adjust and re-truncate offset */
-  offset += sym_addr;
-#ifndef GRUB_UTIL
-  offset -= (grub_uint32_t) target;
-#endif
-  if ((offset > 1048574) || (offset < -1048576))
-    return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("THM_JUMP19 Relocation out of range."));
+  return offset;
+}
+
+void
+grub_arm_thm_jump19_set_offset (grub_uint16_t *target, grub_int32_t offset)
+{
+  grub_uint32_t insword;
+  const grub_uint32_t insmask = 0xfbc0d000;
 
   offset >>= 1;
   offset &= 0xfffff;
+
+  /* Extract instruction word in alignment-safe manner */
+  insword = grub_le_to_cpu16 ((*target)) << 16
+    | grub_le_to_cpu16 (*(target + 1));
 
   /* Reassemble instruction word and write back */
   insword &= insmask;
@@ -177,9 +162,15 @@ grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
     | (offset & 0x7ff);
   *target = grub_cpu_to_le16 (insword >> 16);
   *(target + 1) = grub_cpu_to_le16 (insword & 0xffff);
-  return GRUB_ERR_NONE;
 }
 
+int
+grub_arm_thm_jump19_check_offset (grub_int32_t offset)
+{
+  if ((offset > 1048574) || (offset < -1048576))
+    return 0;
+  return 1;
+}
 
 
 /***********************************************************
@@ -188,35 +179,38 @@ grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
  * ARM instructions are 32-bit in size and 32-bit aligned. *
  ***********************************************************/
 
-/*
- * R_ARM_JUMP24
- *
- * Relocate ARM (A32) B
- */
-grub_err_t
-grub_arm_reloc_jump24 (grub_uint32_t *target, Elf32_Addr sym_addr)
+grub_int32_t
+grub_arm_jump24_get_offset (grub_uint32_t *target)
 {
-  grub_uint32_t insword;
   grub_int32_t offset;
-
-  if (sym_addr & 1)
-    return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("Relocation targeting wrong execution state"));
+  grub_uint32_t insword;
 
   insword = grub_le_to_cpu32 (*target);
 
   offset = (insword & 0x00ffffff) << 2;
   if (offset & 0x02000000)
     offset -= 0x04000000;
-  offset += sym_addr;
-#ifndef GRUB_UTIL
-  offset -= (grub_uint32_t) target;
-#endif
+  return offset;
+}
+
+int
+grub_arm_jump24_check_offset (grub_int32_t offset)
+{
+  if (offset >= 0x02000000 || offset < -0x02000000)
+    return 0;
+  return 1;
+}
+
+void
+grub_arm_jump24_set_offset (grub_uint32_t *target,
+			    grub_int32_t offset)
+{
+  grub_uint32_t insword;
+
+  insword = grub_le_to_cpu32 (*target);
 
   insword &= 0xff000000;
   insword |= (offset >> 2) & 0x00ffffff;
 
   *target = grub_cpu_to_le32 (insword);
-
-  return GRUB_ERR_NONE;
 }

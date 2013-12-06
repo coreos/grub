@@ -493,6 +493,85 @@ SUFFIX (count_funcs) (Elf_Ehdr *e, Elf_Shdr *symtab_section,
 }
 #endif
 
+#ifdef MKIMAGE_ELF32
+/* Deal with relocation information. This function relocates addresses
+   within the virtual address space starting from 0. So only relative
+   addresses can be fully resolved. Absolute addresses must be relocated
+   again by a PE32 relocator when loaded.  */
+static grub_size_t
+arm_get_trampoline_size (Elf_Ehdr *e,
+			 Elf_Shdr *sections,
+			 Elf_Half section_entsize,
+			 Elf_Half num_sections,
+			 const struct grub_install_image_target_desc *image_target)
+{
+  Elf_Half i;
+  Elf_Shdr *s;
+  grub_size_t ret = 0;
+
+  for (i = 0, s = sections;
+       i < num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
+    if ((s->sh_type == grub_host_to_target32 (SHT_REL)) ||
+        (s->sh_type == grub_host_to_target32 (SHT_RELA)))
+      {
+	Elf_Rela *r;
+	Elf_Word rtab_size, r_size, num_rs;
+	Elf_Off rtab_offset;
+	Elf_Shdr *symtab_section;
+	Elf_Word j;
+
+	symtab_section = (Elf_Shdr *) ((char *) sections
+					 + (grub_target_to_host32 (s->sh_link)
+					    * section_entsize));
+
+	rtab_size = grub_target_to_host (s->sh_size);
+	r_size = grub_target_to_host (s->sh_entsize);
+	rtab_offset = grub_target_to_host (s->sh_offset);
+	num_rs = rtab_size / r_size;
+
+	for (j = 0, r = (Elf_Rela *) ((char *) e + rtab_offset);
+	     j < num_rs;
+	     j++, r = (Elf_Rela *) ((char *) r + r_size))
+	  {
+            Elf_Addr info;
+	    Elf_Addr sym_addr;
+
+	    info = grub_target_to_host (r->r_info);
+	    sym_addr = SUFFIX (get_symbol_address) (e, symtab_section,
+						    ELF_R_SYM (info), image_target);
+
+            sym_addr += (s->sh_type == grub_target_to_host32 (SHT_RELA)) ?
+	      grub_target_to_host (r->r_addend) : 0;
+
+	    switch (ELF_R_TYPE (info))
+	      {
+	      case R_ARM_ABS32:
+	      case R_ARM_V4BX:
+		break;
+	      case R_ARM_THM_CALL:
+	      case R_ARM_THM_JUMP24:
+	      case R_ARM_THM_JUMP19:
+		if (!(sym_addr & 1))
+		  ret += 8;
+		break;
+
+	      case R_ARM_CALL:
+	      case R_ARM_JUMP24:
+		if (sym_addr & 1)
+		  ret += 16;
+		break;
+
+	      default:
+		grub_util_error (_("relocation 0x%x is not implemented yet!"), ELF_R_TYPE (info));
+		break;
+	      }
+	  }
+      }
+  return ret;
+}
+#endif
+
 /* Deal with relocation information. This function relocates addresses
    within the virtual address space starting from 0. So only relative
    addresses can be fully resolved. Absolute addresses must be relocated
@@ -512,6 +591,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
   struct grub_ia64_trampoline *tr = (void *) (pe_target + tramp_off);
   grub_uint64_t *gpptr = (void *) (pe_target + got_off);
 #define MASK19 ((1 << 19) - 1)
+#else
+  grub_uint32_t *tr = (void *) (pe_target + tramp_off);
 #endif
 
   for (i = 0, s = sections;
@@ -731,13 +812,13 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_AARCH64_JUMP26:
 		   case R_AARCH64_CALL26:
 		     {
-		       grub_err_t err;
 		       sym_addr -= offset;
 		       sym_addr -= SUFFIX (entry_point);
-		       err = grub_arm64_reloc_xxxx26((grub_uint32_t *)target,
+		       if (!grub_arm_64_check_xxxx26_offset (sym_addr))
+			 grub_util_error ("%s", _("CALL26 Relocation out of range"));
+
+		       grub_arm64_set_xxxx26_offset((grub_uint32_t *)target,
 						     sym_addr);
-		       if (err)
-			 grub_util_error ("%s", grub_errmsg);
 		     }
 		     break;
 		   default:
@@ -764,32 +845,74 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       *target = grub_host_to_target32 (grub_target_to_host32 (*target) + sym_addr);
 		     }
 		     break;
+		     /* Happens when compiled with -march=armv4.
+			Since currently we need at least armv5, keep bx as-is.
+		     */
+		   case R_ARM_V4BX:
+		     break;
 		   case R_ARM_THM_CALL:
 		   case R_ARM_THM_JUMP24:
-		     {
-		       grub_err_t err;
-		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
-		       sym_addr -= offset;
-		       /* Thumb instructions can be 16-bit aligned */
-		       err = grub_arm_reloc_thm_call ((grub_uint16_t *) target,
-						      sym_addr);
-		       if (err)
-			 grub_util_error ("%s", grub_errmsg);
-		     }
-		     break;
 		   case R_ARM_THM_JUMP19:
 		     {
 		       grub_err_t err;
-		       grub_util_info ("  THM_JUMP19:\toffset=%d\t(0x%08x)",
-				       sym_addr, sym_addr);
-		       sym_addr -= offset;
+		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
+		       if (!(sym_addr & 1))
+			 {
+			   grub_uint32_t tr_addr;
+			   grub_int32_t new_offset;
+			   tr_addr = (char *) tr - (char *) pe_target
+			     - target_section_addr;
+			   new_offset = sym_addr - tr_addr - 12;
 
+			   if (!grub_arm_jump24_check_offset (new_offset))
+			     return grub_util_error ("jump24 relocation out of range");
+
+			   tr[0] = grub_host_to_target32 (0x46c04778); /* bx pc; nop  */
+			   tr[1] = grub_host_to_target32 (((new_offset >> 2) & 0xffffff) | 0xea000000); /* b new_offset */
+			   tr += 2;
+			   sym_addr = tr_addr | 1;
+			 }
+		       sym_addr -= offset;
 		       /* Thumb instructions can be 16-bit aligned */
-		       err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
+		       if (ELF_R_TYPE (info) == R_ARM_THM_JUMP19)
+			 err = grub_arm_reloc_thm_jump19 ((grub_uint16_t *) target, sym_addr);
+		       else
+			 err = grub_arm_reloc_thm_call ((grub_uint16_t *) target,
+							sym_addr);
 		       if (err)
 			 grub_util_error ("%s", grub_errmsg);
 		     }
 		     break;
+
+		   case R_ARM_CALL:
+		   case R_ARM_JUMP24:
+		     {
+		       grub_err_t err;
+		       grub_util_info ("  JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
+		       if (sym_addr & 1)
+			 {
+			   grub_uint32_t tr_addr;
+			   grub_int32_t new_offset;
+			   tr_addr = (char *) tr - (char *) pe_target
+			     - target_section_addr;
+			   new_offset = sym_addr - tr_addr - 12;
+
+			   /* There is no immediate version of bx, only register one...  */
+			   tr[0] = grub_host_to_target32 (0xe59fc004); /* ldr	ip, [pc, #4] */
+			   tr[1] = grub_host_to_target32 (0xe08cc00f); /* add	ip, ip, pc */
+			   tr[2] = grub_host_to_target32 (0xe12fff1c); /* bx	ip */
+			   tr[3] = grub_host_to_target32 (new_offset | 1);
+			   tr += 4;
+			   sym_addr = tr_addr;
+			 }
+		       sym_addr -= offset;
+		       err = grub_arm_reloc_jump24 (target,
+						    sym_addr);
+		       if (err)
+			 grub_util_error ("%s", grub_errmsg);
+		     }
+		     break;
+
 		   default:
 		     grub_util_error (_("relocation 0x%x is not implemented yet!"), ELF_R_TYPE (info));
 		     break;
@@ -1054,11 +1177,13 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 	      case EM_ARM:
 		switch (ELF_R_TYPE (info))
 		  {
+		  case R_ARM_V4BX:
 		    /* Relative relocations do not require fixup entries. */
 		  case R_ARM_JUMP24:
 		  case R_ARM_THM_CALL:
 		  case R_ARM_THM_JUMP19:
 		  case R_ARM_THM_JUMP24:
+		  case R_ARM_CALL:
 		    {
 		      Elf_Addr addr;
 
@@ -1280,7 +1405,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
   Elf_Off section_offset;
   Elf_Half section_entsize;
   grub_size_t kernel_size;
-  grub_size_t ia64jmp_off = 0, ia64_toff = 0, ia64_got_off = 0;
+  grub_size_t ia64jmp_off = 0, tramp_off = 0, ia64_got_off = 0;
   unsigned ia64jmpnum = 0;
   Elf_Shdr *symtab_section = 0;
   grub_size_t got = 0;
@@ -1373,6 +1498,21 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 	    break;
 	  }
 
+#ifdef MKIMAGE_ELF32
+      if (image_target->elf_target == EM_ARM)
+	{
+	  grub_size_t tramp;
+
+	  *kernel_sz = ALIGN_UP (*kernel_sz, 16);
+
+	  tramp = arm_get_trampoline_size (e, sections, section_entsize,
+					   num_sections, image_target);
+
+	  tramp_off = *kernel_sz;
+	  *kernel_sz += ALIGN_UP (tramp, 16);
+	}
+#endif
+
 #ifdef MKIMAGE_ELF64
       if (image_target->elf_target == EM_IA_64)
 	{
@@ -1382,7 +1522,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 
 	  grub_ia64_dl_get_tramp_got_size (e, &tramp, &got);
 
-	  ia64_toff = *kernel_sz;
+	  tramp_off = *kernel_sz;
 	  *kernel_sz += ALIGN_UP (tramp, 16);
 
 	  ia64jmp_off = *kernel_sz;
@@ -1424,7 +1564,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
       SUFFIX (relocate_addresses) (e, sections, section_addresses, 
 				   section_entsize,
 				   num_sections, strtab,
-				   out_img, ia64_toff, ia64_got_off,
+				   out_img, tramp_off, ia64_got_off,
 				   image_target);
 
       *reloc_size = SUFFIX (make_reloc_section) (e, reloc_section,

@@ -25,46 +25,31 @@
 #include <grub/i18n.h>
 #include <grub/arm64/reloc.h>
 
-static grub_ssize_t
-sign_compress_offset (grub_ssize_t offset, int bitpos)
-{
-  return offset & ((1LL << (bitpos + 1)) - 1);
-}
-
 /*
  * grub_arm64_reloc_xxxx26():
  *
  * JUMP26/CALL26 relocations for B and BL instructions.
  */
 
-grub_err_t
-grub_arm64_reloc_xxxx26 (grub_uint32_t *place, Elf64_Addr adjust)
+int
+grub_arm_64_check_xxxx26_offset (grub_int64_t offset)
 {
-  grub_uint32_t insword, insmask;
-  grub_ssize_t offset;
   const grub_ssize_t offset_low = -(1 << 27), offset_high = (1 << 27) - 1;
 
-  insword = grub_le_to_cpu32 (*place);
-  insmask = 0xfc000000;
-
-  offset = adjust;
-#ifndef GRUB_UTIL
-  offset -= (grub_addr_t) place;
-#endif
-
   if ((offset < offset_low) || (offset > offset_high))
-    {
-      return grub_error (GRUB_ERR_BAD_MODULE,
-			 N_("CALL26 Relocation out of range"));
-    }
+    return 0;
+  return 1;
+}
+
+void
+grub_arm64_set_xxxx26_offset (grub_uint32_t *place, grub_int64_t offset)
+{
+  const grub_uint32_t insmask = grub_cpu_to_le32_compile_time (0xfc000000);
 
   grub_dprintf ("dl", "  reloc_xxxx64 %p %c= 0x%llx\n",
 		place, offset > 0 ? '+' : '-',
 		offset < 0 ? (long long) -(unsigned long long) offset : offset);
 
-  offset = sign_compress_offset (offset, 27) >> 2;
-
-  *place = grub_cpu_to_le32 ((insword & insmask) | offset);
-
-  return GRUB_ERR_NONE;
+  *place &= insmask;
+  *place |= grub_cpu_to_le32 (offset >> 2) & ~insmask;
 }

@@ -19,6 +19,8 @@
 #ifndef GRUB_ARM64_RELOC_H
 #define GRUB_ARM64_RELOC_H 1
 
-grub_err_t grub_arm64_reloc_xxxx26 (grub_uint32_t *target, Elf64_Addr sym_addr);
+int grub_arm_64_check_xxxx26_offset (grub_int64_t offset);
+void
+grub_arm64_set_xxxx26_offset (grub_uint32_t *place, grub_int64_t offset);
 
 #endif

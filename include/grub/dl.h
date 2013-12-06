@@ -177,11 +177,17 @@ struct grub_dl
   grub_dl_dep_t dep;
   grub_dl_segment_t segment;
   Elf_Sym *symtab;
+  grub_size_t symsize;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
-#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
+#if !defined (__i386__) && !defined (__x86_64__) && !defined (__sparc__)
   void *got;
+  void *gotptr;
   void *tramp;
+  void *trampptr;
+#endif
+#ifdef __mips__
+  grub_uint32_t *reginfo;
 #endif
   void *base;
   grub_size_t sz;
@@ -232,7 +238,11 @@ grub_err_t grub_dl_register_symbol (const char *name, void *addr,
 				    int isfunc, grub_dl_t mod);
 
 grub_err_t grub_arch_dl_check_header (void *ehdr);
-grub_err_t grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr);
+#ifndef GRUB_UTIL
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
+			       Elf_Shdr *s, grub_dl_segment_t seg);
+#endif
 
 #if defined (_mips)
 #define GRUB_LINKER_HAVE_INIT 1
@@ -256,9 +266,14 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 #endif
 
-#if defined (__powerpc__) || defined (__mips__)
+#if defined (__powerpc__) || defined (__mips__) || defined (__arm__)
 #define GRUB_ARCH_DL_TRAMP_ALIGN 4
 #define GRUB_ARCH_DL_GOT_ALIGN 4
+#endif
+
+#if defined (__aarch64__)
+#define GRUB_ARCH_DL_TRAMP_ALIGN 8
+#define GRUB_ARCH_DL_GOT_ALIGN 8
 #endif
 
 #endif

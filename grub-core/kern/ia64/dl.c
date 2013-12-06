@@ -46,118 +46,82 @@ grub_arch_dl_check_header (void *ehdr)
 
 /* Relocate symbols.  */
 grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
+			       Elf_Shdr *s, grub_dl_segment_t seg)
 {
-  Elf_Ehdr *e = ehdr;
-  Elf_Shdr *s;
-  Elf_Word entsize;
-  unsigned i;
-  grub_uint64_t *gp, *gpptr;
-  struct grub_ia64_trampoline *tr;
+  Elf_Rela *rel, *max;
 
-  gp = (grub_uint64_t *) mod->base;
-  gpptr = (grub_uint64_t *) mod->got;
-  tr = mod->tramp;
+  for (rel = (Elf_Rela *) ((char *) ehdr + s->sh_offset),
+	 max = (Elf_Rela *) ((char *) rel + s->sh_size);
+       rel < max;
+       rel = (Elf_Rela *) ((char *) rel + s->sh_entsize))
+    {
+      grub_addr_t addr;
+      Elf_Sym *sym;
+      grub_uint64_t value;
 
-  /* Find a symbol table.  */
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      break;
+      if (seg->size < (rel->r_offset & ~3))
+	return grub_error (GRUB_ERR_BAD_MODULE,
+			   "reloc offset is out of the segment");
 
-  if (i == e->e_shnum)
-    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
+      addr = (grub_addr_t) seg->addr + rel->r_offset;
+      sym = (Elf_Sym *) ((char *) mod->symtab
+			 + mod->symsize * ELF_R_SYM (rel->r_info));
 
-  entsize = s->sh_entsize;
+      /* On the PPC the value does not have an explicit
+	 addend, add it.  */
+      value = sym->st_value + rel->r_addend;
 
-  for (i = 0, s = (Elf_Shdr *) ((char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_RELA)
-      {
-	grub_dl_segment_t seg;
-
-	/* Find the target segment.  */
-	for (seg = mod->segment; seg; seg = seg->next)
-	  if (seg->section == s->sh_info)
-	    break;
-
-	if (seg)
+      switch (ELF_R_TYPE (rel->r_info))
+	{
+	case R_IA64_PCREL21B:
 	  {
-	    Elf_Rela *rel, *max;
+	    grub_uint64_t noff;
+	    struct grub_ia64_trampoline *tr = mod->trampptr;
+	    grub_ia64_make_trampoline (tr, value);
+	    noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
+	    mod->trampptr = tr + 1;
 
-	    for (rel = (Elf_Rela *) ((char *) e + s->sh_offset),
-		   max = rel + s->sh_size / s->sh_entsize;
-		 rel < max;
-		 rel++)
-	      {
-		grub_addr_t addr;
-		Elf_Sym *sym;
-		grub_uint64_t value;
-
-		if (seg->size < (rel->r_offset & ~3))
-		  return grub_error (GRUB_ERR_BAD_MODULE,
-				     "reloc offset is out of the segment");
-
-		addr = (grub_addr_t) seg->addr + rel->r_offset;
-		sym = (Elf_Sym *) ((char *) mod->symtab
-				     + entsize * ELF_R_SYM (rel->r_info));
-
-		/* On the PPC the value does not have an explicit
-		   addend, add it.  */
-		value = sym->st_value + rel->r_addend;
-
-		switch (ELF_R_TYPE (rel->r_info))
-		  {
-		  case R_IA64_PCREL21B:
-		    {
-		      grub_uint64_t noff;
-		      grub_ia64_make_trampoline (tr, value);
-		      noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
-		      tr++;
-
-		      if (noff & ~MASK19)
-			return grub_error (GRUB_ERR_BAD_OS,
-					   "trampoline offset too big (%lx)", noff);
-		      grub_ia64_add_value_to_slot_20b (addr, noff);
-		    }
-		    break;
-		  case R_IA64_SEGREL64LSB:
-		    *(grub_uint64_t *) addr += value - (grub_addr_t) seg->addr;
-		    break;
-		  case R_IA64_FPTR64LSB:
-		  case R_IA64_DIR64LSB:
-		    *(grub_uint64_t *) addr += value;
-		    break;
-		  case R_IA64_PCREL64LSB:
-		    *(grub_uint64_t *) addr += value - addr;
-		    break;
-		  case R_IA64_GPREL22:
-		    grub_ia64_add_value_to_slot_21 (addr, value - (grub_addr_t) gp);
-		    break;
-
-		  case R_IA64_LTOFF22X:
-		  case R_IA64_LTOFF22:
-		    if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
-		      value = *(grub_uint64_t *) sym->st_value + rel->r_addend;
-		  case R_IA64_LTOFF_FPTR22:
-		    *gpptr = value;
-		    grub_ia64_add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) gp);
-		    gpptr++;
-		    break;
-
-		    /* We treat LTOFF22X as LTOFF22, so we can ignore LDXMOV.  */
-		  case R_IA64_LDXMOV:
-		    break;
-		  default:
-		    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-				       N_("relocation 0x%x is not implemented yet"),
-				       ELF_R_TYPE (rel->r_info));
-		  }
-	      }
+	    if (noff & ~MASK19)
+	      return grub_error (GRUB_ERR_BAD_OS,
+				 "trampoline offset too big (%lx)", noff);
+	    grub_ia64_add_value_to_slot_20b (addr, noff);
 	  }
-      }
+	  break;
+	case R_IA64_SEGREL64LSB:
+	  *(grub_uint64_t *) addr += value - (grub_addr_t) seg->addr;
+	  break;
+	case R_IA64_FPTR64LSB:
+	case R_IA64_DIR64LSB:
+	  *(grub_uint64_t *) addr += value;
+	  break;
+	case R_IA64_PCREL64LSB:
+	  *(grub_uint64_t *) addr += value - addr;
+	  break;
+	case R_IA64_GPREL22:
+	  grub_ia64_add_value_to_slot_21 (addr, value - (grub_addr_t) mod->base);
+	  break;
 
+	case R_IA64_LTOFF22X:
+	case R_IA64_LTOFF22:
+	  if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
+	    value = *(grub_uint64_t *) sym->st_value + rel->r_addend;
+	case R_IA64_LTOFF_FPTR22:
+	  {
+	    grub_uint64_t *gpptr = mod->gotptr;
+	    *gpptr = value;
+	    grub_ia64_add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) mod->base);
+	    mod->gotptr = gpptr + 1;
+	    break;
+	  }
+	  /* We treat LTOFF22X as LTOFF22, so we can ignore LDXMOV.  */
+	case R_IA64_LDXMOV:
+	  break;
+	default:
+	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			     N_("relocation 0x%x is not implemented yet"),
+			     ELF_R_TYPE (rel->r_info));
+	}
+    }
   return GRUB_ERR_NONE;
 }

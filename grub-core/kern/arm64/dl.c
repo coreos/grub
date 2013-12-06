@@ -25,6 +25,15 @@
 #include <grub/i18n.h>
 #include <grub/cpu/reloc.h>
 
+struct trampoline
+{
+#define LDR 0x58000050
+#define BR 0xd61f0200
+  grub_uint32_t ldr; /* ldr	x16, 8 */
+  grub_uint32_t br; /* br x16 */
+  grub_uint64_t addr;
+};
+
 /*
  * Check if EHDR is a valid ELF header.
  */
@@ -42,59 +51,76 @@ grub_arch_dl_check_header (void *ehdr)
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got)
+{
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
+
+  *tramp = 0;
+  *got = 0;
+
+  for (i = 0, s = (const Elf_Shdr *) ((grub_addr_t) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((grub_addr_t) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL || s->sh_type == SHT_RELA)
+      {
+	const Elf_Rel *rel, *max;
+
+	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
+	       max = rel + s->sh_size / s->sh_entsize;
+	     rel < max;
+	     rel = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_entsize))
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_AARCH64_CALL26:
+	    case R_AARCH64_JUMP26:
+	      {
+		*tramp += sizeof (struct trampoline);
+		break;
+	      }
+	    }
+      }
+
+  return GRUB_ERR_NONE;
+}
+
 /*
  * Unified function for both REL and RELA 
  */
-static grub_err_t
-do_relX (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
+grub_err_t
+grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
+			       Elf_Shdr *s, grub_dl_segment_t seg)
 {
-  grub_err_t retval;
-  grub_dl_segment_t segment;
-  Elf_Rel *rel;
-  Elf_Rela *rela;
-  Elf_Sym *symbol;
-  int i, entnum;
-  unsigned long long  entsize;
+  Elf_Rel *rel, *max;
 
-  /* Find the target segment for this relocation section. */
-  for (segment = mod->segment ; segment != 0 ; segment = segment->next)
-    if (segment->section == relhdr->sh_info)
-      break;
-  if (!segment)
-    return grub_error (GRUB_ERR_EOF, N_("relocation segment not found"));
-
-  rel = (Elf_Rel *) ((grub_addr_t) e + relhdr->sh_offset);
-  rela = (Elf_Rela *) rel;
-  if (relhdr->sh_type == SHT_RELA)
-    entsize = sizeof (Elf_Rela);
-  else
-    entsize = sizeof (Elf_Rel);
-
-  entnum = relhdr->sh_size / entsize;
-  retval = GRUB_ERR_NONE;
-
-  grub_dprintf("dl", "Processing %d relocation entries.\n", entnum);
-
-  /* Step through all relocations */
-  for (i = 0, symbol = mod->symtab; i < entnum; i++)
+  for (rel = (Elf_Rel *) ((char *) ehdr + s->sh_offset),
+	 max = (Elf_Rel *) ((char *) rel + s->sh_size);
+       rel < max;
+       rel = (Elf_Rel *) ((char *) rel + s->sh_entsize))
     {
+      Elf_Sym *sym;
       void *place;
-      grub_uint64_t sym_addr, symidx, reltype;
+      grub_uint64_t sym_addr;
 
-      if (rel->r_offset >= segment->size)
+      if (rel->r_offset >= seg->size)
 	return grub_error (GRUB_ERR_BAD_MODULE,
 			   "reloc offset is out of the segment");
 
-      symidx = ELF_R_SYM (rel->r_info);
-      reltype = ELF_R_TYPE (rel->r_info);
+      sym = (Elf_Sym *) ((char *) mod->symtab
+			 + mod->symsize * ELF_R_SYM (rel->r_info));
 
-      sym_addr = symbol[symidx].st_value;
-      if (relhdr->sh_type == SHT_RELA)
-	sym_addr += rela->r_addend;
+      sym_addr = sym->st_value;
+      if (s->sh_type == SHT_RELA)
+	sym_addr += ((Elf_Rela *) rel)->r_addend;
 
-      place = (void *) ((grub_addr_t) segment->addr + rel->r_offset);
+      place = (void *) ((grub_addr_t) seg->addr + rel->r_offset);
 
-      switch (reltype)
+      switch (ELF_R_TYPE (rel->r_info))
 	{
 	case R_AARCH64_ABS64:
 	  {
@@ -108,92 +134,32 @@ do_relX (Elf_Shdr * relhdr, Elf_Ehdr * e, grub_dl_t mod)
 	  break;
 	case R_AARCH64_CALL26:
 	case R_AARCH64_JUMP26:
-	  retval = grub_arm64_reloc_xxxx26 (place, sym_addr);
+	  {
+	    grub_int64_t offset = sym_addr - (grub_uint64_t) place;
+
+	    if (!grub_arm_64_check_xxxx26_offset (offset))
+	      {
+		struct trampoline *tp = mod->trampptr;
+		mod->trampptr = tp + 1;
+		tp->ldr = LDR;
+		tp->br = BR;
+		tp->addr = sym_addr;
+		offset = (grub_uint8_t *) tp - (grub_uint8_t *) place;
+	      }
+
+	    if (!grub_arm_64_check_xxxx26_offset (offset))
+		return grub_error (GRUB_ERR_BAD_MODULE,
+				   N_("Trampoline out of range"));
+
+	    grub_arm64_set_xxxx26_offset (place, offset);
+	  }
 	  break;
 	default:
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			     N_("relocation 0x%x is not implemented yet"),
-			     reltype);
-	}
-
-      if (retval != GRUB_ERR_NONE)
-	break;
-
-      rel = (Elf_Rel *) ((grub_addr_t) rel + entsize);
-      rela++;
-    }
-
-  return retval;
-}
-
-/*
- * Verify that provided ELF header contains reference to a symbol table
- */
-static int
-has_symtab (Elf_Ehdr * e)
-{
-  int i;
-  Elf_Shdr *s;
-
-  for (i = 0, s = (Elf_Shdr *) ((grub_addr_t) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (Elf_Shdr *) ((grub_addr_t) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      return 1;
-
-  return 0;
-}
-
-/*
- * grub_arch_dl_relocate_symbols():
- *   Locates the relocations section of the ELF object, and calls
- *   do_relX() to deal with it.
- */
-grub_err_t
-grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr)
-{
-  Elf_Ehdr *e = ehdr;
-  Elf_Shdr *s;
-  unsigned i;
-
-  if (!has_symtab (e))
-    return grub_error (GRUB_ERR_BAD_MODULE, N_("no symbol table"));
-
-#define FIRST_SHDR(x) ((Elf_Shdr *) ((grub_addr_t)(x) + (x)->e_shoff))
-#define NEXT_SHDR(x, y) ((Elf_Shdr *) ((grub_addr_t)(y) + (x)->e_shentsize))
-
-  for (i = 0, s = FIRST_SHDR (e); i < e->e_shnum; i++, s = NEXT_SHDR (e, s))
-    {
-      grub_err_t ret;
-
-      switch (s->sh_type)
-	{
-	case SHT_REL:
-	case SHT_RELA:
-	  {
-	    ret = do_relX (s, e, mod);
-	    if (ret != GRUB_ERR_NONE)
-	      return ret;
-	  }
-	  break;
-	case SHT_ARM_ATTRIBUTES:
-	case SHT_NOBITS:
-	case SHT_NULL:
-	case SHT_PROGBITS:
-	case SHT_SYMTAB:
-	case SHT_STRTAB:
-	  break;
-	default:
-	  {
-	    grub_dprintf ("dl", "unhandled section_type: %d (0x%08x)\n",
-			  s->sh_type, s->sh_type);
-	    return GRUB_ERR_NOT_IMPLEMENTED_YET;
-	  };
+			     ELF_R_TYPE (rel->r_info));
 	}
     }
-
-#undef FIRST_SHDR
-#undef NEXT_SHDR
 
   return GRUB_ERR_NONE;
 }

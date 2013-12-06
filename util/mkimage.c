@@ -834,6 +834,94 @@ struct fixup_block_list
   struct grub_pe32_fixup_block b;
 };
 
+/*
+ * R_ARM_THM_CALL/THM_JUMP24
+ *
+ * Relocate Thumb (T32) instruction set relative branches:
+ *   B.W, BL and BLX
+ */
+static grub_err_t
+grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  offset = grub_arm_thm_call_get_offset (target);
+
+  grub_dprintf ("dl", "    sym_addr = 0x%08x", sym_addr);
+
+  offset += sym_addr;
+
+  grub_dprintf("dl", " BL*: target=%p, sym_addr=0x%08x, offset=%d\n",
+	       target, sym_addr, offset);
+
+  /* Keep traditional (pre-Thumb2) limits on blx. In any case if the kernel
+     is bigger than 2M  (currently under 150K) then we probably have a problem
+     somewhere else.  */
+  if (offset < -0x200000 || offset >= 0x200000)
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       N_("THM_CALL Relocation out of range."));
+
+  grub_dprintf ("dl", "    relative destination = %p",
+		(char *) target + offset);
+
+  return grub_arm_thm_call_set_offset (target, offset);
+}
+
+/*
+ * R_ARM_THM_JUMP19
+ *
+ * Relocate conditional Thumb (T32) B<c>.W
+ */
+static grub_err_t
+grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  if (!(sym_addr & 1))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       N_("Relocation targeting wrong execution state"));
+
+  offset = grub_arm_thm_jump19_get_offset (target);
+
+  /* Adjust and re-truncate offset */
+  offset += sym_addr;
+
+  if (!grub_arm_thm_jump19_check_offset (offset))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       N_("THM_JUMP19 Relocation out of range."));
+
+  grub_arm_thm_jump19_set_offset (target, offset);
+
+  return GRUB_ERR_NONE;
+}
+
+/*
+ * R_ARM_JUMP24
+ *
+ * Relocate ARM (A32) B
+ */
+static grub_err_t
+grub_arm_reloc_jump24 (grub_uint32_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  if (sym_addr & 1)
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       N_("Relocation targeting wrong execution state"));
+
+  offset = grub_arm_jump24_get_offset (target);
+  offset += sym_addr;
+
+  if (!grub_arm_jump24_check_offset (offset))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       N_("JUMP24 Relocation out of range."));
+
+
+  grub_arm_jump24_set_offset (target, offset);
+
+  return GRUB_ERR_NONE;
+}
+
 #pragma GCC diagnostic ignored "-Wcast-align"
 
 #define MKIMAGE_ELF32 1
