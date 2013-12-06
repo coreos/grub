@@ -1,5 +1,9 @@
 2013-12-06  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Don't add -mlong-calls when compiling with clang.
+
+2013-12-06  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Fix a typo.
 
 2013-12-06  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -848,6 +848,18 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
   TARGET_CFLAGS="$TARGET_CFLAGS -mno-red-zone"
 fi
 
+if test "x$target_cpu" = xarm; then
+  AC_CACHE_CHECK([whether option -mlong-calls works], grub_cv_cc_mlong_calls, [
+    CFLAGS="$TARGET_CFLAGS -mlong-calls -Werror"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_mlong_calls=yes],
+		      [grub_cv_cc_mlong_calls=no])
+  ])
+  if test "x$grub_cv_cc_mlong_calls" = xyes; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -mlong-calls"
+  fi
+fi
+
 #
 # Compiler features.
 #
