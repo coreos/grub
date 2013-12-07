@@ -112,7 +112,7 @@ for OS in ${OSPROBED} ; do
   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
   LABEL="`echo ${OS} | cut -d ':' -f 3 | tr '^' ' '`"
   BOOT="`echo ${OS} | cut -d ':' -f 4`"
-  UUID="`grub-probe --target=fs_uuid --device ${DEVICE%@*}`"
+  UUID="`${grub_probe} --target=fs_uuid --device ${DEVICE%@*}`"
   EXPUUID="$UUID"
 
   if [ x"${DEVICE#*@}" != x ] ; then
