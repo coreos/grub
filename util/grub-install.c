@@ -323,6 +323,21 @@ probe_raid_level (grub_disk_t disk)
 }
 
 static void
+push_partmap_module (const char *map)
+{
+  char buf[50];
+
+  if (strcmp (map, "openbsd") == 0 || strcmp (map, "netbsd") == 0)
+    {
+      grub_install_push_module ("part_bsd");
+      return;
+    }
+
+  snprintf (buf, sizeof (buf), "part_%s", map);
+  grub_install_push_module (buf);
+}
+
+static void
 probe_mods (grub_disk_t disk)
 {
   grub_partition_t part;
@@ -333,21 +348,11 @@ probe_mods (grub_disk_t disk)
     grub_util_info ("no partition map found for %s", disk->name);
 
   for (part = disk->partition; part; part = part->parent)
-    {
-      char buf[50];
-      if (strcmp (part->partmap->name, "openbsd") == 0
-	  || strcmp (part->partmap->name, "netbsd") == 0)
-	{
-	  grub_install_push_module ("part_bsd");
-	  continue;
-	}
-      snprintf (buf, sizeof (buf), "part_%s", part->partmap->name);
-      grub_install_push_module (buf);
-    }
+    push_partmap_module (part->partmap->name);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID)
     {
-      grub_diskfilter_get_partmap (disk, grub_install_push_module);
+      grub_diskfilter_get_partmap (disk, push_partmap_module);
       have_abstractions = 1;
     }
 
@@ -1098,7 +1103,13 @@ main (int argc, char *argv[])
     {
       if (install_device[0] == '('
 	  && install_device[grub_strlen (install_device) - 1] == ')')
-	install_drive = xstrdup (install_device);
+        {
+	  
+	  size_t len = grub_strlen (install_device) - 2;
+	  install_drive = xmalloc (len + 1);
+	  memcpy (install_drive, install_device + 1, len);
+	  install_drive[len] = '\0';
+        }
       else
 	{
 	  grub_util_pull_device (install_device);

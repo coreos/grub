@@ -1,3 +1,9 @@
+2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-install.c (push_partmap_module): Add helper to convert
+	partmap names to module names and use it in probe_mods(). Fixes
+	failure to find partmap modules in diskfilter case.
+
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Make unifont mandatory on coreboot.
