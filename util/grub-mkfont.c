@@ -821,9 +821,9 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
   font_name = xmalloc (strlen (font_info->name) + strlen (&style_name[1])
 		       + 3 + 20);
-  ptr = stpcpy (font_name, font_info->name);
+  ptr = grub_stpcpy (font_name, font_info->name);
   *ptr++ = ' ';
-  ptr = stpcpy (ptr, &style_name[1]);
+  ptr = grub_stpcpy (ptr, &style_name[1]);
   *ptr++ = ' ';
   snprintf (ptr, 20, "%d", font_info->size);
 
