@@ -1,3 +1,9 @@
+2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/normal/main.c (INIT): Set default color to light-gray
+	to match GRUB_TERM_DEFAULT_NORMAL_COLOR (i.e. rescue mode), Linux
+	and apparently BIOS defaults.
+
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Transform -C option to grub-mkstandalone to --core-compress available

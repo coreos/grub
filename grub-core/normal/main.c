@@ -572,8 +572,8 @@ GRUB_MOD_INIT(normal)
   grub_env_export ("color_highlight");
 
   /* Set default color names.  */
-  grub_env_set ("color_normal", "white/black");
-  grub_env_set ("color_highlight", "black/white");
+  grub_env_set ("color_normal", "light-gray/black");
+  grub_env_set ("color_highlight", "black/light-gray");
 
   for (i = 0; i < ARRAY_SIZE (features); i++)
     {
