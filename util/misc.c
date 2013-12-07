@@ -256,3 +256,11 @@ void
 grub_register_exported_symbols (void)
 {
 }
+
+/* Used in comparison of arrays of strings with qsort */
+int
+grub_qsort_strcmp (const void *p1, const void *p2)
+{
+  return strcmp(*(char **)p1, *(char **)p2);
+}
+

@@ -1,5 +1,12 @@
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* util/misc.c (grub_qsort_strcmp): Add qsort helper function to sort
+	strings.
+	* include/grub/util/misc.h: Define it ...
+	* util/grub-install.c (device_map_check_duplicates): ... and use it.
+
+2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* util/grub.d/30_os-prober.in: Fix use of grub-probe instead of
 	${grub_probe}.
 

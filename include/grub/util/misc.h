@@ -47,4 +47,6 @@ void grub_util_init_nls (void);
 
 void grub_util_host_init (int *argc, char ***argv);
 
+int grub_qsort_strcmp (const void *, const void *);
+
 #endif /* ! GRUB_UTIL_MISC_HEADER */
