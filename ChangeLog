@@ -1,3 +1,7 @@
+2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Merge GRUBFS and GRUB_FS variables.
+
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	Revert commit 69ca97c820, it caused failures when using OS device name
