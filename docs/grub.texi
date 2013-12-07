@@ -3123,7 +3123,7 @@ This variable contains the ``highlight'' foreground and background terminal
 colors, separated by a slash (@samp{/}).  Setting this variable changes
 those colors.  For the available color names, @pxref{color_normal}.
 
-The default is @samp{black/white}.
+The default is @samp{black/light-gray}.
 
 
 @node color_normal
@@ -3152,7 +3152,7 @@ those colors.  Each color must be a name from the following list:
 @item white
 @end itemize
 
-The default is @samp{white/black}.
+The default is @samp{light-gray/black}.
 
 The color support support varies from terminal to terminal.
 
