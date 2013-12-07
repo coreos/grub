@@ -103,7 +103,7 @@ EXTRA_DIST += $(starfield_theme_files)
 EXTRA_DIST += $(srcdir)/themes/starfield/src/slider_s.xcf $(srcdir)/themes/starfield/src/slider_n.xcf $(srcdir)/themes/starfield/src/slider_c.xcf $(srcdir)/themes/starfield/src/blob_nw.xcf $(srcdir)/themes/starfield/src/bootmenu/center.xcf $(srcdir)/themes/starfield/src/bootmenu/corner.xcf $(srcdir)/themes/starfield/src/bootmenu/side.xcf $(srcdir)/themes/starfield/src/terminalbox/side.xcf $(srcdir)/themes/starfield/src/terminalbox/corner.xcf $(srcdir)/themes/starfield/src/terminalbox/center.xcf
 
 unicode.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE)
+	./build-grub-mkfont -o $@ $(FONT_SOURCE) || (rm -f $@; exit 1)
 CLEANFILES += unicode.pf2
 
 # Arrows and lines are needed to draw the menu, so always include them
@@ -111,19 +111,19 @@ UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
 ascii.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES)
+	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
 CLEANFILES += ascii.pf2
 
 euro.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES)
+	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
 CLEANFILES += euro.pf2
 
 ascii.h: $(FONT_SOURCE) build-grub-gen-asciih
-	./build-grub-gen-asciih $(FONT_SOURCE) $@
+	./build-grub-gen-asciih $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
 CLEANFILES += ascii.h
 
 widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec
-	./build-grub-gen-widthspec $(FONT_SOURCE) $@
+	./build-grub-gen-widthspec $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
 CLEANFILES += widthspec.h
 
 # Install config.h into platformdir

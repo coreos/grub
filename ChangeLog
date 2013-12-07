@@ -1,3 +1,7 @@
+2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am: Remove partial font files if generation failed.
+
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/misc.c (grub_qsort_strcmp): Add qsort helper function to sort
