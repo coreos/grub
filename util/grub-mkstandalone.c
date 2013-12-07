@@ -25,7 +25,6 @@
 #include <argp.h>
 #include <string.h>
 
-static grub_compression_t compression;
 static char *output_image;
 static char **files;
 static int nfiles;
@@ -35,8 +34,7 @@ static FILE *memdisk;
 enum
   {
     OPTION_OUTPUT = 'o',
-    OPTION_FORMAT = 'C',
-    OPTION_COMPRESION = 'C'
+    OPTION_FORMAT = 'O'
   };
 
 static struct argp_option options[] = {
@@ -44,8 +42,7 @@ static struct argp_option options[] = {
   {"output", 'o', N_("FILE"),
    0, N_("save output in FILE [required]"), 2},
   {"format", 'O', N_("FILE"), 0, 0, 2},
-  {"compression", 'C', N_("xz|none|auto"),
-   0, N_("choose the compression to use for core image"), 2},
+  {"compression", 'C', N_("xz|none|auto"), OPTION_HIDDEN, 0, 2},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -70,6 +67,9 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 static error_t
 argp_parser (int key, char *arg, struct argp_state *state)
 {
+  if (key == 'C')
+    key = GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS;
+
   if (grub_install_parse (key, arg))
     return 0;
 
@@ -95,23 +95,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	break;
       }
 
-    case 'C':
-      if (grub_strcmp (arg, "xz") == 0)
-	{
-#ifdef HAVE_LIBLZMA
-	  compression = GRUB_COMPRESSION_XZ;
-#else
-	  grub_util_error ("%s",
-			   _("grub-mkimage is compiled without XZ support"));
-#endif
-	}
-      else if (grub_strcmp (arg, "none") == 0)
-	compression = GRUB_COMPRESSION_NONE;
-      else if (grub_strcmp (arg, "auto") == 0)
-	compression = GRUB_COMPRESSION_AUTO;
-      else
-	grub_util_error (_("Unknown compression format %s"), arg);
-      break;
     case ARGP_KEY_ARG:
       files[nfiles++] = xstrdup (arg);
       break;
@@ -365,8 +348,7 @@ main (int argc, char *argv[])
   grub_install_make_image_wrap (grub_install_source_directory,
 				"(memdisk)/boot/grub", output_image,
 				memdisk_img, NULL,
-				grub_util_get_target_name (format), 0,
-				compression);
+				grub_util_get_target_name (format), 0);
 
   grub_util_unlink (memdisk_img);
   return 0;

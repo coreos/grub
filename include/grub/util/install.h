@@ -41,6 +41,9 @@
   { "compress", GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS,		  \
     "no,xz,gz,lzo", OPTION_ARG_OPTIONAL,				  \
     N_("compress GRUB files [optional]"), 1 },			          \
+  {"core-compress", GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS,		\
+      N_("xz|none|auto"),						\
+      0, N_("choose the compression to use for core image"), 2},	\
     /* TRANSLATORS: platform here isn't identifier. It can be translated. */ \
   { "directory", 'd', N_("DIR"), 0,					\
     N_("use images and modules under DIR [default=%s/<platform>]"), 1 },  \
@@ -111,7 +114,8 @@ enum grub_install_options {
   GRUB_INSTALL_OPTIONS_DIRECTORY2,
   GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY,
   GRUB_INSTALL_OPTIONS_THEMES_DIRECTORY,
-  GRUB_INSTALL_OPTIONS_GRUB_MKIMAGE
+  GRUB_INSTALL_OPTIONS_GRUB_MKIMAGE,
+  GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS
 };
 
 extern char *grub_install_source_directory;
@@ -146,15 +150,13 @@ void
 grub_install_make_image_wrap (const char *dir, const char *prefix,
 			      const char *outname, char *memdisk_path,
 			      char *config_path,
-			      const char *format, int note,
-			      grub_compression_t comp);
+			      const char *format, int note);
 void
 grub_install_make_image_wrap_file (const char *dir, const char *prefix,
 				   FILE *fp, const char *outname,
 				   char *memdisk_path,
 				   char *config_path,
-				   const char *mkimage_target, int note,
-				   grub_compression_t comp);
+				   const char *mkimage_target, int note);
 
 int
 grub_install_copy_file (const char *src,

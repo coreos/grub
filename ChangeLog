@@ -1,5 +1,10 @@
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Transform -C option to grub-mkstandalone to --core-compress available
+	in all grub-install flavours.
+
+2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Merge GRUBFS and GRUB_FS variables.
 
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>

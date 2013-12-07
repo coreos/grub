@@ -1368,8 +1368,7 @@ main (int argc, char *argv[])
 				/* output */ imgfile,
 				/* memdisk */ NULL,
 				have_load_cfg ? load_cfg : NULL,
-				/* image target */ mkimage_target,
-				0, GRUB_COMPRESSION_AUTO);
+				/* image target */ mkimage_target, 0);
   /* Backward-compatibility kludges.  */
   switch (platform)
     {
@@ -1399,8 +1398,7 @@ main (int argc, char *argv[])
 				       /* output */ dst,
 				       /* memdisk */ NULL,
 				      have_load_cfg ? load_cfg : NULL,
-				       /* image target */ mkimage_target,
-				      0, GRUB_COMPRESSION_AUTO);
+				       /* image target */ mkimage_target, 0);
       }
       break;
     case GRUB_INSTALL_PLATFORM_ARM_EFI:

@@ -297,12 +297,30 @@ handle_install_list (struct install_list *il, const char *val,
 
 static char **pubkeys;
 static size_t npubkeys;
+static grub_compression_t compression;
 
 int
 grub_install_parse (int key, char *arg)
 {
   switch (key)
     {
+    case 'C':
+      if (grub_strcmp (arg, "xz") == 0)
+	{
+#ifdef HAVE_LIBLZMA
+	  compression = GRUB_COMPRESSION_XZ;
+#else
+	  grub_util_error ("%s",
+			   _("grub-mkimage is compiled without XZ support"));
+#endif
+	}
+      else if (grub_strcmp (arg, "none") == 0)
+	compression = GRUB_COMPRESSION_NONE;
+      else if (grub_strcmp (arg, "auto") == 0)
+	compression = GRUB_COMPRESSION_AUTO;
+      else
+	grub_util_error (_("Unknown compression format %s"), arg);
+      return 1;
     case 'k':
       pubkeys = xrealloc (pubkeys,
 			  sizeof (pubkeys[0])
@@ -401,8 +419,7 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
 				   FILE *fp, const char *outname,
 				   char *memdisk_path,
 				   char *config_path,
-				   const char *mkimage_target, int note,
-				   grub_compression_t comp)
+				   const char *mkimage_target, int note)
 {
   const struct grub_install_image_target_desc *tgt;
   const char *const compnames[] = 
@@ -468,7 +485,7 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
 		  "--format '%s' --compression '%s' %s %s\n",
 		  dir, prefix,
 		  outname, mkimage_target,
-		  compnames[comp], note ? "--note" : "", s);
+		  compnames[compression], note ? "--note" : "", s);
 
   tgt = grub_install_get_image_target (mkimage_target);
   if (!tgt)
@@ -477,7 +494,7 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
   grub_install_generate_image (dir, prefix, fp, outname,
 			       modules.entries, memdisk_path,
 			       pubkeys, npubkeys, config_path, tgt,
-			       note, comp);
+			       note, compression);
   while (dc--)
     grub_install_pop_module ();
 }
@@ -486,8 +503,7 @@ void
 grub_install_make_image_wrap (const char *dir, const char *prefix,
 			      const char *outname, char *memdisk_path,
 			      char *config_path,
-			      const char *mkimage_target, int note,
-			      grub_compression_t comp)
+			      const char *mkimage_target, int note)
 {
   FILE *fp;
 
@@ -497,7 +513,7 @@ grub_install_make_image_wrap (const char *dir, const char *prefix,
 		     strerror (errno));
   grub_install_make_image_wrap_file (dir, prefix, fp, outname,
 				     memdisk_path, config_path,
-				     mkimage_target, note, comp);
+				     mkimage_target, note);
   grub_util_file_sync (fp);
   fclose (fp);
 }

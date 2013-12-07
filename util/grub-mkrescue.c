@@ -241,8 +241,7 @@ write_part (FILE *f, const char *srcdir)
 static void
 make_image_abs (enum grub_install_plat plat,
 		const char *mkimage_target,
-		const char *output,
-		grub_compression_t compress)
+		const char *output)
 {
   char *load_cfg;
   FILE *load_cfg_f;
@@ -266,8 +265,7 @@ make_image_abs (enum grub_install_plat plat,
   grub_install_push_module ("iso9660");
   grub_install_make_image_wrap (source_dirs[plat], "/boot/grub", output,
 				0, load_cfg,
-				mkimage_target, 0,
-				compress);
+				mkimage_target, 0);
   grub_install_pop_module ();
   grub_install_pop_module ();
   grub_util_unlink (load_cfg);
@@ -276,12 +274,10 @@ make_image_abs (enum grub_install_plat plat,
 static void
 make_image (enum grub_install_plat plat,
 	    const char *mkimage_target,
-	    const char *output_sub,
-	    grub_compression_t compress)
+	    const char *output_sub)
 {
   char *out = grub_util_path_concat (2, boot_grub, output_sub);
-  make_image_abs (plat, mkimage_target,
-		  out, GRUB_COMPRESSION_AUTO);
+  make_image_abs (plat, mkimage_target, out);
   free (out);
 }
 
@@ -307,8 +303,7 @@ make_image_fwdisk_abs (enum grub_install_plat plat,
 
   grub_install_push_module ("iso9660");
   grub_install_make_image_wrap (source_dirs[plat], "()/boot/grub", output,
-				0, load_cfg, mkimage_target, 0,
-				GRUB_COMPRESSION_AUTO);
+				0, load_cfg, mkimage_target, 0);
   grub_install_pop_module ();
 }
 
@@ -483,8 +478,7 @@ main (int argc, char *argv[])
       grub_install_make_image_wrap (source_dirs[GRUB_INSTALL_PLATFORM_I386_PC],
 				    "/boot/grub", output,
 				    0, load_cfg,
-				    "i386-pc-eltorito", 0,
-				    GRUB_COMPRESSION_AUTO);
+				    "i386-pc-eltorito", 0);
 
       xorriso_push ("-b");
       xorriso_push ("boot/grub/i386-pc/eltorito.img");
@@ -528,8 +522,7 @@ main (int argc, char *argv[])
 	      grub_install_make_image_wrap (source_dirs[GRUB_INSTALL_PLATFORM_I386_PC],
 					    "/boot/grub", output,
 					    0, load_cfg,
-					    "i386-pc", 0,
-					    GRUB_COMPRESSION_AUTO);
+					    "i386-pc", 0);
 	      sz = ftello (sa);
 	      fflush (sa);
 	      grub_util_fd_sync (fileno (sa));
@@ -554,7 +547,7 @@ main (int argc, char *argv[])
   grub_install_push_module ("pata");
   grub_install_push_module ("ahci");
   grub_install_push_module ("at_keyboard");
-  make_image (GRUB_INSTALL_PLATFORM_I386_MULTIBOOT, "i386-multiboot", "i386-multiboot/core.elf", GRUB_COMPRESSION_AUTO);
+  make_image (GRUB_INSTALL_PLATFORM_I386_MULTIBOOT, "i386-multiboot", "i386-multiboot/core.elf");
   grub_install_pop_module ();
   grub_install_pop_module ();
   grub_install_pop_module ();
@@ -775,22 +768,22 @@ main (int argc, char *argv[])
   make_image_fwdisk (GRUB_INSTALL_PLATFORM_MIPSEL_ARC, "mipsel-arc", "arc.exe");
 
   grub_install_push_module ("pata");
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS, "mipsel-qemu_mips-elf", "roms/mipsel-qemu_mips.elf", GRUB_COMPRESSION_AUTO);
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_QEMU_MIPS, "mipsel-qemu_mips-elf", "roms/mipsel-qemu_mips.elf");
 
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-loongson-elf", "loongson.elf", GRUB_COMPRESSION_XZ);
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-loongson-elf", "loongson.elf");
 
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-yeeloong-flash", "mipsel-yeeloong.bin", GRUB_COMPRESSION_XZ);
-  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fuloong2f-flash", "mipsel-fuloong2f.bin", GRUB_COMPRESSION_XZ);
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-yeeloong-flash", "mipsel-yeeloong.bin");
+  make_image (GRUB_INSTALL_PLATFORM_MIPSEL_LOONGSON, "mipsel-fuloong2f-flash", "mipsel-fuloong2f.bin");
 
-  make_image (GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS, "mips-qemu_mips-elf", "roms/mips-qemu_mips.elf", GRUB_COMPRESSION_AUTO);
+  make_image (GRUB_INSTALL_PLATFORM_MIPS_QEMU_MIPS, "mips-qemu_mips-elf", "roms/mips-qemu_mips.elf");
 
   grub_install_push_module ("at_keyboard");
 
-  make_image (GRUB_INSTALL_PLATFORM_I386_QEMU, "i386-qemu", "roms/qemu.img", GRUB_COMPRESSION_AUTO);
+  make_image (GRUB_INSTALL_PLATFORM_I386_QEMU, "i386-qemu", "roms/qemu.img");
 
   grub_install_push_module ("ahci");
 
-  make_image (GRUB_INSTALL_PLATFORM_I386_COREBOOT, "i386-coreboot", "roms/coreboot.elf", GRUB_COMPRESSION_AUTO);
+  make_image (GRUB_INSTALL_PLATFORM_I386_COREBOOT, "i386-coreboot", "roms/coreboot.elf");
   grub_install_pop_module ();
   grub_install_pop_module ();
   grub_install_pop_module ();
