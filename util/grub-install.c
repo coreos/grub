@@ -1104,7 +1104,6 @@ main (int argc, char *argv[])
       if (install_device[0] == '('
 	  && install_device[grub_strlen (install_device) - 1] == ')')
         {
-	  
 	  size_t len = grub_strlen (install_device) - 2;
 	  install_drive = xmalloc (len + 1);
 	  memcpy (install_drive, install_device + 1, len);

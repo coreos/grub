@@ -1,5 +1,11 @@
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	Revert commit 69ca97c820, it caused failures when using OS device name
+	in grub-install. Instead just strip off parenthesis in grub-install
+	if (hdX) was passed.
+
+2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* util/grub-install.c (push_partmap_module): Add helper to convert
 	partmap names to module names and use it in probe_mods(). Fixes
 	failure to find partmap modules in diskfilter case.
