@@ -1,5 +1,9 @@
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Skip unifont 6.3 pcf and bdf.
+
+2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* Makefile.am: Remove partial font files if generation failed.
 
 2013-12-07  Andrey Borzenkov <arvidjaar@gmail.com>
