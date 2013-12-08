@@ -1,5 +1,9 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/lite.c: Add missing include of ../ia64/dl_helper.c.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove grub_memalign on emu.
 
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
