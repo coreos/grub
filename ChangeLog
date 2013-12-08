@@ -1,5 +1,9 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix mips-emu compilation.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Check for freetype library usability.
 
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>

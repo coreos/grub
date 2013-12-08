@@ -21,7 +21,14 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
+#ifndef GRUB_MACHINE_EMU
 #include <grub/cpu/time.h>
+#else
+static inline void
+grub_cpu_idle(void)
+{
+}
+#endif
 
 void EXPORT_FUNC(grub_millisleep) (grub_uint32_t ms);
 grub_uint64_t EXPORT_FUNC(grub_get_time_ms) (void);

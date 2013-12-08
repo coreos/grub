@@ -429,7 +429,7 @@ void __attribute__ ((noreturn)) EXPORT_FUNC (abort) (void);
 /* Halt the system, using APM if possible. If NO_APM is true, don't
  * use APM even if it is available.  */
 void grub_halt (int no_apm) __attribute__ ((noreturn));
-#elif defined (__mips__)
+#elif defined (__mips__) && !defined (GRUB_MACHINE_EMU)
 void EXPORT_FUNC (grub_halt) (void) __attribute__ ((noreturn));
 #else
 void grub_halt (void) __attribute__ ((noreturn));
