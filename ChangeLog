@@ -1,5 +1,10 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/kernel.h [__sparc__]: Restrict sparc64-ieee1275 to
+	right platform rather than leaking to sparc64-emu.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/emuconsole.c: Remove unsigned comparison >= 0.
 	But ensure that the variables in question are indeed unsigned.
 
