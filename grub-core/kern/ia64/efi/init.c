@@ -23,7 +23,6 @@
 #include <grub/time.h>
 #include <grub/err.h>
 #include <grub/dl.h>
-#include <grub/cache.h>
 #include <grub/kernel.h>
 #include <grub/efi/efi.h>
 #include <grub/loader.h>
@@ -73,18 +72,4 @@ grub_machine_fini (int flags)
 {
   if (flags & GRUB_LOADER_FLAG_NORETURN)
     grub_efi_fini ();
-}
-
-void
-grub_arch_sync_caches (void *address, grub_size_t len)
-{
-  /* Cache line length is at least 32.  */
-  len += (grub_uint64_t)address & 0x1f;
-  grub_uint64_t a = (grub_uint64_t)address & ~0x1f;
-
-  /* Flush data.  */
-  for (len = (len + 31) & ~0x1f; len > 0; len -= 0x20, a += 0x20)
-    asm volatile ("fc.i %0" : : "r" (a));
-  /* Sync and serialize.  Maybe extra.  */
-  asm volatile (";; sync.i;; srlz.i;;");
 }

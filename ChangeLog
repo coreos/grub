@@ -1,5 +1,10 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ia64/efi/init.c (grub_arch_sync_caches): Move to ...
+	* grub-core/kern/ia64/cache.c (grub_arch_sync_caches): ... here.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/main.c: Silence missing prototypes to allow emu
 	compilation with GCC <= 4.2.
 	* grub-core/kern/emu/argp_common.c: Likewise.

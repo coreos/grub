@@ -193,6 +193,7 @@ kernel = {
   ia64_efi = kern/ia64/efi/init.c;
   ia64_efi = kern/ia64/dl.c;
   ia64_efi = kern/ia64/dl_helper.c;
+  ia64_efi = kern/ia64/cache.c;
 
   arm_efi = kern/arm/efi/init.c;
   arm_efi = kern/arm/efi/misc.c;
