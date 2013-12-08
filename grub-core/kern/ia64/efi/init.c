@@ -79,6 +79,7 @@ void
 grub_arch_sync_caches (void *address, grub_size_t len)
 {
   /* Cache line length is at least 32.  */
+  len += (grub_uint64_t)address & 0x1f;
   grub_uint64_t a = (grub_uint64_t)address & ~0x1f;
 
   /* Flush data.  */
