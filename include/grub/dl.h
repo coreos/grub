@@ -210,6 +210,13 @@ extern grub_dl_t EXPORT_VAR(grub_dl_head);
 
 #define FOR_DL_MODULES(var) FOR_LIST_ELEMENTS ((var), (grub_dl_head))
 
+#ifdef GRUB_MACHINE_EMU
+void *
+grub_osdep_dl_memalign (grub_size_t align, grub_size_t size);
+void
+grub_dl_osdep_dl_free (void *ptr);
+#endif
+
 static inline void
 grub_dl_init (grub_dl_t mod)
 {

@@ -1,5 +1,10 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Move OS-dependent mprotect for module loading to grub-core/osdep/*/dl.c
+	and implement windows variant.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix mips-emu compilation.
 
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>

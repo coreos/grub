@@ -38,10 +38,6 @@
 #define GRUB_MODULES_MACHINE_READONLY
 #endif
 
-#ifdef GRUB_MACHINE_EMU
-#include <sys/mman.h>
-#endif
-
 
 
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -258,20 +254,14 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 #endif
 
 #ifdef GRUB_MACHINE_EMU
-  if (talign < 8192 * 16)
-    talign = 8192 * 16;
-  tsize = ALIGN_UP (tsize, 8192 * 16);
-#endif
-
+  mod->base = grub_osdep_dl_memalign (talign, tsize);
+#else
   mod->base = grub_memalign (talign, tsize);
+#endif
   if (!mod->base)
     return grub_errno;
   mod->sz = tsize;
   ptr = mod->base;
-
-#ifdef GRUB_MACHINE_EMU
-  mprotect (mod->base, tsize, PROT_READ | PROT_WRITE | PROT_EXEC);
-#endif
 
   for (i = 0, s = (Elf_Shdr *)((char *) e + e->e_shoff);
        i < e->e_shnum;
@@ -782,7 +772,11 @@ grub_dl_unload (grub_dl_t mod)
       grub_free (dep);
     }
 
+#ifdef GRUB_MACHINE_EMU
+  grub_dl_osdep_dl_free (mod->base);
+#else
   grub_free (mod->base);
+#endif
   grub_free (mod->name);
 #ifdef GRUB_MODULES_MACHINE_READONLY
   grub_free (mod->symtab);
