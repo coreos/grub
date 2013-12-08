@@ -1,3 +1,7 @@
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make arm-emu work.
+
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkfont.c: Replace stpcpy with grub_stpcpy.

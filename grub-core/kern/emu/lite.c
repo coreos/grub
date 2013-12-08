@@ -17,6 +17,12 @@
 #include "../powerpc/dl.c"
 #elif defined(__ia64__)
 #include "../ia64/dl.c"
+#elif defined(__arm__)
+#include "../arm/dl_helper.c"
+#include "../arm/dl.c"
+#elif defined(__aarch64__)
+#include "../arm64/dl_helper.c"
+#include "../arm64/dl.c"
 #else
 #error "No target cpu type is defined"
 #endif

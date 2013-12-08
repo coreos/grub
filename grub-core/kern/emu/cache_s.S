@@ -23,7 +23,7 @@ FUNCTION (grub_arch_sync_caches)
 	.set macro
 #elif defined(__powerpc__)
 #include "../powerpc/cache.S"
-#elif defined(__ia64__)
+#elif defined(__ia64__) || defined(__arm__) || defined(__aarch64__)
 #else
 #error "No target cpu type is defined"
 #endif

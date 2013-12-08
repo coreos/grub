@@ -49,12 +49,14 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
   return GRUB_ERR_BAD_MODULE;
 }
 
-#if defined (__ia64__) || defined (__powerpc__) || defined (__mips__)
-void grub_arch_dl_get_tramp_got_size (const void *ehdr __attribute__ ((unused)),
-				      grub_size_t *tramp, grub_size_t *got)
+#if !defined (__i386__) && !defined (__x86_64__) && !defined (__sparc__)
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr __attribute__ ((unused)),
+			         grub_size_t *tramp, grub_size_t *got)
 {
   *tramp = 0;
   *got = 0;
+  return GRUB_ERR_BAD_MODULE;
 }
 #endif
 

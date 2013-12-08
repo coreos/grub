@@ -628,7 +628,7 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   return q;
 }
 
-#ifndef GRUB_UTIL
+#if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
 
 #if defined (__arm__)
 

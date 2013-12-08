@@ -1,5 +1,5 @@
 
-#if defined(__ia64__)
+#if defined(__ia64__) || defined (__arm__) || defined (__aarch64__)
 #include <grub/cache.h>
 
 void __clear_cache (char *beg, char *end);

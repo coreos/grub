@@ -350,7 +350,7 @@ grub_video_capture_write_bmp (const char *fname,
 
 	for (y = mode_info->height - 1; y >= 0; y--)
 	  {
-	    grub_uint32_t *iptr = (grub_uint32_t *) ((grub_uint8_t *) ptr + mode_info->pitch * y);
+	    grub_uint32_t *iptr = (grub_uint32_t *) ptr + (mode_info->pitch / 4) * y;
 	    int x;
 	    grub_uint8_t *optr = buffer;
 	    for (x = 0; x < (int) mode_info->width; x++)
@@ -421,7 +421,7 @@ grub_video_capture_write_bmp (const char *fname,
 
 	for (y = mode_info->height - 1; y >= 0; y--)
 	  {
-	    grub_uint16_t *iptr = (grub_uint16_t *) ((grub_uint8_t *) ptr + mode_info->pitch * y);
+	    grub_uint16_t *iptr = (grub_uint16_t *) ptr + (mode_info->pitch / 2) * y;
 	    int x;
 	    grub_uint8_t *optr = buffer;
 	    for (x = 0; x < (int) mode_info->width; x++)
