@@ -1,5 +1,11 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/main.c: Silence missing prototypes to allow emu
+	compilation with GCC <= 4.2.
+	* grub-core/kern/emu/argp_common.c: Likewise.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/kernel.h [__sparc__]: Restrict sparc64-ieee1275 to
 	right platform rather than leaking to sparc64-emu.
 

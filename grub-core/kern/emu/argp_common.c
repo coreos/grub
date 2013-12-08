@@ -20,6 +20,8 @@
 #include <config.h>
 #include <config-util.h>
 
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 #define _GNU_SOURCE	1
 #include <stdlib.h>
 #include <unistd.h>

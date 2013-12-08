@@ -44,6 +44,8 @@
 #include <grub/loader.h>
 #include <grub/util/misc.h>
 
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+
 #include "progname.h"
 #include <argp.h>
 
