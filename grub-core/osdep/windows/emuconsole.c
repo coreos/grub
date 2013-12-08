@@ -108,11 +108,9 @@ grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
       ret = ir.Event.KeyEvent.uChar.UnicodeChar;
       if (ret == 0)
 	{
-	  if (ir.Event.KeyEvent.wVirtualKeyCode >= 0
-	      && ir.Event.KeyEvent.wVirtualKeyCode
-	      < ARRAY_SIZE (windows_codes)
-	      && windows_codes[(int) ir.Event.KeyEvent.wVirtualKeyCode])
-	    ret = windows_codes[(int) ir.Event.KeyEvent.wVirtualKeyCode];
+	  unsigned kc = ir.Event.KeyEvent.wVirtualKeyCode;
+	  if (kc < ARRAY_SIZE (windows_codes) && windows_codes[kc])
+	    ret = windows_codes[kc];
 	  else
 	    continue;
 	  if (ir.Event.KeyEvent.dwControlKeyState & SHIFT_PRESSED)

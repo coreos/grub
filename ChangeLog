@@ -1,5 +1,10 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/emuconsole.c: Remove unsigned comparison >= 0.
+	But ensure that the variables in question are indeed unsigned.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/lite.c: Add missing include of ../ia64/dl_helper.c.
 
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
