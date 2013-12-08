@@ -1201,10 +1201,14 @@ if test x"$grub_mkfont_excuse" = x ; then
   freetype_cflags=`$FREETYPE --cflags`
   freetype_libs=`$FREETYPE --libs`
   SAVED_CPPFLAGS="$CPPFLAGS"
+  SAVED_LIBS="$LIBS"
   CPPFLAGS="$CPPFLAGS $freetype_cflags"
+  LIBS="$LIBS $freetype_libs"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_mkfont_excuse=["need freetype2 headers"]])
+  AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_mkfont_excuse=["freetype2 library unusable"]])
   CPPFLAGS="$SAVED_CPPFLAGS"
+  LIBS="$SAVED_LIBS"
 fi
 
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
@@ -1256,9 +1260,13 @@ if test x"$grub_build_mkfont_excuse" = x ; then
   build_freetype_cflags=`$BUILD_FREETYPE --cflags`
   build_freetype_libs=`$BUILD_FREETYPE --libs`
   SAVED_CPPFLAGS_2="$CPPFLAGS"
+  SAVED_LIBS="$LIBS"
   CPPFLAGS="$CPPFLAGS $build_freetype_cflags"
+  LIBS="$LIBS $build_freetype_libs"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_build_mkfont_excuse=["need freetype2 headers"]])
+  AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_build_mkfont_excuse=["freetype2 library unusable"]])
+  LIBS="$SAVED_LIBS"
   CPPFLAGS="$SAVED_CPPFLAGS_2"
 fi
 

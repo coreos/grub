@@ -1,5 +1,9 @@
 2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Check for freetype library usability.
+
+2013-12-08  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make arm-emu work.
 
 2013-12-07  Vladimir Serbinenko  <phcoder@gmail.com>
