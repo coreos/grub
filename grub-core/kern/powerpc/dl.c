@@ -68,16 +68,6 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
   *tramp = 0;
   *got = 0;
 
-  /* Find a symbol table.  */
-  for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
-    if (s->sh_type == SHT_SYMTAB)
-      break;
-
-  if (i == e->e_shnum)
-    return GRUB_ERR_NONE;
-
   for (i = 0, s = (const Elf_Shdr *) ((const char *) e + e->e_shoff);
        i < e->e_shnum;
        i++, s = (const Elf_Shdr *) ((const char *) s + e->e_shentsize))
