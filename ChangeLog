@@ -1,5 +1,11 @@
 2013-12-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/sparc64/dl.c (grub_arch_dl_relocate_symbols): Check
+	range of R_SPARC_HI22.
+	Implement R_SPARC_LM22.
+
+2013-12-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/powerpc/dl_helper.c (grub_arch_dl_get_tramp_got_size):
 	Do not explicitly check for symbol table as it's already checked in
 	platform-independent layer.

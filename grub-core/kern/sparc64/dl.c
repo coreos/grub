@@ -90,6 +90,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  *addr = (*addr & 0xFFFFFC00) | ((value >> 32) & 0x3FF);
 	  break;
 	case R_SPARC_HI22: /* 9 V-imm22 */
+	  if (value >> 32)
+	    return grub_error (GRUB_ERR_BAD_MODULE,
+			       "address out of 32 bits range");
+	case R_SPARC_LM22:
 	  *addr = (*addr & 0xFFC00000) | ((value >> 10) & 0x3FFFFF);
 	  break;
 	case R_SPARC_LO10: /* 12 T-simm13 */
