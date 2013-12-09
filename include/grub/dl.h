@@ -180,7 +180,7 @@ struct grub_dl
   grub_size_t symsize;
   void (*init) (struct grub_dl *mod);
   void (*fini) (void);
-#if !defined (__i386__) && !defined (__x86_64__) && !defined (__sparc__)
+#if !defined (__i386__) && !defined (__x86_64__)
   void *got;
   void *gotptr;
   void *tramp;
@@ -278,7 +278,7 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 #define GRUB_ARCH_DL_GOT_ALIGN 4
 #endif
 
-#if defined (__aarch64__)
+#if defined (__aarch64__) || defined (__sparc__)
 #define GRUB_ARCH_DL_TRAMP_ALIGN 8
 #define GRUB_ARCH_DL_GOT_ALIGN 8
 #endif

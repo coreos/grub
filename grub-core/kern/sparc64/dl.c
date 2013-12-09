@@ -40,6 +40,61 @@ grub_arch_dl_check_header (void *ehdr)
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
+struct trampoline
+{
+  grub_uint8_t code[0x28];
+  grub_uint64_t addr;
+};
+
+static const grub_uint8_t trampoline_code[0x28] =
+{
+  /* 0:  */ 0x82, 0x10, 0x00, 0x0f,	/* mov  %o7, %g1 */
+  /* 4:  */ 0x40, 0x00, 0x00, 0x02, 	/* call  0xc */
+  /* 8:  */ 0x01, 0x00, 0x00, 0x00, 	/* nop */
+  /* c:  */ 0x9e, 0x1b, 0xc0, 0x01, 	/* xor  %o7, %g1, %o7 */
+  /* 10: */ 0x82, 0x18, 0x40, 0x0f, 	/* xor  %g1, %o7, %g1 */
+  /* 14: */ 0x9e, 0x1b, 0xc0, 0x01, 	/* xor  %o7, %g1, %o7 */
+  /* 18: */ 0xc2, 0x58, 0x60, 0x24, 	/* ldx  [ %g1 + 0x24 ], %g1 */
+  /* 1c: */ 0x81, 0xc0, 0x40, 0x00, 	/* jmp  %g1 */
+  /* 20: */ 0x01, 0x00, 0x00, 0x00, 	/* nop */
+  /* 24: */ 0x01, 0x00, 0x00, 0x00, 	/* nop */
+};
+
+grub_err_t
+grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				 grub_size_t *got)
+{
+  const Elf_Ehdr *e = ehdr;
+  const Elf_Shdr *s;
+  unsigned i;
+
+  *tramp = 0;
+  *got = 0;
+
+  for (i = 0, s = (const Elf_Shdr *) ((grub_addr_t) e + e->e_shoff);
+       i < e->e_shnum;
+       i++, s = (const Elf_Shdr *) ((grub_addr_t) s + e->e_shentsize))
+    if (s->sh_type == SHT_REL || s->sh_type == SHT_RELA)
+      {
+	const Elf_Rel *rel, *max;
+
+	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
+	       max = rel + s->sh_size / s->sh_entsize;
+	     rel < max;
+	     rel = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_entsize))
+	  switch (ELF_R_TYPE (rel->r_info))
+	    {
+	    case R_SPARC_WDISP30:
+	      {
+		*tramp += sizeof (struct trampoline);
+		break;
+	      }
+	    }
+      }
+
+  return GRUB_ERR_NONE;
+}
+
 /* Relocate symbols.  */
 grub_err_t
 grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
@@ -74,6 +129,17 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  *addr = value;
 	  break;
 	case R_SPARC_WDISP30: /* 7 V-disp30 */
+	  if (((value - (Elf_Addr) addr) & 0xFFFFFFFF00000000) &&
+	       (((value - (Elf_Addr) addr) & 0xFFFFFFFF00000000)
+		!= 0xFFFFFFFF00000000))
+	    {
+	      struct trampoline *tp = mod->trampptr;
+	      mod->trampptr = tp + 1;
+	      grub_memcpy (tp->code, trampoline_code, sizeof (tp->code));
+	      tp->addr = value;
+	      value = (Elf_Addr) tp;
+	    }
+
 	  if (((value - (Elf_Addr) addr) & 0xFFFFFFFF00000000) &&
 	      (((value - (Elf_Addr) addr) & 0xFFFFFFFF00000000)
 	       != 0xFFFFFFFF00000000))
