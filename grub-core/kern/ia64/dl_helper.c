@@ -173,19 +173,9 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got)
 {
   const Elf64_Ehdr *e = ehdr;
-  grub_size_t cntt = 0, cntg = 0;;
+  grub_size_t cntt = 0, cntg = 0;
   const Elf64_Shdr *s;
   unsigned i;
-
-  /* Find a symbol table.  */
-  for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu64 (e->e_shoff));
-       i < grub_le_to_cpu16 (e->e_shnum);
-       i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
-    if (s->sh_type == grub_cpu_to_le32_compile_time (SHT_SYMTAB))
-      break;
-
-  if (i == grub_le_to_cpu16 (e->e_shnum))
-    return GRUB_ERR_NONE;
 
   for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu64 (e->e_shoff));
        i < grub_le_to_cpu16 (e->e_shnum);
