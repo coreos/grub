@@ -10,6 +10,10 @@ if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
   LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
 endif
+if COND_sparc64_emu
+  CFLAGS_PLATFORM += -mno-app-regs
+  LDFLAGS_PLATFORM = -Wl,--no-relax
+endif
 if COND_arm
   CFLAGS_PLATFORM += -mthumb-interwork
   CCASFLAGS_PLATFORM = -mthumb-interwork

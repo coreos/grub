@@ -176,6 +176,10 @@ if test x$platform != xemu ; then
    esac
 fi
 
+if test x"$target_cpu-$platform" = xsparc64-emu ; then
+   target_m64=1 ;
+fi
+
 case "$target_os" in
   windows* | mingw32*) target_os=cygwin ;;
 esac
@@ -344,6 +348,11 @@ AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.
 unset ac_cv_c_bigendian
+
+if test x"$target_cpu-$platform" = xsparc64-emu ; then
+  CFLAGS="$CFLAGS -m64"
+  HOST_CFLAGS="$HOST_CFLAGS -m64"
+fi
 
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
@@ -820,7 +829,7 @@ AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
 LDFLAGS="$TARGET_LDFLAGS"
 
-if test "$target_cpu" = x86_64; then
+if test "$target_cpu" = x86_64 || test "$target_cpu-$platform" = sparc64-emu ; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
     CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large"
@@ -830,6 +839,8 @@ if test "$target_cpu" = x86_64; then
   ])
   if test "x$grub_cv_cc_mcmodel" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
+  elif test "$target_cpu-$platform" = sparc64-emu; then
+    TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=medany"
   fi
 fi
 
@@ -1585,6 +1596,7 @@ AM_CONDITIONAL([COND_mips_loongson], [test x$target_cpu = xmipsel -a x$platform 
 AM_CONDITIONAL([COND_mips_qemu_mips], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xqemu_mips])
 AM_CONDITIONAL([COND_mips_arc], [test "(" x$target_cpu = xmips -o x$target_cpu = xmipsel ")"  -a x$platform = xarc])
 AM_CONDITIONAL([COND_sparc64_ieee1275], [test x$target_cpu = xsparc64 -a x$platform = xieee1275])
+AM_CONDITIONAL([COND_sparc64_emu], [test x$target_cpu = xsparc64 -a x$platform = xemu])
 AM_CONDITIONAL([COND_powerpc_ieee1275], [test x$target_cpu = xpowerpc -a x$platform = xieee1275])
 AM_CONDITIONAL([COND_mips], [test x$target_cpu = xmips -o x$target_cpu = xmipsel])
 AM_CONDITIONAL([COND_mipsel], [test x$target_cpu = xmipsel])
