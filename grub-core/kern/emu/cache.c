@@ -1,7 +1,12 @@
+#ifndef GRUB_MACHINE_EMU
+#error "This source is only meant for grub-emu platform"
+#endif
 
 #include <grub/cache.h>
 
-#if defined(__ia64__) || defined (__arm__) || defined (__aarch64__)
+#if defined(__ia64__)
+#include "../ia64/cache.c"
+#elif defined (__arm__) || defined (__aarch64__)
 
 void __clear_cache (char *beg, char *end);
 

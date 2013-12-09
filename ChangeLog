@@ -1,5 +1,10 @@
 2013-12-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/cache.c [__ia64__]: Use our cache cleaning routine
+	on ia64 as __clear_cache is a dummy on ia64.
+
+2013-12-09  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ia64/dl_helper.c (grub_ia64_dl_get_tramp_got_size):
 	Do not explicitly check for symbol table as it's already checked in
 	platform-independent layer.
