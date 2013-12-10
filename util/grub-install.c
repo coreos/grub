@@ -68,6 +68,7 @@ static int have_load_cfg = 0;
 static FILE * load_cfg_f = NULL;
 static char *load_cfg;
 static int install_bootsector = 1;
+static int add_rs_codes = 1;
 
 enum
   {
@@ -93,7 +94,8 @@ enum
     OPTION_DEBUG_IMAGE,
     OPTION_NO_FLOPPY,
     OPTION_DISK_MODULE,
-    OPTION_NO_BOOTSECTOR
+    OPTION_NO_BOOTSECTOR,
+    OPTION_NO_RS_CODES,
   };
 
 static int fs_probe = 1;
@@ -180,6 +182,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
       install_bootsector = 0;
       return 0;
 
+    case OPTION_NO_RS_CODES:
+      add_rs_codes = 0;
+      return 0;
+
     case OPTION_DEBUG:
       verbosity++;
       return 0;
@@ -238,6 +244,9 @@ static struct argp_option options[] = {
    N_("do not probe for filesystems in DEVICE"), 0},
   {"no-bootsector", OPTION_NO_BOOTSECTOR, 0, 0,
    N_("do not install bootsector"), 0},
+  {"no-rs-codes", OPTION_NO_RS_CODES, 0, 0,
+   N_("Do not apply any reed-solomon codes when embedding core.img. "
+      "This option is only available on x86 BIOS targets."), 0},
 
   {"debug", OPTION_DEBUG, 0, OPTION_HIDDEN, 0, 2},
   {"no-floppy", OPTION_NO_FLOPPY, 0, OPTION_HIDDEN, 0, 2},
@@ -1435,12 +1444,13 @@ main (int argc, char *argv[])
 					      "boot.img");
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
-	grub_util_info ("%sgrub-bios-setup %s %s %s %s --directory='%s' --device-map='%s' '%s'",
+	grub_util_info ("%sgrub-bios-setup %s %s %s %s %s --directory='%s' --device-map='%s' '%s'",
 			install_bootsector ? "" : "NOT RUNNING: ",
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
 			force ? "--force " : "",
 			!fs_probe ? "--skip-fs-probe" : "",
+			!add_rs_codes ? "--no-rs-codes" : "",
 			platdir,
 			device_map,
 			install_device);
@@ -1449,7 +1459,7 @@ main (int argc, char *argv[])
 	if (install_bootsector)
 	  grub_util_bios_setup (platdir, "boot.img", "core.img",
 				install_drive, force,
-				fs_probe, allow_floppy);
+				fs_probe, allow_floppy, add_rs_codes);
 	break;
       }
     case GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275:
@@ -1475,7 +1485,8 @@ main (int argc, char *argv[])
 	if (install_bootsector)
 	  grub_util_sparc_setup (platdir, "boot.img", "core.img",
 				 install_device, force,
-				 fs_probe, allow_floppy);
+				 fs_probe, allow_floppy,
+				 0 /* unused */ );
 	break;
       }
 

@@ -64,6 +64,12 @@
 #define DEFAULT_BOOT_FILE	"boot.img"
 #define DEFAULT_CORE_FILE	"core.img"
 
+/* Non-printable "keys" for arguments with no short form.
+ * See grub-core/gnulib/argp.h for details. */
+enum {
+  NO_RS_CODES_KEY = 0x100,
+};
+
 static struct argp_option options[] = {
   {"boot-image",  'b', N_("FILE"), 0,
    N_("use FILE as the boot image [default=%s]"), 0},
@@ -82,7 +88,9 @@ static struct argp_option options[] = {
    /* TRANSLATORS: The potential breakage isn't limited to floppies but it's
       likely to make the install unbootable from HDD.  */
    N_("make the drive also bootable as floppy (default for fdX devices). May break on some BIOSes."), 0},
-
+  {"no-rs-codes", NO_RS_CODES_KEY, 0,      0,
+   N_("Do not apply any reed-solomon codes when embedding core.img. "
+      "This option is only available on x86 BIOS targets."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -118,6 +126,7 @@ struct arguments
   int  fs_probe;
   int allow_floppy;
   char *device;
+  int add_rs_codes;
 };
 
 static error_t
@@ -171,6 +180,10 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
       case 'v':
         verbosity++;
+        break;
+
+      case NO_RS_CODES_KEY:
+        arguments->add_rs_codes = 0;
         break;
 
       case ARGP_KEY_ARG:
@@ -233,6 +246,7 @@ main (int argc, char *argv[])
   /* Default option values. */
   memset (&arguments, 0, sizeof (struct arguments));
   arguments.fs_probe  = 1;
+  arguments.add_rs_codes = 1;
 
   /* Parse our arguments */
   if (argp_parse (&argp, argc, argv, 0, 0, &arguments) != 0)
@@ -292,7 +306,8 @@ main (int argc, char *argv[])
 		   arguments.boot_file ? : DEFAULT_BOOT_FILE,
 		   arguments.core_file ? : DEFAULT_CORE_FILE,
 		   dest_dev, arguments.force,
-		   arguments.fs_probe, arguments.allow_floppy);
+		   arguments.fs_probe, arguments.allow_floppy,
+		   arguments.add_rs_codes);
 
   /* Free resources.  */
   grub_fini_all ();

@@ -1,3 +1,8 @@
+2013-12-09  Jon McCune <jonmccune@google.com>
+
+	* Add --no-rs-codes flag to optionally disable reed-solomon codes
+	in grub-install and grub-bios-setup for x86 BIOS targets.
+
 2013-12-09  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Implement sparc64 trampolines (needed for sparc64-emu).
