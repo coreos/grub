@@ -190,14 +190,26 @@ read_config_file (const char *config)
   ctmp = grub_env_get ("config_directory");
   if (ctmp)
     old_dir = grub_strdup (ctmp);
-  grub_env_set ("config_file", config);
-  config_dir = grub_strdup (config);
+  if (*config == '(')
+    {
+      grub_env_set ("config_file", config);
+      config_dir = grub_strdup (config);
+    }
+  else
+    {
+      /* $root is guranteed to be defined, otherwise open above would fail */
+      config_dir = grub_xasprintf ("(%s)%s", grub_env_get ("root"), config);
+      if (config_dir)
+	grub_env_set ("config_file", config_dir);
+    }
   if (config_dir)
-    ptr = grub_strrchr (config_dir, '/');
-  if (ptr)
-    *ptr = 0;
-  grub_env_set ("config_directory", config_dir);
-  grub_free (config_dir);
+    {
+      ptr = grub_strrchr (config_dir, '/');
+      if (ptr)
+	*ptr = 0;
+      grub_env_set ("config_directory", config_dir);
+      grub_free (config_dir);
+    }
 
   grub_env_export ("config_file");
   grub_env_export ("config_directory");
