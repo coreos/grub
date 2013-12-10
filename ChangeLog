@@ -1,3 +1,7 @@
+2013-12-10  Leif Lindholm <leif.lindholm@linaro.org>
+
+	* grub-core/lib/fdt.c: change memcpy => grub_memcpy
+
 2013-12-09  Jon McCune <jonmccune@google.com>
 
 	* Add --no-rs-codes flag to optionally disable reed-solomon codes

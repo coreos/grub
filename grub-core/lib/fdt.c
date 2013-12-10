@@ -219,8 +219,8 @@ static int rearrange_blocks (void *fdt, unsigned int clearance)
   grub_fdt_set_off_dt_strings (fdt, off_dt_strings);
 
   /* Copy reordered blocks back to fdt. */
-  memcpy (fdt_ptr + off_mem_rsvmap, tmp_fdt + off_mem_rsvmap,
-         grub_fdt_get_totalsize (fdt) - off_mem_rsvmap);
+  grub_memcpy (fdt_ptr + off_mem_rsvmap, tmp_fdt + off_mem_rsvmap,
+               grub_fdt_get_totalsize (fdt) - off_mem_rsvmap);
 
   grub_free(tmp_fdt);
   return 0;
