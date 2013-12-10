@@ -21,6 +21,7 @@
 #include <grub/mm.h>
 #include <grub/efi/api.h>
 #include <grub/efi/efi.h>
+#include <grub/cpu/efi/memory.h>
 
 #if defined (__i386__) || defined (__x86_64__)
 #include <grub/pci.h>
@@ -30,13 +31,8 @@
   ((grub_efi_memory_descriptor_t *) ((char *) (desc) + (size)))
 
 #define BYTES_TO_PAGES(bytes)	(((bytes) + 0xfff) >> 12)
+#define BYTES_TO_PAGES_DOWN(bytes)	((bytes) >> 12)
 #define PAGES_TO_BYTES(pages)	((pages) << 12)
-
-#if defined (__code_model_large__) || !defined (__x86_64__)
-#define MAX_USABLE_ADDRESS 0xffffffff
-#else
-#define MAX_USABLE_ADDRESS 0x7fffffff
-#endif
 
 /* The size of a memory map obtained from the firmware. This must be
    a multiplier of 4KB.  */
@@ -64,7 +60,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
 
 #if 1
   /* Limit the memory access to less than 4GB for 32-bit platforms.  */
-  if (address > MAX_USABLE_ADDRESS)
+  if (address > GRUB_EFI_MAX_USABLE_ADDRESS)
     return 0;
 #endif
 
@@ -72,7 +68,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
   if (address == 0)
     {
       type = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
-      address = MAX_USABLE_ADDRESS;
+      address = GRUB_EFI_MAX_USABLE_ADDRESS;
     }
   else
     type = GRUB_EFI_ALLOCATE_ADDRESS;
@@ -92,7 +88,7 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
     {
       /* Uggh, the address 0 was allocated... This is too annoying,
 	 so reallocate another one.  */
-      address = MAX_USABLE_ADDRESS;
+      address = GRUB_EFI_MAX_USABLE_ADDRESS;
       status = efi_call_4 (b->allocate_pages, type, GRUB_EFI_LOADER_DATA, pages, &address);
       grub_efi_free_pages (0, pages);
       if (status != GRUB_EFI_SUCCESS)
@@ -325,7 +321,7 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
     {
       if (desc->type == GRUB_EFI_CONVENTIONAL_MEMORY
 #if 1
-	  && desc->physical_start <= MAX_USABLE_ADDRESS
+	  && desc->physical_start <= GRUB_EFI_MAX_USABLE_ADDRESS
 #endif
 	  && desc->physical_start + PAGES_TO_BYTES (desc->num_pages) > 0x100000
 	  && desc->num_pages != 0)
@@ -343,9 +339,9 @@ filter_memory_map (grub_efi_memory_descriptor_t *memory_map,
 #if 1
 	  if (BYTES_TO_PAGES (filtered_desc->physical_start)
 	      + filtered_desc->num_pages
-	      > BYTES_TO_PAGES (MAX_USABLE_ADDRESS+1LL))
+	      > BYTES_TO_PAGES_DOWN (GRUB_EFI_MAX_USABLE_ADDRESS))
 	    filtered_desc->num_pages
-	      = (BYTES_TO_PAGES (MAX_USABLE_ADDRESS+1LL)
+	      = (BYTES_TO_PAGES_DOWN (GRUB_EFI_MAX_USABLE_ADDRESS)
 		 - BYTES_TO_PAGES (filtered_desc->physical_start));
 #endif
 

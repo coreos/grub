@@ -1,5 +1,10 @@
 2013-12-10  Leif Lindholm <leif.lindholm@linaro.org>
 
+	* make MAX_USABLE_ADDRESS platform-specific
+	* grub-core/kern/efi/mm.c: add Vladimir's new BYTES_TO_PAGES_DOWN macro.
+
+2013-12-10  Leif Lindholm <leif.lindholm@linaro.org>
+
 	* grub-core/lib/fdt.c: change memcpy => grub_memcpy
 
 2013-12-09  Jon McCune <jonmccune@google.com>
