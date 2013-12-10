@@ -5994,8 +5994,20 @@ mounted on
 Recheck the device map, even if @file{/boot/grub/device.map} already
 exists. You should use this option whenever you add/remove a disk
 into/from your computer.
-@end table
 
+@item --no-rs-codes
+By default on x86 BIOS systems, @command{grub-install} will use some
+extra space in the bootloader embedding area for Reed-Solomon
+error-correcting codes. This enables GRUB to still boot successfully
+if some blocks are corrupted.  The exact amount of protection offered
+is dependent on available space in the embedding area.  R sectors of
+redundancy can tolerate up to R/2 corrupted sectors. This
+redundancy may be cumbersome if attempting to cryptographically
+validate the contents of the bootloader embedding area, or in more
+modern systems with GPT-style partition tables (@pxref{BIOS
+installation}) where GRUB does not reside in any unpartitioned space
+outside of the MBR.  Disable the Reed-Solomon codes with this option.
+@end table
 
 @node Invoking grub-mkconfig
 @chapter Invoking grub-mkconfig

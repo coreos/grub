@@ -183,12 +183,14 @@ void
 grub_util_bios_setup (const char *dir,
 		      const char *boot_file, const char *core_file,
 		      const char *dest, int force,
-		      int fs_probe, int allow_floppy);
+		      int fs_probe, int allow_floppy,
+		      int add_rs_codes);
 void
 grub_util_sparc_setup (const char *dir,
 		       const char *boot_file, const char *core_file,
 		       const char *dest, int force,
-		       int fs_probe, int allow_floppy);
+		       int fs_probe, int allow_floppy,
+		       int add_rs_codes);
 
 char *
 grub_install_get_image_targets_string (void);
