@@ -1,5 +1,11 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/charset.c: Fix premature line wrap and crash.
+	Crash happened only in some cases like a string starting at the
+	half of the screen of same length.
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efiemu/efiemu.h: Sync configuration table declaration
 	with EFI counterpart.
 

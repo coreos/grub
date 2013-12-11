@@ -564,7 +564,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 {
   struct grub_unicode_glyph *outptr = visual_out;
   unsigned line_start = 0;
-  grub_ssize_t line_width = startwidth;
+  grub_ssize_t line_width;
   unsigned k;
   grub_ssize_t last_space = -1;
   grub_ssize_t last_space_width = 0;
@@ -573,10 +573,25 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
   if (!visual_len)
     return 0;
 
+  if (startwidth >= maxwidth && (grub_ssize_t) maxwidth > 0)
+    {
+      if (contchar)
+	{
+	  grub_memset (outptr, 0, sizeof (visual[0]));
+	  outptr->base = contchar;
+	  outptr++;
+	}
+      grub_memset (outptr, 0, sizeof (visual[0]));
+      outptr->base = '\n';
+      outptr++;
+      startwidth = 0;
+    }
+
+  line_width = startwidth;
+
   for (k = 0; k <= visual_len; k++)
     {
       grub_ssize_t last_width = 0;
-
  
       if (pos && k != visual_len)
 	{
@@ -608,23 +623,28 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	{	  
 	  unsigned min_odd_level = 0xffffffff;
 	  unsigned max_level = 0;
+	  unsigned kk = k;
 
 	  lines++;
 
 	  if (k != visual_len && last_space > (signed) line_start)
-	    k = last_space;
-	  else if (k != visual_len && line_start == 0 && startwidth != 0
-		   && !primitive_wrap)
 	    {
-	      k = 0;
-	      last_space_width = startwidth;
+	      kk = last_space;
+	      line_width -= last_space_width;
+	    }
+	  else if (k != visual_len && line_start == 0 && startwidth != 0
+		   && !primitive_wrap && lines == 1
+		   && line_width - startwidth < maxwidth)
+	    {
+	      kk = 0;
+	      line_width -= startwidth;
 	    }
 	  else
-	    last_space_width = line_width - last_width;
+	    line_width = last_width;
 
 	  {
 	    unsigned i;
-	    for (i = line_start; i < k; i++)
+	    for (i = line_start; i < kk; i++)
 	      {
 		if (visual[i].bidi_level > max_level)
 		  max_level = visual[i].bidi_level;
@@ -640,12 +660,12 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	      {
 		unsigned in = line_start;
 		unsigned i;
-		for (i = line_start; i < k; i++)
+		for (i = line_start; i < kk; i++)
 		  {
 		    if (i != line_start && visual[i].bidi_level >= j
 			&& visual[i-1].bidi_level < j)
 		      in = i;
-		    if (visual[i].bidi_level >= j && (i + 1 == k
+		    if (visual[i].bidi_level >= j && (i + 1 == kk
 						 || visual[i+1].bidi_level < j))
 		      revert (visual, pos, in, i);
 		  }
@@ -654,7 +674,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  
 	  {
 	    unsigned i;
-	    for (i = line_start; i < k; i++)
+	    for (i = line_start; i < kk; i++)
 	      {
 		if (is_mirrored (visual[i].base) && visual[i].bidi_level)
 		  visual[i].attributes |= GRUB_UNICODE_GLYPH_ATTRIBUTE_MIRROR;
@@ -679,7 +699,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  {
 	    int left_join = 0;
 	    unsigned i;
-	    for (i = line_start; i < k; i++)
+	    for (i = line_start; i < kk; i++)
 	      {
 		enum grub_join_type join_type = get_join_type (visual[i].base);
 		if (!(visual[i].attributes
@@ -707,7 +727,7 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  {
 	    int right_join = 0;
 	    signed i;
-	    for (i = k - 1; i >= 0 && (unsigned) i + 1 > line_start;
+	    for (i = kk - 1; i >= 0 && (unsigned) i + 1 > line_start;
 		 i--)
 	      {
 		enum grub_join_type join_type = get_join_type (visual[i].base);
@@ -734,9 +754,9 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	  }		
 
 	  grub_memcpy (outptr, &visual[line_start],
-		       (k - line_start) * sizeof (visual[0]));
-	  outptr += k - line_start;
-	  if (k != visual_len)
+		       (kk - line_start) * sizeof (visual[0]));
+	  outptr += kk - line_start;
+	  if (kk != visual_len)
 	    {
 	      if (contchar)
 		{
@@ -749,15 +769,14 @@ bidi_line_wrap (struct grub_unicode_glyph *visual_out,
 	      outptr++;
 	    }
 
-	  if ((signed) k == last_space)
-	    k++;
+	  if ((signed) kk == last_space)
+	    kk++;
 
-	  line_start = k;
-	  line_width -= last_space_width;
-	  if (pos && k != visual_len)
+	  line_start = kk;
+	  if (pos && kk != visual_len)
 	    {
-	      pos[visual[k].orig_pos].x = 0;
-	      pos[visual[k].orig_pos].y = lines;
+	      pos[visual[kk].orig_pos].x = 0;
+	      pos[visual[kk].orig_pos].y = lines;
 	    }
 	}
     }
@@ -1136,7 +1155,7 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
   const grub_uint32_t *line_start = logical, *ptr;
   struct grub_unicode_glyph *visual_ptr;
   *visual_out = visual_ptr = grub_malloc (3 * sizeof (visual_ptr[0])
-					  * logical_len);
+					  * (logical_len + 2));
   if (!visual_ptr)
     return -1;
   for (ptr = logical; ptr <= logical + logical_len; ptr++)
