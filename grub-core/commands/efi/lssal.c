@@ -32,7 +32,7 @@ disp_sal (void *table)
 {
   struct grub_efi_sal_system_table *t = table;
   void *desc;
-  grub_uint32_t len, l;
+  grub_uint32_t len, l, i;
 
   grub_printf ("SAL rev: %02x, signature: %x, len:%x\n",
 	       t->sal_rev, t->signature, t->total_table_len);
@@ -44,7 +44,9 @@ disp_sal (void *table)
 
   desc = t->entries;
   len = t->total_table_len - sizeof (struct grub_efi_sal_system_table);
-  while (len > 0)
+  if (t->total_table_len <= sizeof (struct grub_efi_sal_system_table))
+    return;
+  for (i = 0; i < t->entry_count; i++)
     {
       switch (*(grub_uint8_t *) desc)
 	{
@@ -123,6 +125,8 @@ disp_sal (void *table)
 	  return;
 	}
       desc = (grub_uint8_t *)desc + l;
+      if (len <= l)
+	return;
       len -= l;
     }
 }

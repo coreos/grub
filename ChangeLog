@@ -1,5 +1,9 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/efi/lssal.c: Fix terminating condition.
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Introduce grub_efi_packed_guid and use it where alignment is not
 	guaranteed.
 
