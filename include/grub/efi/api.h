@@ -526,6 +526,15 @@ struct grub_efi_guid
 } __attribute__ ((aligned(8)));
 typedef struct grub_efi_guid grub_efi_guid_t;
 
+struct grub_efi_packed_guid
+{
+  grub_uint32_t data1;
+  grub_uint16_t data2;
+  grub_uint16_t data3;
+  grub_uint8_t data4[8];
+} __attribute__ ((packed));
+typedef struct grub_efi_packed_guid grub_efi_packed_guid_t;
+
 /* XXX although the spec does not specify the padding, this actually
    must have the padding!  */
 struct grub_efi_memory_descriptor
@@ -608,7 +617,7 @@ typedef struct grub_efi_memory_mapped_device_path grub_efi_memory_mapped_device_
 struct grub_efi_vendor_device_path
 {
   grub_efi_device_path_t header;
-  grub_efi_guid_t vendor_guid;
+  grub_efi_packed_guid_t vendor_guid;
   grub_efi_uint8_t vendor_defined_data[0];
 } __attribute__ ((packed));
 typedef struct grub_efi_vendor_device_path grub_efi_vendor_device_path_t;
@@ -802,7 +811,7 @@ typedef struct grub_efi_uart_device_path grub_efi_uart_device_path_t;
 struct grub_efi_vendor_messaging_device_path
 {
   grub_efi_device_path_t header;
-  grub_efi_guid_t vendor_guid;
+  grub_efi_packed_guid_t vendor_guid;
   grub_efi_uint8_t vendor_defined_data[0];
 } __attribute__ ((packed));
 typedef struct grub_efi_vendor_messaging_device_path grub_efi_vendor_messaging_device_path_t;
@@ -840,7 +849,7 @@ typedef struct grub_efi_cdrom_device_path grub_efi_cdrom_device_path_t;
 struct grub_efi_vendor_media_device_path
 {
   grub_efi_device_path_t header;
-  grub_efi_guid_t vendor_guid;
+  grub_efi_packed_guid_t vendor_guid;
   grub_efi_uint8_t vendor_defined_data[0];
 } __attribute__ ((packed));
 typedef struct grub_efi_vendor_media_device_path grub_efi_vendor_media_device_path_t;
@@ -859,7 +868,7 @@ typedef struct grub_efi_file_path_device_path grub_efi_file_path_device_path_t;
 struct grub_efi_protocol_device_path
 {
   grub_efi_device_path_t header;
-  grub_efi_guid_t guid;
+  grub_efi_packed_guid_t guid;
 } __attribute__ ((packed));
 typedef struct grub_efi_protocol_device_path grub_efi_protocol_device_path_t;
 
@@ -868,7 +877,7 @@ typedef struct grub_efi_protocol_device_path grub_efi_protocol_device_path_t;
 struct grub_efi_piwg_device_path
 {
   grub_efi_device_path_t header;
-  grub_efi_guid_t guid __attribute__ ((packed));
+  grub_efi_packed_guid_t guid;
 } __attribute__ ((packed));
 typedef struct grub_efi_piwg_device_path grub_efi_piwg_device_path_t;
 
@@ -1126,7 +1135,7 @@ struct grub_efi_boot_services
 
   grub_efi_status_t
   (*protocols_per_handle) (grub_efi_handle_t handle,
-			   grub_efi_guid_t ***protocol_buffer,
+			   grub_efi_packed_guid_t ***protocol_buffer,
 			   grub_efi_uintn_t *protocol_buffer_count);
 
   grub_efi_status_t
@@ -1225,7 +1234,7 @@ typedef struct grub_efi_runtime_services grub_efi_runtime_services_t;
 
 struct grub_efi_configuration_table
 {
-  grub_efi_guid_t vendor_guid;
+  grub_efi_packed_guid_t vendor_guid;
   void *vendor_table;
 } __attribute__ ((packed));
 typedef struct grub_efi_configuration_table grub_efi_configuration_table_t;

@@ -1,5 +1,10 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Introduce grub_efi_packed_guid and use it where alignment is not
+	guaranteed.
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h (grub_efi_device_path): Define length as
 	unaligned u16 rather than u8[2].
 

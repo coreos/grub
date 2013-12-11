@@ -445,20 +445,19 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	      break;
 	    case GRUB_EFI_VENDOR_DEVICE_PATH_SUBTYPE:
 	      {
-		grub_efi_vendor_device_path_t vendor;
-		grub_memcpy (&vendor, dp, sizeof (vendor));
+		grub_efi_vendor_device_path_t *vendor = (grub_efi_vendor_device_path_t *) dp;
 		grub_printf ("/Vendor(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
-			     (unsigned) vendor.vendor_guid.data1,
-			     (unsigned) vendor.vendor_guid.data2,
-			     (unsigned) vendor.vendor_guid.data3,
-			     (unsigned) vendor.vendor_guid.data4[0],
-			     (unsigned) vendor.vendor_guid.data4[1],
-			     (unsigned) vendor.vendor_guid.data4[2],
-			     (unsigned) vendor.vendor_guid.data4[3],
-			     (unsigned) vendor.vendor_guid.data4[4],
-			     (unsigned) vendor.vendor_guid.data4[5],
-			     (unsigned) vendor.vendor_guid.data4[6],
-			     (unsigned) vendor.vendor_guid.data4[7]);
+			     (unsigned) vendor->vendor_guid.data1,
+			     (unsigned) vendor->vendor_guid.data2,
+			     (unsigned) vendor->vendor_guid.data3,
+			     (unsigned) vendor->vendor_guid.data4[0],
+			     (unsigned) vendor->vendor_guid.data4[1],
+			     (unsigned) vendor->vendor_guid.data4[2],
+			     (unsigned) vendor->vendor_guid.data4[3],
+			     (unsigned) vendor->vendor_guid.data4[4],
+			     (unsigned) vendor->vendor_guid.data4[5],
+			     (unsigned) vendor->vendor_guid.data4[6],
+			     (unsigned) vendor->vendor_guid.data4[7]);
 	      }
 	      break;
 	    case GRUB_EFI_CONTROLLER_DEVICE_PATH_SUBTYPE:
@@ -665,20 +664,20 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	      break;
 	    case GRUB_EFI_VENDOR_MESSAGING_DEVICE_PATH_SUBTYPE:
 	      {
-		grub_efi_vendor_messaging_device_path_t vendor;
-		grub_memcpy (&vendor, dp, sizeof (vendor));
+		grub_efi_vendor_messaging_device_path_t *vendor
+		  = (grub_efi_vendor_messaging_device_path_t *) dp;
 		grub_printf ("/Vendor(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
-			     (unsigned) vendor.vendor_guid.data1,
-			     (unsigned) vendor.vendor_guid.data2,
-			     (unsigned) vendor.vendor_guid.data3,
-			     (unsigned) vendor.vendor_guid.data4[0],
-			     (unsigned) vendor.vendor_guid.data4[1],
-			     (unsigned) vendor.vendor_guid.data4[2],
-			     (unsigned) vendor.vendor_guid.data4[3],
-			     (unsigned) vendor.vendor_guid.data4[4],
-			     (unsigned) vendor.vendor_guid.data4[5],
-			     (unsigned) vendor.vendor_guid.data4[6],
-			     (unsigned) vendor.vendor_guid.data4[7]);
+			     (unsigned) vendor->vendor_guid.data1,
+			     (unsigned) vendor->vendor_guid.data2,
+			     (unsigned) vendor->vendor_guid.data3,
+			     (unsigned) vendor->vendor_guid.data4[0],
+			     (unsigned) vendor->vendor_guid.data4[1],
+			     (unsigned) vendor->vendor_guid.data4[2],
+			     (unsigned) vendor->vendor_guid.data4[3],
+			     (unsigned) vendor->vendor_guid.data4[4],
+			     (unsigned) vendor->vendor_guid.data4[5],
+			     (unsigned) vendor->vendor_guid.data4[6],
+			     (unsigned) vendor->vendor_guid.data4[7]);
 	      }
 	      break;
 	    default:
@@ -692,22 +691,21 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	    {
 	    case GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE:
 	      {
-		grub_efi_hard_drive_device_path_t hd;
-		grub_memcpy (&hd, dp, len);
+		grub_efi_hard_drive_device_path_t *hd = (grub_efi_hard_drive_device_path_t *) dp;
 		grub_printf ("/HD(%u,%llx,%llx,%02x%02x%02x%02x%02x%02x%02x%02x,%x,%x)",
-			     hd.partition_number,
-			     (unsigned long long) hd.partition_start,
-			     (unsigned long long) hd.partition_size,
-			     (unsigned) hd.partition_signature[0],
-			     (unsigned) hd.partition_signature[1],
-			     (unsigned) hd.partition_signature[2],
-			     (unsigned) hd.partition_signature[3],
-			     (unsigned) hd.partition_signature[4],
-			     (unsigned) hd.partition_signature[5],
-			     (unsigned) hd.partition_signature[6],
-			     (unsigned) hd.partition_signature[7],
-			     (unsigned) hd.mbr_type,
-			     (unsigned) hd.signature_type);
+			     hd->partition_number,
+			     (unsigned long long) hd->partition_start,
+			     (unsigned long long) hd->partition_size,
+			     (unsigned) hd->partition_signature[0],
+			     (unsigned) hd->partition_signature[1],
+			     (unsigned) hd->partition_signature[2],
+			     (unsigned) hd->partition_signature[3],
+			     (unsigned) hd->partition_signature[4],
+			     (unsigned) hd->partition_signature[5],
+			     (unsigned) hd->partition_signature[6],
+			     (unsigned) hd->partition_signature[7],
+			     (unsigned) hd->mbr_type,
+			     (unsigned) hd->signature_type);
 	      }
 	      break;
 	    case GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE:
@@ -722,20 +720,20 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 	      break;
 	    case GRUB_EFI_VENDOR_MEDIA_DEVICE_PATH_SUBTYPE:
 	      {
-		grub_efi_vendor_media_device_path_t vendor;
-		grub_memcpy (&vendor, dp, sizeof (vendor));
+		grub_efi_vendor_device_path_t *vendor = (grub_efi_vendor_device_path_t *) dp;
+
 		grub_printf ("/Vendor(%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x)",
-			     (unsigned) vendor.vendor_guid.data1,
-			     (unsigned) vendor.vendor_guid.data2,
-			     (unsigned) vendor.vendor_guid.data3,
-			     (unsigned) vendor.vendor_guid.data4[0],
-			     (unsigned) vendor.vendor_guid.data4[1],
-			     (unsigned) vendor.vendor_guid.data4[2],
-			     (unsigned) vendor.vendor_guid.data4[3],
-			     (unsigned) vendor.vendor_guid.data4[4],
-			     (unsigned) vendor.vendor_guid.data4[5],
-			     (unsigned) vendor.vendor_guid.data4[6],
-			     (unsigned) vendor.vendor_guid.data4[7]);
+			     (unsigned) vendor->vendor_guid.data1,
+			     (unsigned) vendor->vendor_guid.data2,
+			     (unsigned) vendor->vendor_guid.data3,
+			     (unsigned) vendor->vendor_guid.data4[0],
+			     (unsigned) vendor->vendor_guid.data4[1],
+			     (unsigned) vendor->vendor_guid.data4[2],
+			     (unsigned) vendor->vendor_guid.data4[3],
+			     (unsigned) vendor->vendor_guid.data4[4],
+			     (unsigned) vendor->vendor_guid.data4[5],
+			     (unsigned) vendor->vendor_guid.data4[6],
+			     (unsigned) vendor->vendor_guid.data4[7]);
 	      }
 	      break;
 	    case GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE:

@@ -135,12 +135,12 @@ grub_cmd_lssal (struct grub_command *cmd __attribute__ ((unused)),
   const grub_efi_system_table_t *st = grub_efi_system_table;
   grub_efi_configuration_table_t *t = st->configuration_table;
   unsigned int i;
-  grub_efi_guid_t guid = GRUB_EFI_SAL_TABLE_GUID;
+  grub_efi_packed_guid_t guid = GRUB_EFI_SAL_TABLE_GUID;
 
   for (i = 0; i < st->num_table_entries; i++)
     {
       if (grub_memcmp (&guid, &t->vendor_guid,
-		       sizeof (grub_efi_guid_t)) == 0)
+		       sizeof (grub_efi_packed_guid_t)) == 0)
 	{
 	  disp_sal (t->vendor_table);
 	  return GRUB_ERR_NONE;
