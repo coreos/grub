@@ -76,15 +76,20 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	{
 	case R_IA64_PCREL21B:
 	  {
-	    grub_uint64_t noff;
-	    struct grub_ia64_trampoline *tr = mod->trampptr;
-	    grub_ia64_make_trampoline (tr, value);
-	    noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
-	    mod->trampptr = tr + 1;
+	    grub_int64_t noff;
+	    if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
+	      {
+		struct grub_ia64_trampoline *tr = mod->trampptr;
+		grub_ia64_make_trampoline (tr, value);
+		noff = ((char *) tr - (char *) (addr & ~3)) >> 4;
+		mod->trampptr = tr + 1;
+	      }
+	    else
+	      noff = ((char *) value - (char *) (addr & ~3)) >> 4;
 
-	    if (noff & ~MASK19)
-	      return grub_error (GRUB_ERR_BAD_OS,
-				 "trampoline offset too big (%lx)", noff);
+	    if ((noff & ~MASK19) && ((-noff) & ~MASK19))
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "jump offset too big (%lx)", noff);
 	    grub_ia64_add_value_to_slot_20b (addr, noff);
 	  }
 	  break;
