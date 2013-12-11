@@ -26,6 +26,7 @@
 #include <grub/ia64/reloc.h>
 
 #define MASK19 ((1 << 19) - 1)
+#define MASK20 ((1 << 20) - 1)
 
 /* Check if EHDR is a valid ELF header.  */
 grub_err_t
@@ -104,6 +105,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  *(grub_uint64_t *) addr += value - addr;
 	  break;
 	case R_IA64_GPREL22:
+	  if ((value - (grub_addr_t) mod->base) & ~MASK20)
+	    return grub_error (GRUB_ERR_BAD_MODULE,
+			       "gprel offset too big (%lx)",
+			       value - (grub_addr_t) mod->base);
 	  grub_ia64_add_value_to_slot_21 (addr, value - (grub_addr_t) mod->base);
 	  break;
 
@@ -115,6 +120,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  {
 	    grub_uint64_t *gpptr = mod->gotptr;
 	    *gpptr = value;
+	    if (((grub_addr_t) gpptr - (grub_addr_t) mod->base) & ~MASK20)
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "gprel offset too big (%lx)",
+				 (grub_addr_t) gpptr - (grub_addr_t) mod->base);
 	    grub_ia64_add_value_to_slot_21 (addr, (grub_addr_t) gpptr - (grub_addr_t) mod->base);
 	    mod->gotptr = gpptr + 1;
 	    break;

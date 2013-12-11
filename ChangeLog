@@ -1,5 +1,10 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/ia64/dl.c (grub_arch_dl_relocate_symbols): Add checks
+	for relocation range.
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ia64/dl.c (grub_arch_dl_relocate_symbols): Handle
 	non-function pcrel21b relocation. It happens with .text.unlikely
 	section.
