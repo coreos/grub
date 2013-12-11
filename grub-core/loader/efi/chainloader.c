@@ -122,9 +122,7 @@ copy_file_path (grub_efi_file_path_device_path_t *fp,
     if (*p == '/')
       *p = '\\';
 
-  size = size * sizeof (grub_efi_char16_t) + sizeof (*fp);
-  fp->header.length[0] = (grub_efi_uint8_t) (size & 0xff);
-  fp->header.length[1] = (grub_efi_uint8_t) (size >> 8);
+  fp->header.length = size * sizeof (grub_efi_char16_t) + sizeof (*fp);
 }
 
 static grub_efi_device_path_t *
@@ -184,8 +182,7 @@ make_file_path (grub_efi_device_path_t *dp, const char *filename)
   d = GRUB_EFI_NEXT_DEVICE_PATH (d);
   d->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   d->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-  d->length[0] = sizeof (*d);
-  d->length[1] = 0;
+  d->length = sizeof (*d);
 
   return file_path;
 }

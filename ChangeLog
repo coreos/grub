@@ -1,5 +1,10 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h (grub_efi_device_path): Define length as
+	unaligned u16 rather than u8[2].
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/ia64/dl.c (grub_arch_dl_relocate_symbols): Add checks
 	for relocation range.
 

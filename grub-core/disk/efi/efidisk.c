@@ -157,8 +157,7 @@ find_parent_device (struct grub_efidisk_data *devices,
   ldp = find_last_device_path (dp);
   ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-  ldp->length[0] = sizeof (*ldp);
-  ldp->length[1] = 0;
+  ldp->length = sizeof (*ldp);
 
   for (parent = devices; parent; parent = parent->next)
     {
@@ -188,8 +187,7 @@ is_child (struct grub_efidisk_data *child,
   ldp = find_last_device_path (dp);
   ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-  ldp->length[0] = sizeof (*ldp);
-  ldp->length[1] = 0;
+  ldp->length = sizeof (*ldp);
 
   ret = (grub_efi_compare_device_paths (dp, parent->device_path) == 0);
   grub_free (dp);
@@ -816,8 +814,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
 	  dup_ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
 	  dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-	  dup_ldp->length[0] = sizeof (*dup_ldp);
-	  dup_ldp->length[1] = 0;
+	  dup_ldp->length = sizeof (*dup_ldp);
 	}
 
       if (!get_diskname_from_path (dup_dp, device_name))

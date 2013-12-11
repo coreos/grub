@@ -544,8 +544,8 @@ struct grub_efi_device_path
 {
   grub_efi_uint8_t type;
   grub_efi_uint8_t subtype;
-  grub_efi_uint8_t length[2];
-};
+  grub_efi_uint16_t length;
+} __attribute__ ((packed));
 typedef struct grub_efi_device_path grub_efi_device_path_t;
 /* XXX EFI does not define EFI_DEVICE_PATH_PROTOCOL but uses it.
    It seems to be identical to EFI_DEVICE_PATH.  */
@@ -553,7 +553,7 @@ typedef struct grub_efi_device_path grub_efi_device_path_protocol_t;
 
 #define GRUB_EFI_DEVICE_PATH_TYPE(dp)		((dp)->type & 0x7f)
 #define GRUB_EFI_DEVICE_PATH_SUBTYPE(dp)	((dp)->subtype)
-#define GRUB_EFI_DEVICE_PATH_LENGTH(dp)		(grub_get_unaligned16 ((dp)->length))
+#define GRUB_EFI_DEVICE_PATH_LENGTH(dp)		((dp)->length)
 
 /* The End of Device Path nodes.  */
 #define GRUB_EFI_END_DEVICE_PATH_TYPE			(0xff & 0x7f)
