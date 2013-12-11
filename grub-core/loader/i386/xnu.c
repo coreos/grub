@@ -671,7 +671,7 @@ grub_cpu_xnu_fill_devicetree (grub_uint64_t *fsbfreq_out)
     {
       void *ptr;
       struct grub_xnu_devtree_key *curkey;
-      grub_efi_guid_t guid;
+      grub_efi_packed_guid_t guid;
       char guidbuf[64];
 
       /* Retrieve current key. */

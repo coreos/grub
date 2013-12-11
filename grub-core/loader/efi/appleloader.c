@@ -76,7 +76,7 @@ struct piwg_full_device_path
       .header = {							\
 	.type = GRUB_EFI_HARDWARE_DEVICE_PATH_TYPE,			\
 	.subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE,		\
-	.length = {sizeof (struct grub_efi_memory_mapped_device_path), 0} \
+	.length = sizeof (struct grub_efi_memory_mapped_device_path)	\
       },								\
       .memory_type = GRUB_EFI_MEMORY_MAPPED_IO,				\
       .start_address = st,						\
@@ -87,7 +87,7 @@ struct piwg_full_device_path
 	.header = {							\
 	  .type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE,			\
 	  .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,			\
-	  .length = {sizeof (struct grub_efi_piwg_device_path), 0}	\
+	  .length = sizeof (struct grub_efi_piwg_device_path)		\
 	},								\
 	.guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,	\
 					      0x01, 0xAE, 0xF2, 0xB7}}	\
@@ -96,7 +96,7 @@ struct piwg_full_device_path
 	  {								\
 	    .type = GRUB_EFI_END_DEVICE_PATH_TYPE,			\
 	    .subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE,		\
-	    .length = {sizeof (struct grub_efi_device_path), 0}		\
+	    .length = sizeof (struct grub_efi_device_path)		\
 	  }								\
   }
 

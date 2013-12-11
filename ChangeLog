@@ -1,5 +1,9 @@
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Propagate the EFI commits to x86-efi specific parts.
+
+2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/efi/lssal.c: Fix terminating condition.
 
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
