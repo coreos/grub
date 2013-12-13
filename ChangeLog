@@ -1,3 +1,7 @@
+2013-12-17  Jon McCune  <jonmccune@google.com>
+
+	Fix double-free introduced by commit 33d02a42d64cf06cada1c389
+
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Unify message for unsupported relocation.

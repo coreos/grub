@@ -1275,6 +1275,7 @@ grub_gzio_close (grub_file_t file)
 
   /* No need to close the same device twice.  */
   file->device = 0;
+  file->name = 0;
 
   return grub_errno;
 }

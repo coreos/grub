@@ -885,6 +885,7 @@ grub_pubkey_open (grub_file_t io, const char *filename)
   if (err)
     return NULL;
   io->device = 0;
+  io->name = 0;
   grub_file_close (io);
   return ret;
 }
