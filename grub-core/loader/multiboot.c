@@ -344,7 +344,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
 					    lowest_addr, (0xffffffff - size) + 1,
 					    size, MULTIBOOT_MOD_ALIGN,
-					    GRUB_RELOCATOR_PREFERENCE_NONE, 0);
+					    GRUB_RELOCATOR_PREFERENCE_NONE, 1);
     if (err)
       {
 	grub_file_close (file);

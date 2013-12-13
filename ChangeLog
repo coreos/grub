@@ -1,3 +1,7 @@
+2013-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Implement multiboot2 EFI BS specification.
+
 2013-12-11  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/charset.c: Fix premature line wrap and crash.
