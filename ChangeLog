@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/hostdisk.c: Fix cygwin compilation.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/windows/blocklist.c: Add missing cast in printf
 	invocation.
 

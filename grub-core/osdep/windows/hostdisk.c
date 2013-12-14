@@ -48,6 +48,10 @@
 #include <winioctl.h>
 #include <wincrypt.h>
 
+#ifdef __CYGWIN__
+#include <sys/cygwin.h>
+#endif
+
 #if SIZEOF_TCHAR == 1
 
 LPTSTR
@@ -441,7 +445,6 @@ get_temp_name (void)
   TCHAR *ptr;
   HCRYPTPROV   hCryptProv;
   grub_uint8_t rnd[5];
-  const size_t sz = sizeof (rnd) * GRUB_CHAR_BIT / 5;
   int i;
 
   GetTempPath (ARRAY_SIZE (rt) - 100, rt);
@@ -614,6 +617,15 @@ grub_util_is_special_file (const char *name)
 
 #else
 
+void
+grub_util_file_sync (FILE *f)
+{
+  fflush (f);
+  if (!allow_fd_syncs)
+    return;
+  fsync (fileno (f));
+}
+
 FILE *
 grub_util_fopen (const char *path, const char *mode)
 {
@@ -625,7 +637,7 @@ grub_util_is_special_file (const char *path)
 {
   struct stat st;
 
-  if (lstat (destnew, &st) == -1)
+  if (lstat (path, &st) == -1)
     return 1;
   return (!S_ISREG (st.st_mode) && !S_ISDIR (st.st_mode));
 }
