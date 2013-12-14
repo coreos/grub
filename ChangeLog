@@ -1,5 +1,12 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Change grub_install_register_efi interface to pass GRUB device.
+
+	This allows grub_install_register_efi to request partition info
+	directly.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Workaround cygwin bug when using \\?\Volume{GUID} syntax.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>

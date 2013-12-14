@@ -31,7 +31,7 @@ grub_install_register_ieee1275 (int is_prep, const char *install_device,
 }
 
 void
-grub_install_register_efi (const char *efidir_disk, int efidir_part,
+grub_install_register_efi (grub_device_t efidir_grub_dev,
 			   const char *efifile_path,
 			   const char *efi_distributor)
 {

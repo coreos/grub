@@ -19,6 +19,7 @@
 #include <config.h>
 
 #include <grub/util/install.h>
+#include <grub/emu/hostdisk.h>
 #include <grub/util/misc.h>
 #include <grub/misc.h>
 #include <grub/i18n.h>
@@ -129,10 +130,15 @@ grub_install_remove_efi_entries_by_distributor (const char *efi_distributor)
 }
 
 void
-grub_install_register_efi (const char *efidir_disk, int efidir_part,
+grub_install_register_efi (grub_device_t efidir_grub_dev,
 			   const char *efifile_path,
 			   const char *efi_distributor)
 {
+  const char * efidir_disk;
+  int efidir_part;
+  efidir_disk = grub_util_biosdisk_get_osdev (efidir_grub_dev->disk);
+  efidir_part = efidir_grub_dev->disk->partition ? efidir_grub_dev->disk->partition->number + 1 : 1;
+
   if (grub_util_exec_redirect_null ((const char * []){ "efibootmgr", "--version", NULL }))
     {
       /* TRANSLATORS: This message is shown when required executable `%s'

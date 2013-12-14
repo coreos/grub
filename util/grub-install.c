@@ -1559,19 +1559,25 @@ main (int argc, char *argv[])
       }
       if (!removable && update_nvram)
 	{
-	  char * efidir_disk;
-	  int efidir_part;
 	  char * efifile_path;
+	  char * part;
 
 	  /* Try to make this image bootable using the EFI Boot Manager, if available.  */
 	  if (!efi_distributor || efi_distributor[0] == '\0')
 	    grub_util_error ("%s", "EFI distributor id isn't specified.");
-	  efidir_disk  = grub_util_get_os_disk (efidir_device_names[0]);
-	  efidir_part = efidir_grub_dev->disk->partition ? efidir_grub_dev->disk->partition->number + 1 : 1;
 	  efifile_path = xasprintf ("\\EFI\\%s\\%s",
 				    efi_distributor,
 				    efi_file);
-	  grub_install_register_efi (efidir_disk, efidir_part,
+	  part = (efidir_grub_dev->disk->partition
+		  ? grub_partition_get_name (efidir_grub_dev->disk->partition)
+		  : 0);
+	  grub_util_info ("Registering with EFI: distributor = `%s',"
+			  " path = `%s', ESP at %s%s%s",
+			  efi_distributor, efifile_path,
+			  efidir_grub_dev->disk->name,
+			  (part ? ",": ""), (part ? : ""));
+	  grub_free (part);
+	  grub_install_register_efi (efidir_grub_dev,
 				     efifile_path, efi_distributor);
 	}
       break;
