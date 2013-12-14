@@ -55,6 +55,58 @@
 #define tcsnicmp wcsnicmp
 #endif
 
+TCHAR *
+grub_get_mount_point (const TCHAR *path)
+{
+  const TCHAR *ptr;
+  TCHAR *out;
+  TCHAR letter = 0;
+  size_t allocsize;
+
+  for (ptr = path; *ptr; ptr++);
+  allocsize = (ptr - path + 10) * 2;
+  out = xmalloc (allocsize * sizeof (out[0]));
+
+  /* When pointing to EFI system partition GetVolumePathName fails
+     for ESP root and returns abberant information for everything
+     else. Since GetVolumePathName shouldn't fail for any valid
+     //?/X: we use it as indicator.  */
+  if ((path[0] == '/' || path[0] == '\\')
+      && (path[1] == '/' || path[1] == '\\')
+      && (path[2] == '?' || path[2] == '.')
+      && (path[3] == '/' || path[3] == '\\')
+      && path[4]
+      && (path[5] == ':'))
+    letter = path[4];
+  if (path[0] && path[1] == ':')
+    letter = path[0];
+  if (letter)
+    {
+      TCHAR letterpath[10] = TEXT("\\\\?\\#:");
+      letterpath[4] = letter;
+      if (!GetVolumePathName (letterpath, out, allocsize))
+	{
+	  if (path[1] == ':')
+	    {
+	      out[0] = path[0];
+	      out[1] = ':';
+	      out[2] = '\0';
+	      return out;
+	    }
+	  memcpy (out, path, sizeof (out[0]) * 6);
+	  out[6] = '\0';
+	  return out;
+	}
+    }
+
+  if (!GetVolumePathName (path, out, allocsize))
+    {
+      free (out);
+      return NULL;
+    }
+  return out;
+}
+
 char **
 grub_guess_root_devices (const char *dir)
 {
@@ -62,21 +114,17 @@ grub_guess_root_devices (const char *dir)
   TCHAR *dirwindows, *mntpointwindows;
   TCHAR *ptr;
   TCHAR volumename[100];
-  size_t mntpointwindows_sz;
 
   dirwindows = grub_util_get_windows_path (dir);
   if (!dirwindows)
     return 0;
 
-  mntpointwindows_sz = strlen (dir) * 2 + 1;
-  mntpointwindows = xmalloc ((mntpointwindows_sz + 1) * sizeof (mntpointwindows[0]));
+  mntpointwindows = grub_get_mount_point (dirwindows);
 
-  if (!GetVolumePathName (dirwindows,
-			  mntpointwindows,
-			  mntpointwindows_sz))
+  if (!mntpointwindows)
     {
       free (dirwindows);
-      free (mntpointwindows);
+      grub_util_info ("can't get volume path name: %d", (int) GetLastError ());
       return 0;      
     }
 
@@ -98,9 +146,29 @@ grub_guess_root_devices (const char *dir)
 					 volumename,
 					 ARRAY_SIZE (volumename)))
     {
-      free (dirwindows);
-      free (mntpointwindows);
-      return 0;
+      TCHAR letter = 0;
+      if ((mntpointwindows[0] == '/' || mntpointwindows[0] == '\\')
+	  && (mntpointwindows[1] == '/' || mntpointwindows[1] == '\\')
+	  && (mntpointwindows[2] == '?' || mntpointwindows[2] == '.')
+	  && (mntpointwindows[3] == '/' || mntpointwindows[3] == '\\')
+	  && mntpointwindows[4]
+	  && (mntpointwindows[5] == ':'))
+	letter = mntpointwindows[4];
+      if (mntpointwindows[0] && mntpointwindows[1] == ':')
+	letter = mntpointwindows[0];
+      if (!letter)
+	{
+	  free (dirwindows);
+	  free (mntpointwindows);
+	  return 0;
+	}
+      volumename[0] = '\\';
+      volumename[1] = '\\';
+      volumename[2] = '?';
+      volumename[3] = '\\';
+      volumename[4] = letter;
+      volumename[5] = ':';
+      volumename[6] = '\0';
     }
   os_dev = xmalloc (2 * sizeof (os_dev[0]));
 
