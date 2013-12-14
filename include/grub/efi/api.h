@@ -716,7 +716,7 @@ struct grub_efi_usb_device_path
 {
   grub_efi_device_path_t header;
   grub_efi_uint8_t parent_port_number;
-  grub_efi_uint8_t interface;
+  grub_efi_uint8_t usb_interface;
 } __attribute__ ((packed));
 typedef struct grub_efi_usb_device_path grub_efi_usb_device_path_t;
 
@@ -1023,8 +1023,8 @@ struct grub_efi_boot_services
    grub_efi_status_t
    (*install_protocol_interface) (grub_efi_handle_t *handle,
 				  grub_efi_guid_t *protocol,
-				  grub_efi_interface_type_t interface_type,
-				  void *interface);
+				  grub_efi_interface_type_t protocol_interface_type,
+				  void *protocol_interface);
 
   grub_efi_status_t
   (*reinstall_protocol_interface) (grub_efi_handle_t handle,
@@ -1035,12 +1035,12 @@ struct grub_efi_boot_services
   grub_efi_status_t
   (*uninstall_protocol_interface) (grub_efi_handle_t handle,
 				   grub_efi_guid_t *protocol,
-				   void *interface);
+				   void *protocol_interface);
 
   grub_efi_status_t
   (*handle_protocol) (grub_efi_handle_t handle,
 		      grub_efi_guid_t *protocol,
-		      void **interface);
+		      void **protocol_interface);
 
   void *reserved;
 
@@ -1116,7 +1116,7 @@ struct grub_efi_boot_services
   grub_efi_status_t
   (*open_protocol) (grub_efi_handle_t handle,
 		    grub_efi_guid_t *protocol,
-		    void **interface,
+		    void **protocol_interface,
 		    grub_efi_handle_t agent_handle,
 		    grub_efi_handle_t controller_handle,
 		    grub_efi_uint32_t attributes);
@@ -1148,7 +1148,7 @@ struct grub_efi_boot_services
   grub_efi_status_t
   (*locate_protocol) (grub_efi_guid_t *protocol,
 		      void *registration,
-		      void **interface);
+		      void **protocol_interface);
 
   grub_efi_status_t
   (*install_multiple_protocol_interfaces) (grub_efi_handle_t *handle, ...);

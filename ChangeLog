@@ -1,5 +1,10 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h: Rename protocol and interface to avoid
+	conflict.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* .gitignore: Add .exe variants. Add missing files. Remove few outdated
 	entries.
 

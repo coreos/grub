@@ -558,7 +558,7 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 		grub_memcpy (&usb, dp, len);
 		grub_printf ("/USB(%x,%x)",
 			     (unsigned) usb.parent_port_number,
-			     (unsigned) usb.interface);
+			     (unsigned) usb.usb_interface);
 	      }
 	      break;
 	    case GRUB_EFI_USB_CLASS_DEVICE_PATH_SUBTYPE:
