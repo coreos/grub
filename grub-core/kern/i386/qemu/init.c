@@ -85,9 +85,9 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 struct resource
 {
   grub_pci_device_t dev;
-  int type;
   grub_size_t size;
-  int bar;
+  unsigned type:4;
+  unsigned bar:3;
 };
 
 struct iterator_ctx

@@ -1,5 +1,10 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/qemu/init.c (resource): Decrease struct size
+	by using bitfields.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/boot/i386/qemu/boot.S: Add missing EXT_C.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
