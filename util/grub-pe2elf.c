@@ -71,7 +71,7 @@ static int strtab_max, strtab_len;
 static Elf32_Ehdr ehdr;
 static Elf32_Shdr shdr[MAX_SECTIONS];
 static int num_sections;
-static grub_uint32_t offset;
+static grub_uint32_t offset, image_base;
 
 static int
 insert_string (const char *name)
@@ -112,6 +112,7 @@ write_section_data (FILE* fp, const char *name, char *image,
     {
       grub_uint32_t idx;
       const char *shname = pe_shdr->name;
+      grub_size_t secsize;
 
       if (shname[0] == '/' && grub_isdigit (shname[1]))
       {
@@ -120,6 +121,8 @@ write_section_data (FILE* fp, const char *name, char *image,
         t[sizeof (pe_shdr->name)] = 0;
         shname = pe_strtab + atoi (t + 1);
       }
+
+      secsize = pe_shdr->raw_data_size;
 
       if (! strcmp (shname, ".text"))
         {
@@ -155,11 +158,16 @@ write_section_data (FILE* fp, const char *name, char *image,
 
       section_map[i + 1] = idx;
 
+      if (pe_shdr->virtual_size
+	  && pe_shdr->virtual_size < secsize)
+	secsize = pe_shdr->virtual_size;
+
       shdr[idx].sh_type = (idx == BSS_SECTION) ? SHT_NOBITS : SHT_PROGBITS;
-      shdr[idx].sh_size = pe_shdr->raw_data_size;
+      shdr[idx].sh_size = secsize;
       shdr[idx].sh_addralign = 1 << (((pe_shdr->characteristics >>
                                        GRUB_PE32_SCN_ALIGN_SHIFT) &
                                       GRUB_PE32_SCN_ALIGN_MASK) - 1);
+      shdr[idx].sh_addr = pe_shdr->virtual_address + image_base;
 
       if (idx != BSS_SECTION)
         {
@@ -168,7 +176,7 @@ write_section_data (FILE* fp, const char *name, char *image,
                                     pe_shdr->raw_data_size, offset, fp,
 				    shname);
 
-          offset += pe_shdr->raw_data_size;
+          offset += secsize;
         }
 
       if (pe_shdr->relocations_offset)
@@ -434,9 +442,13 @@ convert_pe (FILE* fp, const char *name, char *image)
   struct grub_pe32_section_table *pe_shdr;
   int *section_map;
 
-  pe_chdr = (struct grub_pe32_coff_header *) image;
+  if (image[0] == 'M' && image[1] == 'Z')
+    pe_chdr = (struct grub_pe32_coff_header *) (image + (grub_le_to_cpu32 (((grub_uint32_t *)image)[0xf]) + 4));
+  else
+    pe_chdr = (struct grub_pe32_coff_header *) image;
   if (grub_le_to_cpu16 (pe_chdr->machine) != GRUB_PE32_MACHINE_I386)
-    grub_util_error ("invalid coff image");
+    grub_util_error ("invalid coff image (%x != %x)",
+		     grub_le_to_cpu16 (pe_chdr->machine), GRUB_PE32_MACHINE_I386);
 
   strtab = xmalloc (STRTAB_BLOCK);
   strtab_max = STRTAB_BLOCK;
@@ -444,7 +456,13 @@ convert_pe (FILE* fp, const char *name, char *image)
   strtab_len = 1;
 
   offset = sizeof (ehdr);
-  pe_shdr = (struct grub_pe32_section_table *) (pe_chdr + 1);
+  if (pe_chdr->optional_header_size)
+    {
+      struct grub_pe32_optional_header *o;
+      o = (struct grub_pe32_optional_header *) (pe_chdr + 1);
+      image_base = o->image_base;
+    }
+  pe_shdr = (struct grub_pe32_section_table *) ((char *) (pe_chdr + 1) + pe_chdr->optional_header_size);
   num_sections = REL_SECTION;
 
   section_map = write_section_data (fp, name, image, pe_chdr, pe_shdr);

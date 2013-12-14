@@ -704,7 +704,7 @@ AC_ARG_ENABLE([efiemu],
 if test x"$enable_efiemu" = xno ; then
   efiemu_excuse="explicitly disabled"
 fi
-if test x"$target_os" = xcygwin ; then
+if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
   efiemu_excuse="not available on cygwin"
 fi
 if test x"$target_cpu" != xi386 ; then
@@ -806,12 +806,12 @@ if test x$grub_cv_target_cc_link_format = x-arch,i386 || test x$grub_cv_target_c
    TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
    TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
    TARGET_LDFLAGS_OLDMAGIC=""
-elif test x$grub_cv_target_cc_link_format = x-mi386pe && test x$platform = xpc; then
+elif test x$grub_cv_target_cc_link_format = x-mi386pe; then
   TARGET_APPLE_LINKER=0
   TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
-  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/i386-pc-cygwin-img-ld.sc"
+  TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/i386-cygwin-img-ld.sc"
   TARGET_IMG_LDFLAGS="-Wl,-T${TARGET_IMG_LDSCRIPT}"
-  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/i386-pc-cygwin-img-ld.sc"
+  TARGET_IMG_LDFLAGS_AC="-Wl,-T${srcdir}/${grub_coredir}/conf/i386-cygwin-img-ld.sc"
   TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
   TARGET_IMG_CFLAGS=
 else
@@ -1563,7 +1563,6 @@ AC_SUBST(TARGET_LDFLAGS)
 AC_SUBST(TARGET_CPPFLAGS)
 AC_SUBST(TARGET_CCASFLAGS)
 
-AC_SUBST(TARGET_IMG_LDSCRIPT)
 AC_SUBST(TARGET_IMG_LDFLAGS)
 AC_SUBST(TARGET_IMG_CFLAGS)
 AC_SUBST(TARGET_IMG_BASE_LDOPT)
@@ -1636,7 +1635,6 @@ AM_CONDITIONAL([COND_ENABLE_BOOT_TIME_STATS], [test x$BOOT_TIME_STATS = x1])
 AM_CONDITIONAL([COND_HAVE_CXX], [test x$HAVE_CXX = xyes])
 
 AM_CONDITIONAL([COND_HAVE_ASM_USCORE], [test x$HAVE_ASM_USCORE = x1])
-AM_CONDITIONAL([COND_CYGWIN], [test x$target_os = xcygwin])
 AM_CONDITIONAL([COND_STARFIELD], [test "x$starfield_excuse" = x])
 AM_CONDITIONAL([COND_HAVE_EXEC], [test "x$have_exec" = xy])
 

@@ -59,9 +59,7 @@ kernel = {
   ia64_efi_ldflags = '-Wl,-r,-d';
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
-  x86_64_xen_ldflags       = '-Wl,-Ttext=0';
   x86_64_xen_cppflags	   = '$(CPPFLAGS_XEN)';
-  i386_xen_ldflags       = '-Wl,-Ttext=0';
   i386_xen_cppflags	   = '$(CPPFLAGS_XEN)';
 
   arm_efi_ldflags          = '-Wl,-r,-d';
@@ -72,15 +70,21 @@ kernel = {
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
-
   i386_qemu_ldflags        = '$(TARGET_IMG_LDFLAGS)';
   i386_qemu_ldflags        = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_coreboot_ldflags    = '$(TARGET_IMG_LDFLAGS)';
+  i386_coreboot_ldflags    = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_multiboot_ldflags   = '$(TARGET_IMG_LDFLAGS)';
+  i386_multiboot_ldflags   = '$(TARGET_IMG_BASE_LDOPT),0x8200';
+  i386_ieee1275_ldflags    = '$(TARGET_IMG_LDFLAGS)';
+  i386_ieee1275_ldflags    = '$(TARGET_IMG_BASE_LDOPT),0x10000';
+  i386_xen_ldflags         = '$(TARGET_IMG_LDFLAGS)';
+  i386_xen_ldflags         = '$(TARGET_IMG_BASE_LDOPT),0';
+  x86_64_xen_ldflags       = '$(TARGET_IMG_LDFLAGS)';
+  x86_64_xen_ldflags       = '$(TARGET_IMG_BASE_LDOPT),0';
 
   ldadd = '$(LDADD_KERNEL)';
 
-  i386_coreboot_ldflags    = '-Wl,-Ttext=0x8200';
-  i386_multiboot_ldflags   = '-Wl,-Ttext=0x8200';
-  i386_ieee1275_ldflags    = '-Wl,-Ttext=0x10000';
   mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';

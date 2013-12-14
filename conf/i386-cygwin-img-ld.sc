@@ -5,6 +5,8 @@ SECTIONS
   .text :
   {
     start = . ;
+    _start = . ;
+    __start = . ;
     *(.text)
     etext = . ;
   }
@@ -33,6 +35,8 @@ SECTIONS
   {
     *(.edata)
     end = . ;
+    _end = . ;
+    __end = . ;
   }
   .stab :
   {

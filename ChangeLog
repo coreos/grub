@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make i386-* other than i386-pc compileable under cygwin.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix definition of grub_efi_hard_drive_device_path. Take care that
 	existing code would work even if by some reason bogus definition is
 	used by EFI implementations.
