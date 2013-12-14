@@ -58,7 +58,7 @@ VARIABLE(grub_core_entry_addr)
 	orb	$0x02, %al
 	outb	$0x92
 1:
-	movl	grub_core_entry_addr, %edx
+	movl	EXT_C(grub_core_entry_addr), %edx
 	jmp	*%edx
 
 #include "../../../kern/i386/realmode.S"

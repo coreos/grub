@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/boot/i386/qemu/boot.S: Add missing EXT_C.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make i386-* other than i386-pc compileable under cygwin.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
