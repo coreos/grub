@@ -49,12 +49,6 @@
 #include <windows.h>
 #include <winioctl.h>
 
-#if SIZEOF_TCHAR == 1
-#define tcsnicmp strncasecmp
-#elif SIZEOF_TCHAR == 2
-#define tcsnicmp wcsnicmp
-#endif
-
 TCHAR *
 grub_get_mount_point (const TCHAR *path)
 {
@@ -191,6 +185,31 @@ grub_guess_root_devices (const char *dir)
   return os_dev;
 }
 
+static int tcharncasecmp (LPCTSTR a, const char *b, size_t sz)
+{
+  for (; sz; sz--, a++, b++)
+    {
+      char ac, bc;
+      if(*a >= 0x80)
+	return +1;
+      if (*b & 0x80)
+        return -1;
+      if (*a == '\0' && *b == '\0')
+	return 0;
+      ac = *a;
+      bc = *b;
+      if (ac >= 'A' && ac <= 'Z')
+	ac -= 'A' - 'a';
+      if (bc >= 'A' && bc <= 'Z')
+	bc -= 'A' - 'a';
+      if (ac > bc)
+	return +1;
+      if (ac < bc)
+	return -1;
+    }
+  return 0;
+}
+
 char *
 grub_util_part_to_disk (const char *os_dev,
 			struct stat *st __attribute__ ((unused)),
@@ -206,8 +225,8 @@ grub_util_part_to_disk (const char *os_dev,
       ((name[1] == '/') || (name[1] == '\\')) &&
       ((name[2] == '.') || (name[2] == '?')) &&
       ((name[3] == '/') || (name[3] == '\\'))
-      && (tcsnicmp (name + 4, TEXT("PhysicalDrive"), sizeof ("PhysicalDrive") - 1) == 0
-	  || tcsnicmp (name + 4, TEXT("Harddisk"), sizeof ("Harddisk") - 1) == 0
+      && (tcharncasecmp (name + 4, "PhysicalDrive", sizeof ("PhysicalDrive") - 1) == 0
+	  || tcharncasecmp (name + 4, "Harddisk", sizeof ("Harddisk") - 1) == 0
 	  || ((name[4] == 'A' || name[4] == 'a' || name[4] == 'B' || name[4] == 'b')
 	      && name[5] == ':' && name[6] == '\0')))
     {
@@ -277,8 +296,8 @@ grub_util_find_partition_start_os (const char *os_dev)
       ((name[1] == '/') || (name[1] == '\\')) &&
       ((name[2] == '.') || (name[2] == '?')) &&
       ((name[3] == '/') || (name[3] == '\\'))
-      && (tcsnicmp (name + 4, TEXT("PhysicalDrive"), sizeof ("PhysicalDrive") - 1) == 0
-	  || tcsnicmp (name + 4, TEXT("Harddisk"), sizeof ("Harddisk") - 1) == 0
+      && (tcharncasecmp (name + 4, "PhysicalDrive", sizeof ("PhysicalDrive") - 1) == 0
+	  || tcharncasecmp (name + 4, "Harddisk", sizeof ("Harddisk") - 1) == 0
 	  || ((name[4] == 'A' || name[4] == 'a' || name[4] == 'B' || name[4] == 'b')
 	      && name[5] == ':' && name[6] == '\0')))
     {

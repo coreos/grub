@@ -33,11 +33,14 @@
 #include <windows.h>
 #include <winioctl.h>
 
-#if SIZEOF_TCHAR == 1
-#define tclen strlen
-#elif SIZEOF_TCHAR == 2
-#define tclen wcslen
-#endif
+static size_t
+tclen (const TCHAR *s)
+{
+  const TCHAR *s0 = s;
+  while (*s)
+      s++;
+  return s - s0;
+}
 
 char *
 grub_make_system_path_relative_to_its_root (const char *path)

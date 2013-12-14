@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Do not use TCHAR string functions as they are not available on cygwin.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Workaround windows bug when querying EFI system partition parameters.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
