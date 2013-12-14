@@ -704,7 +704,7 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 			     (unsigned) hd->partition_signature[5],
 			     (unsigned) hd->partition_signature[6],
 			     (unsigned) hd->partition_signature[7],
-			     (unsigned) hd->mbr_type,
+			     (unsigned) hd->partmap_type,
 			     (unsigned) hd->signature_type);
 	      }
 	      break;

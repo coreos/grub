@@ -666,20 +666,20 @@ grub_efidisk_get_device_handle (grub_disk_t disk)
 	devices = make_devices ();
 	FOR_CHILDREN (c, devices)
 	  {
-	    grub_efi_hard_drive_device_path_t hd;
+	    grub_efi_hard_drive_device_path_t *hd;
 
-	    grub_memcpy (&hd, c->last_device_path, sizeof (hd));
+	    hd = (grub_efi_hard_drive_device_path_t *) c->last_device_path;
 
 	    if ((GRUB_EFI_DEVICE_PATH_TYPE (c->last_device_path)
 		 == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE)
 		&& (GRUB_EFI_DEVICE_PATH_SUBTYPE (c->last_device_path)
 		    == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE)
 		&& (grub_partition_get_start (disk->partition) 
-		    == (hd.partition_start << (disk->log_sector_size
-					       - GRUB_DISK_SECTOR_BITS)))
+		    == (hd->partition_start << (disk->log_sector_size
+						- GRUB_DISK_SECTOR_BITS)))
 		&& (grub_partition_get_len (disk->partition)
-		    == (hd.partition_size << (disk->log_sector_size
-					      - GRUB_DISK_SECTOR_BITS))))
+		    == (hd->partition_size << (disk->log_sector_size
+					       - GRUB_DISK_SECTOR_BITS))))
 	      {
 		handle = c->handle;
 		break;
@@ -745,7 +745,7 @@ get_diskname_from_path (const grub_efi_device_path_t *path,
 struct grub_efidisk_get_device_name_ctx
 {
   char *partition_name;
-  grub_efi_hard_drive_device_path_t hd;
+  grub_efi_hard_drive_device_path_t *hd;
 };
 
 /* Helper for grub_efidisk_get_device_name.
@@ -757,11 +757,11 @@ grub_efidisk_get_device_name_iter (grub_disk_t disk,
   struct grub_efidisk_get_device_name_ctx *ctx = data;
 
   if (grub_partition_get_start (part)
-      == (ctx->hd.partition_start << (disk->log_sector_size
-				      - GRUB_DISK_SECTOR_BITS))
+      == (ctx->hd->partition_start << (disk->log_sector_size
+				       - GRUB_DISK_SECTOR_BITS))
       && grub_partition_get_len (part)
-      == (ctx->hd.partition_size << (disk->log_sector_size
-				     - GRUB_DISK_SECTOR_BITS)))
+      == (ctx->hd->partition_size << (disk->log_sector_size
+				      - GRUB_DISK_SECTOR_BITS)))
     {
       ctx->partition_name = grub_partition_get_name (part);
       return 1;
@@ -831,10 +831,10 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
       /* Find a partition which matches the hard drive device path.  */
       ctx.partition_name = NULL;
-      grub_memcpy (&ctx.hd, ldp, sizeof (ctx.hd));
-      if (ctx.hd.partition_start == 0
-	  && (ctx.hd.partition_size << (parent->log_sector_size
-					- GRUB_DISK_SECTOR_BITS))
+      ctx.hd = (grub_efi_hard_drive_device_path_t *) ldp;
+      if (ctx.hd->partition_start == 0
+	  && (ctx.hd->partition_size << (parent->log_sector_size
+					 - GRUB_DISK_SECTOR_BITS))
 	  == grub_disk_get_size (parent))
 	{
 	  dev_name = grub_strdup (parent->name);

@@ -827,8 +827,8 @@ struct grub_efi_hard_drive_device_path
   grub_efi_uint32_t partition_number;
   grub_efi_lba_t partition_start;
   grub_efi_lba_t partition_size;
-  grub_efi_uint8_t partition_signature[8];
-  grub_efi_uint8_t mbr_type;
+  grub_efi_uint8_t partition_signature[16];
+  grub_efi_uint8_t partmap_type;
   grub_efi_uint8_t signature_type;
 } __attribute__ ((packed));
 typedef struct grub_efi_hard_drive_device_path grub_efi_hard_drive_device_path_t;
