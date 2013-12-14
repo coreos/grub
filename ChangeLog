@@ -1,5 +1,10 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/windows/blocklist.c: Add missing cast in printf
+	invocation.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/config.c: Remove trailing newline from distributor in simple
 	parsing.
 

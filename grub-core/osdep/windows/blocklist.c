@@ -84,7 +84,8 @@ grub_install_get_blocklist (grub_device_t root_dev,
     grub_util_error ("unsupported fs for blocklist under windows: %s",
 		     fs->name);
 
-  grub_util_info ("sec_per_lcn = %lld, first_lcn=%lld", sec_per_lcn, first_lcn);
+  grub_util_info ("sec_per_lcn = %lld, first_lcn=%lld",
+		  (long long) sec_per_lcn, (long long) first_lcn);
 
   first_lcn += grub_partition_get_start (root_dev->disk->partition);
 
