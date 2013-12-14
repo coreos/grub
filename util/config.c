@@ -52,8 +52,14 @@ grub_util_parse_config (FILE *f, struct grub_util_config *cfg, int simple)
 
 	  if (simple)
 	    {
+	      char *ptr2;
 	      free (cfg->grub_distributor);
 	      cfg->grub_distributor = xstrdup (ptr);
+	      for (ptr2 = cfg->grub_distributor
+		     + grub_strlen (cfg->grub_distributor) - 1;
+		   ptr2 >= cfg->grub_distributor
+		     && (*ptr2 == '\r' || *ptr2 == '\n'); ptr2--);
+	      ptr2[1] = '\0';
 	      continue;
 	    }
 	  free (cfg->grub_distributor);

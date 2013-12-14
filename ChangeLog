@@ -1,5 +1,10 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/config.c: Remove trailing newline from distributor in simple
+	parsing.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h: Rename protocol and interface to avoid
 	conflict.
 
