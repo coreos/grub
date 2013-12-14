@@ -544,6 +544,7 @@ program = {
   common = grub-core/osdep/platform.c;
   common = grub-core/osdep/platform_unix.c;
   extra_dist = grub-core/osdep/linux/platform.c;
+  extra_dist = grub-core/osdep/windows/platform.c;
   extra_dist = grub-core/osdep/basic/platform.c;
   extra_dist = grub-core/osdep/basic/no_platform.c;
   extra_dist = grub-core/osdep/unix/platform.c;

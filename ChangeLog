@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement windows flavour of EFI install routines.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.extra-dist: Adjust path to conf/i386-cygwin-img-ld.sc.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
