@@ -1,5 +1,10 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* .gitignore: Add .exe variants. Add missing files. Remove few outdated
+	entries.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/exec.c: Use unix version on cygwin.
 
 2013-12-13  Vladimir Serbinenko  <phcoder@gmail.com>
