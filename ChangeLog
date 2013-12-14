@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-pe2elf.c: Fix handling of .bss.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement windows flavour of EFI install routines.
 
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>

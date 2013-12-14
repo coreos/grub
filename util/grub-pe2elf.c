@@ -143,6 +143,8 @@ write_section_data (FILE* fp, const char *name, char *image,
         {
           idx = BSS_SECTION;
           shdr[idx].sh_flags = SHF_ALLOC | SHF_WRITE;
+	  if (secsize < pe_shdr->virtual_size)
+	    secsize = pe_shdr->virtual_size;
         }
       else if (! strcmp (shname, ".modname"))
         idx = MODNAME_SECTION;
