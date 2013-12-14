@@ -15,7 +15,7 @@ EXTRA_DIST += docs/autoiso.cfg
 EXTRA_DIST += docs/grub.cfg
 EXTRA_DIST += docs/osdetect.cfg
 
-EXTRA_DIST += conf/i386-pc-cygwin-img-ld.sc
+EXTRA_DIST += conf/i386-cygwin-img-ld.sc
 
 EXTRA_DIST += grub-core/Makefile.core.def
 EXTRA_DIST += grub-core/Makefile.gcry.def

@@ -1,5 +1,9 @@
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.extra-dist: Adjust path to conf/i386-cygwin-img-ld.sc.
+
+2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Change grub_install_register_efi interface to pass GRUB device.
 
 	This allows grub_install_register_efi to request partition info
