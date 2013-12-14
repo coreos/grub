@@ -97,12 +97,54 @@ grub_util_tchar_to_utf8 (LPCTSTR in)
 #error "Unsupported TCHAR size"
 #endif
 
+
+LPTSTR
+grub_util_get_windows_path_real (const char *path)
+{
+  LPTSTR fpa;
+  LPTSTR tpath;
+  size_t alloc, len;
+
+  tpath = grub_util_utf8_to_tchar (path);
+
+  alloc = PATH_MAX;
+
+  while (1)
+    {
+      fpa = xmalloc (alloc * sizeof (fpa[0]));
+
+      len = GetFullPathName (tpath, alloc, fpa, NULL);
+      if (len >= alloc)
+	{
+	  free (fpa);
+	  alloc = 2 * (len + 2);
+	  continue;
+	}
+      if (len == 0)
+	{
+	  free (fpa);
+	  return tpath;
+	}
+
+      free (tpath);
+      return fpa;
+    }
+}
+
 #ifdef __CYGWIN__
 LPTSTR
 grub_util_get_windows_path (const char *path)
 {
   LPTSTR winpath;
+  /* Workaround cygwin bugs with //?/.  */
+  if ((path[0] == '\\' || path[0] == '/')
+      && (path[1] == '\\' || path[1] == '/')
+      && (path[2] == '?' || path[2] == '.')
+      && (path[3] == '\\' || path[3] == '/'))
+    return grub_util_get_windows_path_real (path);
+
   winpath = xmalloc (sizeof (winpath[0]) * PATH_MAX);
+  memset (winpath, 0, sizeof (winpath[0]) * PATH_MAX);
   if (cygwin_conv_path ((sizeof (winpath[0]) == 1 ? CCP_POSIX_TO_WIN_A
 			 : CCP_POSIX_TO_WIN_W) | CCP_ABSOLUTE, path, winpath,
 			sizeof (winpath[0]) * PATH_MAX))
@@ -113,20 +155,7 @@ grub_util_get_windows_path (const char *path)
 LPTSTR
 grub_util_get_windows_path (const char *path)
 {
-  LPTSTR fpa;
-  LPTSTR tpath;
-
-  tpath = grub_util_utf8_to_tchar (path);
-
-  fpa = xmalloc (PATH_MAX * sizeof (fpa[0]));
-  if (!_wfullpath (fpa, tpath, PATH_MAX))
-    {
-      free (fpa);
-      return tpath;
-    }
-
-  free (tpath);
-  return fpa;
+  return grub_util_get_windows_path_real (path);
 }
 #endif
 
