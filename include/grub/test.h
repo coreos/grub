@@ -58,13 +58,13 @@ int grub_test_run (grub_test_t test);
 void grub_test_nonzero (int cond, const char *file,
 			const char *func, grub_uint32_t line,
 			const char *fmt, ...)
-  __attribute__ ((format (printf, 5, 6)));
+  __attribute__ ((format (GNU_PRINTF, 5, 6)));
 
 /* Macro to fill in location details and an optional error message.  */
 void grub_test_assert_helper (int cond, const char *file,
                             const char *func, grub_uint32_t line,
                             const char *condstr, const char *fmt, ...)
-  __attribute__ ((format (printf, 6, 7)));
+  __attribute__ ((format (GNU_PRINTF, 6, 7)));
 
 #define grub_test_assert(cond, ...)				\
   grub_test_assert_helper(cond, GRUB_FILE, __FUNCTION__, __LINE__,     \
