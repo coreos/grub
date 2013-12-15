@@ -1,5 +1,10 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkimagexx.c (relocate_addresses): Display offset rather
+	than almost useless pointer.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add gcc_struct to all packed structures when compiling with mingw.
 
 	Just "packed" doesn't always pack the way we expect.

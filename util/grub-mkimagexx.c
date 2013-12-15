@@ -855,7 +855,10 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_ARM_THM_JUMP19:
 		     {
 		       grub_err_t err;
-		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
+		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",
+				       (unsigned long) ((char *) target
+							- (char *) e),
+				       sym_addr);
 		       if (!(sym_addr & 1))
 			 {
 			   grub_uint32_t tr_addr;
@@ -888,7 +891,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_ARM_JUMP24:
 		     {
 		       grub_err_t err;
-		       grub_util_info ("  JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",	(unsigned long) target, sym_addr);
+		       grub_util_info ("  JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",  (unsigned long) ((char *) target - (char *) e), sym_addr);
 		       if (sym_addr & 1)
 			 {
 			   grub_uint32_t tr_addr;
