@@ -60,12 +60,12 @@ grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t,
 signature_found:
 
   table_item =
-    (grub_linuxbios_table_item_t) ((long) table_header +
-			       (long) table_header->header_size);
-  for (; table_item < (grub_linuxbios_table_item_t) ((long) table_header
-						     + (long) table_header->header_size
-						     + (long) table_header->table_size);
-       table_item = (grub_linuxbios_table_item_t) ((long) table_item + (long) table_item->size))
+    (grub_linuxbios_table_item_t) ((char *) table_header +
+				   table_header->header_size);
+  for (; table_item < (grub_linuxbios_table_item_t) ((char *) table_header
+						     + table_header->header_size
+						     + table_header->table_size);
+       table_item = (grub_linuxbios_table_item_t) ((char *) table_item + table_item->size))
     {
       if (table_item->tag == GRUB_LINUXBIOS_MEMBER_LINK
          && check_signature ((grub_linuxbios_table_header_t) (grub_addr_t)

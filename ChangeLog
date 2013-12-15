@@ -1,5 +1,10 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/coreboot/cbtable.c: Use char * arithmetic rather
+	than converting to long.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/cryptodisk.c: Rename "n" to "last_cryptodisk_id".
 
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
