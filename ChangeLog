@@ -1,5 +1,10 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/elfXX.c: Use grub_addr_t rather than long when
+	appropriate.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/loopback.c: Use sequential IDs rather than pointer.
 
 	In case of quick removal of loopback and adding another one it may

@@ -141,7 +141,7 @@ grub_elfXX_load (grub_elf_t elf, const char *filename,
       }
 
     if (phdr->p_filesz < phdr->p_memsz)
-      grub_memset ((void *) (long) (load_addr + phdr->p_filesz),
+      grub_memset ((void *) (grub_addr_t) (load_addr + phdr->p_filesz),
 		   0, phdr->p_memsz - phdr->p_filesz);
 
     load_size += phdr->p_memsz;
