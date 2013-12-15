@@ -1,5 +1,10 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/acpi.c: Use grub_addr_t rather than long when
+	appropriate.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/coreboot/cbtable.c: Use char * arithmetic rather
 	than converting to long.
 

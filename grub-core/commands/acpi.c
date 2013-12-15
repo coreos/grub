@@ -227,7 +227,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv2 to %p\n", target);
 	    v2inebda = target;
 	    target += v2->length;
-	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
 	    v2 = 0;
 	    break;
 	  }
@@ -246,7 +246,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv1 to %p\n", target);
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
-	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
 	    v1 = 0;
 	    break;
 	  }
@@ -265,7 +265,7 @@ grub_acpi_create_ebda (void)
 	    grub_memcpy (target, v2, v2->length);
 	    v2inebda = target;
 	    target += v2->length;
-	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
 	    v2 = 0;
 	    break;
 	  }
@@ -282,7 +282,7 @@ grub_acpi_create_ebda (void)
 	    grub_memcpy (target, v1, sizeof (struct grub_acpi_rsdp_v10));
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
-	    target = (grub_uint8_t *) ((((long) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
 	    v1 = 0;
 	    break;
 	  }
@@ -306,7 +306,7 @@ grub_acpi_create_ebda (void)
       *target = 0;
 
   grub_dprintf ("acpi", "Switching EBDA\n");
-  (*((grub_uint16_t *) 0x40e)) = ((long)targetebda) >> 4;
+  (*((grub_uint16_t *) 0x40e)) = ((grub_addr_t) targetebda) >> 4;
   grub_dprintf ("acpi", "EBDA switched\n");
 
   return GRUB_ERR_NONE;
