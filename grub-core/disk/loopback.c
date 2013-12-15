@@ -32,9 +32,11 @@ struct grub_loopback
   char *devname;
   grub_file_t file;
   struct grub_loopback *next;
+  unsigned long id;
 };
 
 static struct grub_loopback *loopback_list;
+static unsigned long last_id = 0;
 
 static const struct grub_arg_option options[] =
   {
@@ -120,6 +122,7 @@ grub_cmd_loopback (grub_extcmd_context_t ctxt, int argc, char **args)
     }
 
   newdev->file = file;
+  newdev->id = last_id++;
 
   /* Add the new entry to the list.  */
   newdev->next = loopback_list;
@@ -171,7 +174,7 @@ grub_loopback_open (const char *name, grub_disk_t disk)
   disk->max_agglomerate = 1 << (29 - GRUB_DISK_SECTOR_BITS
 				- GRUB_DISK_CACHE_BITS);
 
-  disk->id = (unsigned long) dev;
+  disk->id = dev->id;
 
   disk->data = dev;
 

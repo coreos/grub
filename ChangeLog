@@ -1,5 +1,12 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/loopback.c: Use sequential IDs rather than pointer.
+
+	In case of quick removal of loopback and adding another one it may
+	get same ID, confusing the cache system.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/acpi.c: Use grub_addr_t rather than long when
 	appropriate.
 
