@@ -1,3 +1,7 @@
+2013-12-15  Ian Campbell  <ijc@hellion.org.uk>
+
+	* grub-core/kern/uboot/init.c: Fix units of uboot timer.
+
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	New functional test for sleep function.

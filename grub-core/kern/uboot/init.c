@@ -66,8 +66,7 @@ uboot_timer_ms (void)
   if (cur < last)
     high++;
   last = cur;
-  return grub_divmod64 ((((grub_uint64_t) high) << 32) | cur,
-			1000, 0);
+  return (((grub_uint64_t) high) << 32) | cur;
 }
 
 void
