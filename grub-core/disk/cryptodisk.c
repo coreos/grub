@@ -51,7 +51,7 @@ static inline int GF_PER_SECTOR (const struct grub_cryptodisk *dev)
 }
 
 static grub_cryptodisk_t cryptodisk_list = NULL;
-static grub_uint8_t n = 0;
+static grub_uint8_t last_cryptodisk_id = 0;
 
 static void
 gf_mul_x (grub_uint8_t *g)
@@ -707,7 +707,7 @@ grub_cryptodisk_insert (grub_cryptodisk_t newdev, const char *name,
       return grub_errno;
     }
 
-  newdev->id = n++;
+  newdev->id = last_cryptodisk_id++;
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
   newdev->next = cryptodisk_list;
@@ -753,7 +753,7 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
   newdev->cheat_fd = GRUB_UTIL_FD_INVALID;
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
-  newdev->id = n++;
+  newdev->id = last_cryptodisk_id++;
   newdev->next = cryptodisk_list;
   cryptodisk_list = newdev;
 

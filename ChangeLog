@@ -1,5 +1,9 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/cryptodisk.c: Rename "n" to "last_cryptodisk_id".
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkimagexx.c (relocate_addresses): Display offset rather
 	than almost useless pointer.
 
