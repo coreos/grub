@@ -1,5 +1,9 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add explicit sysv_abi on amd64 asm routines.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/efi/lsefisystab.c: Use %lld to show
 	num_table_entries.
 
