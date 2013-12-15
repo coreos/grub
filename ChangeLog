@@ -1,5 +1,13 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	New functional test for sleep function.
+
+	This test allows to check sleep without qemu. Keep qemu version as
+	well as functional test won't notice if all clocks are going too fast
+	or too slow.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add explicit sysv_abi on amd64 asm routines.
 
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>

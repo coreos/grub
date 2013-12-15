@@ -64,6 +64,7 @@ grub_functional_all_tests (grub_extcmd_context_t ctxt __attribute__ ((unused)),
   grub_dl_load ("xnu_uuid_test");
   grub_dl_load ("pbkdf2_test");
   grub_dl_load ("signature_test");
+  grub_dl_load ("sleep_test");
 
   FOR_LIST_ELEMENTS (test, grub_test_list)
     ok = !grub_test_run (test) && ok;
