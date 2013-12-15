@@ -71,7 +71,7 @@ grub_cmd_lsefisystab (struct grub_command *cmd __attribute__ ((unused)),
 
   grub_printf (", Version=%x\n", st->firmware_revision);
 
-  grub_printf ("%ld tables:\n", st->num_table_entries);
+  grub_printf ("%lld tables:\n", (long long) st->num_table_entries);
   t = st->configuration_table;
   for (i = 0; i < st->num_table_entries; i++)
     {
