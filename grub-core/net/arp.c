@@ -43,7 +43,7 @@ struct arphdr {
   grub_uint8_t hln;
   grub_uint8_t pln;
   grub_uint16_t op;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static int have_pending;
 static grub_uint32_t pending_req;

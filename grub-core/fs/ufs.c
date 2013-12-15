@@ -187,7 +187,7 @@ struct grub_ufs_inode
   };
 
   grub_uint8_t unused[24];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #else
 /* UFS inode.  */
 struct grub_ufs_inode
@@ -217,7 +217,7 @@ struct grub_ufs_inode
   grub_uint32_t gen;
   grub_uint32_t unused;
   grub_uint8_t pad[12];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #endif
 
 /* Directory entry.  */
@@ -234,7 +234,7 @@ struct grub_ufs_dirent
       grub_uint8_t namelen_bsd;
     };
   };
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Information about a "mounted" ufs filesystem.  */
 struct grub_ufs_data

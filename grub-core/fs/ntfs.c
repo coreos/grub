@@ -643,7 +643,7 @@ struct symlink_descriptor
   grub_uint16_t len1;
   grub_uint16_t off2;
   grub_uint16_t len2;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static char *
 grub_ntfs_read_symlink (grub_fshelp_node_t node)

@@ -94,7 +94,7 @@ struct tftphdr {
       grub_int8_t data[TFTP_DEFAULTSIZE_PACKET+2];
     } oack;
   } u;
-} __attribute__ ((packed)) ;
+} GRUB_PACKED ;
 
 
 typedef struct tftp_data

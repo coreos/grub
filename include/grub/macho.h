@@ -25,7 +25,7 @@ struct grub_macho_fat_header
 {
   grub_uint32_t magic;
   grub_uint32_t nfat_arch;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {
@@ -47,7 +47,7 @@ struct grub_macho_fat_arch
   grub_uint32_t offset;
   grub_uint32_t size;
   grub_uint32_t align;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* File header for 32-bit. Always in native-endian. */
 struct grub_macho_header32
@@ -60,7 +60,7 @@ struct grub_macho_header32
   grub_uint32_t ncmds;
   grub_uint32_t sizeofcmds;
   grub_uint32_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* File header for 64-bit. Always in native-endian. */
 struct grub_macho_header64
@@ -74,14 +74,14 @@ struct grub_macho_header64
   grub_uint32_t sizeofcmds;
   grub_uint32_t flags;
   grub_uint32_t reserved;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Common header of Mach-O commands. */
 struct grub_macho_cmd
 {
   grub_uint32_t cmd;
   grub_uint32_t cmdsize;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef grub_uint32_t grub_macho_vmprot_t;
 
@@ -100,7 +100,7 @@ struct grub_macho_segment32
   grub_macho_vmprot_t initprot;
   grub_uint32_t nsects;
   grub_uint32_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* 64-bit segment command. */
 struct grub_macho_segment64
@@ -117,7 +117,7 @@ struct grub_macho_segment64
   grub_macho_vmprot_t initprot;
   grub_uint32_t nsects;
   grub_uint32_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_MACHO_CMD_THREAD     5
 
@@ -137,7 +137,7 @@ union grub_macho_filestart
   struct grub_macho_header32 thin32;
   struct grub_macho_header64 thin64;
   struct grub_macho_lzss_header lzss;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_MACHO_LZSS_OFFSET 0x180
 

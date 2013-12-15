@@ -175,7 +175,7 @@ struct grub_raid_super_09
    * Active descriptor
    */
   struct grub_raid_disk_09 this_disk;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_diskfilter_vg *
 grub_mdraid_detect (grub_disk_t disk,

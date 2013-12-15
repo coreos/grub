@@ -56,7 +56,7 @@ struct grub_luks_phdr
     grub_uint32_t keyMaterialOffset;
     grub_uint32_t stripes;
   } keyblock[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef struct grub_luks_phdr *grub_luks_phdr_t;
 

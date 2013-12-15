@@ -30,7 +30,7 @@
 typedef struct zio_eck {
 	grub_uint64_t	zec_magic;	/* for validation, endianness	*/
 	zio_cksum_t	zec_cksum;	/* 256-bit checksum		*/
-} __attribute__ ((packed)) zio_eck_t;
+} GRUB_PACKED zio_eck_t;
 
 /*
  * Gang block headers are self-checksumming and contain an array

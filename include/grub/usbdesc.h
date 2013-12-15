@@ -36,7 +36,7 @@ struct grub_usb_desc
 {
   grub_uint8_t length;
   grub_uint8_t type;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_desc_device
 {
@@ -54,7 +54,7 @@ struct grub_usb_desc_device
   grub_uint8_t strprod;
   grub_uint8_t strserial;
   grub_uint8_t configcnt;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_desc_config
 {
@@ -66,7 +66,7 @@ struct grub_usb_desc_config
   grub_uint8_t strconfig;
   grub_uint8_t attrib;
   grub_uint8_t maxpower;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #if 0
 struct grub_usb_desc_if_association
@@ -79,7 +79,7 @@ struct grub_usb_desc_if_association
   grub_uint8_t subclass;
   grub_uint8_t protocol;
   grub_uint8_t function;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #endif
 
 struct grub_usb_desc_if
@@ -93,7 +93,7 @@ struct grub_usb_desc_if
   grub_uint8_t subclass;
   grub_uint8_t protocol;
   grub_uint8_t strif;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_desc_endp
 {
@@ -103,14 +103,14 @@ struct grub_usb_desc_endp
   grub_uint8_t attrib;
   grub_uint16_t maxpacket;
   grub_uint8_t interval;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_desc_str
 {
   grub_uint8_t length;
   grub_uint8_t type;
   grub_uint16_t str[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_desc_debug
 {
@@ -118,7 +118,7 @@ struct grub_usb_desc_debug
   grub_uint8_t type;
   grub_uint8_t in_endp;
   grub_uint8_t out_endp;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usb_usb_hubdesc
 {
@@ -129,6 +129,6 @@ struct grub_usb_usb_hubdesc
   grub_uint8_t pwdgood;
   grub_uint8_t current;
   /* Removable and power control bits follow.  */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #endif /* GRUB_USBDESC_H */

@@ -276,7 +276,7 @@ struct grub_e820_mmap
   grub_uint64_t addr;
   grub_uint64_t size;
   grub_uint32_t type;
-} __attribute__((packed));
+} GRUB_PACKED;
 #define GRUB_E820_RAM        1
 #define GRUB_E820_RESERVED   2
 #define GRUB_E820_ACPI       3

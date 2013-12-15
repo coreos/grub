@@ -33,7 +33,7 @@ struct grub_machine_mmap_entry
 #define GRUB_MACHINE_MEMORY_NVS 	4
 #define GRUB_MACHINE_MEMORY_BADRAM 	5
   grub_uint32_t type;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 
 /*

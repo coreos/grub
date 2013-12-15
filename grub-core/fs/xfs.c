@@ -54,7 +54,7 @@ struct grub_xfs_sblock
   grub_uint8_t log2_agblk;
   grub_uint8_t unused6[67];
   grub_uint8_t log2_dirblk;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_xfs_dir_header
 {
@@ -64,8 +64,8 @@ struct grub_xfs_dir_header
   {
     grub_uint32_t i4;
     grub_uint64_t i8;
-  } parent __attribute__ ((packed));
-} __attribute__ ((packed));
+  } GRUB_PACKED parent;
+} GRUB_PACKED;
 
 struct grub_xfs_dir_entry
 {
@@ -73,13 +73,13 @@ struct grub_xfs_dir_entry
   grub_uint16_t offset;
   char name[1];
   /* Inode number follows, 32 bits.  */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_xfs_dir2_entry
 {
   grub_uint64_t inode;
   grub_uint8_t len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef grub_uint32_t grub_xfs_extent[4];
 
@@ -91,20 +91,20 @@ struct grub_xfs_btree_node
   grub_uint64_t left;
   grub_uint64_t right;
   grub_uint64_t keys[1];
-}  __attribute__ ((packed));
+}  GRUB_PACKED;
 
 struct grub_xfs_btree_root
 {
   grub_uint16_t level;
   grub_uint16_t numrecs;
   grub_uint64_t keys[1];
-}  __attribute__ ((packed));
+}  GRUB_PACKED;
 
 struct grub_xfs_time
 {
   grub_uint32_t sec;
   grub_uint32_t nanosec;
-}  __attribute__ ((packed));
+}  GRUB_PACKED;
 
 struct grub_xfs_inode
 {
@@ -133,14 +133,14 @@ struct grub_xfs_inode
     } dir;
     grub_xfs_extent extents[XFS_INODE_EXTENTS];
     struct grub_xfs_btree_root btree;
-  } data __attribute__ ((packed));
-} __attribute__ ((packed));
+  } GRUB_PACKED data;
+} GRUB_PACKED;
 
 struct grub_xfs_dirblock_tail
 {
   grub_uint32_t leaf_count;
   grub_uint32_t leaf_stale;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_fshelp_node
 {

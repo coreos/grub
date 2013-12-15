@@ -416,7 +416,7 @@ struct grub_net_bootp_packet
   char server_name[64];
   char boot_file[128];
   grub_uint8_t vendor[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define	GRUB_NET_BOOTP_RFC1048_MAGIC_0	0x63
 #define	GRUB_NET_BOOTP_RFC1048_MAGIC_1	0x82

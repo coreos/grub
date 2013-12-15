@@ -41,7 +41,7 @@ struct header
   grub_uint8_t magic;
   grub_uint16_t width;
   grub_uint16_t height;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_video_palette_data ieee1275_palette[256];
 

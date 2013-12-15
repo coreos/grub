@@ -44,7 +44,7 @@ struct grub_usbms_cbw
   grub_uint8_t lun;
   grub_uint8_t length;
   grub_uint8_t cbwcb[16];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usbms_csw
 {
@@ -52,7 +52,7 @@ struct grub_usbms_csw
   grub_uint32_t tag;
   grub_uint32_t residue;
   grub_uint8_t status;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_usbms_dev
 {

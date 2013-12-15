@@ -53,7 +53,7 @@ struct grub_btrfs_device
   grub_uint64_t device_id;
   grub_uint64_t size;
   grub_uint8_t dummy[0x62 - 0x10];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_superblock
 {
@@ -71,7 +71,7 @@ struct grub_btrfs_superblock
   char label[0x100];
   grub_uint8_t dummy4[0x100];
   grub_uint8_t bootstrap_mapping[0x800];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct btrfs_header
 {
@@ -80,7 +80,7 @@ struct btrfs_header
   grub_uint8_t dummy[0x30];
   grub_uint32_t nitems;
   grub_uint8_t level;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_device_desc
 {
@@ -122,28 +122,28 @@ struct grub_btrfs_chunk_item
   grub_uint8_t dummy2[0xc];
   grub_uint16_t nstripes;
   grub_uint16_t nsubstripes;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_chunk_stripe
 {
   grub_uint64_t device_id;
   grub_uint64_t offset;
   grub_btrfs_uuid_t device_uuid;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_leaf_node
 {
   struct grub_btrfs_key key;
   grub_uint32_t offset;
   grub_uint32_t size;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_internal_node
 {
   struct grub_btrfs_key key;
   grub_uint64_t addr;
   grub_uint64_t dummy;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_dir_item
 {
@@ -156,7 +156,7 @@ struct grub_btrfs_dir_item
 #define GRUB_BTRFS_DIR_ITEM_TYPE_SYMLINK 7
   grub_uint8_t type;
   char name[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_leaf_descriptor
 {
@@ -183,7 +183,7 @@ struct grub_btrfs_inode
   grub_uint64_t size;
   grub_uint8_t dummy2[0x70];
   struct grub_btrfs_time mtime;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_btrfs_extent_data
 {
@@ -204,7 +204,7 @@ struct grub_btrfs_extent_data
       grub_uint64_t filled;
     };
   };
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_BTRFS_EXTENT_INLINE 0
 #define GRUB_BTRFS_EXTENT_REGULAR 1

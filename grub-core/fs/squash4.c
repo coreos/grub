@@ -71,7 +71,7 @@ struct grub_squash_super
   grub_uint64_t diroffset;
   grub_uint64_t unk1offset;
   grub_uint64_t unk2offset;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Chunk-based */
 struct grub_squash_inode
@@ -89,7 +89,7 @@ struct grub_squash_inode
       grub_uint32_t offset;
       grub_uint32_t size;
       grub_uint32_t block_size[0];
-    }  __attribute__ ((packed)) file;
+    }  GRUB_PACKED file;
     struct {
       grub_uint64_t chunk;
       grub_uint64_t size;
@@ -98,13 +98,13 @@ struct grub_squash_inode
       grub_uint32_t offset;
       grub_uint32_t dummy3;
       grub_uint32_t block_size[0];
-    }  __attribute__ ((packed)) long_file;
+    }  GRUB_PACKED long_file;
     struct {
       grub_uint32_t chunk;
       grub_uint32_t dummy;
       grub_uint16_t size;
       grub_uint16_t offset;
-    } __attribute__ ((packed)) dir;
+    } GRUB_PACKED dir;
     struct {
       grub_uint32_t dummy1;
       grub_uint32_t size;
@@ -112,14 +112,14 @@ struct grub_squash_inode
       grub_uint32_t dummy2;
       grub_uint16_t dummy3;
       grub_uint16_t offset;
-    } __attribute__ ((packed)) long_dir;
+    } GRUB_PACKED long_dir;
     struct {
       grub_uint32_t dummy;
       grub_uint32_t namelen;
       char name[0];
-    } __attribute__ ((packed)) symlink;
-  }  __attribute__ ((packed));
-} __attribute__ ((packed));
+    } GRUB_PACKED symlink;
+  }  GRUB_PACKED;
+} GRUB_PACKED;
 
 struct grub_squash_cache_inode
 {
@@ -137,7 +137,7 @@ struct grub_squash_dirent_header
   grub_uint32_t nelems;
   grub_uint32_t ino_chunk;
   grub_uint32_t dummy;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_squash_dirent
 {
@@ -147,7 +147,7 @@ struct grub_squash_dirent
   /* Actually the value is the length of name - 1.  */
   grub_uint16_t namelen;
   char name[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {
@@ -164,7 +164,7 @@ struct grub_squash_frag_desc
   grub_uint64_t offset;
   grub_uint32_t size;
   grub_uint32_t dummy;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {

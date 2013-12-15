@@ -48,7 +48,7 @@ struct head
   char devmajor[8];
   char devminor[8];
   char prefix[155];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static inline unsigned long long
 read_number (const char *str, grub_size_t size)

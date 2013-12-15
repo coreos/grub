@@ -49,7 +49,7 @@ struct grub_ldm_vblk {
   grub_uint8_t type;
   grub_uint32_t unused2;
   grub_uint8_t dynamic[104];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #define LDM_VBLK_MAGIC "VBLK"
 
 enum
@@ -83,7 +83,7 @@ struct grub_ldm_label
   grub_uint64_t pv_size;
   grub_uint64_t config_start;
   grub_uint64_t config_size;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 #define LDM_MAGIC "PRIVHEAD"

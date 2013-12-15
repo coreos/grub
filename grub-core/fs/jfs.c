@@ -70,7 +70,7 @@ struct grub_jfs_extent
   /* The physical offset of the first block on the disk.  */
   grub_uint8_t blk1;
   grub_uint32_t blk2;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_JFS_IAG_INODES_OFFSET 3072
 #define GRUB_JFS_IAG_INODES_COUNT 128
@@ -79,7 +79,7 @@ struct grub_jfs_iag
 {
   grub_uint8_t unused[GRUB_JFS_IAG_INODES_OFFSET];
   struct grub_jfs_extent inodes[GRUB_JFS_IAG_INODES_COUNT];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 /* The head of the tree used to find extents.  */
@@ -94,7 +94,7 @@ struct grub_jfs_treehead
   grub_uint16_t count;
   grub_uint16_t max;
   grub_uint8_t unused2[10];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A node in the extent tree.  */
 struct grub_jfs_tree_extent
@@ -107,7 +107,7 @@ struct grub_jfs_tree_extent
   grub_uint32_t offset2;
 
   struct grub_jfs_extent extent;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The tree of directory entries.  */
 struct grub_jfs_tree_dir
@@ -128,7 +128,7 @@ struct grub_jfs_tree_dir
   /* The location of the sorted array of pointers to dirents.  */
   grub_uint8_t sindex;
   grub_uint8_t unused[10];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* An internal node in the dirents tree.  */
 struct grub_jfs_internal_dirent
@@ -137,7 +137,7 @@ struct grub_jfs_internal_dirent
   grub_uint8_t next;
   grub_uint8_t len;
   grub_uint16_t namepart[11];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A leaf node in the dirents tree.  */
 struct grub_jfs_leaf_dirent
@@ -150,7 +150,7 @@ struct grub_jfs_leaf_dirent
   grub_uint8_t len;
   grub_uint16_t namepart[11];
   grub_uint32_t index;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A leaf in the dirents tree.  This one is used if the previously
    dirent was not big enough to store the name.  */
@@ -159,13 +159,13 @@ struct grub_jfs_leaf_next_dirent
   grub_uint8_t next;
   grub_uint8_t len;
   grub_uint16_t namepart[15];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_jfs_time
 {
   grub_int32_t sec;
   grub_int32_t nanosec;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_jfs_inode
 {
@@ -185,7 +185,7 @@ struct grub_jfs_inode
   union
   {
     /* The tree describing the extents of the file.  */
-    struct __attribute__ ((packed))
+    struct GRUB_PACKED
     {
       struct grub_jfs_treehead tree;
       struct grub_jfs_tree_extent extents[16];
@@ -206,15 +206,15 @@ struct grub_jfs_inode
 	grub_uint8_t sorted[8];
       } header;
       struct grub_jfs_leaf_dirent dirents[8];
-    } dir __attribute__ ((packed));
+    } GRUB_PACKED dir;
     /* Fast symlink.  */
     struct
     {
       grub_uint8_t unused[32];
       grub_uint8_t path[256];
     } symlink;
-  } __attribute__ ((packed));
-} __attribute__ ((packed));
+  } GRUB_PACKED;
+} GRUB_PACKED;
 
 struct grub_jfs_data
 {
@@ -226,7 +226,7 @@ struct grub_jfs_data
   int pos;
   int linknest;
   int namecomponentlen;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_jfs_diropen
 {
@@ -237,7 +237,7 @@ struct grub_jfs_diropen
     struct grub_jfs_leaf_dirent dirent[0];
     struct grub_jfs_leaf_next_dirent next_dirent[0];
     grub_uint8_t sorted[0];
-  } *dirpage __attribute__ ((packed));
+  } GRUB_PACKED *dirpage;
   struct grub_jfs_data *data;
   struct grub_jfs_inode *inode;
   int count;
@@ -251,7 +251,7 @@ struct grub_jfs_diropen
    */
   char name[256 * GRUB_MAX_UTF8_PER_UTF16 + 1];
   grub_uint32_t ino;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 static grub_dl_t my_mod;

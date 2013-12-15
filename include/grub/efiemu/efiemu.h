@@ -41,7 +41,7 @@ struct grub_efi_system_table32
   grub_efi_uint32_t boot_services;
   grub_efi_uint32_t num_table_entries;
   grub_efi_uint32_t configuration_table;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efi_system_table32  grub_efi_system_table32_t;
 
 struct grub_efi_system_table64
@@ -60,7 +60,7 @@ struct grub_efi_system_table64
   grub_efi_uint64_t boot_services;
   grub_efi_uint64_t num_table_entries;
   grub_efi_uint64_t configuration_table;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efi_system_table64  grub_efi_system_table64_t;
 
 struct grub_efiemu_runtime_services32
@@ -77,7 +77,7 @@ struct grub_efiemu_runtime_services32
   grub_efi_uint32_t set_variable;
   grub_efi_uint32_t get_next_high_monotonic_count;
   grub_efi_uint32_t reset_system;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efiemu_runtime_services32 grub_efiemu_runtime_services32_t;
 
 struct grub_efiemu_runtime_services64
@@ -94,7 +94,7 @@ struct grub_efiemu_runtime_services64
   grub_efi_uint64_t set_variable;
   grub_efi_uint64_t get_next_high_monotonic_count;
   grub_efi_uint64_t reset_system;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efiemu_runtime_services64 grub_efiemu_runtime_services64_t;
 
 extern grub_efi_system_table32_t *grub_efiemu_system_table32;
@@ -185,13 +185,13 @@ struct grub_efiemu_configuration_table32
 {
   grub_efi_packed_guid_t vendor_guid;
   grub_efi_uint32_t vendor_table;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efiemu_configuration_table32 grub_efiemu_configuration_table32_t;
 struct grub_efiemu_configuration_table64
 {
   grub_efi_packed_guid_t vendor_guid;
   grub_efi_uint64_t vendor_table;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_efiemu_configuration_table64 grub_efiemu_configuration_table64_t;
 grub_err_t grub_efiemu_unregister_configuration_table (grub_efi_guid_t guid);
 grub_err_t

@@ -95,7 +95,7 @@ struct grub_geli_key
   grub_uint8_t iv_key[64];
   grub_uint8_t cipher_key[64];
   grub_uint8_t hmac[64];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_geli_phdr
 {
@@ -111,7 +111,7 @@ struct grub_geli_phdr
   grub_uint32_t niter;
   grub_uint8_t salt[64];
   struct grub_geli_key keys[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {
@@ -144,7 +144,7 @@ geli_rekey (struct grub_cryptodisk *dev, grub_uint64_t zoneno)
   const struct {
     char magic[4];
     grub_uint64_t zone;
-  } __attribute__ ((packed)) tohash
+  } GRUB_PACKED tohash
       = { {'e', 'k', 'e', 'y'}, grub_cpu_to_le64 (zoneno) };
   GRUB_PROPERLY_ALIGNED_ARRAY (key, GRUB_CRYPTO_MAX_MDLEN);
 

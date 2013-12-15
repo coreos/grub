@@ -38,7 +38,7 @@ struct head
   char rdevminor[8];
   char namesize[8];
   char check[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static inline unsigned long long
 read_number (const char *str, grub_size_t size)

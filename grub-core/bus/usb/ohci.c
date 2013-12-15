@@ -47,7 +47,7 @@ struct grub_ohci_hcca
   grub_uint32_t donehead;
 
   grub_uint8_t reserved[116];
-} __attribute__((packed));
+} GRUB_PACKED;
 
 /* OHCI General Transfer Descriptor */
 struct grub_ohci_td
@@ -64,7 +64,7 @@ struct grub_ohci_td
                                * physical address in CPU endian */
   grub_uint32_t tr_index; /* index of TD in transfer */
   grub_uint8_t pad[8 - sizeof (volatile struct grub_ohci_td *)]; /* padding to 32 bytes */
-} __attribute__((packed));
+} GRUB_PACKED;
 
 /* OHCI Endpoint Descriptor.  */
 struct grub_ohci_ed
@@ -73,7 +73,7 @@ struct grub_ohci_ed
   grub_uint32_t td_tail;
   grub_uint32_t td_head;
   grub_uint32_t next_ed;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 typedef volatile struct grub_ohci_td *grub_ohci_td_t;
 typedef volatile struct grub_ohci_ed *grub_ohci_ed_t;

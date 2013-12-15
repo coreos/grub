@@ -374,7 +374,7 @@ struct gsub_header
   grub_uint16_t scripts_off;
   grub_uint16_t features_off;
   grub_uint16_t lookups_off;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_features
 {
@@ -389,21 +389,21 @@ struct gsub_features
 #define FEATURE_RLIG 0x726c6967
     grub_uint32_t feature_tag;
     grub_uint16_t offset;
-  } __attribute__ ((packed)) features[0];
-} __attribute__ ((packed));
+  } GRUB_PACKED features[0];
+} GRUB_PACKED;
 
 struct gsub_feature
 {
   grub_uint16_t params;
   grub_uint16_t lookupcount;
   grub_uint16_t lookupindices[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_lookup_list
 {
   grub_uint16_t count;
   grub_uint16_t offsets[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_lookup
 {
@@ -411,7 +411,7 @@ struct gsub_lookup
   grub_uint16_t flag;
   grub_uint16_t subtablecount;
   grub_uint16_t subtables[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_substitution
 {
@@ -426,14 +426,14 @@ struct gsub_substitution
       grub_uint16_t repl[0];
     };
   };
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_coverage_list
 {
   grub_uint16_t type;
   grub_uint16_t count;
   grub_uint16_t glyphs[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct gsub_coverage_ranges
 {
@@ -444,8 +444,8 @@ struct gsub_coverage_ranges
     grub_uint16_t start;
     grub_uint16_t end;
     grub_uint16_t start_index;
-  } __attribute__ ((packed)) ranges[0];
-} __attribute__ ((packed));
+  } GRUB_PACKED ranges[0];
+} GRUB_PACKED;
 
 #define GSUB_SINGLE_SUBSTITUTION 1
 

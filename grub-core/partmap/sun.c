@@ -38,13 +38,13 @@ struct grub_sun_partition_info
   grub_uint8_t id;
   grub_uint8_t spare2;
   grub_uint8_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sun_partition_descriptor
 {
   grub_uint32_t start_cylinder;
   grub_uint32_t num_sectors;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sun_block
 {
@@ -65,7 +65,7 @@ struct grub_sun_block
   struct grub_sun_partition_descriptor partitions[8];
   grub_uint16_t  magic;         /* Magic number.  */
   grub_uint16_t  csum;          /* Label xor'd checksum.  */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_partition_map grub_sun_partition_map;
 

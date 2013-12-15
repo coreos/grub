@@ -42,7 +42,7 @@ struct grub_amiga_rdsk
   grub_uint32_t fslst;
 
   grub_uint32_t unused[AMIGA_CHECKSUM_WORDS - 9];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_amiga_partition
 {
@@ -70,7 +70,7 @@ struct grub_amiga_partition
 
   grub_uint32_t firstcyl;
   grub_uint32_t unused[AMIGA_CHECKSUM_WORDS - 44];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_partition_map grub_amiga_partition_map;
 

@@ -273,7 +273,7 @@ struct grub_video_edid_info
 
   grub_uint8_t extension_flag;
   grub_uint8_t checksum;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef enum grub_video_driver_id
   {

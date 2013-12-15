@@ -24,6 +24,12 @@
 #include <grub/cpu/types.h>
 #endif
 
+#ifdef __MINGW32__
+#define GRUB_PACKED __attribute__ ((packed,gcc_struct))
+#else
+#define GRUB_PACKED __attribute__ ((packed))
+#endif
+
 #ifdef GRUB_BUILD
 # define GRUB_CPU_SIZEOF_VOID_P	BUILD_SIZEOF_VOID_P
 # define GRUB_CPU_SIZEOF_LONG	BUILD_SIZEOF_LONG
@@ -253,7 +259,7 @@ static inline grub_uint16_t grub_get_unaligned16 (const void *ptr)
   struct grub_unaligned_uint16_t
   {
     grub_uint16_t d;
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   const struct grub_unaligned_uint16_t *dd
     = (const struct grub_unaligned_uint16_t *) ptr;
   return dd->d;
@@ -264,7 +270,7 @@ static inline void grub_set_unaligned16 (void *ptr, grub_uint16_t val)
   struct grub_unaligned_uint16_t
   {
     grub_uint16_t d;
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   struct grub_unaligned_uint16_t *dd = (struct grub_unaligned_uint16_t *) ptr;
   dd->d = val;
 }
@@ -274,7 +280,7 @@ static inline grub_uint32_t grub_get_unaligned32 (const void *ptr)
   struct grub_unaligned_uint32_t
   {
     grub_uint32_t d;
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   const struct grub_unaligned_uint32_t *dd
     = (const struct grub_unaligned_uint32_t *) ptr;
   return dd->d;
@@ -285,7 +291,7 @@ static inline void grub_set_unaligned32 (void *ptr, grub_uint32_t val)
   struct grub_unaligned_uint32_t
   {
     grub_uint32_t d;
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   struct grub_unaligned_uint32_t *dd = (struct grub_unaligned_uint32_t *) ptr;
   dd->d = val;
 }
@@ -293,7 +299,7 @@ static inline void grub_set_unaligned32 (void *ptr, grub_uint32_t val)
 struct grub_unaligned_uint64
 {
   grub_uint64_t val;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef struct grub_unaligned_uint64 grub_unaligned_uint64_t;
 
@@ -309,7 +315,7 @@ static inline void grub_set_unaligned64 (void *ptr, grub_uint64_t val)
   struct grub_unaligned_uint64_t
   {
     grub_uint64_t d;
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   struct grub_unaligned_uint64_t *dd = (struct grub_unaligned_uint64_t *) ptr;
   dd->d = val;
 }

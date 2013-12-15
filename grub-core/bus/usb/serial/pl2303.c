@@ -55,7 +55,7 @@ struct grub_pl2303_config
   grub_uint8_t stop_bits;
   grub_uint8_t parity;
   grub_uint8_t word_len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static void
 real_config (struct grub_serial_port *port)

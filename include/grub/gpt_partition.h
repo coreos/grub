@@ -66,7 +66,7 @@ struct grub_gpt_header
   grub_uint32_t maxpart;
   grub_uint32_t partentry_size;
   grub_uint32_t partentry_crc32;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_gpt_partentry
 {
@@ -76,7 +76,7 @@ struct grub_gpt_partentry
   grub_uint64_t end;
   grub_uint64_t attrib;
   char name[72];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 grub_err_t
 grub_gpt_partition_map_iterate (grub_disk_t disk,

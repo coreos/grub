@@ -92,7 +92,7 @@ struct grub_fat_dir_entry
       grub_uint8_t m_time_tenth;
       grub_uint8_t a_time_tenth;
       grub_uint8_t reserved2[9];
-    }  __attribute__ ((packed)) file;
+    }  GRUB_PACKED file;
     struct {
       grub_uint8_t flags;
       grub_uint8_t reserved1;
@@ -103,17 +103,17 @@ struct grub_fat_dir_entry
       grub_uint32_t reserved3;
       grub_uint32_t first_cluster;
       grub_uint64_t file_size;
-    }   __attribute__ ((packed)) stream_extension;
+    }   GRUB_PACKED stream_extension;
     struct {
       grub_uint8_t flags;
       grub_uint16_t str[15];
-    }  __attribute__ ((packed))  file_name;
+    }  GRUB_PACKED  file_name;
     struct {
       grub_uint8_t character_count;
       grub_uint16_t str[15];
-    }  __attribute__ ((packed))  volume_label;
-  }  __attribute__ ((packed)) type_specific;
-} __attribute__ ((packed));
+    }  GRUB_PACKED  volume_label;
+  }  GRUB_PACKED type_specific;
+} GRUB_PACKED;
 
 struct grub_fat_dir_node
 {
@@ -142,7 +142,7 @@ struct grub_fat_dir_entry
   grub_uint16_t w_date;
   grub_uint16_t first_cluster_low;
   grub_uint32_t file_size;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_fat_long_name_entry
 {
@@ -154,7 +154,7 @@ struct grub_fat_long_name_entry
   grub_uint16_t name2[6];
   grub_uint16_t first_cluster;
   grub_uint16_t name3[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef struct grub_fat_dir_entry grub_fat_dir_node_t;
 

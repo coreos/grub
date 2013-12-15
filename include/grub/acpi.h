@@ -34,7 +34,7 @@ struct grub_acpi_rsdp_v10
   grub_uint8_t oemid[6];
   grub_uint8_t revision;
   grub_uint32_t rsdt_addr;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_acpi_rsdp_v20
 {
@@ -43,7 +43,7 @@ struct grub_acpi_rsdp_v20
   grub_uint64_t xsdt_addr;
   grub_uint8_t checksum;
   grub_uint8_t reserved[3];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_acpi_table_header
 {
@@ -56,7 +56,7 @@ struct grub_acpi_table_header
   grub_uint32_t oemrev;
   grub_uint8_t creator_id[4];
   grub_uint32_t creator_rev;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_ACPI_FADT_SIGNATURE "FACP"
 
@@ -71,7 +71,7 @@ struct grub_acpi_fadt
   grub_uint64_t facs_xaddr;
   grub_uint64_t dsdt_xaddr;
   grub_uint8_t somefields3[96];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_ACPI_MADT_SIGNATURE "APIC"
 
@@ -124,7 +124,7 @@ struct grub_acpi_madt_entry_interrupt_override
   grub_uint8_t source;
   grub_uint32_t global_sys_interrupt;
   grub_uint16_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 struct grub_acpi_madt_entry_lapic_nmi
@@ -133,7 +133,7 @@ struct grub_acpi_madt_entry_lapic_nmi
   grub_uint8_t acpiid;
   grub_uint16_t flags;
   grub_uint8_t lint;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_acpi_madt_entry_sapic
 {

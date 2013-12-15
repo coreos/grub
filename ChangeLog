@@ -1,3 +1,9 @@
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Add gcc_struct to all packed structures when compiling with mingw.
+
+	Just "packed" doesn't always pack the way we expect.
+
 2013-12-14  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/i386/coreboot/lbio.h: Add missing attribute (packed).

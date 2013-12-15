@@ -86,7 +86,7 @@ struct grub_partition_bsd_entry
   grub_uint8_t fs_type;
   grub_uint8_t fs_fragments;
   grub_uint16_t fs_cylinders;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The BSD disk label. Only define members useful for GRUB.  */
 struct grub_partition_bsd_disk_label
@@ -101,6 +101,6 @@ struct grub_partition_bsd_disk_label
   grub_uint16_t num_partitions;
   grub_uint32_t boot_size;
   grub_uint32_t superblock_size;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #endif /* ! GRUB_PC_PARTITION_HEADER */

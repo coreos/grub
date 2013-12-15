@@ -75,7 +75,7 @@ struct grub_tga_header
   grub_uint16_t image_height;
   grub_uint8_t image_bpp;
   grub_uint8_t image_descriptor;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct tga_data
 {

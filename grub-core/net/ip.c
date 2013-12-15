@@ -38,7 +38,7 @@ struct iphdr {
   grub_uint16_t chksum;
   grub_uint32_t src;
   grub_uint32_t dest;
-} __attribute__ ((packed)) ;
+} GRUB_PACKED ;
 
 enum
 {
@@ -56,7 +56,7 @@ struct ip6hdr {
   grub_uint8_t ttl;
   ip6addr src;
   ip6addr dest;
-} __attribute__ ((packed)) ;
+} GRUB_PACKED ;
 
 static int
 cmp (const void *a__, const void *b__)

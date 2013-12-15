@@ -41,7 +41,7 @@ struct grub_exfat_bpb
   grub_uint8_t num_fats;
   grub_uint8_t num_ph_drive;
   grub_uint8_t reserved[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #ifdef GRUB_UTIL
 #include <grub/disk.h>

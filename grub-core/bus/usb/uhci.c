@@ -105,7 +105,7 @@ struct grub_uhci_qh
   /* Queue heads are aligned on 16 bytes, pad so a queue head is 16
      bytes so we can store many in a 4K page.  */
   grub_uint8_t pad[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* UHCI Transfer Descriptor.  */
 struct grub_uhci_td
@@ -129,7 +129,7 @@ struct grub_uhci_td
 
   /* 3 additional 32 bits words reserved for the Host Controller Driver.  */
   grub_uint32_t data[3];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 typedef volatile struct grub_uhci_td *grub_uhci_td_t;
 typedef volatile struct grub_uhci_qh *grub_uhci_qh_t;

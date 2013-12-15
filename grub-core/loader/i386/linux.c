@@ -87,7 +87,7 @@ struct idt_descriptor
 {
   grub_uint16_t limit;
   void *base;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct idt_descriptor idt_desc =
   {

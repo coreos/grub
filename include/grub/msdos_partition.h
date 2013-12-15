@@ -88,7 +88,7 @@ struct grub_msdos_partition_entry
 
   /* The length in sector units.  */
   grub_uint32_t length;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The structure of MBR.  */
 struct grub_msdos_partition_mbr
@@ -101,7 +101,7 @@ struct grub_msdos_partition_mbr
 
   /* The signature 0xaa55.  */
   grub_uint16_t signature;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 

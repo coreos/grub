@@ -153,7 +153,7 @@ struct grub_pc_bios_boot_blocklist
   grub_uint64_t start;
   grub_uint16_t len;
   grub_uint16_t segment;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #endif
 
 #endif

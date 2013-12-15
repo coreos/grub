@@ -35,7 +35,7 @@ struct grub_linuxbios_timestamp_entry
 {
   grub_uint32_t id;
   grub_uint64_t tsc;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 struct grub_linuxbios_timestamp_table
 {
@@ -43,7 +43,7 @@ struct grub_linuxbios_timestamp_table
   grub_uint32_t capacity;
   grub_uint32_t used;
   struct grub_linuxbios_timestamp_entry entries[0];
-} __attribute__((packed));
+} GRUB_PACKED;
 
 struct grub_linuxbios_mainboard
 {
@@ -86,7 +86,7 @@ struct grub_linuxbios_table_framebuffer {
   grub_uint8_t blue_mask_size;
   grub_uint8_t reserved_field_pos;
   grub_uint8_t reserved_mask_size;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 struct grub_linuxbios_mem_region
 {
@@ -94,7 +94,7 @@ struct grub_linuxbios_mem_region
   grub_uint64_t size;
 #define GRUB_MACHINE_MEMORY_AVAILABLE		1
   grub_uint32_t type;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 typedef struct grub_linuxbios_mem_region *mem_region_t;
 
 grub_err_t

@@ -58,6 +58,6 @@ struct grub_hfs_sblock
   grub_hfs_datarecord_t extent_recs;
   grub_uint32_t catalog_size;
   grub_hfs_datarecord_t catalog_recs;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #endif /* ! GRUB_HFS_HEADER */

@@ -299,7 +299,7 @@ struct grub_pe32_symbol
   grub_uint16_t type;
   grub_uint8_t storage_class;
   grub_uint8_t num_aux;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_PE32_SYM_CLASS_EXTERNAL	2
 #define GRUB_PE32_SYM_CLASS_STATIC	3
@@ -312,7 +312,7 @@ struct grub_pe32_reloc
   grub_uint32_t offset;
   grub_uint32_t symtab_index;
   grub_uint16_t type;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define GRUB_PE32_REL_I386_DIR32	0x6
 #define GRUB_PE32_REL_I386_REL32	0x14

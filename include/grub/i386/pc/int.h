@@ -58,7 +58,7 @@ struct grub_i386_idt
 {
   grub_uint16_t limit;
   grub_uint32_t base;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #ifdef GRUB_MACHINE_PCBIOS
 extern struct grub_i386_idt *EXPORT_VAR(grub_realidt);

@@ -25,13 +25,13 @@ struct icmp_header
   grub_uint8_t type;
   grub_uint8_t code;
   grub_uint16_t checksum;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct ping_header
 {
   grub_uint16_t id;
   grub_uint16_t seq;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct router_adv
 {
@@ -41,13 +41,13 @@ struct router_adv
   grub_uint32_t reachable_time;
   grub_uint32_t retrans_timer;
   grub_uint8_t options[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct option_header
 {
   grub_uint8_t type;
   grub_uint8_t len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct prefix_option
 {
@@ -58,19 +58,19 @@ struct prefix_option
   grub_uint32_t preferred_lifetime;
   grub_uint32_t reserved;
   grub_uint64_t prefix[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct neighbour_solicit
 {
   grub_uint32_t reserved;
   grub_uint64_t target[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct neighbour_advertise
 {
   grub_uint32_t flags;
   grub_uint64_t target[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {

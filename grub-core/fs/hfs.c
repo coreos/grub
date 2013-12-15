@@ -65,7 +65,7 @@ struct grub_hfs_node
   grub_uint8_t level;
   grub_uint16_t reccnt;
   grub_uint16_t unused;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The head of the B*-Tree.  */
 struct grub_hfs_treeheader
@@ -81,7 +81,7 @@ struct grub_hfs_treeheader
   grub_uint32_t nodes;
   grub_uint32_t free_nodes;
   grub_uint8_t unused[76];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The state of a mounted HFS filesystem.  */
 struct grub_hfs_data
@@ -112,7 +112,7 @@ struct grub_hfs_catalog_key
 
   /* Filename.  */
   grub_uint8_t str[31];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The key as used on disk in a extent overflow tree.  Using this key
    the extents can be looked up using a fileid and logical start block
@@ -125,7 +125,7 @@ struct grub_hfs_extent_key
   grub_uint8_t forktype;
   grub_uint32_t fileid;
   grub_uint16_t first_block;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A directory record.  This is used to find out the directory ID.  */
 struct grub_hfs_dirrec
@@ -136,7 +136,7 @@ struct grub_hfs_dirrec
   grub_uint32_t dirid;
   grub_uint32_t ctime;
   grub_uint32_t mtime;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Information about a file.  */
 struct grub_hfs_filerec
@@ -154,7 +154,7 @@ struct grub_hfs_filerec
   /* The first 3 extents of the file.  The other extents can be found
      in the extent overflow file.  */
   grub_hfs_datarecord_t extents;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A record descriptor, both key and data, used to pass to call back
    functions.  */
@@ -712,7 +712,7 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	  {
 	    grub_uint8_t keylen;
 	    grub_uint8_t key;
-	  } __attribute__ ((packed)) *pnt;
+	  } GRUB_PACKED *pnt;
 	  pnt = (struct pointer *) (grub_be_to_cpu16 (node->offsets[pos])
 				    + node->rawnode);
 

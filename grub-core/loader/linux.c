@@ -21,7 +21,7 @@ struct newc_head
   char rdevminor[8];
   char namesize[8];
   char check[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_linux_initrd_component
 {

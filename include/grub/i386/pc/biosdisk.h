@@ -77,7 +77,7 @@ struct grub_biosdisk_drp
      writes a garbage to the tail of drive parameters,
      regardless of a size specified in a caller.  */
   grub_uint8_t dummy[16];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_biosdisk_cdrp
 {
@@ -94,7 +94,7 @@ struct grub_biosdisk_cdrp
   grub_uint8_t sectors;
   grub_uint8_t heads;
   grub_uint8_t dummy[16];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Disk Address Packet.  */
 struct grub_biosdisk_dap
@@ -104,6 +104,6 @@ struct grub_biosdisk_dap
   grub_uint16_t blocks;
   grub_uint32_t buffer;
   grub_uint64_t block;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #endif /* ! GRUB_BIOSDISK_MACHINE_HEADER */

@@ -73,7 +73,7 @@ struct grub_bfs_extent
   grub_uint32_t ag;
   grub_uint16_t start;
   grub_uint16_t len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_bfs_superblock
 {
@@ -89,7 +89,7 @@ struct grub_bfs_superblock
   grub_uint8_t unused3[32];
   grub_uint32_t magic3;
   struct grub_bfs_extent root_dir;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_bfs_inode
 {
@@ -118,11 +118,11 @@ struct grub_bfs_inode
       grub_uint64_t max_double_indirect_range;
       grub_uint64_t size;
       grub_uint32_t pad[4];
-    } __attribute__ ((packed));
+    } GRUB_PACKED;
     char inplace_link[144];
-  } __attribute__ ((packed));
+  } GRUB_PACKED;
   grub_uint8_t small_data[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
 {
@@ -134,7 +134,7 @@ struct grub_bfs_small_data_element_header
   grub_uint32_t type;
   grub_uint16_t name_len;
   grub_uint16_t value_len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_bfs_btree_header
 {
@@ -151,7 +151,7 @@ struct grub_bfs_btree_header
   grub_uint64_t root;
 #endif
   grub_uint32_t unused2[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_bfs_btree_node
 {
@@ -165,7 +165,7 @@ struct grub_bfs_btree_node
   grub_uint16_t count_keys;
   grub_uint16_t total_key_len;
 #endif
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_bfs_data
 {

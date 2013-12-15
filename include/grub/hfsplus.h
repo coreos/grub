@@ -9,7 +9,7 @@ struct grub_hfsplus_extent
   grub_uint32_t start;
   /* The amount of blocks described by this extent.  */
   grub_uint32_t count;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The descriptor of a fork.  */
 struct grub_hfsplus_forkdata
@@ -18,7 +18,7 @@ struct grub_hfsplus_forkdata
   grub_uint32_t clumpsize;
   grub_uint32_t blocks;
   struct grub_hfsplus_extent extents[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The HFS+ Volume Header.  */
 struct grub_hfsplus_volheader
@@ -37,7 +37,7 @@ struct grub_hfsplus_volheader
   struct grub_hfsplus_forkdata catalog_file;
   struct grub_hfsplus_forkdata attr_file;
   struct grub_hfsplus_forkdata startup_file;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_hfsplus_compress_index
 {
@@ -116,7 +116,7 @@ struct grub_hfsplus_attrkey
   grub_uint16_t unknown2[2];
   grub_uint16_t namelen;
   grub_uint16_t name[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_hfsplus_attrkey_internal
 {
@@ -142,7 +142,7 @@ struct grub_hfsplus_catkey
   grub_uint32_t parent;
   grub_uint16_t namelen;
   grub_uint16_t name[30];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The on disk layout of an extent overflow file key.  */
 struct grub_hfsplus_extkey
@@ -152,7 +152,7 @@ struct grub_hfsplus_extkey
   grub_uint8_t unused;
   grub_uint32_t fileid;
   grub_uint32_t start;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_hfsplus_key
 {
@@ -163,7 +163,7 @@ struct grub_hfsplus_key
     struct grub_hfsplus_attrkey attrkey;
     grub_uint16_t keylen;
   };
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_hfsplus_btnode
 {
@@ -173,7 +173,7 @@ struct grub_hfsplus_btnode
   grub_uint8_t height;
   grub_uint16_t count;
   grub_uint16_t unused;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Return the offset of the record with the index INDEX, in the node
    NODE which is part of the B+ tree BTREE.  */

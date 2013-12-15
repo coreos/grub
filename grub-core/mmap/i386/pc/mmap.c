@@ -47,7 +47,7 @@ struct grub_e820_mmap_entry
   grub_uint64_t addr;
   grub_uint64_t len;
   grub_uint32_t type;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 
 /* Helper for preboot.  */

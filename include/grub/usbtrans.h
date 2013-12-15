@@ -149,7 +149,7 @@ struct grub_usb_packet_setup
   grub_uint16_t value;
   grub_uint16_t index;
   grub_uint16_t length;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 
 #endif /* GRUB_USBTRANS_H */

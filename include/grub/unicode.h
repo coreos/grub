@@ -37,7 +37,7 @@ struct grub_unicode_compact_range
   unsigned comb_type:8;
   unsigned bidi_mirror:1;
   unsigned join_type:3;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Old-style Arabic shaping. Used for "visual UTF-8" and
    in grub-mkfont to find variant glyphs in absence of GPOS tables.  */

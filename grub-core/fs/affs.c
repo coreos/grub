@@ -36,7 +36,7 @@ struct grub_affs_bblock
   grub_uint8_t flags;
   grub_uint32_t checksum;
   grub_uint32_t rootblock;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* Set if the filesystem is a AFFS filesystem.  Otherwise this is an
    OFS filesystem.  */
@@ -51,14 +51,14 @@ struct grub_affs_rblock
   grub_uint32_t unused2;
   grub_uint32_t checksum;
   grub_uint32_t hashtable[1];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_affs_time
 {
   grub_int32_t day;
   grub_uint32_t min;
   grub_uint32_t hz;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The second part of a file header block.  */
 struct grub_affs_file
@@ -76,7 +76,7 @@ struct grub_affs_file
   grub_uint32_t parent;
   grub_uint32_t extension;
   grub_uint32_t type;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The location of `struct grub_affs_file' relative to the end of a
    file header block.  */

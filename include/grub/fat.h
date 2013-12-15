@@ -52,7 +52,7 @@ struct grub_fat_bpb
       grub_uint32_t num_serial;
       grub_uint8_t label[11];
       grub_uint8_t fstype[8];
-    } __attribute__ ((packed)) fat12_or_fat16;
+    } GRUB_PACKED fat12_or_fat16;
     struct
     {
       grub_uint32_t sectors_per_fat_32;
@@ -68,9 +68,9 @@ struct grub_fat_bpb
       grub_uint32_t num_serial;
       grub_uint8_t label[11];
       grub_uint8_t fstype[8];
-    } __attribute__ ((packed)) fat32;
-  } __attribute__ ((packed)) version_specific;
-} __attribute__ ((packed));
+    } GRUB_PACKED fat32;
+  } GRUB_PACKED version_specific;
+} GRUB_PACKED;
 
 #ifdef GRUB_UTIL
 #include <grub/disk.h>

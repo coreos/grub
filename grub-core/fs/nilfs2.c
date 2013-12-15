@@ -143,7 +143,7 @@ struct grub_nilfs2_dir_entry
   char name[NILFS_NAME_LEN];
   char pad;
 #endif
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
 {

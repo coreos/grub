@@ -34,7 +34,7 @@ struct grub_dvh_partition_descriptor
   grub_uint32_t length;
   grub_uint32_t start;
   grub_uint32_t type;  
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_dvh_block
 {
@@ -43,7 +43,7 @@ struct grub_dvh_block
   struct grub_dvh_partition_descriptor parts[16];
   grub_uint32_t checksum;
   grub_uint32_t unused2;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_partition_map grub_dvh_partition_map;
 

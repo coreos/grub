@@ -38,7 +38,7 @@ struct grub_sun_pc_partition_descriptor
   grub_uint16_t unused;
   grub_uint32_t start_sector;
   grub_uint32_t num_sectors;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sun_pc_block
 {
@@ -47,7 +47,7 @@ struct grub_sun_pc_block
   grub_uint8_t unused2[244];
   grub_uint16_t  magic;         /* Magic number.  */
   grub_uint16_t  csum;          /* Label xor'd checksum.  */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_partition_map grub_sun_pc_partition_map;
 

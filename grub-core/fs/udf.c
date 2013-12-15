@@ -117,32 +117,32 @@ struct grub_udf_lb_addr
 {
   grub_uint32_t block_num;
   grub_uint16_t part_ref;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_short_ad
 {
   grub_uint32_t length;
   grub_uint32_t position;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_long_ad
 {
   grub_uint32_t length;
   struct grub_udf_lb_addr block;
   grub_uint8_t imp_use[6];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_extent_ad
 {
   grub_uint32_t length;
   grub_uint32_t start;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_charspec
 {
   grub_uint8_t charset_type;
   grub_uint8_t charset_info[63];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_timestamp
 {
@@ -156,14 +156,14 @@ struct grub_udf_timestamp
   grub_uint8_t centi_seconds;
   grub_uint8_t hundreds_of_micro_seconds;
   grub_uint8_t micro_seconds;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_regid
 {
   grub_uint8_t flags;
   grub_uint8_t ident[23];
   grub_uint8_t ident_suffix[8];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_tag
 {
@@ -175,7 +175,7 @@ struct grub_udf_tag
   grub_uint16_t desc_crc;
   grub_uint16_t desc_crc_length;
   grub_uint32_t tag_location;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_fileset
 {
@@ -197,7 +197,7 @@ struct grub_udf_fileset
   struct grub_udf_regid domain_ident;
   struct grub_udf_long_ad next_ext;
   struct grub_udf_long_ad streamdir_icb;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_icbtag
 {
@@ -209,7 +209,7 @@ struct grub_udf_icbtag
   grub_uint8_t file_type;
   struct grub_udf_lb_addr parent_idb;
   grub_uint16_t flags;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_file_ident
 {
@@ -220,7 +220,7 @@ struct grub_udf_file_ident
   grub_uint8_t file_ident_length;
   struct grub_udf_long_ad icb;
   grub_uint16_t imp_use_length;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_file_entry
 {
@@ -245,7 +245,7 @@ struct grub_udf_file_entry
   grub_uint32_t ext_attr_length;
   grub_uint32_t alloc_descs_length;
   grub_uint8_t ext_attr[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_extended_file_entry
 {
@@ -274,20 +274,20 @@ struct grub_udf_extended_file_entry
   grub_uint32_t ext_attr_length;
   grub_uint32_t alloc_descs_length;
   grub_uint8_t ext_attr[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_vrs
 {
   grub_uint8_t type;
   grub_uint8_t magic[5];
   grub_uint8_t version;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_avdp
 {
   struct grub_udf_tag tag;
   struct grub_udf_extent_ad vds;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_pd
 {
@@ -300,7 +300,7 @@ struct grub_udf_pd
   grub_uint32_t access_type;
   grub_uint32_t start;
   grub_uint32_t length;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_partmap
 {
@@ -319,7 +319,7 @@ struct grub_udf_partmap
       grub_uint8_t ident[62];
     } type2;
   };
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_lvd
 {
@@ -336,14 +336,14 @@ struct grub_udf_lvd
   grub_uint8_t imp_use[128];
   struct grub_udf_extent_ad integrity_seq_ext;
   grub_uint8_t part_maps[1608];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_aed
 {
   struct grub_udf_tag tag;
   grub_uint32_t prev_ae;
   grub_uint32_t ae_len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_udf_data
 {

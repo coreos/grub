@@ -86,7 +86,7 @@ struct dns_header
   grub_uint16_t ancount;
   grub_uint16_t nscount;
   grub_uint16_t arcount;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {

@@ -88,7 +88,7 @@ struct grub_nv_super
   char prodrev[NV_PRODREV_LEN];	/* 0x2C - 0x2F Array product revision */
   grub_uint32_t unit_flags;	/* 0x30 - 0x33 Flags for this disk */
   struct grub_nv_array array;	/* Array information */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static struct grub_diskfilter_vg *
 grub_dmraid_nv_detect (grub_disk_t disk,

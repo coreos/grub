@@ -264,7 +264,7 @@ struct bmp_header
   grub_uint16_t height;
   grub_uint16_t planes;
   grub_uint16_t bpp;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static void
 grub_video_capture_write_bmp (const char *fname,

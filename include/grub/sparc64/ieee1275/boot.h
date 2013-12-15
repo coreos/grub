@@ -57,7 +57,7 @@ struct grub_boot_blocklist
 {
   grub_uint64_t start;
   grub_uint32_t len;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 #endif
 
 #endif /* ! BOOT_MACHINE_HEADER */

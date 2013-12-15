@@ -54,7 +54,7 @@ struct grub_iso9660_voldesc
   grub_uint8_t type;
   grub_uint8_t magic[5];
   grub_uint8_t version;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_iso9660_date2
 {
@@ -65,7 +65,7 @@ struct grub_iso9660_date2
   grub_uint8_t minute;
   grub_uint8_t second;
   grub_uint8_t offset;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A directory entry.  */
 struct grub_iso9660_dir
@@ -81,7 +81,7 @@ struct grub_iso9660_dir
   grub_uint8_t unused2[6];
 #define MAX_NAMELEN 255
   grub_uint8_t namelen;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_iso9660_date
 {
@@ -93,7 +93,7 @@ struct grub_iso9660_date
   grub_uint8_t second[2];
   grub_uint8_t hundredth[2];
   grub_uint8_t offset;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The primary volume descriptor.  Only little endian is used.  */
 struct grub_iso9660_primary_voldesc
@@ -112,7 +112,7 @@ struct grub_iso9660_primary_voldesc
   grub_uint8_t unused6[624];
   struct grub_iso9660_date created;
   struct grub_iso9660_date modified;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* A single entry in the path table.  */
 struct grub_iso9660_path
@@ -122,7 +122,7 @@ struct grub_iso9660_path
   grub_uint32_t first_sector;
   grub_uint16_t parentdir;
   grub_uint8_t name[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* An entry in the System Usage area of the directory entry.  */
 struct grub_iso9660_susp_entry
@@ -131,7 +131,7 @@ struct grub_iso9660_susp_entry
   grub_uint8_t len;
   grub_uint8_t version;
   grub_uint8_t data[0];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The CE entry.  This is used to describe the next block where data
    can be found.  */
@@ -144,7 +144,7 @@ struct grub_iso9660_susp_ce
   grub_uint32_t off_be;
   grub_uint32_t len;
   grub_uint32_t len_be;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_iso9660_data
 {

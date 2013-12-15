@@ -125,7 +125,7 @@ struct grub_ntfs_bpb
   grub_int8_t reserved_6[3];
   grub_uint64_t num_serial;
   grub_uint32_t checksum;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_ntfs_attr
 {

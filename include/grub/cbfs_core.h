@@ -98,7 +98,7 @@ struct cbfs_header {
 	grub_uint32_t offset;
 	grub_uint32_t architecture;
 	grub_uint32_t pad[1];
-} __attribute__((packed));
+} GRUB_PACKED;
 
 /* "Unknown" refers to CBFS headers version 1,
  * before the architecture was defined (i.e., x86 only).
@@ -130,7 +130,7 @@ struct cbfs_file {
 	grub_uint32_t type;
 	grub_uint32_t checksum;
 	grub_uint32_t offset;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 /*** Component sub-headers ***/
 
@@ -146,7 +146,7 @@ struct cbfs_stage {
 	grub_uint64_t load;   /** Where to load in memory */
 	grub_uint32_t len;          /** length of data to load */
 	grub_uint32_t memlen;	   /** total length of object in memory */
-} __attribute__((packed));
+} GRUB_PACKED;
 
 /** this is the sub-header for payload components.  Payloads
     are loaded by coreboot at the end of the boot process */
@@ -158,7 +158,7 @@ struct cbfs_payload_segment {
 	grub_uint64_t load_addr;
 	grub_uint32_t len;
 	grub_uint32_t mem_len;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 struct cbfs_payload {
 	struct cbfs_payload_segment segments;
@@ -173,6 +173,6 @@ struct cbfs_payload {
 struct cbfs_optionrom {
 	grub_uint32_t compression;
 	grub_uint32_t len;
-} __attribute__((packed));
+} GRUB_PACKED;
 
 #endif

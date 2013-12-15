@@ -132,7 +132,7 @@ struct head
   char devminor[8];
   char prefix[155];
   char pad[12];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static void
 write_zeros (unsigned rsz)

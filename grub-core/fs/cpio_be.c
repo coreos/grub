@@ -35,7 +35,7 @@ struct head
   grub_uint16_t mtime[2];
   grub_uint16_t namesize[1];
   grub_uint16_t filesize[2];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 static inline unsigned long long
 read_number (const grub_uint16_t *arr, grub_size_t size)

@@ -92,7 +92,7 @@ struct grub_netbsd_btinfo_bootwedge {
   grub_disk_addr_t matchblk;
   grub_uint64_t matchnblks;
   grub_uint8_t matchhash[16];  /* MD5 hash */
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_netbsd_btinfo_symtab
 {

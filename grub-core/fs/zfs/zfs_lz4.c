@@ -77,13 +77,13 @@ typedef grub_size_t size_t;
 
 typedef struct _U16_S {
 	U16 v;
-} __attribute__ ((packed)) U16_S;
+} GRUB_PACKED U16_S;
 typedef struct _U32_S {
 	U32 v;
-} __attribute__ ((packed)) U32_S;
+} GRUB_PACKED U32_S;
 typedef struct _U64_S {
 	U64 v;
-} __attribute__ ((packed)) U64_S;
+} GRUB_PACKED U64_S;
 
 #define	A64(x)	(((U64_S *)(x))->v)
 #define	A32(x)	(((U32_S *)(x))->v)

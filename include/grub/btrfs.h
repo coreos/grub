@@ -50,7 +50,7 @@ struct grub_btrfs_key
   grub_uint64_t object_id;
   grub_uint8_t type;
   grub_uint64_t offset;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 struct grub_btrfs_root_backref

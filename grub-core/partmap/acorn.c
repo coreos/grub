@@ -43,10 +43,10 @@ struct grub_acorn_boot_block
       grub_uint8_t flags;
       grub_uint16_t start_cylinder;
       grub_uint8_t checksum;
-    } __attribute__ ((packed, aligned));
+    } GRUB_PACKED;
     grub_uint8_t bin[0x200];
   };
-} __attribute__ ((packed, aligned));
+} GRUB_PACKED;
 
 struct linux_part
 {

@@ -35,7 +35,7 @@ struct grub_sfs_bheader
   grub_uint8_t magic[4];
   grub_uint32_t chksum;
   grub_uint32_t ipointtomyself;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 /* The sfs rootblock.  */
 struct grub_sfs_rblock
@@ -50,7 +50,7 @@ struct grub_sfs_rblock
   grub_uint8_t unused3[8];
   grub_uint32_t rootobject;
   grub_uint32_t btree;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 enum
   {
@@ -69,18 +69,18 @@ struct grub_sfs_obj
     {
       grub_uint32_t first_block;
       grub_uint32_t size;
-    } file __attribute__ ((packed));
+    } GRUB_PACKED file;
     struct
     {
       grub_uint32_t hashtable;
       grub_uint32_t dir_objc;
-    } dir __attribute__ ((packed));
+    } GRUB_PACKED dir;
   } file_dir;
   grub_uint32_t mtime;
   grub_uint8_t type;
   grub_uint8_t filename[1];
   grub_uint8_t comment[1];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 #define	GRUB_SFS_TYPE_DELETED	32
 #define	GRUB_SFS_TYPE_SYMLINK	64
@@ -95,13 +95,13 @@ struct grub_sfs_objc
   grub_uint32_t prev;
   /* The amount of objects depends on the blocksize.  */
   struct grub_sfs_obj objects[1];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sfs_btree_node
 {
   grub_uint32_t key;
   grub_uint32_t data;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sfs_btree_extent
 {
@@ -109,7 +109,7 @@ struct grub_sfs_btree_extent
   grub_uint32_t next;
   grub_uint32_t prev;
   grub_uint16_t size;
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 struct grub_sfs_btree
 {
@@ -120,7 +120,7 @@ struct grub_sfs_btree
   /* Normally this can be kind of node, but just extents are
      supported.  */
   struct grub_sfs_btree_node node[1];
-} __attribute__ ((packed));
+} GRUB_PACKED;
 
 
 
