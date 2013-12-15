@@ -249,8 +249,8 @@ allocate_pages (grub_size_t prot_size, grub_size_t *align,
     prot_mode_target = get_physical_target_address (ch);
   }
 
-  grub_dprintf ("linux", "prot_mode_mem = %lx, prot_mode_target = %lx, prot_size = %x\n",
-                (unsigned long) prot_mode_mem, (unsigned long) prot_mode_target,
+  grub_dprintf ("linux", "prot_mode_mem = %p, prot_mode_target = %lx, prot_size = %x\n",
+                prot_mode_mem, (unsigned long) prot_mode_target,
 		(unsigned) prot_size);
   return GRUB_ERR_NONE;
 
@@ -593,8 +593,8 @@ grub_linux_boot (void)
   }
   efi_mmap_buf = (grub_uint8_t *) real_mode_mem + ctx.real_size;
 
-  grub_dprintf ("linux", "real_mode_mem = %lx\n",
-                (unsigned long) real_mode_mem);
+  grub_dprintf ("linux", "real_mode_mem = %p\n",
+                real_mode_mem);
 
   ctx.params = real_mode_mem;
 

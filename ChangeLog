@@ -1,5 +1,9 @@
 2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/linux.c: Use %p rather than %lx for pointers.
+
+2013-12-15  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/elfXX.c: Use grub_addr_t rather than long when
 	appropriate.
 
