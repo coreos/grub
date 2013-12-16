@@ -1,5 +1,11 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove practice of assigning random const pointers to device id.
+
+	This is not required as cache code already checks driver id as well.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/x86_64/types.h: Define sizeof (long) as 4 when compiling
 	with mingw.
 

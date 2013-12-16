@@ -49,7 +49,7 @@ grub_host_open (const char *name, grub_disk_t disk)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a host disk");
 
   disk->total_sectors = 0;
-  disk->id = (unsigned long) "host";
+  disk->id = 0;
 
   disk->data = 0;
 

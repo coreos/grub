@@ -44,7 +44,7 @@ grub_procdev_open (const char *name, grub_disk_t disk)
       return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a procfs disk");
 
   disk->total_sectors = 0;
-  disk->id = (unsigned long) "proc";
+  disk->id = 0;
 
   disk->data = 0;
 
