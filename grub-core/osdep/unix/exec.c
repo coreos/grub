@@ -34,7 +34,8 @@
 #include <sys/wait.h>
 
 int
-grub_util_exec (const char *const *argv)
+grub_util_exec_redirect_all (const char *const *argv, const char *stdin_file,
+			     const char *stdout_file, const char *stderr_file)
 {
   pid_t pid;
   int status = -1;
@@ -43,15 +44,39 @@ grub_util_exec (const char *const *argv)
   grub_size_t strl = 0;
   for (ptr = argv; *ptr; ptr++)
     strl += grub_strlen (*ptr) + 1;
+  if (stdin_file)
+    strl += grub_strlen (stdin_file) + 2;
+  if (stdout_file)
+    strl += grub_strlen (stdout_file) + 2;
+  if (stderr_file)
+    strl += grub_strlen (stderr_file) + 3;
+
   pstr = str = xmalloc (strl);
   for (ptr = argv; *ptr; ptr++)
     {
       pstr = grub_stpcpy (pstr, *ptr);
       *pstr++ = ' ';
     }
-  if (pstr > str)
-    pstr--;
-  *pstr = '\0';
+  if (stdin_file)
+    {
+      *pstr++ = '<';
+      pstr = grub_stpcpy (pstr, stdin_file);
+      *pstr++ = ' ';
+    }
+  if (stdout_file)
+    {
+      *pstr++ = '>';
+      pstr = grub_stpcpy (pstr, stdout_file);
+      *pstr++ = ' ';
+    }
+  if (stderr_file)
+    {
+      *pstr++ = '2';
+      *pstr++ = '>';
+      pstr = grub_stpcpy (pstr, stderr_file);
+      pstr++;
+    }
+  *--pstr = '\0';
 
   grub_util_info ("executing %s", str);
   grub_free (str);
@@ -61,63 +86,7 @@ grub_util_exec (const char *const *argv)
     grub_util_error (_("Unable to fork: %s"), strerror (errno));
   else if (pid == 0)
     {
-      /* Child.  */
-
-      /* Close fd's.  */
-#ifdef GRUB_UTIL
-      grub_util_devmapper_cleanup ();
-      grub_diskfilter_fini ();
-#endif
-
-      /* Ensure child is not localised.  */
-      setenv ("LC_ALL", "C", 1);
-
-      execvp ((char *) argv[0], (char **) argv);
-      exit (127);
-    }
-
-  waitpid (pid, &status, 0);
-  if (!WIFEXITED (status))
-    return -1;
-  return WEXITSTATUS (status);
-}
-
-int
-grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
-			 const char *stdout_file)
-{
-  pid_t pid;
-  int status = -1;
-  char *str, *pstr;
-  const char *const *ptr;
-  grub_size_t strl = 0;
-  for (ptr = argv; *ptr; ptr++)
-    strl += grub_strlen (*ptr) + 1;
-  strl += grub_strlen (stdin_file) + 2;
-  strl += grub_strlen (stdout_file) + 2;
-
-  pstr = str = xmalloc (strl);
-  for (ptr = argv; *ptr; ptr++)
-    {
-      pstr = grub_stpcpy (pstr, *ptr);
-      *pstr++ = ' ';
-    }
-  *pstr++ = '<';
-  pstr = grub_stpcpy (pstr, stdin_file);
-  *pstr++ = ' ';
-  *pstr++ = '>';
-  pstr = grub_stpcpy (pstr, stdout_file);
-  *pstr = '\0';
-
-  grub_util_info ("executing %s", str);
-  grub_free (str);
-
-  pid = fork ();
-  if (pid < 0)
-    grub_util_error (_("Unable to fork: %s"), strerror (errno));
-  else if (pid == 0)
-    {
-      int in, out;
+      int fd;
       /* Child.  */
       
       /* Close fd's.  */
@@ -126,18 +95,32 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
       grub_diskfilter_fini ();
 #endif
 
-      in = open (stdin_file, O_RDONLY);
-      if (in < 0)
-	exit (127);
-      dup2 (in, STDIN_FILENO);
-      close (in);
+      if (stdin_file)
+	{
+	  fd = open (stdin_file, O_RDONLY);
+	  if (fd < 0)
+	    exit (127);
+	  dup2 (fd, STDIN_FILENO);
+	  close (fd);
+	}
 
-      out = open (stdout_file, O_WRONLY | O_CREAT, 0700);
-      dup2 (out, STDOUT_FILENO);
-      close (out);
+      if (stdout_file)
+	{
+	  fd = open (stdout_file, O_WRONLY | O_CREAT, 0700);
+	  if (fd < 0)
+	    exit (127);
+	  dup2 (fd, STDOUT_FILENO);
+	  close (fd);
+	}
 
-      if (out < 0)
-	exit (127);
+      if (stderr_file)
+	{
+	  fd = open (stderr_file, O_WRONLY | O_CREAT, 0700);
+	  if (fd < 0)
+	    exit (127);
+	  dup2 (fd, STDERR_FILENO);
+	  close (fd);
+	}
 
       /* Ensure child is not localised.  */
       setenv ("LC_ALL", "C", 1);
@@ -152,9 +135,22 @@ grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
 }
 
 int
+grub_util_exec (const char *const *argv)
+{
+  return grub_util_exec_redirect_all (argv, NULL, NULL, NULL);
+}
+
+int
+grub_util_exec_redirect (const char *const *argv, const char *stdin_file,
+			 const char *stdout_file)
+{
+  return grub_util_exec_redirect_all (argv, stdin_file, stdout_file, NULL);
+}
+
+int
 grub_util_exec_redirect_null (const char *const *argv)
 {
-  return grub_util_exec_redirect (argv, "/dev/null", "/dev/null");
+  return grub_util_exec_redirect_all (argv, "/dev/null", "/dev/null", NULL);
 }
 
 pid_t
