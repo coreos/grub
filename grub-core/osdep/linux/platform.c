@@ -20,6 +20,7 @@
 
 #include <grub/util/install.h>
 #include <grub/emu/exec.h>
+#include <grub/emu/misc.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <string.h>
@@ -71,15 +72,24 @@ grub_install_get_default_x86_platform (void)
    */
   grub_util_exec_redirect_all ((const char * []){ "modprobe", "efivars", NULL },
 			       NULL, NULL, "/dev/null");
+
+  grub_util_info ("Looking for /sys/firmware/efi ..");
   if (is_not_empty_directory ("/sys/firmware/efi"))
     {
+      grub_util_info ("...found");
       if (is_64_kernel ())
 	return "x86_64-efi";
       else
 	return "i386-efi";
     }
-  else if (is_not_empty_directory ("/proc/device-tree"))
-    return "i386-ieee1275";
-  else
-    return "i386-pc";
+
+  grub_util_info ("... not found. Looking for /proc/device-tree ..");
+  if (is_not_empty_directory ("/proc/device-tree"))
+    {
+      grub_util_info ("...found");
+      return "i386-ieee1275";
+    }
+
+  grub_util_info ("... not found");
+  return "i386-pc";
 }
