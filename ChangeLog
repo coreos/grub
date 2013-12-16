@@ -1,3 +1,7 @@
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/genmoddep.awk: Remove explicit getline < /dev/stdin.
+
 2013-12-15  Ian Campbell  <ijc@hellion.org.uk>
 
 	* grub-core/kern/uboot/init.c: Fix units of uboot timer.
