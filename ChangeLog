@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/posix_wrap/errno.h: Undefine errno before redefining.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/efi/api.h: Define (u)intn_t based on pointer size and
 	not on long.
 
