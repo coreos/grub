@@ -1,3 +1,14 @@
+2013-12-16  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/osdep/unix/exec.c (grub_util_exec_redirect_all): New
+	function to optionally redirect all three standard descriptors.
+	Redefine grub_util_exec, grub_util_exec_redirect and
+	grub_util_exec_redirect_null to use it.
+	* include/grub/emu/exec.h: Define it.
+	* include/grub/osdep/exec_unix.h: Delete, it is unused.
+	* grub-core/osdep/linux/platform.c (grub_install_get_default_x86_platform):
+	Use grub_util_exec_redirect_all to redirect error to NULL.
+
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Make grub_xen_hypercall on i386 cdecl rather than stdcall to avoid
