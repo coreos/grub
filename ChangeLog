@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/minicmd.c (grub_mini_cmd_dump): Handle LLP case.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove practice of assigning random const pointers to device id.
 
 	This is not required as cache code already checks driver id as well.
