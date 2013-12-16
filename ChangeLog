@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add support for converting PE+ to Elf64.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/minicmd.c (grub_mini_cmd_dump): Handle LLP case.
 
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>

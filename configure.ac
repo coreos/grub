@@ -699,7 +699,7 @@ AC_ARG_ENABLE([efiemu],
 if test x"$enable_efiemu" = xno ; then
   efiemu_excuse="explicitly disabled"
 fi
-if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
+if test x"$grub_cv_target_cc_link_format" = x-mi386pe || test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
   efiemu_excuse="not available on cygwin"
 fi
 if test x"$target_cpu" != xi386 ; then
@@ -759,8 +759,11 @@ CFLAGS="$TARGET_CFLAGS"
 if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
   AC_CACHE_CHECK([for target linking format], [grub_cv_target_cc_link_format], [
     grub_cv_target_cc_link_format=unknown
-    for format in -melf_${target_cpu} -melf_${target_cpu}_fbsd -melf_${target_cpu}_obsd -melf_${target_cpu}_haiku -m${target_cpu}pe -arch,${target_cpu}; do
-      if test x${target_cpu} != xi386 && test x$format = x${target_cpu}pe; then
+    for format in -melf_${target_cpu} -melf_${target_cpu}_fbsd -melf_${target_cpu}_obsd -melf_${target_cpu}_haiku -mi386pe -mi386pep -arch,${target_cpu}; do
+      if test x${target_cpu} != xi386 && test x$format = xi386pe; then
+        continue
+      fi
+      if test x${target_cpu} != xx86_64 && test x$format = xi386pep; then
         continue
       fi
       CFLAGS="$TARGET_CFLAGS"
@@ -781,8 +784,11 @@ if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
     AC_MSG_ERROR([no suitable link format found])
   fi
   TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
-  if test x"$grub_cv_target_cc_link_format" = x-mi386pe; then
+  if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
     TARGET_OBJ2ELF='./build-grub-pe2elf';
+  fi
+  if test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
+    TARGET_OBJ2ELF='./build-grub-pep2elf';
   fi
 fi
 
@@ -801,7 +807,7 @@ if test x$grub_cv_target_cc_link_format = x-arch,i386 || test x$grub_cv_target_c
    TARGET_IMG_LDFLAGS_AC='-nostdlib -static -Wl,-preload -Wl,-segalign,20'
    TARGET_IMG_BASE_LDOPT="-Wl,-image_base"
    TARGET_LDFLAGS_OLDMAGIC=""
-elif test x$grub_cv_target_cc_link_format = x-mi386pe; then
+elif test x$grub_cv_target_cc_link_format = x-mi386pe || test x$grub_cv_target_cc_link_format = x-mi386pep ; then
   TARGET_APPLE_LINKER=0
   TARGET_LDFLAGS_OLDMAGIC="-Wl,-N"
   TARGET_IMG_LDSCRIPT='$(top_srcdir)'"/${grub_coredir}/conf/i386-cygwin-img-ld.sc"
