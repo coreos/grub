@@ -1,5 +1,10 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make grub_xen_hypercall on i386 cdecl rather than stdcall to avoid
+	linker trying to "fixup" the code.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/x86_64/xen/startup.S: Align stack.
 
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>

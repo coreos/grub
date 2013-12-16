@@ -40,4 +40,4 @@ FUNCTION(grub_xen_hypercall)
 	popl   %edi
 	popl   %esi
 	popl   %ebp
-	retl $16
+	ret
