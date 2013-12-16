@@ -32,7 +32,7 @@ static void
 sleep_test (void)
 {
   struct grub_datetime st, en;
-  grub_int32_t stu, enu;
+  grub_int32_t stu = 0, enu = 0;
   grub_test_assert (!grub_get_datetime (&st), "Couldn't retrieve start time");
   grub_millisleep (10000);
   grub_test_assert (!grub_get_datetime (&en), "Couldn't retrieve end time");

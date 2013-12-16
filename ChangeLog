@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/tests/sleep_test.c: Silence spurious warning.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make grub_xen_hypercall on i386 cdecl rather than stdcall to avoid
 	linker trying to "fixup" the code.
 
