@@ -1,5 +1,10 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/efi/api.h: Don't use call wrappers when compiled with
+	mingw or cygwin as API already matches.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/posix_wrap/errno.h: Undefine errno before redefining.
 
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
