@@ -449,8 +449,13 @@ typedef enum grub_efi_reset_type grub_efi_reset_type_t;
 
 /* Types.  */
 typedef char grub_efi_boolean_t;
-typedef long grub_efi_intn_t;
-typedef unsigned long grub_efi_uintn_t;
+#if GRUB_CPU_SIZEOF_VOID_P == 8
+typedef grub_int64_t grub_efi_intn_t;
+typedef grub_uint64_t grub_efi_uintn_t;
+#else
+typedef grub_int32_t grub_efi_intn_t;
+typedef grub_uint32_t grub_efi_uintn_t;
+#endif
 typedef grub_int8_t grub_efi_int8_t;
 typedef grub_uint8_t grub_efi_uint8_t;
 typedef grub_int16_t grub_efi_int16_t;
@@ -467,7 +472,7 @@ typedef grub_uint16_t grub_efi_char16_t;
 typedef grub_efi_intn_t grub_efi_status_t;
 
 #define GRUB_EFI_ERROR_CODE(value)	\
-  ((1L << (sizeof (grub_efi_status_t) * 8 - 1)) | (value))
+  ((1LL << (sizeof (grub_efi_status_t) * 8 - 1)) | (value))
 
 #define GRUB_EFI_WARNING_CODE(value)	(value)
 
