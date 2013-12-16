@@ -69,8 +69,8 @@ grub_install_get_default_x86_platform (void)
      anyway later. So it should be safe to
      try to load it here.
    */
-  grub_util_exec ((const char * []){ "modprobe", "-q",
-	"efivars", NULL });
+  grub_util_exec_redirect_all ((const char * []){ "modprobe", "efivars", NULL },
+			       NULL, NULL, "/dev/null");
   if (is_not_empty_directory ("/sys/firmware/efi"))
     {
       if (is_64_kernel ())
