@@ -514,7 +514,12 @@ AC_CACHE_CHECK([which extra warnings work], [grub_cv_target_cc_w_extra_flags], [
   grub_cv_target_cc_w_extra_flags=
   for x in $EXTRA_WARN_FLAGS; do
       CFLAGS="$TARGET_CFLAGS $x -Werror"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])], [flag=1], [flag=0])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])], [flag=1], [flag=0])
       if test x$flag = x1 ; then
          grub_cv_target_cc_w_extra_flags="$grub_cv_target_cc_w_extra_flags $x"
       fi
@@ -959,7 +964,7 @@ CC="$TARGET_CC"
 if test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -static -Wno-error"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100 -Wno-error"
+CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
 if test x$target_cpu = xi386 || test x$target_cpu = xx86_64 || test "x$grub_cv_cc_target_clang" = xyes ; then
@@ -973,10 +978,11 @@ LIBS="$TARGET_LIBGCC"
 grub_ASM_USCORE
 if test "x$TARGET_APPLE_LINKER" = x0 ; then
 if test x$grub_cv_asm_uscore = xyes; then
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,_abort=_main"
+DEFSYM="-Wl,--defsym,_abort=_main -Wl,--defsym,__main=_main"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,abort=main"
+DEFSYM="-Wl,--defsym,abort=main -Wl,--defsym,_main=main -Wl,--defsym,__main=main"
 fi
+CFLAGS="$TARGET_CFLAGS -nostdlib $DEFSYM"
 fi
 
 # Check for libgcc symbols
@@ -985,7 +991,7 @@ AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _re
 if test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -static"
 else
-CFLAGS="$TARGET_CFLAGS -nostdlib -Wl,--defsym,___main=0x8100"
+CFLAGS="$TARGET_CFLAGS -nostdlib"
 fi
 LIBS=""
 
@@ -999,7 +1005,7 @@ if test "x$target_cpu" = xi386; then
   if test "$platform" != emu && test "x$TARGET_APPLE_LINKER" != x1 ; then
     if test ! -z "$TARGET_IMG_LDSCRIPT"; then
       # Check symbols provided by linker script.
-      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},0x8000 -Wl,--defsym,___main=0x8100"
+      CFLAGS="$TARGET_CFLAGS -nostdlib ${TARGET_IMG_LDFLAGS_AC} ${TARGET_IMG_BASE_LDOPT},0x8000"
     fi
     grub_CHECK_BSS_START_SYMBOL
     grub_CHECK_END_SYMBOL

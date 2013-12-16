@@ -19,6 +19,8 @@ AC_DEFUN([grub_PROG_TARGET_CC],
 AC_CACHE_VAL(grub_cv_prog_target_cc,
 [AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
 int main (void);
 ]], [[]])],
   		[grub_cv_prog_target_cc=yes],
@@ -288,7 +290,12 @@ AC_DEFUN([grub_CHECK_BSS_START_SYMBOL],
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if __bss_start is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_uscore_bss_start_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]],
 		[[asm ("incl __bss_start")]])],
 		[grub_cv_check_uscore_uscore_bss_start_symbol=yes],
 		[grub_cv_check_uscore_uscore_bss_start_symbol=no])])
@@ -297,7 +304,11 @@ AC_MSG_RESULT([$grub_cv_check_uscore_uscore_bss_start_symbol])
 
 AC_MSG_CHECKING([if edata is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_edata_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);]],
 		[[asm ("incl edata")]])],
 		[grub_cv_check_edata_symbol=yes],
 		[grub_cv_check_edata_symbol=no])])
@@ -306,7 +317,11 @@ AC_MSG_RESULT([$grub_cv_check_edata_symbol])
 
 AC_MSG_CHECKING([if _edata is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_edata_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);]],
 		[[asm ("incl _edata")]])],
 		[grub_cv_check_uscore_edata_symbol=yes],
 		[grub_cv_check_uscore_edata_symbol=no])])
@@ -330,7 +345,11 @@ AC_DEFUN([grub_CHECK_END_SYMBOL],
 [AC_REQUIRE([AC_PROG_CC])
 AC_MSG_CHECKING([if end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_end_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);]],
 		[[asm ("incl end")]])],
 		[grub_cv_check_end_symbol=yes],
 		[grub_cv_check_end_symbol=no])])
@@ -339,7 +358,11 @@ AC_MSG_RESULT([$grub_cv_check_end_symbol])
 
 AC_MSG_CHECKING([if _end is defined by the compiler])
 AC_CACHE_VAL(grub_cv_check_uscore_end_symbol,
-[AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);]],
 		[[asm ("incl _end")]])],
 		[grub_cv_check_uscore_end_symbol=yes],
 		[grub_cv_check_uscore_end_symbol=no])])

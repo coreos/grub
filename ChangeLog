@@ -1,5 +1,10 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Define functions explicitly rather than using --defsym in tests
+	whenever possible. Respect locality in remaining cases.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmoddep.awk: Remove explicit getline < /dev/stdin.
 
 2013-12-15  Ian Campbell  <ijc@hellion.org.uk>
