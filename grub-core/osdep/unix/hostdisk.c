@@ -275,6 +275,10 @@ grub_util_get_mtime (const char *path)
   return st.st_mtime;
 }
 
+#endif
+
+#if defined (__CYGWIN__) || (!defined (__MINGW32__) && !defined (__AROS__))
+
 int
 grub_util_is_special_file (const char *path)
 {

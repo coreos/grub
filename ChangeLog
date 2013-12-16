@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use unix functions for temporary files and special files on cygwin.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Define functions explicitly rather than using --defsym in tests
 	whenever possible. Respect locality in remaining cases.
 

@@ -467,6 +467,8 @@ grub_util_rmdir (const char *name)
   return ret;
 }
 
+#ifndef __CYGWIN__
+
 static char *
 get_temp_name (void)
 {
@@ -535,6 +537,8 @@ grub_util_make_temporary_dir (void)
 
   return ret;
 }
+
+#endif
 
 int
 grub_util_is_directory (const char *name)
@@ -659,16 +663,6 @@ FILE *
 grub_util_fopen (const char *path, const char *mode)
 {
   return fopen (path, mode);
-}
-
-int
-grub_util_is_special_file (const char *path)
-{
-  struct stat st;
-
-  if (lstat (path, &st) == -1)
-    return 1;
-  return (!S_ISREG (st.st_mode) && !S_ISDIR (st.st_mode));
 }
 
 #endif
