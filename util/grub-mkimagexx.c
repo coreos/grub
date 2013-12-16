@@ -709,6 +709,18 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    break;
 		  }
 
+		case R_X86_64_PC64:
+		  {
+		    *target = grub_host_to_target64 (grub_target_to_host64 (*target)
+						     + addend + sym_addr
+						     - target_section_addr - offset
+						     - image_target->vaddr_offset);
+		    grub_util_info ("relocating an R_X86_64_PC64 entry to 0x%llx at the offset 0x%llx",
+				    (unsigned long long) *target,
+				    (unsigned long long) offset);
+		    break;
+		  }
+
 		case R_X86_64_32:
 		case R_X86_64_32S:
 		  {

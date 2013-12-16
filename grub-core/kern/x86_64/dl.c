@@ -80,6 +80,13 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  }
 	  break;
 
+	case R_X86_64_PC64:
+	  {
+	    *addr64 += rel->r_addend + sym->st_value -
+	      (Elf64_Xword) seg->addr - rel->r_offset;
+	  }
+	  break;
+
 	case R_X86_64_32:
 	  {
 	    grub_uint64_t value = *addr32 + rel->r_addend + sym->st_value;

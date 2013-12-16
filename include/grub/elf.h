@@ -1132,6 +1132,7 @@ typedef struct
 #define R_X86_64_PC16		13
 #define R_X86_64_8		14
 #define R_X86_64_PC8		15
+#define R_X86_64_PC64		24
 
 /* Legal values for ST_TYPE subfield of st_info (symbol type).  */
 
