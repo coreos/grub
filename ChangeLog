@@ -16,6 +16,12 @@
 
 	* grub-core/genmoddep.awk: Remove explicit getline < /dev/stdin.
 
+2013-12-15  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/osdep/windows/platform.c (grub_install_register_efi): Handle
+	unlikely errors when getting EFI variables and make exhaustive search
+	for all BootNNNN variables to find matching one.
+
 2013-12-15  Ian Campbell  <ijc@hellion.org.uk>
 
 	* grub-core/kern/uboot/init.c: Fix units of uboot timer.

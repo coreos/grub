@@ -246,6 +246,8 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
 	  void *current = NULL;
 	  ssize_t current_len;
 	  current = get_efi_variable_bootn (i, &current_len);
+	  if (current_len < 0)
+	    continue; /* FIXME Should we abort on error? */
 	  if (current_len < (distrib16_len + 1) * sizeof (grub_uint16_t)
 	      + 6)
 	    {
@@ -275,13 +277,18 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
 	  void *current = NULL;
 	  ssize_t current_len;
 	  current = get_efi_variable_bootn (i, &current_len);
+	  if (current_len < -1)
+	    continue; /* FIXME Should we abort on error? */
 	  if (current_len == -1)
 	    {
-	      order_num = i;
-	      have_order_num = 1;
-	      grub_util_info ("Creating new entry at Boot%04x",
-			      order_num);
-	      break;
+	      if (!have_order_num)
+		{
+		  order_num = i;
+		  have_order_num = 1;
+		  grub_util_info ("Creating new entry at Boot%04x",
+				  order_num);
+		}
+	      continue;
 	    }
 	  if (current_len < (distrib16_len + 1) * sizeof (grub_uint16_t)
 	      + 6)
