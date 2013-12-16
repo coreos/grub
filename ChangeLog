@@ -1,5 +1,10 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Determine the need for mingw-related stubs at compile time rather than
+	using not very significant $target_os.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/genmod.sh.in: Strip before converting to ELF as strip
 	may not work with ELF.
 

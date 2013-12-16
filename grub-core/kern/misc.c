@@ -1283,12 +1283,19 @@ grub_fatal (const char *fmt, ...)
   grub_abort ();
 }
 
-#if NEED_REGISTER_FRAME_INFO && !defined(GRUB_UTIL)
+#if (defined (__MINGW32__) || defined (__CYGWIN__)) && !defined(GRUB_UTIL)
 void __register_frame_info (void)
 {
 }
 
 void __deregister_frame_info (void)
+{
+}
+void ___chkstk_ms (void)
+{
+}
+
+void __chkstk_ms (void)
 {
 }
 #endif

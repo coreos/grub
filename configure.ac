@@ -693,16 +693,6 @@ if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-asynchronous-unwind-tables"
 fi
 
-# For platforms where ELF is not the default link format.
-case "${target_os}" in
-  cygwin)
-# FIXME: put proper test here
-  NEED_REGISTER_FRAME_INFO=1
-  ;;
-  *) NEED_REGISTER_FRAME_INFO=0 ;;
-esac
-
-
 AC_ARG_ENABLE([efiemu],
 	      [AS_HELP_STRING([--enable-efiemu],
                              [build and install the efiemu runtimes (default=guessed)])])

@@ -377,9 +377,11 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint64_t d,
 					  grub_uint64_t *r);
 
-#if !defined(GRUB_UTIL) && NEED_REGISTER_FRAME_INFO
+#if (defined (__MINGW32__) || defined (__CYGWIN__)) && !defined(GRUB_UTIL)
 void EXPORT_FUNC (__register_frame_info) (void);
 void EXPORT_FUNC (__deregister_frame_info) (void);
+void EXPORT_FUNC (___chkstk_ms) (void);
+void EXPORT_FUNC (__chkstk_ms) (void);
 #endif
 
 /* Inline functions.  */
