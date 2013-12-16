@@ -30,6 +30,7 @@ _start:
 	leaq	LOCAL(stack_end), %rsp
 	movq	%rsi, EXT_C(grub_xen_start_page_addr)(%rip)
 
+	andq	$~0xf, %rsp
 	call	EXT_C(grub_main)
 	/* Doesn't return.  */
 

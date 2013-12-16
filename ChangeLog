@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/x86_64/xen/startup.S: Align stack.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add support for converting PE+ to Elf64.
 
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
