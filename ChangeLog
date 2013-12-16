@@ -1,5 +1,10 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/genmod.sh.in: Strip before converting to ELF as strip
+	may not work with ELF.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use unix functions for temporary files and special files on cygwin.
 
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
