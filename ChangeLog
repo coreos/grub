@@ -1,3 +1,9 @@
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkrescue.c: Fix incorrect file usage in fallback code.
+
+	Reported by: Jon McCune
+
 2013-12-16  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/osdep/linux/platform.c (grub_install_get_default_x86_platform):
