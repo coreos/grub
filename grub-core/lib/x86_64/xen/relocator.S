@@ -30,6 +30,7 @@ VARIABLE(grub_relocator_xen_remapper_virt)
 	.quad	0
 
 	movq    %rax, %rdi
+	movq    %rax, %rbx
 
 	/* mov imm64, %rax */
 	.byte 	0x48
@@ -43,9 +44,9 @@ VARIABLE(grub_relocator_xen_remapper_map)
 	movq    $__HYPERVISOR_update_va_mapping, %rax
 	syscall
 
-	addq   $(LOCAL(cont) - LOCAL(base)), %rdi
+	addq   $(LOCAL(cont) - LOCAL(base)), %rbx
 
-	jmp *%rdi
+	jmp *%rbx
 
 LOCAL(cont):
 	
@@ -61,7 +62,7 @@ VARIABLE(grub_relocator_xen_paging_size)
 VARIABLE(grub_relocator_xen_paging_start)
 	.quad	0
 
-	movq	%rax, %rdi
+	movq	%rax, %r12
 
 	/* mov imm64, %rax */
 	.byte 	0x48
@@ -70,7 +71,8 @@ VARIABLE(grub_relocator_xen_mfn_list)
 	.quad	0
 
 	movq	%rax, %rsi
-1:	
+1:
+	movq	%r12, %rdi
 	movq    %rsi, %rbx
 	movq    0(%rsi), %rsi
 	shlq    $12,  %rsi
@@ -82,7 +84,7 @@ VARIABLE(grub_relocator_xen_mfn_list)
 
 	movq    %r9, %rcx
 	addq    $8, %rbx
-	addq    $4096, %rdi
+	addq    $4096, %r12
 	movq    %rbx, %rsi
 
 	loop 1b
