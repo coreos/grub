@@ -38,35 +38,36 @@ VARIABLE(grub_relocator_xen_remapper_map)
 VARIABLE(grub_relocator_xen_remapper_map_high)
 	.long	0
 
+	movl	%ebx, %ebp
+
 	movl    $2, %esi
 	movl    $__HYPERVISOR_update_va_mapping, %eax
 	int     $0x82
 
+	movl	%ebp, %ebx
 	addl   $(LOCAL(cont) - LOCAL(base)), %ebx
 
 	jmp *%ebx
 
 LOCAL(cont):
-
-	/* mov imm32, %ecx */
-	.byte	0xb9
-VARIABLE(grub_relocator_xen_paging_size)
-	.long	0
-
-	/* mov imm32, %ebx */
-	.byte	0xbb
-VARIABLE(grub_relocator_xen_paging_start)
-	.long	0
+	xorl	%eax, %eax
+	movl	%eax, %ebp
+1:
 
 	/* mov imm32, %eax */
 	.byte	0xb8
 VARIABLE(grub_relocator_xen_mfn_list)
 	.long	0
-
 	movl	%eax, %edi
-1:	
-	movl    %ecx, %ebp
-	movl    0(%edi), %ecx
+	movl	%ebp, %eax
+	movl    0(%edi, %eax, 4), %ecx
+
+	/* mov imm32, %ebx */
+	.byte	0xbb
+VARIABLE(grub_relocator_xen_paging_start)
+	.long	0
+	shll	$12, %eax
+	addl	%eax, %ebx
 	movl    %ecx, %edx
 	shll    $12,  %ecx
 	shrl    $20,  %edx
@@ -75,11 +76,14 @@ VARIABLE(grub_relocator_xen_mfn_list)
 	movl    $__HYPERVISOR_update_va_mapping, %eax
 	int     $0x82
 
-	movl    %ebp, %ecx
-	addl    $4, %edi
-	addl    $4096, %ebx
+	incl	%ebp
+	/* mov imm32, %ecx */
+	.byte	0xb9
+VARIABLE(grub_relocator_xen_paging_size)
+	.long	0
+	cmpl	%ebp, %ecx
 
-	loop 1b
+	ja	1b
 
 	/* mov imm32, %ebx */
 	.byte	0xbb

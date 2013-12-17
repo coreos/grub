@@ -1,5 +1,11 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/i386/xen/relocator.S: Fix hypercall ABI violation.
+
+	GRUB relied on %ebx being preserved across hypercall which isn't true.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/x86_64/xen/relocator.S: Fix hypercall ABI violation.
 
 	GRUB relied on %rdi being preserved across hypercall which isn't true.
