@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/macho.c: Fix compilation on non-i386.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing format_arg attribute to check that printf with translated
 	messages has proper arguments.
 
