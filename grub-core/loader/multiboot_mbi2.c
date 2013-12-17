@@ -225,8 +225,11 @@ grub_multiboot_load (grub_file_t file, const char *filename)
  
   if (addr_tag)
     {
+      grub_uint64_t load_addr = (addr_tag->load_addr + 1)
+	? addr_tag->load_addr : (addr_tag->header_addr
+				 - ((char *) header - (char *) buffer));
       int offset = ((char *) header - (char *) buffer -
-		    (addr_tag->header_addr - addr_tag->load_addr));
+	   (addr_tag->header_addr - load_addr));
       int load_size = ((addr_tag->load_end_addr == 0) ? file->size - offset :
 		       addr_tag->load_end_addr - addr_tag->load_addr);
       grub_size_t code_size;
@@ -234,12 +237,12 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       grub_relocator_chunk_t ch;
 
       if (addr_tag->bss_end_addr)
-	code_size = (addr_tag->bss_end_addr - addr_tag->load_addr);
+	code_size = (addr_tag->bss_end_addr - load_addr);
       else
 	code_size = load_size;
 
       err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
-					     &ch, addr_tag->load_addr,
+					     &ch, load_addr,
 					     code_size);
       if (err)
 	{
@@ -264,7 +267,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 
       if (addr_tag->bss_end_addr)
 	grub_memset ((grub_uint8_t *) source + load_size, 0,
-		     addr_tag->bss_end_addr - addr_tag->load_addr - load_size);
+		     addr_tag->bss_end_addr - load_addr - load_size);
     }
   else
     {
