@@ -1,5 +1,10 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add missing format_arg attribute to check that printf with translated
+	messages has proper arguments.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use grub_xasprintf to format translated error messages containing
 	64-bit quantity.
 
