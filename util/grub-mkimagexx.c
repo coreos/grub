@@ -1376,11 +1376,15 @@ SUFFIX (locate_sections) (const char *kernel_path,
 	      - image_target->link_addr;
 	    if (grub_host_to_target_addr (s->sh_addr)
 		!= image_target->link_addr)
-	      grub_util_error (_("`%s' is miscompiled: it's start address is 0x%llx"
-				 " instead of 0x%llx: ld.gold bug?"),
-			       kernel_path,
-			       (unsigned long long) grub_host_to_target_addr (s->sh_addr),
-			       (unsigned long long) image_target->link_addr);
+	      {
+		char *msg
+		  = grub_xasprintf (_("`%s' is miscompiled: it's start address is 0x%llx"
+				      " instead of 0x%llx: ld.gold bug?"),
+				    kernel_path,
+				    (unsigned long long) grub_host_to_target_addr (s->sh_addr),
+				    (unsigned long long) image_target->link_addr);
+		grub_util_error ("%s", msg);
+	      }
 	  }
 	section_addresses[i] = current_address;
 	current_address += grub_host_to_target_addr (s->sh_size);
