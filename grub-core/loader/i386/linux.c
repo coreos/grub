@@ -707,7 +707,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (lh.boot_flag != grub_cpu_to_le16 (0xaa55))
+  if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55))
     {
       grub_error (GRUB_ERR_BAD_OS, "invalid magic number");
       goto fail;

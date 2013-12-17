@@ -50,19 +50,9 @@
 
 #if GRUB_TARGET_WORDSIZE == 64
 typedef Elf64_Rela elf_reloc_t;
-typedef Elf64_Ehdr Elf_Ehdr;
-typedef Elf64_Shdr Elf_Shdr;
-typedef Elf64_Sym Elf_Sym;
-#define ELF_R_INFO ELF64_R_INFO
-#define ELF_ST_INFO ELF64_ST_INFO
 #define GRUB_PE32_MACHINE GRUB_PE32_MACHINE_X86_64
 #else
 typedef Elf32_Rel elf_reloc_t;
-typedef Elf32_Ehdr Elf_Ehdr;
-typedef Elf32_Shdr Elf_Shdr;
-typedef Elf32_Sym Elf_Sym;
-#define ELF_R_INFO ELF32_R_INFO
-#define ELF_ST_INFO ELF32_ST_INFO
 #define GRUB_PE32_MACHINE GRUB_PE32_MACHINE_I386
 #endif
 

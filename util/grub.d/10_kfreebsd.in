@@ -27,6 +27,16 @@ export TEXTDOMAINDIR="@localedir@"
 
 CLASS="--class os"
 
+if [ x$GRUB_PLATFORM = xx86 ]; then
+    check=--is-x86-kfreebsd
+elif [ x$GRUB_PLATFORM = xi386-xen-pae ]; then
+    check=--is-i386-xen-pae-domu
+elif [ x$GRUB_PLATFORM = xx86_64-xen ]; then
+    check=--is-x86_64-xen-domu
+else
+    exit 0
+fi
+
 case "${GRUB_DISTRIBUTOR}" in
   Debian)
 	OS="${GRUB_DISTRIBUTOR} GNU/kFreeBSD"
@@ -122,10 +132,10 @@ EOF
     zfs)
       load_kfreebsd_module opensolaris false
 
-      ls "/boot/zfs/zpool.cache" > /dev/null
+      ls "$GRUB_ROOT/boot/zfs/zpool.cache" > /dev/null
       printf '%s\n' "${prepare_boot_cache}"
       sed "s/^/$submenu_indentation/" << EOF
-	kfreebsd_module		$(make_system_path_relative_to_its_root /boot)/zfs/zpool.cache type=/boot/zfs/zpool.cache
+	kfreebsd_module		$(make_system_path_relative_to_its_root $GRUB_ROOT/boot)/zfs/zpool.cache type=/boot/zfs/zpool.cache
 EOF
     ;;
   esac
@@ -143,8 +153,8 @@ EOF
 EOF
 }
 
-list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+list=`for i in $GRUB_ROOT/boot/kfreebsd-* $GRUB_ROOT/boot/kernel/kernel ; do
+        if grub_file_is_not_garbage "$i" && ${grub_file} $check "$i"; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
 boot_device_id=
@@ -163,8 +173,8 @@ while [ "x$list" != "x" ] ; do
   dirname=`dirname $kfreebsd`
   rel_dirname=`make_system_path_relative_to_its_root $dirname`
 
-  if [ -f /boot/device.hints ] ; then
-    devices=/boot/device.hints
+  if [ -f "$GRUB_ROOT"/boot/device.hints ] ; then
+    devices="$GRUB_ROOT"/boot/device.hints
     devices_basename=`basename $devices`
     devices_dirname=`dirname $devices`
     devices_rel_dirname=`make_system_path_relative_to_its_root $devices_dirname`
@@ -181,14 +191,14 @@ while [ "x$list" != "x" ] ; do
 			# zpool name
 			kfreebsd_device=$(${grub_probe} -t fs_label --device ${GRUB_DEVICE})
 			# filesystem name (empty string for the main filesystem)
-			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} / | sed -e "s,/*@$,,")"
+			kfreebsd_device="${kfreebsd_device}$(${grub_mkrelpath} "$GRUB_ROOT"/ | sed -e "s,/*@$,,")"
     ;;
     *)
 	  kfreebsd_device=${kfreebsd_fs}id/${GRUB_DEVICE_UUID}
 	  # Debian GNU/kFreeBSD can't remount root if it's supplied as UUID but
 	  # as an UUID
 	  if [ "x${GRUB_DISTRIBUTOR}" = "xDebian" ] \
-	      && ! (cat /etc/fstab | awk '!/^[[:space:]]*#/ && $2=="/" { print $1; }' \
+	      && ! (cat "$GRUB_ROOT"/etc/fstab | awk '!/^[[:space:]]*#/ && $2=="/" { print $1; }' \
 	      | grep "${kfreebsd_fs}id/${GRUB_DEVICE_UUID}" > /dev/null); then
 	      kfreebsd_device=${GRUB_DEVICE} 
 	  fi
@@ -199,8 +209,8 @@ while [ "x$list" != "x" ] ; do
   alt_version=`echo $version | sed -e "s,\.old$,,g"`
 
   module_dir=
-  for i in "/lib/modules/${version}" "/lib/modules/${alt_version}" \
-      "/boot/kernel"; do
+  for i in "$GRUB_ROOT/lib/modules/${version}" "$GRUB_ROOT/lib/modules/${alt_version}" \
+      "$GRUB_ROOT/boot/kernel"; do
     if test -e "$i" ; then
       module_dir="$i"
       break

@@ -1,5 +1,10 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement grub_file tool and use it to implement generating of config
+	in separate root.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Change to v1 xen grants.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>

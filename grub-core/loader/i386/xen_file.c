@@ -77,12 +77,17 @@ grub_xen_get_info (grub_elf_t elf, struct grub_xen_file_info * xi)
 {
   grub_memset (xi, 0, sizeof (*xi));
 
-  if (grub_elf_is_elf64 (elf))
+  if (grub_elf_is_elf64 (elf)
+      && elf->ehdr.ehdr64.e_machine
+      == grub_cpu_to_le16_compile_time (EM_X86_64)
+      && elf->ehdr.ehdr64.e_ident[EI_DATA] == ELFDATA2LSB)
     {
       xi->arch = GRUB_XEN_FILE_X86_64;
       return grub_xen_get_info64 (elf, xi);
     }
-  if (grub_elf_is_elf32 (elf))
+  if (grub_elf_is_elf32 (elf)
+      && elf->ehdr.ehdr32.e_machine == grub_cpu_to_le16_compile_time (EM_386)
+      && elf->ehdr.ehdr32.e_ident[EI_DATA] == ELFDATA2LSB)
     {
       xi->arch = GRUB_XEN_FILE_I386;
       return grub_xen_get_info32 (elf, xi);

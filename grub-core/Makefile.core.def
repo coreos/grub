@@ -1659,10 +1659,6 @@ module = {
   name = linux;
   x86 = loader/i386/linux.c;
   xen = loader/i386/xen.c;
-  xen = loader/i386/xen_file.c;
-  xen = loader/i386/xen_file32.c;
-  xen = loader/i386/xen_file64.c;
-  extra_dist = loader/i386/xen_fileXX.c;
   xen_cppflags	   = '$(CPPFLAGS_XEN)';
   i386_pc = lib/i386/pc/vesa_modes_table.c;
   mips = loader/mips/linux.c;
@@ -1680,14 +1676,19 @@ module = {
   name = xnu;
   x86 = loader/xnu_resume.c;
   x86 = loader/i386/xnu.c;
-  x86 = loader/macho32.c;
-  x86 = loader/macho64.c;
-  x86 = loader/macho.c;
   x86 = loader/xnu.c;
-  x86 = loader/lzss.c;
 
-  extra_dist = loader/machoXX.c;
   enable = x86;
+};
+
+module = {
+  name = macho;
+
+  common = loader/macho.c;
+  common = loader/macho32.c;
+  common = loader/macho64.c;
+  common = loader/lzss.c;
+  extra_dist = loader/machoXX.c;
 };
 
 module = {
@@ -2268,4 +2269,16 @@ module = {
 module = {
   name = progress;
   common = lib/progress.c;
+};
+
+module = {
+  name = file;
+  common = commands/file.c;
+  common = commands/file32.c;
+  common = commands/file64.c;
+  extra_dist = commands/fileXX.c;
+  common = loader/i386/xen_file.c;
+  common = loader/i386/xen_file32.c;
+  common = loader/i386/xen_file64.c;
+  extra_dist = loader/i386/xen_fileXX.c;
 };

@@ -39,6 +39,7 @@ grub_mkconfig_dir="${sysconfdir}"/grub.d
 self=`basename $0`
 
 grub_probe="${sbindir}/@grub_probe@"
+grub_file="${bindir}/@grub_file@"
 grub_editenv="${bindir}/@grub_editenv@"
 grub_script_check="${bindir}/@grub_script_check@"
 
@@ -54,6 +55,7 @@ usage () {
     gettext "Generate a grub config file"; echo
     echo
     print_option_help "-o, --output=$(gettext FILE)" "$(gettext "output generated config to FILE [default=stdout]")"
+    print_option_help "-r, --root-directory=$(gettext DIR)" "$(gettext "use DIR as root directory [default=/]")"
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
     print_option_help "-v, --version" "$(gettext "print the version information and exit")"
     echo
@@ -70,6 +72,8 @@ argument () {
   fi
   echo $1
 }
+
+GRUB_ROOT=
 
 # Check the arguments.
 while test $# -gt 0
@@ -88,6 +92,11 @@ do
 	grub_cfg=`argument $option "$@"`; shift;;
     --output=*)
 	grub_cfg=`echo "$option" | sed 's/--output=//'`
+	;;
+    -r | --root-directory)
+	GRUB_ROOT=`argument $option "$@"`; shift;;
+    --root-directory=*)
+	GRUB_ROOT=`echo "$option" | sed 's/--output=//'`
 	;;
     -*)
 	gettext_printf "Unrecognized option \`%s'\n" "$option" 1>&2
@@ -128,19 +137,19 @@ else
 fi
 
 # Device containing our userland.  Typically used for root= parameter.
-GRUB_DEVICE="`${grub_probe} --target=device /`"
+GRUB_DEVICE="`${grub_probe} --target=device "$GRUB_ROOT"/`"
 GRUB_DEVICE_UUID="`${grub_probe} --device ${GRUB_DEVICE} --target=fs_uuid 2> /dev/null`" || true
 
 # Device containing our /boot partition.  Usually the same as GRUB_DEVICE.
-GRUB_DEVICE_BOOT="`${grub_probe} --target=device /boot`"
+GRUB_DEVICE_BOOT="`${grub_probe} --target=device "$GRUB_ROOT"/boot`"
 GRUB_DEVICE_BOOT_UUID="`${grub_probe} --device ${GRUB_DEVICE_BOOT} --target=fs_uuid 2> /dev/null`" || true
 
 # Filesystem for the device containing our userland.  Used for stuff like
 # choosing Hurd filesystem module.
 GRUB_FS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2> /dev/null || echo unknown`"
 
-if [ x"$GRUB_FS" = xunknown ]; then
-    GRUB_FS="$(stat -f --printf=%T / || echo unknown)"
+if [ x"$GRUB_FS" = x ] || [ x"$GRUB_FS" = xunknown ]; then
+    GRUB_FS="$(stat -f --printf=%T "$GRUB_ROOT"/ || echo unknown)"
 fi
 
 if test -f ${sysconfdir}/default/grub ; then
@@ -177,6 +186,7 @@ if [ "x${GRUB_ACTUAL_DEFAULT}" = "xsaved" ] ; then GRUB_ACTUAL_DEFAULT="`"${grub
 # These are defined in this script, export them here so that user can
 # override them.
 export GRUB_DEVICE \
+  GRUB_ROOT \
   GRUB_DEVICE_UUID \
   GRUB_DEVICE_BOOT \
   GRUB_DEVICE_BOOT_UUID \
@@ -243,18 +253,46 @@ cat << EOF
 #
 EOF
 
-for i in ${grub_mkconfig_dir}/* ; do
+
+for i in "${grub_mkconfig_dir}"/* ; do
   case "$i" in
+      "${grub_mkconfig_dir}"/00_header \
+      | "${grub_mkconfig_dir}"/30_os-prober \
+      | "${grub_mkconfig_dir}"/40_custom \
+      | "${grub_mkconfig_dir}"/41_custom)
+	      echo
+              echo "### BEGIN $i ###"
+              "$i"
+              echo "### END $i ###"
+      ;;
     # emacsen backup files. FIXME: support other editors
     *~) ;;
     # emacsen autosave files. FIXME: support other editors
     */\#*\#) ;;
     *)
       if grub_file_is_not_garbage "$i" && test -x "$i" ; then
-        echo
-        echo "### BEGIN $i ###"
-        "$i"
-        echo "### END $i ###"
+	  for platform in x86 i386-xen-pae x86_64-xen mips mipsel sparc64 powerpc ia64 arm; do
+	      GRUB_PLATFORM=$platform
+	      export GRUB_PLATFORM
+              buf="$($i)"
+	      if [ x"$buf" != x ]; then
+		  echo
+		  echo "### BEGIN $i ($platform) ###"
+		  case x$platform in
+		      xx86)
+			  echo "if [ x\"\$grub_platform\" != xxen \\(  x\"\$grub_cpu\" = xi386 -o x\"\$grub_cpu\" = xx86_64 -o x\"\$grub_platform\" = x \\) ]; then" ;;
+		      xi386-xen-pae)
+			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xi386-xen -o x\"\$grub_cpu-\$grub_platform\" = x ]; then" ;;
+		      xx86_64-xen)
+			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xx86_64-xen -o x\"\$grub_cpu-\$grub_platform\" = x ]; then" ;;
+		      *)
+			  echo "if [ x\"\$grub_cpu\" = x$platform -o x\"\$grub_platform\" = x ]; then" ;;
+		  esac
+		  echo "$buf"
+		  echo "fi"
+		  echo "### END $i ($platform) ###"
+	      fi
+	  done
       fi
     ;;
   esac

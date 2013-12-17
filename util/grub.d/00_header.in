@@ -152,7 +152,7 @@ if [ "x$gfxterm" = x1 ]; then
 if loadfont `make_system_path_relative_to_its_root "${GRUB_FONT}"` ; then
 EOF
     else
-	for dir in "${pkgdatadir}" "`echo '/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`" /usr/share/grub ; do
+	for dir in "${pkgdatadir}" "`echo "$GRUB_ROOT"'/@bootdirname@/@grubdirname@' | sed "s,//*,/,g"`" "`echo "$GRUB_ROOT"'/usr/share/grub' | sed "s,//*,/,g"`" ; do
 	    for basename in unicode unifont ascii; do
 		path="${dir}/${basename}.pf2"
 		if is_path_readable_by_grub "${path}" > /dev/null ; then

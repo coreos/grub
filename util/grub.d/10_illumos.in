@@ -27,6 +27,21 @@ export TEXTDOMAINDIR="@localedir@"
 
 CLASS="--class os"
 
+if [ x$GRUB_PLATFORM = xx86 ]; then
+    check=--is-x86-multiboot
+elif [ x$GRUB_PLATFORM = xi386-xen-pae ]; then
+    check=--is-i386-xen-pae-domu
+elif [ x$GRUB_PLATFORM = xx86_64-xen ]; then
+    check=--is-x86_64-xen-domu
+else
+    exit 0
+fi
+
+if ! test -f "$GRUB_ROOT"/platform/i86pc/kernel || ! "${grub_file}" $check "$GRUB_ROOT"/platform/i86pc/kernel; then
+    exit 0
+fi
+
+
 case "${GRUB_DISTRIBUTOR}" in
   *)
 	OS="Illumos"
@@ -45,7 +60,7 @@ message="$(gettext_printf "Loading kernel of Illumos ...")"
 	else
 		ISADIR=
 	fi
-	zfs-bootfs $($grub_mkrelpath /) ZFS_BOOTFS
+	zfs-bootfs $($grub_mkrelpath "$GRUB_ROOT"/) ZFS_BOOTFS
         echo '$(echo "$message" | grub_quote)'
 	multiboot $($grub_mkrelpath /platform/i86pc/kernel)/\$ISADIR/unix /platform/i86pc/kernel/\$ISADIR/unix -B \$ZFS_BOOTFS,console=text
 	module $($grub_mkrelpath /platform/i86pc)/\$ISADIR/boot_archive /platform/i86pc/\$ISADIR/boot_archive

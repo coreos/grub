@@ -26,6 +26,10 @@ datarootdir="@datarootdir@"
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
+if [ x$GRUB_PLATFORM != xx86 ]; then
+    exit 0
+fi
+
 CLASS="--class gnu-linux --class gnu --class os --class xen"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
@@ -61,14 +65,14 @@ fi
 
 case x"$GRUB_FS" in
     xbtrfs)
-	rootsubvol="`make_system_path_relative_to_its_root /`"
+	rootsubvol="`make_system_path_relative_to_its_root "$GRUB_ROOT"/`"
 	rootsubvol="${rootsubvol#/}"
 	if [ "x${rootsubvol}" != x ]; then
 	    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
 	fi;;
     xzfs)
 	rpool=`${grub_probe} --device ${GRUB_DEVICE} --target=fs_label 2>/dev/null || true`
-	bootfs="`make_system_path_relative_to_its_root / | sed -e "s,@$,,"`"
+	bootfs="`make_system_path_relative_to_its_root "$GRUB_ROOT"/ | sed -e "s,@$,,"`"
 	LINUX_ROOT_DEVICE="ZFS=${rpool}${bootfs}"
 	;;
 esac
@@ -137,19 +141,9 @@ EOF
 EOF
 }
 
-linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
-    if grub_file_is_not_garbage "$i"; then
-    	basename=$(basename $i)
-	version=$(echo $basename | sed -e "s,^[^0-9]*-,,g")
-	dirname=$(dirname $i)
-	config=
-	for j in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
-	    if test -e "${j}" ; then
-		config="${j}"
-		break
-	    fi
-	done
-        if (grep -qx "CONFIG_XEN_DOM0=y" "${config}" 2> /dev/null || grep -qx "CONFIG_XEN_PRIVILEGED_GUEST=y" "${config}" 2> /dev/null); then echo -n "$i " ; fi
+linux_list=`for i in "$GRUB_ROOT"/boot/vmlinu[xz]-* "$GRUB_ROOT"/vmlinu[xz]-* "$GRUB_ROOT"/boot/kernel-*; do
+    if grub_file_is_not_garbage "$i" && "${grub_file}" --is-x86-xen-dom0 "$i"; then
+	echo -n "$i " ;
     fi
     done`
 if [ "x${linux_list}" = "x" ] ; then
@@ -165,8 +159,8 @@ file_is_not_sym () {
     esac
 }
 
-xen_list=`for i in /boot/xen*; do
-        if grub_file_is_not_garbage "$i" && file_is_not_sym "$i" ; then echo -n "$i " ; fi
+xen_list=`for i in "$GRUB_ROOT"/boot/xen*; do
+        if grub_file_is_not_garbage "$i" && file_is_not_sym "$i" && ${grub_file} --is-x86-multiboot "$i"; then echo -n "$i " ; fi
       done`
 prepare_boot_cache=
 boot_device_id=
