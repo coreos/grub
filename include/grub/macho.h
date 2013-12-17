@@ -139,6 +139,24 @@ union grub_macho_filestart
   struct grub_macho_lzss_header lzss;
 } GRUB_PACKED;
 
+struct grub_macho_thread32
+{
+  grub_uint32_t cmd;
+  grub_uint32_t cmdsize;
+  grub_uint8_t unknown1[48];
+  grub_uint32_t entry_point;
+  grub_uint8_t unknown2[20];
+} GRUB_PACKED;
+
+struct grub_macho_thread64
+{
+  grub_uint32_t cmd;
+  grub_uint32_t cmdsize;
+  grub_uint8_t unknown1[0x88];
+  grub_uint64_t entry_point;
+  grub_uint8_t unknown2[0x20];
+} GRUB_PACKED;
+
 #define GRUB_MACHO_LZSS_OFFSET 0x180
 
 grub_size_t

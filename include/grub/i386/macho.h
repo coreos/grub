@@ -29,23 +29,4 @@
 #define GRUB_MACHO_CPUTYPE_IS_HOST_CURRENT(x) ((x) == GRUB_MACHO_CPUTYPE_IA32)
 #endif
 
-struct grub_macho_thread32
-{
-  grub_uint32_t cmd;
-  grub_uint32_t cmdsize;
-  grub_uint8_t unknown1[48];
-  grub_uint32_t entry_point;
-  grub_uint8_t unknown2[20];
-} GRUB_PACKED;
-
-
-struct grub_macho_thread64
-{
-  grub_uint32_t cmd;
-  grub_uint32_t cmdsize;
-  grub_uint8_t unknown1[0x88];
-  grub_uint64_t entry_point;
-  grub_uint8_t unknown2[0x20];
-} GRUB_PACKED;
-
 #endif
