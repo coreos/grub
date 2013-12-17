@@ -250,7 +250,7 @@ static struct argp_option options[] = {
 
   {"debug", OPTION_DEBUG, 0, OPTION_HIDDEN, 0, 2},
   {"no-floppy", OPTION_NO_FLOPPY, 0, OPTION_HIDDEN, 0, 2},
-  {"debug-image", OPTION_DEBUG_IMAGE, "STR", OPTION_HIDDEN, 0, 2},
+  {"debug-image", OPTION_DEBUG_IMAGE, N_("STRING"), OPTION_HIDDEN, 0, 2},
   {"removable", OPTION_REMOVABLE, 0, 0,
    N_("the installation device is removable. "
       "This option is only available on EFI."), 2},

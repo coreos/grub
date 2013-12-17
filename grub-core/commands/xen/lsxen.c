@@ -77,9 +77,9 @@ static grub_command_t cmd_ls, cmd_cat;
 
 GRUB_MOD_INIT (lsxen)
 {
-  cmd_ls = grub_register_command ("xen_ls", grub_cmd_lsxen, "[DIR]",
+  cmd_ls = grub_register_command ("xen_ls", grub_cmd_lsxen, N_("[DIR]"),
 				  N_("List XEN storage."));
-  cmd_cat = grub_register_command ("xen_cat", grub_cmd_catxen, "[DIR]",
+  cmd_cat = grub_register_command ("xen_cat", grub_cmd_catxen, N_("[DIR]"),
 				   N_("List XEN storage."));
 }
 

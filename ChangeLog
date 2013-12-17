@@ -1,5 +1,9 @@
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Update exclude.pot and mark few strings for translation.
+
+2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-mkrescue.c: Fix incorrect file usage in fallback code.
 
 	Reported by: Jon McCune

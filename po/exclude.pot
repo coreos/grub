@@ -5155,6 +5155,1796 @@ msgid "gpt_parttype"
 msgstr ""
 
 #: grub-core/kern/uboot/init.c:85
-msgid "invalid U-Boot API version
-"
+msgid "invalid U-Boot API version\n"
+msgstr ""
+
+#: util/grub-mknetdir.c:144
+#, c-format
+msgid "source %s/grub.cfg"
+msgstr ""
+
+#: util/grub-mknetdir.c:149
+msgid "core"
+msgstr ""
+
+#: util/grub-mknetdir.c:174
+msgid "/srv/tftp"
+msgstr ""
+
+#: util/grub-mkpasswd-pbkdf2.c:188
+msgid "XXXXXXXXXXXXXXXXXXX"
+msgstr ""
+
+#: util/grub-mkrescue.c:71
+#, c-format
+msgid "%s=%s"
+msgstr ""
+
+#: util/grub-mkrescue.c:97
+msgid "rom-directory"
+msgstr ""
+
+#: util/grub-mkrescue.c:99 util/grub-mkrescue.c:373
+msgid "xorriso"
+msgstr ""
+
+#: util/grub-mkrescue.c:102
+msgid "grub-glue-efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:103
+msgid "grub-render-label"
+msgstr ""
+
+#: util/grub-mkrescue.c:104
+msgid "label-font"
+msgstr ""
+
+#: util/grub-mkrescue.c:105
+msgid "label-color"
+msgstr ""
+
+#: util/grub-mkrescue.c:106
+msgid "label-bgcolor"
+msgstr ""
+
+#: util/grub-mkrescue.c:107
+msgid "product-name"
+msgstr ""
+
+#: util/grub-mkrescue.c:108
+msgid "product-version"
+msgstr ""
+
+#: util/grub-mkrescue.c:109
+msgid "sparc-boot"
+msgstr ""
+
+#: util/grub-mkrescue.c:110
+msgid "arcs-boot"
+msgstr ""
+
+#: util/grub-mkrescue.c:120
+msgid "xorriso -as mkisofs -help"
+msgstr ""
+
+#: util/grub-mkrescue.c:236
+#, c-format
+msgid "insmod %s\n"
+msgstr ""
+
+#: util/grub-mkrescue.c:258
+#, c-format
+msgid "search --fs-uuid --set=root %s"
+msgstr ""
+
+#: util/grub-mkrescue.c:259
+#, c-format
+msgid "set prefix=(${root})/boot/grub"
+msgstr ""
+
+#: util/grub-mkrescue.c:266 util/grub-mkrescue.c:479 util/grub-mkrescue.c:523
+msgid "/boot/grub"
+msgstr ""
+
+#: util/grub-mkrescue.c:305
+msgid "()/boot/grub"
+msgstr ""
+
+#: util/grub-mkrescue.c:322 util/grub-mkrescue.c:382
+msgid "-as"
+msgstr ""
+
+#: util/grub-mkrescue.c:323 util/grub-mkrescue.c:383
+msgid "mkisofs"
+msgstr ""
+
+#: util/grub-mkrescue.c:324
+msgid "-help"
+msgstr ""
+
+#: util/grub-mkrescue.c:374
+msgid "unicode.pf2"
+msgstr ""
+
+#: util/grub-mkrescue.c:384
+msgid "-graft-points"
+msgstr ""
+
+#: util/grub-mkrescue.c:390
+msgid "roms"
+msgstr ""
+
+#: util/grub-mkrescue.c:442
+#, c-format
+msgid "%04d-%02d-%02d-%02d-%02d-%02d-00"
+msgstr ""
+
+#: util/grub-mkrescue.c:454
+msgid "--modification-date="
+msgstr ""
+
+#: util/grub-mkrescue.c:468
+msgid "eltorito.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:471
+msgid "BIOS"
+msgstr ""
+
+#: util/grub-mkrescue.c:481 util/mkimage.c:180
+msgid "i386-pc-eltorito"
+msgstr ""
+
+#: util/grub-mkrescue.c:484
+msgid "boot/grub/i386-pc/eltorito.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:485
+msgid "-no-emul-boot"
+msgstr ""
+
+#: util/grub-mkrescue.c:486
+msgid "-boot-load-size"
+msgstr ""
+
+#: util/grub-mkrescue.c:487
+msgid "4"
+msgstr ""
+
+#: util/grub-mkrescue.c:488
+msgid "-boot-info-table"
+msgstr ""
+
+#: util/grub-mkrescue.c:491
+msgid "grub2-boot-info"
+msgstr ""
+
+#: util/grub-mkrescue.c:494
+msgid "boot_hybrid.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:495
+msgid "--grub2-boot-info"
+msgstr ""
+
+#: util/grub-mkrescue.c:496
+msgid "--grub2-mbr"
+msgstr ""
+
+#: util/grub-mkrescue.c:537 util/grub-mkrescue.c:742
+msgid "-G"
+msgstr ""
+
+#: util/grub-mkrescue.c:550
+msgid "i386-multiboot/core.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:555
+msgid "ofwx86.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:565
+msgid "System"
+msgstr ""
+
+#: util/grub-mkrescue.c:565
+msgid "Library"
+msgstr ""
+
+#: util/grub-mkrescue.c:565
+msgid "CoreServices"
+msgstr ""
+
+#: util/grub-mkrescue.c:568
+msgid "mach_kernel"
+msgstr ""
+
+#: util/grub-mkrescue.c:573
+msgid "SystemVersion.plist"
+msgstr ""
+
+#: util/grub-mkrescue.c:587
+msgid ".disk_label"
+msgstr ""
+
+#: util/grub-mkrescue.c:589
+msgid "white"
+msgstr ""
+
+#: util/grub-mkrescue.c:590
+msgid "black"
+msgstr ""
+
+#: util/grub-mkrescue.c:592
+msgid ".disk_label.contentDetails"
+msgstr ""
+
+#: util/grub-mkrescue.c:600
+msgid "-hfsplus"
+msgstr ""
+
+#: util/grub-mkrescue.c:601
+msgid "-apm-block-size"
+msgstr ""
+
+#: util/grub-mkrescue.c:602
+msgid "2048"
+msgstr ""
+
+#: util/grub-mkrescue.c:603 util/grub-mkrescue.c:702
+msgid "-hfsplus-file-creator-type"
+msgstr ""
+
+#: util/grub-mkrescue.c:604 util/grub-mkrescue.c:692 util/grub-mkrescue.c:703
+msgid "chrp"
+msgstr ""
+
+#: util/grub-mkrescue.c:605
+msgid "tbxj"
+msgstr ""
+
+#: util/grub-mkrescue.c:606
+msgid "/System/Library/CoreServices/.disk_label"
+msgstr ""
+
+#: util/grub-mkrescue.c:611 util/grub-mkrescue.c:706
+msgid "-hfs-bless-by"
+msgstr ""
+
+#: util/grub-mkrescue.c:613
+msgid "/System/Library/CoreServices/boot.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:630
+msgid "bootia64.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:634
+msgid "bootx64.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:637
+msgid "bootia32.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:640
+msgid "bootarm.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:646 util/grub-mkrescue.c:653
+msgid "boot.efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:668 util/grub-mkrescue.c:673
+msgid "efi.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:669
+msgid "mformat"
+msgstr ""
+
+#: util/grub-mkrescue.c:669
+msgid "-C"
+msgstr ""
+
+#: util/grub-mkrescue.c:669
+msgid "2880"
+msgstr ""
+
+#: util/grub-mkrescue.c:669
+msgid "16"
+msgstr ""
+
+#: util/grub-mkrescue.c:669 util/grub-mkrescue.c:671
+msgid "-i"
+msgstr ""
+
+#: util/grub-mkrescue.c:670
+msgid "::"
+msgstr ""
+
+#: util/grub-mkrescue.c:671
+msgid "mcopy"
+msgstr ""
+
+#: util/grub-mkrescue.c:671
+msgid "::/"
+msgstr ""
+
+#: util/grub-mkrescue.c:672
+msgid "--efi-boot"
+msgstr ""
+
+#: util/grub-mkrescue.c:674
+msgid "-efi-boot-part"
+msgstr ""
+
+#: util/grub-mkrescue.c:675
+msgid "--efi-boot-image"
+msgstr ""
+
+#: util/grub-mkrescue.c:683
+msgid "powerpc-ieee1275/core.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:688
+msgid "grub.chrp"
+msgstr ""
+
+#: util/grub-mkrescue.c:690 util/grub-mkrescue.c:693
+msgid "bootinfo.txt"
+msgstr ""
+
+#: util/grub-mkrescue.c:691
+msgid "BootX"
+msgstr ""
+
+#: util/grub-mkrescue.c:692 util/grub-mkrescue.c:693
+msgid "ppc"
+msgstr ""
+
+#: util/grub-mkrescue.c:697
+msgid "/System/Library/CoreServices/grub.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:697 util/grub-mkrescue.c:698
+msgid "/boot/grub/powerpc-ieee1275/core.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:698
+msgid "/boot/grub/powerpc.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:704
+msgid "tbxi"
+msgstr ""
+
+#: util/grub-mkrescue.c:705
+msgid "/System/Library/CoreServices/BootX"
+msgstr ""
+
+#: util/grub-mkrescue.c:707
+msgid "p"
+msgstr ""
+
+#: util/grub-mkrescue.c:708
+msgid "/System/Library/CoreServices"
+msgstr ""
+
+#: util/grub-mkrescue.c:710
+msgid "-sysid"
+msgstr ""
+
+#: util/grub-mkrescue.c:711
+msgid "PPC"
+msgstr ""
+
+#: util/grub-mkrescue.c:715
+msgid "sparc64-ieee1275/core.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:725 util/mkimage.c:1361
+msgid "cdboot.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:746
+msgid "--grub2-sparc-core"
+msgstr ""
+
+#: util/grub-mkrescue.c:747
+msgid "/boot/grub/sparc64-ieee1275/core.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:750
+msgid "mips-arc/core.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:754 util/grub-mkrescue.c:765
+msgid "/boot/grub/mips-arc/grub"
+msgstr ""
+
+#: util/grub-mkrescue.c:754 util/grub-mkrescue.c:755 util/grub-mkrescue.c:756
+msgid "/boot/grub/mips-arc/core.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:755 util/grub-mkrescue.c:761
+msgid "/boot/grub/mips-arc/sashARCS"
+msgstr ""
+
+#: util/grub-mkrescue.c:756 util/grub-mkrescue.c:763
+msgid "/boot/grub/mips-arc/sash"
+msgstr ""
+
+#: util/grub-mkrescue.c:760 util/grub-mkrescue.c:762 util/grub-mkrescue.c:764
+msgid "-mips-boot"
+msgstr ""
+
+#: util/grub-mkrescue.c:768
+msgid "arc.exe"
+msgstr ""
+
+#: util/grub-mkrescue.c:771 util/grub-mkrescue.c:799
+msgid "roms/mipsel-qemu_mips.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:773 util/grub-mkrescue.c:800
+msgid "loongson.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:775 util/grub-mkrescue.c:801
+msgid "mipsel-yeeloong.bin"
+msgstr ""
+
+#: util/grub-mkrescue.c:776
+msgid "mipsel-fuloong2f.bin"
+msgstr ""
+
+#: util/grub-mkrescue.c:778 util/grub-mkrescue.c:803
+msgid "roms/mips-qemu_mips.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:782 util/grub-mkrescue.c:804
+msgid "roms/qemu.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:786 util/grub-mkrescue.c:805
+msgid "roms/coreboot.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:799
+msgid "mipsel-qemu_mips.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:800
+msgid "mipsel-loongson.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:801
+msgid "roms/mipsel-yeeloong.bin"
+msgstr ""
+
+#: util/grub-mkrescue.c:802
+msgid "roms/mipsel-fulong.bin"
+msgstr ""
+
+#: util/grub-mkrescue.c:802
+msgid "mipsel-fulong.bin"
+msgstr ""
+
+#: util/grub-mkrescue.c:803
+msgid "mips-qemu_mips.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:804
+msgid "qemu.img"
+msgstr ""
+
+#: util/grub-mkrescue.c:805
+msgid "coreboot.elf"
+msgstr ""
+
+#: util/grub-mkrescue.c:816
+msgid "--protective-msdos-label"
+msgstr ""
+
+#: util/grub-mkrescue.c:821 util/grub-mkrescue.c:824
+msgid "--sort-weight"
+msgstr ""
+
+#: util/grub-mkrescue.c:826
+msgid "/boot"
+msgstr ""
+
+#: util/grub-mkstandalone.c:227 util/grub-mkstandalone.c:257
+msgid "0000600"
+msgstr ""
+
+#: util/grub-mkstandalone.c:228 util/grub-mkstandalone.c:229
+#: util/grub-mkstandalone.c:258 util/grub-mkstandalone.c:259
+msgid "0001750"
+msgstr ""
+
+#: util/grub-mkstandalone.c:234 util/grub-mkstandalone.c:264
+msgid "ustar  "
+msgstr ""
+
+#: util/grub-mkstandalone.c:346
+msgid "tar"
+msgstr ""
+
+#: util/mkimage.c:261 util/mkimage.c:262
+msgid "i386-xen"
+msgstr ""
+
+#: util/mkimage.c:280 util/mkimage.c:281
+msgid "x86_64-xen"
+msgstr ""
+
+#: grub-core/commands/verify.c:170 grub-core/commands/verify.c:171
+msgid "gcry_rsa"
+msgstr ""
+
+#: grub-core/commands/xen/lsxen.c:46 grub-core/commands/xen/lsxen.c:60
+msgid "domid"
+msgstr ""
+
+#: grub-core/commands/xen/lsxen.c:49
+#, c-format
+msgid "/local/domain/%s"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:82
+#, c-format
+msgid "%s/sectors"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:90
+#, c-format
+msgid "%s/sector-size"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:280
+#, c-format
+msgid "device/vbd/%s/backend"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:285
+#, c-format
+msgid "%s/dev"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:291
+#, c-format
+msgid "xenid/%s"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:295
+#, c-format
+msgid "xen/%s"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:301
+#, c-format
+msgid "device/vbd/%s/backend-id"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:331
+#, c-format
+msgid "device/vbd/%s/ring-ref"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:337
+#, c-format
+msgid "device/vbd/%s/event-channel"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:343
+#, c-format
+msgid "device/vbd/%s/protocol"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:353
+#, c-format
+msgid "device/vbd/%s/state"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:354
+msgid "3"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:360 grub-core/disk/xen/xendisk.c:422
+#: grub-core/disk/xen/xendisk.c:428 grub-core/disk/xen/xendisk.c:454
+#, c-format
+msgid "%s/state"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:373
+#, c-format
+msgid "device/vbd/%s"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:396 grub-core/disk/xen/xendisk.c:405
+msgid "device/vbd"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:424 grub-core/disk/xen/xendisk.c:433
+msgid "6"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:440
+#, c-format
+msgid "%s/ring-ref"
+msgstr ""
+
+#: grub-core/disk/xen/xendisk.c:444
+#, c-format
+msgid "%s/event-channel"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:747
+msgid "item_pixmap_style"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:787
+msgid "scrollbar_thumb_overlay"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:795
+msgid "scrollbar_slice"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:797
+msgid "west"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:801
+msgid "east"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:804
+msgid "scrollbar_left_pad"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:808
+msgid "scrollbar_right_pad"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:812
+msgid "scrollbar_top_pad"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_list.c:816
+msgid "scrollbar_bottom_pad"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_progress_bar.c:377
+msgid "highlight_overlay"
+msgstr ""
+
+#: grub-core/kern/mips/dl.c:267
+msgid "_gp_disp"
+msgstr ""
+
+#: grub-core/lib/progress.c:81
+#, c-format
+msgid "      [ %.20s  %s  %llu%%  "
+msgstr ""
+
+#: grub-core/lib/progress.c:88
+#, c-format
+msgid "%s ]"
+msgstr ""
+
+#: grub-core/lib/reed_solomon.c:74
+msgid "_text,_text"
+msgstr ""
+
+#: grub-core/loader/i386/bsd.c:1571
+msgid "wd"
+msgstr ""
+
+#: grub-core/loader/i386/bsd.c:1572
+msgid "fd"
+msgstr ""
+
+#: grub-core/loader/i386/bsd.c:1573 grub-core/osdep/linux/ofpath.c:415
+msgid "sd"
+msgstr ""
+
+#: grub-core/loader/i386/bsd.c:1575
+msgid "vnd"
+msgstr ""
+
+#: grub-core/loader/i386/bsd.c:1576
+msgid "rd"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:45
+msgid "PAE=no,"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:55
+msgid "PAE=yes,"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:65 grub-core/loader/i386/xen_fileXX.c:66
+msgid "PAE=yes[extended-cr3],"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:77
+msgid "PAE=bimodal,"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:87 grub-core/loader/i386/xen_fileXX.c:88
+msgid "PAE=bimodal[extended-cr3],"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:99
+msgid "PAE=yes,bimodal,"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:109
+#: grub-core/loader/i386/xen_fileXX.c:110
+msgid "PAE=yes[extended-cr3],bimodal,"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:121
+#: grub-core/loader/i386/xen_fileXX.c:123
+msgid "VIRT_BASE="
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:128
+#: grub-core/loader/i386/xen_fileXX.c:130
+msgid "VIRT_ENTRY="
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:135
+#: grub-core/loader/i386/xen_fileXX.c:137
+msgid "HYPERCALL_PAGE="
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:143
+#: grub-core/loader/i386/xen_fileXX.c:145
+msgid "ELF_PADDR_OFFSET="
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:191 util/mkimage.c:712
+msgid "Xen"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:220 util/grub-mkimagexx.c:207
+#: util/grub-mkimagexx.c:212 util/grub-mkimagexx.c:213
+msgid "generic"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:231 util/grub-mkimagexx.c:258
+#: util/grub-mkimagexx.c:259
+msgid "yes"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:237
+msgid "bimodal"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:243 util/grub-mkimagexx.c:253
+msgid "yes,bimodal"
+msgstr ""
+
+#: grub-core/loader/i386/xen_fileXX.c:327
+#: grub-core/loader/i386/xen_fileXX.c:338
+#: grub-core/loader/i386/xen_fileXX.c:339
+msgid "__xen_guest"
+msgstr ""
+
+#: grub-core/loader/multiboot.c:244
+msgid "--quirk-bad-kludge"
+msgstr ""
+
+#: grub-core/loader/multiboot.c:251
+msgid "--quirk-modules-after-kernel"
+msgstr ""
+
+#: grub-core/net/dns.c:712
+msgid "--only-ipv4"
+msgstr ""
+
+#: grub-core/net/dns.c:714
+msgid "--only-ipv6"
+msgstr ""
+
+#: grub-core/net/dns.c:716
+msgid "--prefer-ipv4"
+msgstr ""
+
+#: grub-core/net/dns.c:718
+msgid "--prefer-ipv6"
+msgstr ""
+
+#: grub-core/normal/main.c:538
+msgid "feature_timeout_style"
+msgstr ""
+
+#: grub-core/normal/main.c:587
+msgid "light-gray/black"
+msgstr ""
+
+#: grub-core/normal/main.c:588
+msgid "black/light-gray"
+msgstr ""
+
+#: grub-core/normal/menu.c:53
+msgid "menu"
+msgstr ""
+
+#: grub-core/normal/menu.c:54
+msgid "countdown"
+msgstr ""
+
+#: grub-core/osdep/aros/config.c:39 grub-core/osdep/unix/config.c:39
+#: util/grub-install.c:739 util/grub-install.c:1395 util/grub-install.c:1540
+#: util/grub-mkrescue.c:388 util/grub-mkstandalone.c:235
+#: util/grub-mkstandalone.c:236 util/grub-mkstandalone.c:265
+#: util/grub-mkstandalone.c:266 util/grub-mkstandalone.c:311
+msgid "grub"
+msgstr ""
+
+#: grub-core/osdep/aros/config.c:46 grub-core/osdep/unix/config.c:46
+msgid "pkgdatadir"
+msgstr ""
+
+#: grub-core/osdep/aros/config.c:73 grub-core/osdep/unix/config.c:77
+#: grub-core/osdep/windows/config.c:40
+msgid "GRUB_ENABLE_CRYPTODISK"
+msgstr ""
+
+#: grub-core/osdep/aros/config.c:77 grub-core/osdep/unix/config.c:81
+#: grub-core/osdep/windows/config.c:44
+msgid "GRUB_DISTRIBUTOR"
+msgstr ""
+
+#: grub-core/osdep/linux/hostdisk.c:109 grub-core/osdep/linux/hostdisk.c:127
+msgid "udevadm"
+msgstr ""
+
+#: grub-core/osdep/linux/hostdisk.c:110
+msgid "info"
+msgstr ""
+
+#: grub-core/osdep/linux/hostdisk.c:111
+msgid "--query"
+msgstr ""
+
+#: grub-core/osdep/linux/hostdisk.c:113
+msgid "--name"
+msgstr ""
+
+#: grub-core/osdep/linux/hostdisk.c:139
+#, c-format
+msgid "/sys%s/%s"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:105
+msgid "/obppath"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:117
+#, c-format
+msgid "%s/obppath"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:125
+#, c-format
+msgid "%s/devspec"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:132
+msgid "/sys"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:182 grub-core/osdep/linux/ofpath.c:185
+msgid "/sys/block/"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:189 grub-core/osdep/linux/ofpath.c:191
+msgid "/device"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:237
+#, c-format
+msgid "/disk@%d"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:244
+#, c-format
+msgid "/disk@%d:%c"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:277
+#, c-format
+msgid "vdc-port-%d-%d"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:295
+#, c-format
+msgid "%d.%d"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:311
+msgid "/vendor"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:315
+#, c-format
+msgid "%s/vendor"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:334 grub-core/osdep/linux/ofpath.c:345
+msgid "end_device"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:353 grub-core/osdep/linux/ofpath.c:355
+#, c-format
+msgid "%s/sas_device/%s/phy_identifier"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:368
+#, c-format
+msgid "%s/sas_device/%s/sas_address"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:376
+#, c-format
+msgid "%lx"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:391 grub-core/osdep/linux/ofpath.c:412
+msgid "/fp@0,0"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:396
+#, c-format
+msgid "%d:%d:%d:%d"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:411
+msgid "qlc"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:414
+msgid "sbus"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:420
+msgid "/vdevice/"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:425
+#, c-format
+msgid "/%s@%04lx000000000000"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:433
+#, c-format
+msgid "/%s@%04lx000000000000:%c"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:445
+#, c-format
+msgid "/sas/%s@%x"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:453
+#, c-format
+msgid "/sas/%s@%x:%c"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:468
+#, c-format
+msgid "%02x%02x%02x%02x00000000"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:473
+#, c-format
+msgid "/sas/%s@%lx,%lu"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:481
+#, c-format
+msgid "/sas/%s@%lx,%lu:%c"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:529
+msgid "floppy"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:60 util/grub-install-common.c:650
+#: util/grub-install-common.c:652
+msgid "x86_64"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:73 grub-core/osdep/unix/platform.c:151
+msgid "modprobe"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:73 grub-core/osdep/unix/platform.c:151
+msgid "efivars"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:74 grub-core/osdep/unix/exec.c:153
+msgid "/dev/null"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:77
+msgid "/sys/firmware/efi"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:87
+msgid "/proc/device-tree"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:25
+msgid "gzip"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:25
+msgid "--best"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:26 grub-core/osdep/unix/compress.c:33
+msgid "--stdout"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:33
+msgid "--lzma2=dict=128KiB"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:33
+msgid "--check=none"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:39
+msgid "lzop"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:39
+msgid "-9"
+msgstr ""
+
+#: grub-core/osdep/unix/compress.c:39 grub-core/osdep/unix/config.c:90
+#: grub-core/osdep/unix/platform.c:160 grub-core/osdep/unix/platform.c:166
+msgid "-c"
+msgstr ""
+
+#: grub-core/osdep/unix/config.c:89
+msgid "sh"
+msgstr ""
+
+#: grub-core/osdep/unix/config.c:95
+msgid ". '"
+msgstr ""
+
+#: grub-core/osdep/unix/exec.c:126 grub-core/osdep/unix/exec.c:184
+#: grub-core/osdep/unix/exec.c:229
+msgid "LC_ALL"
+msgstr ""
+
+#: grub-core/osdep/unix/hostdisk.c:296 grub-core/osdep/unix/hostdisk.c:314
+msgid "TMPDIR"
+msgstr ""
+
+#: grub-core/osdep/unix/hostdisk.c:300 grub-core/osdep/unix/hostdisk.c:318
+msgid "/tmp"
+msgstr ""
+
+#: grub-core/osdep/unix/hostdisk.c:302 grub-core/osdep/unix/hostdisk.c:304
+#: grub-core/osdep/unix/hostdisk.c:305 grub-core/osdep/unix/hostdisk.c:320
+#: grub-core/osdep/unix/hostdisk.c:322 grub-core/osdep/unix/hostdisk.c:323
+msgid "/grub.XXXXXX"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:41 grub-core/osdep/unix/platform.c:179
+#: grub-core/osdep/unix/platform.c:183
+msgid "ofpathname"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:85 grub-core/osdep/unix/platform.c:92
+#: grub-core/osdep/unix/platform.c:100 grub-core/osdep/unix/platform.c:122
+#: grub-core/osdep/unix/platform.c:125 grub-core/osdep/unix/platform.c:142
+#: grub-core/osdep/unix/platform.c:146 grub-core/osdep/unix/platform.c:159
+#: grub-core/osdep/unix/platform.c:165
+msgid "efibootmgr"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:113 grub-core/osdep/unix/platform.c:114
+#: grub-core/osdep/unix/platform.c:115 grub-core/osdep/unix/platform.c:119
+msgid "Boot"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:122 grub-core/osdep/unix/platform.c:151
+#: grub-core/osdep/unix/platform.c:159
+msgid "-q"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:123 grub-core/osdep/unix/platform.c:126
+#: util/grub-mkrescue.c:483
+msgid "-b"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:123 grub-core/osdep/unix/platform.c:126
+#: util/grub-mkrescue.c:744
+msgid "-B"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:161 grub-core/osdep/unix/platform.c:167
+msgid "-p"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:161 grub-core/osdep/unix/platform.c:167
+msgid "-w"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:162 grub-core/osdep/unix/platform.c:168
+#: util/grub-mkrescue.c:669
+msgid "-L"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:195 grub-core/osdep/unix/platform.c:199
+msgid "XXXXXXXXXXXXXXXXXXXX"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:215
+msgid "nvsetenv"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:215
+msgid "boot-device"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:218
+#, c-format
+msgid "setenv boot-device %s"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:231
+msgid "dvhtool"
+msgstr ""
+
+#: grub-core/osdep/unix/platform.c:232
+msgid "--unix-to-vh"
+msgstr ""
+
+#: grub-core/osdep/unix/relpath.c:109
+#, c-format
+msgid "/%s/@"
+msgstr ""
+
+#: grub-core/osdep/unix/relpath.c:141
+#, c-format
+msgid "/%s/@%s"
+msgstr ""
+
+#: grub-core/osdep/windows/hostdisk.c:494
+#: grub-core/osdep/windows/hostdisk.c:495
+msgid "\\GRUB."
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:50
+msgid "GetCurrentConsoleFont"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:71 grub-core/osdep/windows/platform.c:73
+msgid "kernel32.dll"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:81
+msgid "SetCurrentConsoleFontEx"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:93 grub-core/osdep/windows/init.c:94
+msgid "Lucida Console"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:105
+msgid "SetConsoleFont"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:123 util/grub-mknetdir.c:139
+msgid "grub.cfg"
+msgstr ""
+
+#: grub-core/osdep/windows/init.c:181 util/grub-install-common.c:702
+msgid "locale"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:28
+msgid "{8be4df61-93ca-11d2-aa0d-00e098032b8c}"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:81
+msgid "GetFirmwareEnvironmentVariableW"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:83
+msgid "SetFirmwareEnvironmentVariableW"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:85
+msgid "GetNativeSystemInfo"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:101
+#: grub-core/osdep/windows/platform.c:238
+#: grub-core/osdep/windows/platform.c:409
+msgid "BootOrder"
+msgstr ""
+
+#: grub-core/osdep/windows/platform.c:185
+#: grub-core/osdep/windows/platform.c:196
+msgid "Boot0000"
+msgstr ""
+
+#: include/grub/i386/cpuid.h:42 include/grub/i386/cpuid.h:65
+msgid "%rcx"
+msgstr ""
+
+#: include/grub/osdep/hostfile_aros.h:110
+msgid "SYS:"
+msgstr ""
+
+#: include/grub/util/install.h:32
+msgid "install-modules"
+msgstr ""
+
+#: include/grub/util/install.h:35 util/grub-install-common.c:64
+#: util/grub-install-common.c:812 util/grub-install-common.c:823
+msgid "themes"
+msgstr ""
+
+#: include/grub/util/install.h:37 util/grub-install-common.c:703
+msgid "fonts"
+msgstr ""
+
+#: include/grub/util/install.h:39
+msgid "locales"
+msgstr ""
+
+#: include/grub/util/install.h:41
+msgid "compress"
+msgstr ""
+
+#: include/grub/util/install.h:42
+msgid "no,xz,gz,lzo"
+msgstr ""
+
+#: include/grub/util/install.h:44
+msgid "core-compress"
+msgstr ""
+
+#: include/grub/util/install.h:50
+msgid "override-directory"
+msgstr ""
+
+#: include/grub/util/install.h:53
+msgid "locale-directory"
+msgstr ""
+
+#: include/grub/util/install.h:56
+msgid "themes-directory"
+msgstr ""
+
+#: include/grub/util/install.h:59
+msgid "grub-mkimage"
+msgstr ""
+
+#: util/config.c:35 util/config.c:36 util/config.c:38
+msgid "GRUB_ENABLE_CRYPTODISK="
+msgstr ""
+
+#: util/config.c:45 util/config.c:46 util/config.c:51
+msgid "GRUB_DISTRIBUTOR="
+msgstr ""
+
+#: util/grub-install-common.c:55 util/grub-install-common.c:804
+msgid "starfield"
+msgstr ""
+
+#: util/grub-install-common.c:57 util/grub-install-common.c:840
+msgid "unicode"
+msgstr ""
+
+#: util/grub-install-common.c:193
+msgid ".lst"
+msgstr ""
+
+#: util/grub-install-common.c:194 util/grub-mknetdir.c:97
+msgid ".img"
+msgstr ""
+
+#: util/grub-install-common.c:195 util/grub-install-common.c:617
+#: util/grub-install-common.c:623 util/grub-install-common.c:628
+#: util/grub-install-common.c:629 util/grub-install-common.c:758
+#: util/grub-install-common.c:771 util/grub-install-common.c:774
+#: util/grub-install-common.c:787
+msgid ".mo"
+msgstr ""
+
+#: util/grub-install-common.c:196
+msgid "menu.lst"
+msgstr ""
+
+#: util/grub-install-common.c:370
+msgid "gz"
+msgstr ""
+
+#: util/grub-install-common.c:380
+msgid "lzo"
+msgstr ""
+
+#: util/grub-install-common.c:404 util/grub-install-common.c:411
+msgid "gcry_crc"
+msgstr ""
+
+#: util/grub-install-common.c:430
+msgid "lzma"
+msgstr ""
+
+#: util/grub-install-common.c:453
+msgid "--memdisk '"
+msgstr ""
+
+#: util/grub-install-common.c:460
+msgid "--config '"
+msgstr ""
+
+#: util/grub-install-common.c:467
+msgid "--pubkey '"
+msgstr ""
+
+#: util/grub-install-common.c:488
+msgid "--note"
+msgstr ""
+
+#: util/grub-install-common.c:618
+msgid ".gmo"
+msgstr ""
+
+#: util/grub-install-common.c:628 util/grub-install-common.c:785
+msgid "LC_MESSAGES"
+msgstr ""
+
+#: util/grub-install-common.c:644 util/grub-install-common.c:645
+#: util/grub-install-common.c:646 util/grub-install-common.c:647
+#: util/grub-install-common.c:648 util/grub-install-common.c:649
+#: util/grub-install-common.c:651
+msgid "i386"
+msgstr ""
+
+#: util/grub-install-common.c:646
+msgid "qemu"
+msgstr ""
+
+#: util/grub-install-common.c:647
+msgid "coreboot"
+msgstr ""
+
+#: util/grub-install-common.c:653 util/grub-install-common.c:654
+#: util/grub-install-common.c:656
+msgid "mipsel"
+msgstr ""
+
+#: util/grub-install-common.c:653
+msgid "loongson"
+msgstr ""
+
+#: util/grub-install-common.c:654 util/grub-install-common.c:655
+msgid "qemu_mips"
+msgstr ""
+
+#: util/grub-install-common.c:655 util/grub-install-common.c:657
+msgid "mips"
+msgstr ""
+
+#: util/grub-install-common.c:658
+msgid "sparc64"
+msgstr ""
+
+#: util/grub-install-common.c:659
+msgid "powerpc"
+msgstr ""
+
+#: util/grub-install-common.c:660
+msgid "ia64"
+msgstr ""
+
+#: util/grub-install-common.c:661 util/grub-install-common.c:663
+msgid "arm"
+msgstr ""
+
+#: util/grub-install-common.c:662
+msgid "arm64"
+msgstr ""
+
+#: util/grub-install-common.c:663
+msgid "uboot"
+msgstr ""
+
+#: util/grub-install-common.c:669 util/grub-install-common.c:697
+#: util/grub-install.c:1317 util/grub-install.c:1339 util/grub-install.c:1351
+#, c-format
+msgid "%s-%s"
+msgstr ""
+
+#: util/grub-install-common.c:736
+msgid "command.lst"
+msgstr ""
+
+#: util/grub-install-common.c:737
+msgid "fs.lst"
+msgstr ""
+
+#: util/grub-install-common.c:737 util/grub-mkrescue.c:224
+msgid "partmap.lst"
+msgstr ""
+
+#: util/grub-install-common.c:738
+msgid "parttool.lst"
+msgstr ""
+
+#: util/grub-install-common.c:739
+msgid "video.lst"
+msgstr ""
+
+#: util/grub-install-common.c:739
+msgid "crypto.lst"
+msgstr ""
+
+#: util/grub-install-common.c:740
+msgid "terminal.lst"
+msgstr ""
+
+#: util/grub-install-common.c:757 util/grub-install-common.c:769
+msgid "po"
+msgstr ""
+
+#: util/grub-install-common.c:818
+msgid "theme.txt"
+msgstr ""
+
+#: util/grub-install-common.c:874
+msgid "modinfo.sh"
+msgstr ""
+
+#: util/grub-install-common.c:882 util/grub-install-common.c:888
+msgid "grub_modinfo_target_cpu="
+msgstr ""
+
+#: util/grub-install-common.c:885 util/grub-install-common.c:889
+msgid "grub_modinfo_platform="
+msgstr ""
+
+#: util/grub-install.c:118
+msgid "setup"
+msgstr ""
+
+#: util/grub-install.c:212
+msgid "boot-directory"
+msgstr ""
+
+#: util/grub-install.c:214
+msgid "root-directory"
+msgstr ""
+
+#: util/grub-install.c:221
+msgid "grub-setup"
+msgstr ""
+
+#: util/grub-install.c:222
+msgid "grub-mkrelpath"
+msgstr ""
+
+#: util/grub-install.c:223
+msgid "grub-mkdevicemap"
+msgstr ""
+
+#: util/grub-install.c:224
+msgid "grub-probe"
+msgstr ""
+
+#: util/grub-install.c:225
+msgid "grub-editenv"
+msgstr ""
+
+#: util/grub-install.c:231
+msgid "recheck"
+msgstr ""
+
+#: util/grub-install.c:235
+msgid "force-file-id"
+msgstr ""
+
+#: util/grub-install.c:237
+msgid "disk-module"
+msgstr ""
+
+#: util/grub-install.c:240
+msgid "no-nvram"
+msgstr ""
+
+#: util/grub-install.c:245
+msgid "no-bootsector"
+msgstr ""
+
+#: util/grub-install.c:247 util/grub-setup.c:91
+msgid "no-rs-codes"
+msgstr ""
+
+#: util/grub-install.c:253 util/grub-mknetdir.c:46
+msgid "debug-image"
+msgstr ""
+
+#: util/grub-install.c:254
+msgid "removable"
+msgstr ""
+
+#: util/grub-install.c:257
+msgid "bootloader-id"
+msgstr ""
+
+#: util/grub-install.c:259
+msgid "efi-directory"
+msgstr ""
+
+#: util/grub-install.c:280 util/mkimage.c:586 util/mkimage.c:587
+msgid "arm64-efi"
+msgstr ""
+
+#: util/grub-install.c:341
+msgid "part_bsd"
+msgstr ""
+
+#: util/grub-install.c:345
+#, c-format
+msgid "part_%s"
+msgstr ""
+
+#: util/grub-install.c:471
+#, c-format
+msgid "cryptomount -u %s\n"
+msgstr ""
+
+#: util/grub-install.c:788 util/grub-install.c:1067
+msgid "native"
+msgstr ""
+
+#: util/grub-install.c:842
+msgid "device.map"
+msgstr ""
+
+#: util/grub-install.c:885 util/grub-install.c:998
+msgid "EFI"
+msgstr ""
+
+#: util/grub-install.c:948
+msgid "BOOT"
+msgstr ""
+
+#: util/grub-install.c:952
+msgid "BOOTIA32.EFI"
+msgstr ""
+
+#: util/grub-install.c:955
+msgid "BOOTX64.EFI"
+msgstr ""
+
+#: util/grub-install.c:958
+msgid "BOOTIA64.EFI"
+msgstr ""
+
+#: util/grub-install.c:961
+msgid "BOOTARM.EFI"
+msgstr ""
+
+#: util/grub-install.c:964
+msgid "BOOTAARCH64.EFI"
+msgstr ""
+
+#: util/grub-install.c:979
+msgid "grubia32.efi"
+msgstr ""
+
+#: util/grub-install.c:982
+msgid "grubx64.efi"
+msgstr ""
+
+#: util/grub-install.c:985
+msgid "grubia64.efi"
+msgstr ""
+
+#: util/grub-install.c:988
+msgid "grubarm.efi"
+msgstr ""
+
+#: util/grub-install.c:991
+msgid "grubarm64.efi"
+msgstr ""
+
+#: util/grub-install.c:994 util/grub-install.c:1404 util/grub-install.c:1545
+msgid "grub.efi"
+msgstr ""
+
+#: util/grub-install.c:1062
+msgid "GRUB_ENABLE_CRYPTODISK=1"
+msgstr ""
+
+#: util/grub-install.c:1097 util/grub-mknetdir.c:111
+msgid "load.cfg"
+msgstr ""
+
+#: util/grub-install.c:1105 util/grub-mknetdir.c:126
+#, c-format
+msgid "set debug='%s'\n"
+msgstr ""
+
+#: util/grub-install.c:1155
+#, c-format
+msgid "search.fs_uuid %s root "
+msgstr ""
+
+#: util/grub-install.c:1157
+msgid "search_fs_uuid"
+msgstr ""
+
+#: util/grub-install.c:1174
+#, c-format
+msgid "search.file %s root "
+msgstr ""
+
+#: util/grub-install.c:1176
+msgid "search_fs_file"
+msgstr ""
+
+#: util/grub-install.c:1232
+#, c-format
+msgid "ieee1275/%s"
+msgstr ""
+
+#: util/grub-install.c:1315
+msgid "core.efi"
+msgstr ""
+
+#: util/grub-install.c:1324 util/grub-install.c:1337
+msgid "core.elf"
+msgstr ""
+
+#: util/grub-install.c:1326
+#, c-format
+msgid "%s-%s-elf"
+msgstr ""
+
+#: util/grub-install.c:1386
+msgid "grub.elf"
+msgstr ""
+
+#: util/grub-install.c:1449 util/grub-install.c:1476
+msgid "--allow-floppy "
+msgstr ""
+
+#: util/grub-install.c:1450 util/grub-install.c:1477
+msgid "--verbose "
+msgstr ""
+
+#: util/grub-install.c:1451 util/grub-install.c:1478
+msgid "--force "
+msgstr ""
+
+#: util/grub-install.c:1452 util/grub-install.c:1479
+msgid "--skip-fs-probe"
+msgstr ""
+
+#: util/grub-install.c:1453
+msgid "--no-rs-codes"
+msgstr ""
+
+#: util/grub-install.c:1510
+#, c-format
+msgid "dd if=/dev/zero of=%s"
+msgstr ""
+
+#: util/grub-install.c:1568
+#, c-format
+msgid "\\EFI\\%s\\%s"
+msgstr ""
+
+#: util/grub-mkimagexx.c:95 util/grub-mkimagexx.c:352
+#: util/grub-mkimagexx.c:354
+msgid ".xen"
+msgstr ""
+
+#: util/grub-mkimagexx.c:218 util/grub-mkimagexx.c:223
+#: util/grub-mkimagexx.c:224
+msgid "xen-3.0"
+msgstr ""
+
+#: util/grub-mknetdir.c:41
+msgid "net-directory"
+msgstr ""
+
+#: util/grub-mknetdir.c:43
+msgid "subdir"
+msgstr ""
+
+#: util/grub-mknetdir.c:96
+msgid ".0"
+msgstr ""
+
+#: util/grub-mknetdir.c:98 util/grub-mknetdir.c:99
+msgid ".elf"
+msgstr ""
+
+#: util/grub-mknetdir.c:100 util/grub-mknetdir.c:101 util/grub-mknetdir.c:102
+#: util/grub-mknetdir.c:103
+msgid ".efi"
+msgstr ""
+
+#: util/grub-mkrescue.c:259
+#, c-format
+msgid "set prefix=(${root})/boot/grub\n"
+msgstr ""
+
+#: util/grub-mkrescue.c:258
+#, c-format
+msgid "search --fs-uuid --set=root %s\n"
+msgstr ""
+
+#: util/grub-mkrescue.c:575
+#, c-format
+msgid "<plist version=\"1.0\">\n"
+	       "<dict>\n"
+	       "        <key>ProductBuildVersion</key>\n"
+	       "        <string></string>\n"
+	       "        <key>ProductName</key>\n"
+	       "        <string>%s</string>\n"
+	       "        <key>ProductVersion</key>\n"
+	       "        <string>%s</string>\n"
+	       "</dict>\n"
+	       "</plist>\n"
+msgstr ""
+
+
+#: util/grub-install.c:1264
+#, c-format
+msgid "set prefix=($root)'%s'\n"
+msgstr ""
+
+#: grub-core/osdep/unix/config.c:108
+#, c-format
+msgid "'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\", "
+	  "\"$GRUB_ENABLE_CRYPTODISK\", \"$GRUB_DISTRIBUTOR\""
+msgstr ""
+
+#: grub-core/commands/tr.c:33
+msgid "upcase"
+msgstr ""
+
+#: grub-core/commands/tr.c:34
+msgid "downcase"
+msgstr ""
+
+#: grub-core/commands/tr.c:38
+msgid "abcdefghijklmnopqrstuvwxyz"
+msgstr ""
+
+#: grub-core/commands/tr.c:39
+msgid "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+msgstr ""
+
+#: grub-core/net/dns.c:694
+#, c-format
+msgid "%s (%s)\n"
+msgstr ""
+
+#: grub-core/osdep/aros/hostdisk.c:570
+#, c-format
+msgid "T:grub.%d.%d.%d.%d"
 msgstr ""
