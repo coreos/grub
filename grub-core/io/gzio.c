@@ -1093,7 +1093,7 @@ inflate_window (grub_gzio_t gzio)
 	}
     }
 
-  gzio->saved_offset += WSIZE;
+  gzio->saved_offset += gzio->wp;
 
   /* XXX do CRC calculation here! */
 }
@@ -1219,7 +1219,14 @@ grub_gzio_read_real (grub_gzio_t gzio, grub_off_t offset,
       register char *srcaddr;
 
       while (offset >= gzio->saved_offset)
-	inflate_window (gzio);
+	{
+	  inflate_window (gzio);
+	  if (gzio->wp == 0)
+	    goto out;
+	}
+
+      if (gzio->wp == 0)
+	goto out;
 
       srcaddr = (char *) ((offset & (WSIZE - 1)) + gzio->slide);
       size = gzio->saved_offset - offset;
@@ -1234,6 +1241,7 @@ grub_gzio_read_real (grub_gzio_t gzio, grub_off_t offset,
       offset += size;
     }
 
+ out:
   if (grub_errno != GRUB_ERR_NONE)
     ret = -1;
 
@@ -1243,7 +1251,15 @@ grub_gzio_read_real (grub_gzio_t gzio, grub_off_t offset,
 static grub_ssize_t
 grub_gzio_read (grub_file_t file, char *buf, grub_size_t len)
 {
-  return grub_gzio_read_real (file->data, file->offset, buf, len);
+  grub_ssize_t ret;
+  ret = grub_gzio_read_real (file->data, file->offset, buf, len);
+
+  if (!grub_errno && ret != (grub_ssize_t) len)
+    {
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "premature end of compressed");
+      ret = -1;
+    }
+  return ret;
 }
 
 /* Release everything, including the underlying file object.  */
@@ -1286,7 +1302,35 @@ grub_zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
   ret = grub_gzio_read_real (gzio, off, outbuf, outsize);
   grub_free (gzio);
 
+  if (!grub_errno && ret != (grub_ssize_t) outsize)
+    {
+      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "premature end of compressed");
+      ret = -1;
+    }
+
   /* FIXME: Check Adler.  */
+  return ret;
+}
+
+grub_ssize_t
+grub_deflate_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
+			 char *outbuf, grub_size_t outsize)
+{
+  grub_gzio_t gzio = 0;
+  grub_ssize_t ret;
+
+  gzio = grub_zalloc (sizeof (*gzio));
+  if (! gzio)
+    return -1;
+  gzio->mem_input = (grub_uint8_t *) inbuf;
+  gzio->mem_input_size = insize;
+  gzio->mem_input_off = 0;
+
+  initialize_tables (gzio);
+
+  ret = grub_gzio_read_real (gzio, off, outbuf, outsize);
+  grub_free (gzio);
+
   return ret;
 }
 

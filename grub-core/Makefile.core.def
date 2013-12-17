@@ -1623,6 +1623,14 @@ module = {
   enable = i386_pc;
 };
 
+
+module = {
+  name = truecrypt;
+  i386_pc = loader/i386/pc/truecrypt.c;
+  enable = i386_pc;
+};
+
+
 module = {
   name = freedos;
   i386_pc = loader/i386/pc/freedos.c;

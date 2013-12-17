@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement Truecrypt ISO loader.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/arg.c: Ensure at least a single space between commands.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
