@@ -1,3 +1,9 @@
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove grub_bios_interrupt on coreboot.
+
+	It's not used currently and cannot be used safely currently.
+
 2013-12-16  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Update exclude.pot and mark few strings for translation.

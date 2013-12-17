@@ -66,5 +66,3 @@ multiboot_header:
  *  only needed for BIOS gates).
  */
 #include "../realmode.S"
-
-#include "../int.S"
