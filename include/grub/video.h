@@ -291,7 +291,8 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_COREBOOT,
     GRUB_VIDEO_DRIVER_IEEE1275,
     GRUB_VIDEO_ADAPTER_CAPTURE,
-    GRUB_VIDEO_DRIVER_XEN
+    GRUB_VIDEO_DRIVER_XEN,
+    GRUB_VIDEO_DRIVER_RADEON_YEELOONG3A
   } grub_video_driver_id_t;
 
 typedef enum grub_video_adapter_prio
@@ -578,6 +579,8 @@ extern void grub_video_sis315pro_init (void);
 extern void grub_video_radeon_fuloong2e_init (void);
 extern void grub_video_sis315pro_fini (void);
 extern void grub_video_radeon_fuloong2e_fini (void);
+extern void grub_video_radeon_yeeloong3a_init (void);
+extern void grub_video_radeon_yeeloong3a_fini (void);
 #endif
 
 void

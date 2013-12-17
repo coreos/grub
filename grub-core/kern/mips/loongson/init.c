@@ -210,6 +210,7 @@ grub_machine_init (void)
   grub_video_sm712_init ();
   grub_video_sis315pro_init ();
   grub_video_radeon_fuloong2e_init ();
+  grub_video_radeon_yeeloong3a_init ();
   grub_font_init ();
   grub_gfxterm_init ();
 

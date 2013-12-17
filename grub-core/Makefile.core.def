@@ -248,6 +248,7 @@ kernel = {
   mips_loongson = video/sm712.c;
   mips_loongson = video/sis315pro.c;
   mips_loongson = video/radeon_fuloong2e.c;
+  mips_loongson = video/radeon_yeeloong3a.c;
   extra_dist = video/sm712_init.c;
   extra_dist = video/sis315_init.c;
   mips_loongson = commands/keylayouts.c;
