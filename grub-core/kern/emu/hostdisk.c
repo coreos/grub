@@ -171,8 +171,8 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
 
     grub_util_fd_close (fd);
 
-    grub_util_info ("the size of %s is %" PRIuGRUB_UINT64_T,
-		    name, disk->total_sectors);
+    grub_util_info ("the size of %s is %" GRUB_HOST_PRIuLONG_LONG,
+		    name, (unsigned long long) disk->total_sectors);
 
     return GRUB_ERR_NONE;
   }

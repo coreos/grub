@@ -1023,8 +1023,9 @@ grub_install_generate_image (const char *dir, const char *prefix,
       {
 	size_t curs;
 	curs = ALIGN_ADDR (grub_util_get_image_size (pubkey_paths[i]));
-	grub_util_info ("the size of public key %zd is 0x%llx",
-			i, (unsigned long long) curs);
+	grub_util_info ("the size of public key %u is 0x%"
+			GRUB_HOST_PRIxLONG_LONG,
+			(unsigned) i, (unsigned long long) curs);
 	total_module_size += curs + sizeof (struct grub_module_header);
       }
   }
@@ -1032,7 +1033,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
   if (memdisk_path)
     {
       memdisk_size = ALIGN_UP(grub_util_get_image_size (memdisk_path), 512);
-      grub_util_info ("the size of memory disk is 0x%llx",
+      grub_util_info ("the size of memory disk is 0x%" GRUB_HOST_PRIxLONG_LONG,
 		      (unsigned long long) memdisk_size);
       total_module_size += memdisk_size + sizeof (struct grub_module_header);
     }
@@ -1041,7 +1042,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
     {
       config_size_pure = grub_util_get_image_size (config_path) + 1;
       config_size = ALIGN_ADDR (config_size_pure);
-      grub_util_info ("the size of config file is 0x%llx",
+      grub_util_info ("the size of config file is 0x%" GRUB_HOST_PRIxLONG_LONG,
 		      (unsigned long long) config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
     }
@@ -1056,7 +1057,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
     total_module_size += (ALIGN_ADDR (grub_util_get_image_size (p->name))
 			  + sizeof (struct grub_module_header));
 
-  grub_util_info ("the total module size is 0x%llx",
+  grub_util_info ("the total module size is 0x%" GRUB_HOST_PRIxLONG_LONG,
 		  (unsigned long long) total_module_size);
 
   if (image_target->voidp_sizeof == 4)
@@ -1196,13 +1197,15 @@ grub_install_generate_image (const char *dir, const char *prefix,
       offset += prefix_size;
     }
 
-  grub_util_info ("kernel_img=%p, kernel_size=0x%llx", kernel_img,
+  grub_util_info ("kernel_img=%p, kernel_size=0x%" GRUB_HOST_PRIxLONG_LONG,
+		  kernel_img,
 		  (unsigned long long) kernel_size);
   compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
   free (kernel_img);
 
-  grub_util_info ("the core size is 0x%llx", (unsigned long long) core_size);
+  grub_util_info ("the core size is 0x%" GRUB_HOST_PRIxLONG_LONG,
+		  (unsigned long long) core_size);
 
   if (!(image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS) 
       && image_target->total_module_size != TARGET_NO_FIELD)

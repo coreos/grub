@@ -151,8 +151,8 @@ save_blocklists (grub_disk_addr_t sector, unsigned offset, unsigned length,
   struct grub_boot_blocklist *prev = bl->block + 1;
   grub_uint64_t seclen;
 
-  grub_util_info ("saving <%" PRIuGRUB_UINT64_T ",%u,%u>",
-		  sector, offset, length);
+  grub_util_info ("saving <%"  GRUB_HOST_PRIuLONG_LONG ",%u,%u>",
+		  (unsigned long long) sector, offset, length);
 
   if (bl->first_sector == (grub_disk_addr_t) -1)
     {

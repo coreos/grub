@@ -86,7 +86,7 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len, void
       if ((! dev) || (! dev->disk))
         grub_util_error ("%s", grub_errmsg);
 
-      grub_util_info ("total sectors : %lld",
+      grub_util_info ("total sectors : %" GRUB_HOST_PRIuLONG_LONG,
                       (unsigned long long) dev->disk->total_sectors);
 
       if (! leng)
@@ -123,7 +123,8 @@ read_file (char *pathname, int (*hook) (grub_off_t ofs, char *buf, int len, void
       return;
     }
 
-  grub_util_info ("file size : %lld", (unsigned long long) file->size);
+  grub_util_info ("file size : %" GRUB_HOST_PRIuLONG_LONG,
+		  (unsigned long long) file->size);
 
   if (skip > file->size)
     {

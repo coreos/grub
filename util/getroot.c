@@ -232,8 +232,8 @@ find_partition (grub_disk_t dsk __attribute__ ((unused)),
 {
   struct grub_util_biosdisk_get_grub_dev_ctx *ctx = data;
   grub_disk_addr_t part_start = 0;
-  grub_util_info ("Partition %d starts from %" PRIuGRUB_UINT64_T,
-		  partition->number, partition->start);
+  grub_util_info ("Partition %d starts from %" GRUB_HOST_PRIuLONG_LONG,
+		  partition->number, (unsigned long long) partition->start);
 
   part_start = grub_partition_get_start (partition);
 
@@ -374,7 +374,8 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
       }
 #endif
 
-    grub_util_info ("%s starts from %" PRIuGRUB_UINT64_T, os_dev, ctx.start);
+    grub_util_info ("%s starts from %" GRUB_HOST_PRIuLONG_LONG,
+		    os_dev, (unsigned long long) ctx.start);
 
     if (ctx.start == 0 && !is_part)
       return name;

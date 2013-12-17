@@ -434,7 +434,8 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 	  *jptr = 0;
 	  jptr++;
 	}
-      grub_util_info ("locating %s at 0x%llx (0x%llx)", name,
+      grub_util_info ("locating %s at 0x%"  GRUB_HOST_PRIxLONG_LONG
+		      " (0x%"  GRUB_HOST_PRIxLONG_LONG ")", name,
 		      (unsigned long long) sym->st_value,
 		      (unsigned long long) section_addresses[cur_index]);
 
@@ -660,7 +661,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  /* This is absolute.  */
 		  *target = grub_host_to_target32 (grub_target_to_host32 (*target)
 						   + addend + sym_addr);
-		  grub_util_info ("relocating an R_386_32 entry to 0x%llx at the offset 0x%llx",
+		  grub_util_info ("relocating an R_386_32 entry to 0x%"
+				  GRUB_HOST_PRIxLONG_LONG " at the offset 0x%"
+				  GRUB_HOST_PRIxLONG_LONG,
 				  (unsigned long long) *target,
 				  (unsigned long long) offset);
 		  break;
@@ -671,7 +674,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						   + addend + sym_addr
 						   - target_section_addr - offset
 						   - image_target->vaddr_offset);
-		  grub_util_info ("relocating an R_386_PC32 entry to 0x%llx at the offset 0x%llx",
+		  grub_util_info ("relocating an R_386_PC32 entry to 0x%"
+				  GRUB_HOST_PRIxLONG_LONG " at the offset 0x%"
+				  GRUB_HOST_PRIxLONG_LONG,
 				  (unsigned long long) *target,
 				  (unsigned long long) offset);
 		  break;
@@ -692,7 +697,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		case R_X86_64_64:
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
 						   + addend + sym_addr);
-		  grub_util_info ("relocating an R_X86_64_64 entry to 0x%llx at the offset 0x%llx",
+		  grub_util_info ("relocating an R_X86_64_64 entry to 0x%"
+				  GRUB_HOST_PRIxLONG_LONG " at the offset 0x%"
+				  GRUB_HOST_PRIxLONG_LONG,
 				  (unsigned long long) *target,
 				  (unsigned long long) offset);
 		  break;
@@ -704,7 +711,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						  + addend + sym_addr
 						  - target_section_addr - offset
 						  - image_target->vaddr_offset);
-		    grub_util_info ("relocating an R_X86_64_PC32 entry to 0x%x at the offset 0x%llx",
+		    grub_util_info ("relocating an R_X86_64_PC32 entry to 0x%x at the offset 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    *t32, (unsigned long long) offset);
 		    break;
 		  }
@@ -715,7 +723,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 						     + addend + sym_addr
 						     - target_section_addr - offset
 						     - image_target->vaddr_offset);
-		    grub_util_info ("relocating an R_X86_64_PC64 entry to 0x%llx at the offset 0x%llx",
+		    grub_util_info ("relocating an R_X86_64_PC64 entry to 0x%"
+				    GRUB_HOST_PRIxLONG_LONG " at the offset 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    (unsigned long long) *target,
 				    (unsigned long long) offset);
 		    break;
@@ -727,7 +737,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    grub_uint32_t *t32 = (grub_uint32_t *) target;
 		    *t32 = grub_host_to_target64 (grub_target_to_host32 (*t32)
 						  + addend + sym_addr);
-		    grub_util_info ("relocating an R_X86_64_32(S) entry to 0x%x at the offset 0x%llx",
+		    grub_util_info ("relocating an R_X86_64_32(S) entry to 0x%x at the offset 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    *t32, (unsigned long long) offset);
 		    break;
 		  }
@@ -750,7 +761,8 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		    tr++;
 		    if (noff & ~MASK19)
 		      grub_util_error ("trampoline offset too big (%"
-				       PRIxGRUB_UINT64_T ")", noff);
+				       GRUB_HOST_PRIxLONG_LONG ")",
+				       (unsigned long long) noff);
 		    grub_ia64_add_value_to_slot_20b ((grub_addr_t) target, noff);
 		  }
 		  break;
@@ -796,7 +808,9 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
 						   + addend + sym_addr);
 		  grub_util_info ("relocating a direct entry to 0x%"
-				  PRIxGRUB_UINT64_T " at the offset 0x%llx",
+				  GRUB_HOST_PRIxLONG_LONG " at the offset 0x%"
+				  GRUB_HOST_PRIxLONG_LONG,
+				  (unsigned long long)
 				  grub_target_to_host64 (*target),
 				  (unsigned long long) offset);
 		  break;
@@ -1095,7 +1109,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%llx",
+		    grub_util_info ("adding a relocation entry for 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
@@ -1115,7 +1130,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%llx",
+		    grub_util_info ("adding a relocation entry for 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
@@ -1145,7 +1161,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    Elf_Addr addr;
 
 		    addr = section_address + offset;
-		    grub_util_info ("adding a relocation entry for 0x%llx",
+		    grub_util_info ("adding a relocation entry for 0x%"
+				    GRUB_HOST_PRIxLONG_LONG,
 				    (unsigned long long) addr);
 		    current_address
 		      = SUFFIX (add_fixup_entry) (&lst,
@@ -1348,7 +1365,8 @@ SUFFIX (locate_sections) (const char *kernel_path,
 	if (align)
 	  current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 				      align) - image_target->vaddr_offset;
-	grub_util_info ("locating the section %s at 0x%llx",
+	grub_util_info ("locating the section %s at 0x%"
+			GRUB_HOST_PRIxLONG_LONG,
 			name, (unsigned long long) current_address);
 	if (image_target->id != IMAGE_EFI)
 	  {
@@ -1385,7 +1403,8 @@ SUFFIX (locate_sections) (const char *kernel_path,
 				      align)
 	    - image_target->vaddr_offset;
 
-	grub_util_info ("locating the section %s at 0x%llx",
+	grub_util_info ("locating the section %s at 0x%"
+			GRUB_HOST_PRIxLONG_LONG,
 			name, (unsigned long long) current_address);
 	if (image_target->id != IMAGE_EFI)
 	  current_address = grub_host_to_target_addr (s->sh_addr)
@@ -1478,7 +1497,8 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 					  sec_align)
 		- image_target->vaddr_offset;
 	
-	    grub_util_info ("locating the section %s at 0x%llx",
+	    grub_util_info ("locating the section %s at 0x%"
+			    GRUB_HOST_PRIxLONG_LONG,
 			    name, (unsigned long long) current_address);
 	    if (image_target->id != IMAGE_EFI)
 	      current_address = grub_host_to_target_addr (s->sh_addr)

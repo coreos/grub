@@ -1057,7 +1057,8 @@ insert_array (grub_disk_t disk, const struct grub_diskfilter_pv_id *id,
 		(unsigned long long) grub_disk_get_size (disk),
 		array->name, diskfilter->name);
 #ifdef GRUB_UTIL
-  grub_util_info ("Inserting %s (+%lld,%lld) into %s (%s)\n", disk->name,
+  grub_util_info ("Inserting %s (+%" GRUB_HOST_PRIuLONG_LONG ",%"
+		  GRUB_HOST_PRIuLONG_LONG ") into %s (%s)\n", disk->name,
 		  (unsigned long long) grub_partition_get_start (disk->partition),
 		  (unsigned long long) grub_disk_get_size (disk),
 		  array->name, diskfilter->name);
