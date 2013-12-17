@@ -288,6 +288,13 @@ grub_halt (void)
 		 & ~GRUB_CPU_YEELOONG_SHUTDOWN_GPIO, GRUB_CPU_LOONGSON_GPIOCFG);
       grub_millisleep (1500);
       break;
+    case GRUB_ARCH_MACHINE_YEELOONG_3A:
+      grub_millisleep (1);
+      grub_outb (0x4e, GRUB_MACHINE_PCI_IO_BASE_3A | 0x66);
+      grub_millisleep (1);
+      grub_outb (2, GRUB_MACHINE_PCI_IO_BASE_3A | 0x62);
+      grub_millisleep (5000);
+      break;
     }
 
   grub_puts_ (N_("Shutdown failed"));
