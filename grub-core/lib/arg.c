@@ -138,7 +138,7 @@ showargs (const struct grub_arg_option *opt,
 	    }
 	}
 
-      if (spacing < 0)
+      if (spacing <= 0)
 	spacing = 3;
 
       while (spacing--)
