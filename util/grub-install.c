@@ -1811,13 +1811,8 @@ main (int argc, char *argv[])
 	  bless (ins_dev, boot_efi, 1);
 	  if (!removable && update_nvram)
 	    {
-	      char * efidir_disk;
-	      int efidir_part;
-
 	      /* Try to make this image bootable using the EFI Boot Manager, if available.  */
-	      efidir_disk = grub_util_get_os_disk (efidir_device_names[0]);
-	      efidir_part = efidir_grub_dev->disk->partition ? efidir_grub_dev->disk->partition->number + 1 : 1;
-	      grub_install_register_efi (efidir_disk, efidir_part,
+	      grub_install_register_efi (efidir_grub_dev,
 					 "\\System\\Library\\CoreServices",
 					 efi_distributor);
 	    }

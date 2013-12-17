@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Update Mac code to match new register_efi prototype.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Implement better integration with Mac firmware.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
