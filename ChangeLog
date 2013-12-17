@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Include serial module in default_payload.elf.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add explicit thumb interwork bx in asm files.
 
 	Shouldn't matter for armv >= 5 but let's be safe.
