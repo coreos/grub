@@ -290,7 +290,8 @@ typedef enum grub_video_driver_id
     GRUB_VIDEO_DRIVER_RADEON_FULOONG2E,
     GRUB_VIDEO_DRIVER_COREBOOT,
     GRUB_VIDEO_DRIVER_IEEE1275,
-    GRUB_VIDEO_ADAPTER_CAPTURE
+    GRUB_VIDEO_ADAPTER_CAPTURE,
+    GRUB_VIDEO_DRIVER_XEN
   } grub_video_driver_id_t;
 
 typedef enum grub_video_adapter_prio

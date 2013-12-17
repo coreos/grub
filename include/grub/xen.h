@@ -82,6 +82,15 @@ void grub_console_init (void);
 void grub_xendisk_fini (void);
 void grub_xendisk_init (void);
 
+void
+grub_xen_keyboard_init (void);
+void
+grub_xen_keyboard_fini (void);
+void
+grub_video_xen_init (void);
+void
+grub_video_xen_fini (void);
+
 #ifdef __x86_64__
 typedef grub_uint64_t grub_xen_mfn_t;
 #else

@@ -344,6 +344,7 @@ grub_linux_setup_video (struct linux_kernel_params *params)
 	case GRUB_VIDEO_DRIVER_IEEE1275:
 	case GRUB_VIDEO_DRIVER_COREBOOT:
 	  /* Make gcc happy. */
+	case GRUB_VIDEO_DRIVER_XEN:
 	case GRUB_VIDEO_DRIVER_SDL:
 	case GRUB_VIDEO_DRIVER_NONE:
 	case GRUB_VIDEO_ADAPTER_CAPTURE:

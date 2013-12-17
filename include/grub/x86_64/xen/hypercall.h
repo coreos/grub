@@ -21,7 +21,7 @@
 
 int EXPORT_FUNC (grub_xen_sched_op) (int cmd, void *arg) __attribute__ ((sysv_abi));
 int grub_xen_update_va_mapping (void *addr, uint64_t pte, uint64_t flags) __attribute__ ((sysv_abi));
-int grub_xen_event_channel_op (int op, void *arg) __attribute__ ((sysv_abi));
+int EXPORT_FUNC (grub_xen_event_channel_op) (int op, void *arg) __attribute__ ((sysv_abi));
 
 int grub_xen_mmuext_op (mmuext_op_t * ops,
 			unsigned int count,

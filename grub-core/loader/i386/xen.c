@@ -222,6 +222,8 @@ grub_xen_boot (void)
   grub_xen_mfn_t *new_mfn_list;
   grub_size_t i;
 
+  grub_video_restore ();
+
   if (grub_xen_n_allocated_shared_pages)
     return grub_error (GRUB_ERR_BUG, "active grants");
 
