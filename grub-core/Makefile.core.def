@@ -1451,6 +1451,11 @@ module = {
 };
 
 module = {
+  name = macbless;
+  common = commands/macbless.c;
+};
+
+module = {
   name = pxe;
   i386_pc = net/drivers/i386/pc/pxe.c;
   enable = i386_pc;

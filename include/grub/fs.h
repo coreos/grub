@@ -38,7 +38,9 @@ struct grub_dirhook_info
   unsigned dir:1;
   unsigned mtimeset:1;
   unsigned case_insensitive:1;
+  unsigned inodeset:1;
   grub_int32_t mtime;
+  grub_uint64_t inode;
 };
 
 typedef int (*grub_fs_dir_hook_t) (const char *filename,

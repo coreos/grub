@@ -62,6 +62,7 @@ library = {
   common_nodist = grub_script.tab.h;
 
   common = grub-core/commands/blocklist.c;
+  common = grub-core/commands/macbless.c;
   common = grub-core/commands/xnu_uuid.c;
   common = grub-core/commands/testload.c;
   common = grub-core/commands/ls.c;
@@ -401,6 +402,21 @@ program = {
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
 };
 
+program = {
+  name = grub-macbless;
+  installdir = sbin;
+  mansection = 1;
+  common = util/grub-macbless.c;
+  common = grub-core/osdep/init.c;
+  common = grub-core/kern/emu/argp_common.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
 data = {
   common = util/grub.d/README;
   installdir = grubconf;
@@ -585,6 +601,9 @@ program = {
   common = grub-core/osdep/blocklist.c;
   common = grub-core/osdep/config.c;
   common = util/config.c;
+  common = util/render-label.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
 
   common = util/resolve.c;
   enable = noemu;

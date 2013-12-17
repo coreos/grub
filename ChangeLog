@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Implement better integration with Mac firmware.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/multiboot_mbi2.c: Implement special value for
 	load_addr.
 

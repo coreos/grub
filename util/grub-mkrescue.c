@@ -24,6 +24,7 @@
 #include <grub/util/misc.h>
 #include <grub/emu/exec.h>
 #include <grub/emu/config.h>
+#include <grub/emu/hostdisk.h>
 #include <argp.h>
 
 #include <sys/types.h>
@@ -377,6 +378,10 @@ main (int argc, char *argv[])
 
   if (!output_image)
     grub_util_error ("%s", _("output file must be specified"));
+
+  grub_init_all ();
+  grub_hostfs_init ();
+  grub_host_init ();
 
   xorriso_push (xorriso);
   xorriso_push ("-as");

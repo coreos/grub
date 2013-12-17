@@ -41,6 +41,7 @@
 #include <grub/gpt_partition.h>
 #include <grub/emu/config.h>
 #include <grub/util/ofpath.h>
+#include <grub/hfsplus.h>
 
 #include <string.h>
 
@@ -60,6 +61,7 @@ static int allow_floppy = 0;
 static int force_file_id = 0;
 static char *disk_module = NULL;
 static char *efidir = NULL;
+static char *macppcdir = NULL;
 static int force = 0;
 static int have_abstractions = 0;
 static int have_cryptodisk = 0;
@@ -68,6 +70,10 @@ static int have_load_cfg = 0;
 static FILE * load_cfg_f = NULL;
 static char *load_cfg;
 static int install_bootsector = 1;
+static char *label_font;
+static char *label_color;
+static char *label_bgcolor;
+static char *product_version;
 static int add_rs_codes = 1;
 
 enum
@@ -96,6 +102,11 @@ enum
     OPTION_DISK_MODULE,
     OPTION_NO_BOOTSECTOR,
     OPTION_NO_RS_CODES,
+    OPTION_MACPPC_DIRECTORY,
+    OPTION_LABEL_FONT,
+    OPTION_LABEL_COLOR,
+    OPTION_LABEL_BGCOLOR,
+    OPTION_PRODUCT_VERSION
   };
 
 static int fs_probe = 1;
@@ -119,6 +130,25 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	install_bootsector = 0;
       return 0;
 
+    case OPTION_PRODUCT_VERSION:
+      free (product_version);
+      product_version = xstrdup (arg);
+      return 0;
+    case OPTION_LABEL_FONT:
+      free (label_font);
+      label_font = xstrdup (arg);
+      return 0;
+
+    case OPTION_LABEL_COLOR:
+      free (label_color);
+      label_color = xstrdup (arg);
+      return 0;
+
+    case OPTION_LABEL_BGCOLOR:
+      free (label_bgcolor);
+      label_bgcolor = xstrdup (arg);
+      return 0;
+
       /* Accept and ignore for compatibility.  */
     case OPTION_FONT:
     case OPTION_MKRELPATH:
@@ -136,6 +166,11 @@ argp_parser (int key, char *arg, struct argp_state *state)
     case OPTION_BOOT_DIRECTORY:
       free (bootdir);
       bootdir = xstrdup (arg);
+      return 0;
+
+    case OPTION_MACPPC_DIRECTORY:
+      free (macppcdir);
+      macppcdir = xstrdup (arg);
       return 0;
 
     case OPTION_EFI_DIRECTORY:
@@ -255,9 +290,15 @@ static struct argp_option options[] = {
    N_("the installation device is removable. "
       "This option is only available on EFI."), 2},
   {"bootloader-id", OPTION_BOOTLOADER_ID, N_("ID"), 0,
-   N_("the ID of bootloader. This option is only available on EFI."), 2},
+   N_("the ID of bootloader. This option is only available on EFI and Macs."), 2},
   {"efi-directory", OPTION_EFI_DIRECTORY, N_("DIR"), 0,
    N_("use DIR as the EFI System Partition root."), 2},
+  {"macppc-directory", OPTION_MACPPC_DIRECTORY, N_("DIR"), 0,
+   N_("use DIR for PPC MAC install."), 2},
+  {"label-font", OPTION_LABEL_FONT, N_("FILE"), 0, N_("use FILE as font for label"), 2},
+  {"label-color", OPTION_LABEL_COLOR, N_("COLOR"), 0, N_("use COLOR for label"), 2},
+  {"label-bgcolor", OPTION_LABEL_BGCOLOR, N_("COLOR"), 0, N_("use COLOR for label background"), 2},
+  {"product-version", OPTION_PRODUCT_VERSION, N_("STRING"), 0, N_("use STRING as product version"), 2},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -697,6 +738,63 @@ is_prep_empty (grub_device_t dev)
   return 1;
 }
 
+static void
+bless (grub_device_t dev, const char *path, int x86)
+{
+  struct stat st;
+  grub_err_t err;
+
+  grub_util_info ("blessing %s", path);
+
+  if (stat (path, &st) < 0)
+    grub_util_error (N_("cannot stat `%s': %s"),
+		     path, strerror (errno));
+
+  err = grub_mac_bless_inode (dev, st.st_ino, S_ISDIR (st.st_mode), x86);
+  if (err)
+    grub_util_error ("%s", grub_errmsg);
+  grub_util_info ("blessed\n");
+}
+
+static void
+fill_core_services (const char *core_services)
+{
+  char *label;
+  FILE *f;
+  char *label_text;
+  char *label_string = xasprintf ("%s %s", bootloader_id, product_version);
+  char *sysv_plist;
+
+  label = grub_util_path_concat (2, core_services, ".disk_label");
+  grub_util_info ("rendering label %s", label_string);
+  grub_util_render_label (label_font, label_bgcolor ? : "white",
+			  label_color ? : "black", label_string, label);
+  grub_util_info ("label rendered");
+  free (label);
+  label_text = grub_util_path_concat (2, core_services, ".disk_label.contentDetails");
+  f = grub_util_fopen (label_text, "wb");
+  fprintf (f, "%s\n", label_string);
+  fclose (f);
+  free (label_string);
+  free (label_text);
+
+  sysv_plist = grub_util_path_concat (2, core_services, "SystemVersion.plist");
+  f = grub_util_fopen (sysv_plist, "wb");
+  fprintf (f,
+	   "<plist version=\"1.0\">\n"
+	   "<dict>\n"
+	   "        <key>ProductBuildVersion</key>\n"
+	   "        <string></string>\n"
+	   "        <key>ProductName</key>\n"
+	   "        <string>%s</string>\n"
+	   "        <key>ProductVersion</key>\n"
+	   "        <string>%s</string>\n"
+	   "</dict>\n"
+	   "</plist>\n", bootloader_id, product_version);
+  fclose (f);
+  free (sysv_plist);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -714,8 +812,14 @@ main (int argc, char *argv[])
   char **efidir_device_names = NULL;
   grub_device_t efidir_grub_dev = NULL;
   char *efidir_grub_devname;
+  int efidir_is_mac = 0;
+  int is_prep = 0;
+  const char *pkgdatadir;
 
   grub_util_host_init (&argc, &argv);
+  product_version = xstrdup (PACKAGE_VERSION);
+  pkgdatadir = grub_util_get_pkgdatadir ();
+  label_font = grub_util_path_concat (2, pkgdatadir, "unicode.pf2");
 
   argp_parse (&argp, argc, argv, 0, 0, 0);
 
@@ -800,9 +904,12 @@ main (int argc, char *argv[])
       if (!install_device)
 	grub_util_error ("%s", _("install device isn't specified"));
       break;
+    case GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275:
+      if (install_device)
+	is_prep = 1;
+      break;
     case GRUB_INSTALL_PLATFORM_MIPS_ARC:
     case GRUB_INSTALL_PLATFORM_MIPSEL_ARC:
-    case GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275:
       break;
     case GRUB_INSTALL_PLATFORM_I386_EFI:
     case GRUB_INSTALL_PLATFORM_X86_64_EFI:
@@ -850,6 +957,9 @@ main (int argc, char *argv[])
   /* Initialize all modules. */
   grub_init_all ();
   grub_gcry_init_all ();
+  grub_hostfs_init ();
+  grub_host_init ();
+
   switch (platform)
     {
     case GRUB_INSTALL_PLATFORM_I386_EFI:
@@ -927,7 +1037,13 @@ main (int argc, char *argv[])
       if (! fs)
 	grub_util_error ("%s", grub_errmsg);
 
-      if (grub_strcmp (fs->name, "fat") != 0)
+      efidir_is_mac = 0;
+
+      if (grub_strcmp (fs->name, "hfs") == 0
+	  || grub_strcmp (fs->name, "hfsplus") == 0)
+	efidir_is_mac = 1;
+
+      if (!efidir_is_mac && grub_strcmp (fs->name, "fat") != 0)
 	grub_util_error (_("%s doesn't look like an EFI partition.\n"), efidir);
 
       /* The EFI specification requires that an EFI System Partition must
@@ -999,6 +1115,76 @@ main (int argc, char *argv[])
       free (efidir);
       efidir = t;
       grub_install_mkdir_p (efidir);
+    }
+
+  if (platform == GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275)
+    {
+      int is_guess = 0;
+      if (!macppcdir)
+	{
+	  char *d;
+
+	  is_guess = 1;
+	  d = grub_util_path_concat (2, bootdir, "macppc");
+	  if (!grub_util_is_directory (d))
+	    {
+	      free (d);
+	      d = grub_util_path_concat (2, bootdir, "efi");
+	    }
+	  /* Find the Mac HFS(+) System Partition.  */
+	  if (!grub_util_is_directory (d))
+	    {
+	      free (d);
+	      d = grub_util_path_concat (2, bootdir, "EFI");
+	    }
+	  if (!grub_util_is_directory (d))
+	    {
+	      free (d);
+	      d = 0;
+	    }
+	  if (d)
+	    macppcdir = d;
+	}
+      if (macppcdir)
+	{
+	  char **macppcdir_device_names = NULL;
+	  grub_device_t macppcdir_grub_dev = NULL;
+	  char *macppcdir_grub_devname;
+	  grub_fs_t fs;
+
+	  macppcdir_device_names = grub_guess_root_devices (macppcdir);
+	  if (!macppcdir_device_names || !macppcdir_device_names[0])
+	    grub_util_error (_("cannot find a device for %s (is /dev mounted?)"),
+			     macppcdir);
+
+	  for (curdev = macppcdir_device_names; *curdev; curdev++)
+	    grub_util_pull_device (*curdev);
+      
+	  macppcdir_grub_devname = grub_util_get_grub_dev (macppcdir_device_names[0]);
+	  if (!macppcdir_grub_devname)
+	    grub_util_error (_("cannot find a GRUB drive for %s.  Check your device.map"),
+			     macppcdir_device_names[0]);
+	  
+	  macppcdir_grub_dev = grub_device_open (macppcdir_grub_devname);
+	  if (! macppcdir_grub_dev)
+	    grub_util_error ("%s", grub_errmsg);
+
+	  fs = grub_fs_probe (macppcdir_grub_dev);
+	  if (! fs)
+	    grub_util_error ("%s", grub_errmsg);
+
+	  if (grub_strcmp (fs->name, "hfs") != 0
+	      && grub_strcmp (fs->name, "hfsplus") != 0
+	      && !is_guess)
+	    grub_util_error (_("%s is neither hfs nor hfsplue"),
+			     macppcdir);
+	  if (grub_strcmp (fs->name, "hfs") == 0
+	      || grub_strcmp (fs->name, "hfsplus") == 0)
+	    {
+	      install_device = macppcdir_device_names[0];
+	      is_prep = 0;
+	    }
+	}
     }
 
   grub_install_copy_files (grub_install_source_directory,
@@ -1491,8 +1677,59 @@ main (int argc, char *argv[])
       }
 
     case GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275:
+      if (macppcdir)
+	{
+	  char *core_services = grub_util_path_concat (4, macppcdir,
+						       "System", "Library",
+						       "CoreServices");
+	  char *mach_kernel = grub_util_path_concat (2, macppcdir,
+						     "mach_kernel");
+	  char *grub_elf, *bootx;
+	  FILE *f;
+	  grub_device_t ins_dev;
+	  char *grub_chrp = grub_util_path_concat (2,
+						   grub_install_source_directory,
+						   "grub.chrp");
+
+	  grub_install_mkdir_p (core_services);
+
+	  bootx = grub_util_path_concat (2, core_services, "BootX");
+	  grub_install_copy_file (grub_chrp, bootx, 1);
+
+	  grub_elf = grub_util_path_concat (2, core_services, "grub.elf");
+	  grub_install_copy_file (imgfile, grub_elf, 1);
+
+	  f = grub_util_fopen (mach_kernel, "r+");
+	  if (!f)
+	    grub_util_error ("Can't create file: %s", strerror (errno));
+	  fclose (f);
+
+	  fill_core_services (core_services);
+
+	  ins_dev = grub_device_open (install_drive);
+
+	  bless (ins_dev, core_services, 0);
+
+	  if (update_nvram)
+	    {
+	      const char *dev;
+	      int partno;
+
+	      partno = ins_dev->disk->partition
+		? ins_dev->disk->partition->number + 1 : 0;
+	      dev = grub_util_get_os_disk (install_device);
+	      grub_install_register_ieee1275 (0, dev, partno,
+					      "\\\\BootX");
+	    }
+	  grub_device_close (ins_dev);
+  	  free (grub_elf);
+	  free (bootx);
+	  free (mach_kernel);
+	  free (grub_chrp);
+	  break;
+	}
       /* If a install device is defined, copy the core.elf to PReP partition.  */
-      if (install_device && install_device[0])
+      if (is_prep && install_device && install_device[0])
 	{
 	  grub_device_t ins_dev;
 	  ins_dev = grub_device_open (install_drive);
@@ -1512,28 +1749,24 @@ main (int argc, char *argv[])
 			       s);
 	    }
 	  grub_device_close (ins_dev);
+	  if (update_nvram)
+	    grub_install_register_ieee1275 (1, grub_util_get_os_disk (install_device),
+					    0, NULL);
+	  break;
       }
       /* fallthrough.  */
     case GRUB_INSTALL_PLATFORM_I386_IEEE1275:
       if (update_nvram)
 	{
-	  if (platform != GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275
-	      || !install_device
-	      || install_device[0] == '\0')
-	    {
-	      const char *dev;
-	      char *relpath;
-	      int partno;
-	      relpath = grub_make_system_path_relative_to_its_root (imgfile);
-	      partno = grub_dev->disk->partition
-		? grub_dev->disk->partition->number + 1 : 0;
-	      dev = grub_util_get_os_disk (grub_devices[0]);
-	      grub_install_register_ieee1275 (0, dev,
-					      partno, relpath);
-	    }
-	  else
-	    grub_install_register_ieee1275 (1, grub_util_get_os_disk (install_device),
-					    0, NULL);
+	  const char *dev;
+	  char *relpath;
+	  int partno;
+	  relpath = grub_make_system_path_relative_to_its_root (imgfile);
+	  partno = grub_dev->disk->partition
+	    ? grub_dev->disk->partition->number + 1 : 0;
+	  dev = grub_util_get_os_disk (grub_devices[0]);
+	  grub_install_register_ieee1275 (0, dev,
+					  partno, relpath);
 	}
       break;
     case GRUB_INSTALL_PLATFORM_MIPS_ARC:
@@ -1541,14 +1774,59 @@ main (int argc, char *argv[])
       break;
 
     case GRUB_INSTALL_PLATFORM_I386_EFI:
-      {
-	char *dst = grub_util_path_concat (2, efidir, "grub.efi");
-	/* For old macs. Suggested by Peter Jones.  */
-	grub_install_copy_file (imgfile, dst, 1);
-	free (dst);
-      }
+      if (!efidir_is_mac)
+	{
+	  char *dst = grub_util_path_concat (2, efidir, "grub.efi");
+	  /* For old macs. Suggested by Peter Jones.  */
+	  grub_install_copy_file (imgfile, dst, 1);
+	  free (dst);
+	}
 
     case GRUB_INSTALL_PLATFORM_X86_64_EFI:
+      if (efidir_is_mac)
+	{
+	  char *boot_efi;
+	  char *core_services = grub_util_path_concat (4, efidir,
+						       "System", "Library",
+						       "CoreServices");
+	  char *mach_kernel = grub_util_path_concat (2, efidir,
+						     "mach_kernel");
+	  FILE *f;
+	  grub_device_t ins_dev;
+
+	  grub_install_mkdir_p (core_services);
+
+	  boot_efi = grub_util_path_concat (2, core_services, "boot.efi");
+	  grub_install_copy_file (imgfile, boot_efi, 1);
+
+	  f = grub_util_fopen (mach_kernel, "r+");
+	  if (!f)
+	    grub_util_error ("Can't create file: %s", strerror (errno));
+	  fclose (f);
+
+	  fill_core_services(core_services);
+
+	  ins_dev = grub_device_open (install_drive);
+
+	  bless (ins_dev, boot_efi, 1);
+	  if (!removable && update_nvram)
+	    {
+	      char * efidir_disk;
+	      int efidir_part;
+
+	      /* Try to make this image bootable using the EFI Boot Manager, if available.  */
+	      efidir_disk = grub_util_get_os_disk (efidir_device_names[0]);
+	      efidir_part = efidir_grub_dev->disk->partition ? efidir_grub_dev->disk->partition->number + 1 : 1;
+	      grub_install_register_efi (efidir_disk, efidir_part,
+					 "\\System\\Library\\CoreServices",
+					 efi_distributor);
+	    }
+
+	  grub_device_close (ins_dev);
+  	  free (boot_efi);
+	  free (mach_kernel);
+	  break;
+	}
     case GRUB_INSTALL_PLATFORM_ARM_EFI:
     case GRUB_INSTALL_PLATFORM_ARM64_EFI:
     case GRUB_INSTALL_PLATFORM_IA64_EFI:

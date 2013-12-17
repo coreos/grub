@@ -26,6 +26,7 @@
 #include <grub/gfxmenu_view.h>
 #include <grub/color.h>
 #include <grub/util/install.h>
+#include <grub/emu/hostdisk.h>
 
 #define _GNU_SOURCE	1
 
@@ -165,6 +166,10 @@ main (int argc, char *argv[])
       text[s] = 0;
       fclose (in);
     }
+
+  grub_init_all ();
+  grub_hostfs_init ();
+  grub_host_init ();
 
   grub_util_render_label (arguments.font,
 			  arguments.bgcolor,
