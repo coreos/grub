@@ -20,6 +20,7 @@
 #define GRUB_CPU_CPUID_HEADER 1
 
 extern unsigned char grub_cpuid_has_longmode;
+extern unsigned char grub_cpuid_has_pae;
 
 #ifdef __x86_64__
 
