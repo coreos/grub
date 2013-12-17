@@ -129,12 +129,19 @@ grub_machine_init (void)
       /* Loongson 2E.  */
     case 0x6302:
       grub_arch_machine = GRUB_ARCH_MACHINE_FULOONG2E;
+      grub_bonito_type = GRUB_BONITO_2F;
       break;
       /* Loongson 2F.  */
     case 0x6303:
       if (grub_arch_machine != GRUB_ARCH_MACHINE_FULOONG2F
 	  && grub_arch_machine != GRUB_ARCH_MACHINE_YEELOONG)
 	grub_arch_machine = GRUB_ARCH_MACHINE_YEELOONG;
+      grub_bonito_type = GRUB_BONITO_2F;
+      break;
+      /* Loongson 3A. */
+    case 0x6305:
+      grub_arch_machine = GRUB_ARCH_MACHINE_YEELOONG_3A;
+      grub_bonito_type = GRUB_BONITO_3A;
       break;
     }
 

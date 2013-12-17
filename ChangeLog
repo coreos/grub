@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add bonito 3A support.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/machoXX.c: Fix compilation on non-i386.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
