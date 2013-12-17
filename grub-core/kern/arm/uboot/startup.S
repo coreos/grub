@@ -135,14 +135,17 @@ FUNCTION(grub_uboot_syscall)
 	ldr	r8, gd_backup
 	ldr	r9, gd_backup + 4
 
-	mov	lr, pc
-	ldr	pc, grub_uboot_syscall_ptr
+	bl	do_syscall
 
 	ldr     r8, transition_space
 	ldr     lr, transition_space + 4
 	ldr     r9, transition_space + 8
 
 	bx	lr
+do_syscall:
+
+	ldr	ip, grub_uboot_syscall_ptr
+	bx	ip
 	
 FUNCTION(grub_uboot_return)
 	adr	sp, entry_state_end

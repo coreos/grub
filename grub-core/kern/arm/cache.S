@@ -95,7 +95,8 @@ FUNCTION(grub_arch_sync_caches_armv7)
 	bl	clean_dcache_range
 	pop	{r0, r1}
 	bl	invalidate_icache_range
-	pop	{r2, pc}
+	pop	{r2, lr}
+	bx	lr
 
 #ifdef ARMV6
 FUNCTION(grub_arm_disable_caches_mmu_armv6)
@@ -137,5 +138,6 @@ FUNCTION(grub_arm_disable_caches_mmu_armv7)
 	DSB
 	ISB
 
-	pop	{r4, pc}
+	pop	{r4, lr}
+	bx	lr
 

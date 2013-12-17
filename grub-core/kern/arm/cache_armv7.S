@@ -120,6 +120,7 @@ clean_invalidate_dcache:
 	@ return
 6:	DSB
 	ISB
-	pop	{r4-r12, pc}
+	pop	{r4-r12, lr}
+	bx	lr
 
 #include "cache.S"
