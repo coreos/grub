@@ -35,7 +35,7 @@ struct start_info *grub_xen_start_page_addr;
 volatile struct xencons_interface *grub_xen_xcons;
 volatile struct shared_info *grub_xen_shared_info;
 volatile struct xenstore_domain_interface *grub_xen_xenstore;
-volatile grant_entry_v2_t *grub_xen_grant_table;
+volatile grant_entry_v1_t *grub_xen_grant_table;
 static const grub_size_t total_grants =
   GRUB_XEN_PAGE_SIZE / sizeof (grub_xen_grant_table[0]);
 grub_size_t grub_xen_n_allocated_shared_pages;
@@ -53,12 +53,12 @@ grub_xen_alloc_shared_page (domid_t dom, grub_xen_grant_t * grnum)
 {
   void *ret;
   grub_xen_mfn_t mfn;
-  volatile grant_entry_v2_t *entry;
+  volatile grant_entry_v1_t *entry;
 
   /* Avoid 0.  */
   for (entry = grub_xen_grant_table;
        entry < grub_xen_grant_table + total_grants; entry++)
-    if (!entry->hdr.flags)
+    if (!entry->flags)
       break;
 
   if (entry == grub_xen_grant_table + total_grants)
@@ -71,11 +71,10 @@ grub_xen_alloc_shared_page (domid_t dom, grub_xen_grant_t * grnum)
     return NULL;
   grub_memset (ret, 0, GRUB_XEN_PAGE_SIZE);
   mfn = grub_xen_ptr2mfn (ret);
-  entry->full_page.pad0 = 0;
-  entry->full_page.frame = mfn;
-  entry->full_page.hdr.domid = dom;
+  entry->frame = mfn;
+  entry->domid = dom;
   mb ();
-  entry->full_page.hdr.flags = GTF_permit_access;
+  entry->flags = GTF_permit_access;
   mb ();
   *grnum = entry - grub_xen_grant_table;
   grub_xen_n_allocated_shared_pages++;
@@ -86,17 +85,17 @@ void
 grub_xen_free_shared_page (void *ptr)
 {
   grub_xen_mfn_t mfn;
-  volatile grant_entry_v2_t *entry;
+  volatile grant_entry_v1_t *entry;
 
   mfn = grub_xen_ptr2mfn (ptr);
   for (entry = grub_xen_grant_table + 1;
        entry < grub_xen_grant_table + total_grants; entry++)
-    if (entry->hdr.flags && entry->full_page.frame == mfn)
+    if (entry->flags && entry->frame == mfn)
       {
 	mb ();
-	entry->hdr.flags = 0;
+	entry->flags = 0;
 	mb ();
-	entry->full_page.frame = 0;
+	entry->frame = 0;
 	mb ();
       }
   grub_xen_n_allocated_shared_pages--;
@@ -373,7 +372,7 @@ map_all_pages (void)
 
   grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
 
-  gnttab_setver.version = 2;
+  gnttab_setver.version = 1;
   grub_xen_grant_table_op (GNTTABOP_set_version, &gnttab_setver, 1);
 
   grub_memset (&gnttab_setup, 0, sizeof (gnttab_setup));

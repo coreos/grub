@@ -53,7 +53,7 @@ extern grub_size_t EXPORT_VAR (grub_xen_n_allocated_shared_pages);
 extern volatile struct xencons_interface *grub_xen_xcons;
 extern volatile struct shared_info *EXPORT_VAR (grub_xen_shared_info);
 extern volatile struct xenstore_domain_interface *grub_xen_xenstore;
-extern volatile grant_entry_v2_t *grub_xen_grant_table;
+extern volatile grant_entry_v1_t *grub_xen_grant_table;
 
 void EXPORT_FUNC (grub_xen_store_send) (const void *buf_, grub_size_t len);
 void EXPORT_FUNC (grub_xen_store_recv) (void *buf_, grub_size_t len);

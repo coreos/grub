@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Change to v1 xen grants.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/i386/xen/relocator.S: Fix hypercall ABI violation.
 
 	GRUB relied on %ebx being preserved across hypercall which isn't true.
