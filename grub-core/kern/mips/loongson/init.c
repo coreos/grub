@@ -215,7 +215,8 @@ grub_machine_init (void)
   grub_gfxterm_init ();
 
   grub_keylayouts_init ();
-  if (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG)
+  if (grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG
+      || grub_arch_machine == GRUB_ARCH_MACHINE_YEELOONG_3A)
     grub_at_keyboard_init ();
 
   grub_terminfo_init ();
