@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Mark miscompile error for translation.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use %I64 and not %ll when using OS printf if compiling for windows.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
