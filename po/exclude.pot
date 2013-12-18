@@ -7165,3 +7165,11 @@ msgstr ""
 #, c-format
 msgid "unsupported fs for blocklist on windows: %s"
 msgstr ""
+
+#: include/grub/util/install.h:45 util/grub-mkstandalone.c:45
+msgid "xz|none|auto"
+msgstr ""
+
+#: util/grub-mkimagexx.c:845
+msgid "CALL26 Relocation out of range"
+msgstr ""

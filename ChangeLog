@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* po/exclude.pot: Add 2 missing excludes.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing license section in macbless.mod and macho.mod.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
