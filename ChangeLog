@@ -1,3 +1,8 @@
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/Makefile.am: Don't attempt to export grub_bios_interrupt
+	on i386-multiboot.
+
 2013-12-18  Aleš Nesrsta  <starous@volny.cz>
 
 	* grub-core/disk/usbms.c: Retry on unknown errors.

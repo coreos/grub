@@ -112,7 +112,6 @@ endif
 
 if COND_i386_multiboot
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/i386/pc/int.h
 endif
 
 if COND_i386_qemu
