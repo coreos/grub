@@ -627,11 +627,6 @@ module = {
 };
 
 module = {
-  name = check_nt_hiberfil;
-  common = commands/i386/nthibr.c;
-};
-
-module = {
   name = cmostest;
   common = commands/i386/cmostest.c;
   enable = cmos;
