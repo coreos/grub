@@ -298,6 +298,8 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   grub_usb_err_t errCSW = GRUB_USB_ERR_NONE;
   int retrycnt = 3 + 1;
   
+  tag++;
+
  retry:
   retrycnt--;
   if (retrycnt == 0)
@@ -306,7 +308,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
   /* Setup the request.  */
   grub_memset (&cbw, 0, sizeof (cbw));
   cbw.signature = grub_cpu_to_le32 (0x43425355);
-  cbw.tag = tag++;
+  cbw.tag = tag;
   cbw.transfer_length = grub_cpu_to_le32 (size);
   cbw.flags = (!read_write) << GRUB_USBMS_DIRECTION_BIT;
   cbw.lun = scsi->lun; /* In USB MS CBW are LUN bits on another place than in SCSI CDB, both should be set correctly. */
@@ -335,7 +337,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 	  grub_usb_clear_halt (dev->dev, dev->out->endp_addr);
 	  goto CheckCSW;
 	}
-      return grub_error (GRUB_ERR_IO, "USB Mass Storage request failed");
+      goto retry;
     }
 
   /* Read/write the data, (maybe) according to specification.  */

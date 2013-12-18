@@ -1,5 +1,10 @@
 2013-12-18  Aleš Nesrsta  <starous@volny.cz>
 
+	* grub-core/disk/usbms.c: Retry on unknown errors.
+	Reuse the same tag on retries.
+
+2013-12-18  Aleš Nesrsta  <starous@volny.cz>
+
 	* grub-core/bus/usb/ehci.c: Fix handling of newborn transfers.
 
 	Avoid confusing them with already completed transfers.
