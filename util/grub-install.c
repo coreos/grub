@@ -646,7 +646,7 @@ device_map_check_duplicates (const char *dev_map)
   for (i = 0; i + 1 < filled; i++)
     if (strcmp (d[i], d[i+1]) == 0)
       {
-	grub_util_error ("the drive %s is defined multiple times in the device map %s",
+	grub_util_error (_("the drive %s is defined multiple times in the device map %s"),
 			 d[i], dev_map);
       }
 
@@ -1354,7 +1354,7 @@ main (int argc, char *argv[])
 	      grub_install_mkdir_p (fldir);
 	      flf = grub_util_fopen (fl, "w");
 	      if (!flf)
-		grub_util_error ("Can't create file: %s", strerror (errno));
+		grub_util_error (_("Can't create file: %s"), strerror (errno));
 	      fclose (flf);
 	      relfl = grub_make_system_path_relative_to_its_root (fl);
 	      fprintf (load_cfg_f, "search.file %s root ",
@@ -1631,7 +1631,9 @@ main (int argc, char *argv[])
 	grub_install_copy_file (boot_img_src, boot_img, 1);
 
 	grub_util_info ("%sgrub-bios-setup %s %s %s %s %s --directory='%s' --device-map='%s' '%s'",
-			install_bootsector ? "" : "NOT RUNNING: ",
+			/* TRANSLATORS: This is a prefix in the log to indicate that usually
+			   a command would be executed but due to an option was skipped.  */
+			install_bootsector ? "" : _("NOT RUNNING: "),
 			allow_floppy ? "--allow-floppy " : "",
 			verbosity ? "--verbose " : "",
 			force ? "--force " : "",
@@ -1701,7 +1703,7 @@ main (int argc, char *argv[])
 
 	  f = grub_util_fopen (mach_kernel, "r+");
 	  if (!f)
-	    grub_util_error ("Can't create file: %s", strerror (errno));
+	    grub_util_error (_("Can't create file: %s"), strerror (errno));
 	  fclose (f);
 
 	  fill_core_services (core_services);
@@ -1745,7 +1747,7 @@ main (int argc, char *argv[])
 	  else
 	    {
 	      char *s = xasprintf ("dd if=/dev/zero of=%s", install_device);
-	      grub_util_error ("the PReP partition is not empty. If you are sure you want to use it, run dd to clear it: `%s'",
+	      grub_util_error (_("the PReP partition is not empty. If you are sure you want to use it, run dd to clear it: `%s'"),
 			       s);
 	    }
 	  grub_device_close (ins_dev);
@@ -1801,7 +1803,7 @@ main (int argc, char *argv[])
 
 	  f = grub_util_fopen (mach_kernel, "r+");
 	  if (!f)
-	    grub_util_error ("Can't create file: %s", strerror (errno));
+	    grub_util_error (_("Can't create file: %s"), strerror (errno));
 	  fclose (f);
 
 	  fill_core_services(core_services);
@@ -1837,7 +1839,7 @@ main (int argc, char *argv[])
 
 	  /* Try to make this image bootable using the EFI Boot Manager, if available.  */
 	  if (!efi_distributor || efi_distributor[0] == '\0')
-	    grub_util_error ("%s", "EFI distributor id isn't specified.");
+	    grub_util_error ("%s", _("EFI distributor id isn't specified."));
 	  efifile_path = xasprintf ("\\EFI\\%s\\%s",
 				    efi_distributor,
 				    efi_file);

@@ -630,7 +630,7 @@ static grub_extcmd_t cmd;
 GRUB_MOD_INIT(file)
 {
   cmd = grub_register_extcmd ("file", grub_cmd_file, 0,
-			      "OPTIONS FILE",
+			      N_("OPTIONS FILE"),
 			      N_("Check if FILE is of specified type."),
 			      options);
 }

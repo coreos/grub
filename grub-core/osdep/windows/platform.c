@@ -94,7 +94,7 @@ get_platform (void)
 
   if (!get_efi_privilegies ())
     {
-      grub_util_warn ("Insufficient privilegies to access firmware, assuming BIOS");
+      grub_util_warn (_("Insufficient privilegies to access firmware, assuming BIOS"));
       platform = PLAT_BIOS;
     }
 
@@ -222,7 +222,7 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
 
   get_platform ();
   if (platform != PLAT_EFI)
-    grub_util_error ("%s", "no EFI routines when running in BIOS mode");
+    grub_util_error ("%s", _("no EFI routines are available when running in BIOS mode"));
 
   distrib8_len = grub_strlen (efi_distributor);
   distributor16 = xmalloc ((distrib8_len + 1) * GRUB_MAX_UTF16_PER_UTF8
@@ -237,7 +237,7 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
      until we find same distributor or empty spot.  */
   boot_order = get_efi_variable (L"BootOrder", &boot_order_len);
   if (boot_order_len < -1)
-    grub_util_error ("%s", "unexpected EFI error");
+    grub_util_error ("%s", _("unexpected EFI error"));
   if (boot_order_len > 0)
     {
       size_t i;
@@ -312,7 +312,7 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
 	}
     }
   if (!have_order_num)
-    grub_util_error ("%s", "Couldn't find free BootNNNN spot");
+    grub_util_error ("%s", _("Couldn't find a free BootNNNN slot"));
   path8_len = grub_strlen (efifile_path);
   max_path_length = sizeof (*hddp) + sizeof (*filep) + (path8_len * GRUB_MAX_UTF16_PER_UTF8 + 1) * sizeof (grub_uint16_t) + sizeof (*endp);
   entry = xmalloc (6 + (distrib16_len + 1) * sizeof (grub_uint16_t) + max_path_length);
@@ -413,12 +413,12 @@ void
 grub_install_register_ieee1275 (int is_prep, const char *install_device,
 				int partno, const char *relpath)
 {
-  grub_util_error ("%s", "no IEEE1275 routines are available for your platform");
+  grub_util_error ("%s", _("no IEEE1275 routines are available for your platform"));
 }
 
 void
 grub_install_sgi_setup (const char *install_device,
 			const char *imgfile, const char *destname)
 {
-  grub_util_error ("%s", "no SGI routines are available for your platform");
+  grub_util_error ("%s", _("no SGI routines are available for your platform"));
 }

@@ -114,7 +114,7 @@ grub_install_copy_file (const char *src,
   grub_util_fd_close (out);
 
   if (r < 0)
-    grub_util_error ("cannot copy `%s' to `%s': %s",
+    grub_util_error (_("cannot copy `%s' to `%s': %s"),
 		     src, dst, grub_util_fd_strerror ());
 
   return 1;
@@ -134,11 +134,11 @@ grub_install_compress_file (const char *in_name,
       grub_util_info ("compressing `%s' -> `%s'", in_name, out_name);
       ret = !compress_func (in_name, out_name);
       if (!ret && is_needed)
-	grub_util_warn ("can't compress `%s' to `%s'", in_name, out_name);
+	grub_util_warn (_("can't compress `%s' to `%s'"), in_name, out_name);
     }
 
   if (!ret && is_needed)
-    grub_util_error ("cannot copy `%s' to `%s': %s",
+    grub_util_error (_("cannot copy `%s' to `%s': %s"),
 		     in_name, out_name, grub_util_fd_strerror ());
 
   return ret;
@@ -199,7 +199,7 @@ clean_grub_dir (const char *di)
 	{
 	  char *x = grub_util_path_concat (2, di, de->d_name);
 	  if (grub_util_unlink (x) < 0)
-	    grub_util_error ("cannont delete `%s': %s", x,
+	    grub_util_error (_("cannot delete `%s': %s"), x,
 			     grub_util_fd_strerror ());
 	  free (x);
 	}

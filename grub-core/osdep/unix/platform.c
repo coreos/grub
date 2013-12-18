@@ -216,7 +216,7 @@ grub_install_register_ieee1275 (int is_prep, const char *install_device,
 	  boot_device, NULL }))
     {
       char *cmd = xasprintf ("setenv boot-device %s", boot_device);
-      grub_util_error ("`nvsetenv' failed. \nYou will have to set `boot-device' variable manually.  At the IEEE1275 prompt, type:\n  %s\n", 
+      grub_util_error (_("`nvsetenv' failed. \nYou will have to set `boot-device' variable manually.  At the IEEE1275 prompt, type:\n  %s\n"),
 		       cmd);
       free (cmd);
     }

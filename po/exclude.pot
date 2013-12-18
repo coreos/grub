@@ -6948,3 +6948,220 @@ msgstr ""
 #, c-format
 msgid "T:grub.%d.%d.%d.%d"
 msgstr ""
+
+#: util/grub-install.c:1722
+msgid "\\\\BootX"
+msgstr ""
+
+#: util/grub-install.c:1816
+msgid "\\System\\Library\\CoreServices"
+msgstr ""
+
+#: util/grub-install.c:1702 util/grub-install.c:1802
+msgid "r+"
+msgstr ""
+
+#: util/grub-install.c:1128
+msgid "macppc"
+msgstr ""
+
+#: util/grub-install.c:296
+msgid "macppc-directory"
+msgstr ""
+#: grub-core/term/xen/xen_kbd.c:468 grub-core/term/xen/xen_kbd.c:477
+msgid "xen_keyboard"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:79
+#, c-format
+msgid "device/vfb/%s/backend"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:87
+#, c-format
+msgid "device/vfb/%s/backend-id"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:102
+#, c-format
+msgid "device/vfb/%s/page-ref"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:108
+#, c-format
+msgid "device/vfb/%s/protocol"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:120
+#, c-format
+msgid "device/vfb/%s/event-channel"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:131
+#, c-format
+msgid "device/vfb/%s"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:172
+#, c-format
+msgid "device/vfb/%s/state"
+msgstr ""
+
+#: grub-core/video/xen/xenfb.c:270
+msgid "device/vfb"
+msgstr ""
+
+#: include/grub/emu/misc.h:46
+msgid "I64u"
+msgstr ""
+
+#: include/grub/emu/misc.h:47
+msgid "I64x"
+msgstr ""
+#: grub-core/term/xen/xen_kbd.c:143
+#, c-format
+msgid "device/vkbd/%s/backend"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:151
+#, c-format
+msgid "device/vkbd/%s/backend-id"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:166
+#, c-format
+msgid "device/vkbd/%s/page-ref"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:172
+#, c-format
+msgid "device/vkbd/%s/protocol"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:184
+#, c-format
+msgid "device/vkbd/%s/event-channel"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:195
+#, c-format
+msgid "device/vkbd/%s"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:204
+#, c-format
+msgid "device/vkbd/%s/state"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:267 grub-core/video/xen/xenfb.c:239
+#, c-format
+msgid "%s/page-ref"
+msgstr ""
+
+#: grub-core/term/xen/xen_kbd.c:291
+msgid "device/vkbd"
+msgstr ""
+
+#: grub-core/commands/fileXX.c:51 grub-core/commands/fileXX.c:62
+#: grub-core/commands/fileXX.c:63
+msgid ".note.netbsd.ident"
+msgstr ""
+
+#: grub-core/commands/legacycfg.c:484
+msgid "initrd16initrd"
+msgstr ""
+
+#: grub-core/commands/syslinuxcfg.c:146
+msgid "extract_syslinux_entries_"
+msgstr ""
+
+#: grub-core/commands/syslinuxcfg.c:147
+msgid "syslinux_"
+msgstr ""
+#: grub-core/commands/file.c:41
+msgid "is-x86_64-xen-domu"
+msgstr ""
+
+#: grub-core/commands/file.c:69
+msgid "is-x86_64-kfreebsd"
+msgstr ""
+
+#: grub-core/commands/file.c:76
+msgid "is-x86_64-knetbsd"
+msgstr ""
+
+#: grub-core/commands/file.c:81
+msgid "is-x86_64-efi"
+msgstr ""
+
+#: grub-core/commands/file.c:89
+msgid "is-x86_64-xnu"
+msgstr ""
+
+#: grub-core/commands/file.c:506
+msgid "hibr"
+msgstr ""
+
+#: grub-core/commands/file.c:508
+msgid "HIBR"
+msgstr ""
+
+#: grub-core/disk/diskfilter.c:1060
+msgid ",%"
+msgstr ""
+
+#: grub-core/disk/diskfilter.c:1061
+#, c-format
+msgid ") into %s (%s)\n"
+msgstr ""
+
+#: grub-core/osdep/windows/blocklist.c:88
+msgid ", first_lcn=%"
+msgstr ""
+
+#: util/grub-mkimagexx.c:438
+msgid " (0x%"
+msgstr ""
+
+#: util/grub-mkimagexx.c:666 util/grub-mkimagexx.c:679
+#: util/grub-mkimagexx.c:702 util/grub-mkimagexx.c:728
+#: util/grub-mkimagexx.c:812
+msgid " at the offset 0x%"
+msgstr ""
+
+#: util/misc.c:149
+msgid " bytes at offset 0x%"
+msgstr ""
+
+#: grub-core/term/serial.c:64
+msgid "on|off"
+msgstr ""
+
+#: util/grub-mkimagexx.c:898
+msgid "jump24 relocation out of range"
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:48
+#, c-format
+msgid "ofpath: error: "
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:61
+#, c-format
+msgid "ofpath: info: "
+msgstr ""
+
+#: grub-core/osdep/linux/ofpath.c:119
+#, c-format
+msgid "Trying %s\n"
+msgstr ""
+
+#: grub-core/osdep/windows/blocklist.c:108
+#, c-format
+msgid "FSCTL_GET_RETRIEVAL_POINTERS fails: %s"
+msgstr ""
+
+#: grub-core/osdep/windows/blocklist.c:84
+#, c-format
+msgid "unsupported fs for blocklist on windows: %s"
+msgstr ""

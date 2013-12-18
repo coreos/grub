@@ -77,7 +77,7 @@ main (int argc, char *argv[])
 	  continue;
 	}
       if (had_file)
-	grub_util_error ("multiple files specified");
+	grub_util_error ("one argument expected");
       argv2[i - 1] = canonicalize_file_name (argv[i]);
       if (!argv2[i - 1])
 	{

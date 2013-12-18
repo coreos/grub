@@ -81,7 +81,7 @@ grub_install_get_blocklist (grub_device_t root_dev,
   else if (grub_strcmp (fs->name, "udf") == 0)
     first_lcn = grub_udf_get_cluster_sector (root_dev->disk, &sec_per_lcn);
   else
-    grub_util_error ("unsupported fs for blocklist under windows: %s",
+    grub_util_error ("unsupported fs for blocklist on windows: %s",
 		     fs->name);
 
   grub_util_info ("sec_per_lcn = %"  GRUB_HOST_PRIuLONG_LONG

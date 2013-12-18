@@ -326,7 +326,7 @@ fetch_key (int *is_break)
 	ret = mapping[keycode];
       if (ret == 0)
 	{
-	  grub_printf ("unknown keycode = %lx\n", (unsigned long) keycode);
+	  grub_dprintf ("xenkbd", "unknown keycode = %lx\n", (unsigned long) keycode);
 	  continue;
 	}
       vkbd.kbdpage->in_cons++;

@@ -673,19 +673,19 @@ grub_cmd_list_dns (struct grub_command *cmd __attribute__ ((unused)),
       switch (dns_servers[i].option)
         {
         case DNS_OPTION_IPV4:
-          strtype = "only ipv4";
+          strtype = _("only ipv4");
           break;
 
         case DNS_OPTION_IPV6:
-          strtype = "only ipv6";
+          strtype = _("only ipv6");
           break;
 
         case DNS_OPTION_PREFER_IPV4:
-          strtype = "prefer ipv4";
+          strtype = _("prefer ipv4");
           break;
 
         case DNS_OPTION_PREFER_IPV6:
-          strtype = "prefer ipv6";
+          strtype = _("prefer ipv6");
           break;
         }
 

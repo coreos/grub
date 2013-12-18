@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Mark strings for translation and add remaining ones to exclude list.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-file.c (main): Fix sizeof usage.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
