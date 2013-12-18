@@ -25,8 +25,7 @@ configuring the GRUB.
 	fail.
   Note: clang 3.2 or later works for powerpc
 	earlier versions not tested
-  Note: clang has no support for generating 64-bit sparc code and hence you
-	can't compile GRUB for sparc64 with clang
+  Note: clang doesn't support -mno-app-regs and so can't be used for sparc64
   Note: clang has no support for ia64 and hence you can't compile GRUB
 	for ia64 with clang
 * GNU Make

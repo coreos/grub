@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* INSTALL: Update comment as to why sparc64 clang isn't usable.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add __attribute__ ((sysv_abi)) only if it's really needed.
 
 	Some compilers don't support it.
