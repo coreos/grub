@@ -42,7 +42,7 @@
     "no,xz,gz,lzo", OPTION_ARG_OPTIONAL,				  \
     N_("compress GRUB files [optional]"), 1 },			          \
   {"core-compress", GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS,		\
-      N_("xz|none|auto"),						\
+      "xz|none|auto",						\
       0, N_("choose the compression to use for core image"), 2},	\
     /* TRANSLATORS: platform here isn't identifier. It can be translated. */ \
   { "directory", 'd', N_("DIR"), 0,					\
@@ -62,7 +62,7 @@
   { "pubkey",   'k', N_("FILE"), 0,					\
       N_("embed FILE as public key for signature checking"), 0},	\
   { "verbose", 'v', 0, 0,						\
-    N_("increase verbosity"), 1 }
+    N_("print verbose messages."), 1 }
 
 int
 grub_install_parse (int key, char *arg);

@@ -56,15 +56,15 @@ struct arguments
 
 static struct argp_option options[] = {
   {"target-root",  't', N_("DIR"), 0,
-   N_("root directory as it will be seen on runtime (default /)."), 0},
+   N_("root directory as it will be seen on runtime [default=/]."), 0},
   {"root",  'r', N_("DIR"), 0,
-   N_("root directory of the syslinux disk (default /)."), 0},
+   N_("root directory of the syslinux disk [default=/]."), 0},
   {"target-cwd",  'T', N_("DIR"), 0,
-   N_("current directory as it will be seen on runtime (default $pwd)."), 0},
+   N_("current directory as it will be seen on runtime [default=$pwd]."), 0},
   {"cwd",  'c', N_("DIR"), 0,
-   N_("current directory of the syslinux disk (default $pwd)."), 0},
+   N_("current directory of the syslinux disk [default=$pwd]."), 0},
 
-  {"output",  'o', N_("FILE"), 0, N_("write output to FILE (default stdout)."), 0},
+  {"output",  'o', N_("FILE"), 0, N_("write output to FILE [default=stdout]."), 0},
   {"isolinux",     'i', 0,      0, N_("assume isolinux."), 0},
   {"pxelinux",     'p', 0,      0, N_("assume pxelinux."), 0},
   {"syslinux",     's', 0,      0, N_("assume syslinux."), 0},
@@ -137,7 +137,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 }
 
 static struct argp argp = {
-  options, argp_parser, N_("[OPTIONS] FILE ROOT"),
+  options, argp_parser, N_("FILE"),
   N_("Transform syslinux config into GRUB one."),
   NULL, NULL, NULL
 };

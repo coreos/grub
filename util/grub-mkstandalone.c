@@ -42,7 +42,7 @@ static struct argp_option options[] = {
   {"output", 'o', N_("FILE"),
    0, N_("save output in FILE [required]"), 2},
   {"format", 'O', N_("FILE"), 0, 0, 2},
-  {"compression", 'C', N_("xz|none|auto"), OPTION_HIDDEN, 0, 2},
+  {"compression", 'C', "xz|none|auto", OPTION_HIDDEN, 0, 2},
   {0, 0, 0, 0, 0, 0}
 };
 

@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Decrease number of strings to translate.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/arm/dl.c: Remove unnecessarry execution mode check.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>

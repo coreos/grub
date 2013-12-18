@@ -695,9 +695,9 @@ static grub_command_t cmd_xen, cmd_initrd, cmd_module, cmd_multiboot;
 GRUB_MOD_INIT (xen)
 {
   cmd_xen = grub_register_command ("linux", grub_cmd_xen,
-				   0, N_("Load linux."));
+				   0, N_("Load Linux."));
   cmd_multiboot = grub_register_command ("multiboot", grub_cmd_xen,
-					 0, N_("Load linux."));
+					 0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
 				      0, N_("Load initrd."));
   cmd_module = grub_register_command ("module", grub_cmd_module,

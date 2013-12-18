@@ -859,7 +859,7 @@ grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
      somewhere else.  */
   if (offset < -0x200000 || offset >= 0x200000)
     return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("THM_CALL Relocation out of range."));
+		       "THM_CALL Relocation out of range.");
 
   grub_dprintf ("dl", "    relative destination = %p",
 		(char *) target + offset);
@@ -879,7 +879,7 @@ grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
 
   if (!(sym_addr & 1))
     return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("Relocation targeting wrong execution state"));
+		       "Relocation targeting wrong execution state");
 
   offset = grub_arm_thm_jump19_get_offset (target);
 
@@ -888,7 +888,7 @@ grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
 
   if (!grub_arm_thm_jump19_check_offset (offset))
     return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("THM_JUMP19 Relocation out of range."));
+		       "THM_JUMP19 Relocation out of range.");
 
   grub_arm_thm_jump19_set_offset (target, offset);
 
@@ -907,14 +907,14 @@ grub_arm_reloc_jump24 (grub_uint32_t *target, Elf32_Addr sym_addr)
 
   if (sym_addr & 1)
     return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("Relocation targeting wrong execution state"));
+		       "Relocation targeting wrong execution state");
 
   offset = grub_arm_jump24_get_offset (target);
   offset += sym_addr;
 
   if (!grub_arm_jump24_check_offset (offset))
     return grub_error (GRUB_ERR_BAD_MODULE,
-		       N_("JUMP24 Relocation out of range."));
+		       "JUMP24 Relocation out of range.");
 
 
   grub_arm_jump24_set_offset (target, offset);

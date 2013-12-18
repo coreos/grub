@@ -29,7 +29,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] =
   {
-    { "set", 's', 0, N_("Variable name to update."), N_("VARNAME"), ARG_TYPE_STRING },
+    { "set", 's', 0, N_("Set a variable to return value."), N_("VARNAME"), ARG_TYPE_STRING },
     { "upcase", 'U', 0, N_("Translate to upper case."), 0, 0 },
     { "downcase", 'D', 0, N_("Translate to lower case."), 0, 0 },
     { 0, 0, 0, 0, 0, 0 }

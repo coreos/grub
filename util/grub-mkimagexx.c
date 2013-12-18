@@ -842,7 +842,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       sym_addr -= offset;
 		       sym_addr -= SUFFIX (entry_point);
 		       if (!grub_arm_64_check_xxxx26_offset (sym_addr))
-			 grub_util_error ("%s", _("CALL26 Relocation out of range"));
+			 grub_util_error ("%s", "CALL26 Relocation out of range");
 
 		       grub_arm64_set_xxxx26_offset((grub_uint32_t *)target,
 						     sym_addr);
@@ -1201,7 +1201,7 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		  case R_AARCH64_JUMP26:
 		    break;
 		  default:
-		    grub_util_error (_("fixup for relocation %u is not implemented yet"),
+		    grub_util_error (_("relocation 0x%x is not implemented yet"),
 				     (unsigned int) ELF_R_TYPE (info));
 		    break;
 		  }
@@ -1239,7 +1239,8 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		    }
 		    break;
 		  default:
-		    grub_util_error (_("fixup for relocation 0x%x not implemented"), ELF_R_TYPE (info));
+		    grub_util_error (_("relocation 0x%x is not implemented yet"),
+				     (unsigned int) ELF_R_TYPE (info));
 		    break;
 		  }
 		break;

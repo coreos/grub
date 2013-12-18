@@ -32,7 +32,7 @@ grub_osdep_dl_memalign (grub_size_t align, grub_size_t size)
   void *ret;
   if (align > 4096)
     {
-      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, N_("too large alignment"));
+      grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, "too large alignment");
       return NULL;
     }
 

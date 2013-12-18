@@ -1176,7 +1176,7 @@ main (int argc, char *argv[])
 	  if (grub_strcmp (fs->name, "hfs") != 0
 	      && grub_strcmp (fs->name, "hfsplus") != 0
 	      && !is_guess)
-	    grub_util_error (_("%s is neither hfs nor hfsplue"),
+	    grub_util_error (_("%s is neither hfs nor hfsplus"),
 			     macppcdir);
 	  if (grub_strcmp (fs->name, "hfs") == 0
 	      || grub_strcmp (fs->name, "hfsplus") == 0)

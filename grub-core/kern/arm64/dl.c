@@ -149,7 +149,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 
 	    if (!grub_arm_64_check_xxxx26_offset (offset))
 		return grub_error (GRUB_ERR_BAD_MODULE,
-				   N_("Trampoline out of range"));
+				   "trampoline out of range");
 
 	    grub_arm64_set_xxxx26_offset (place, offset);
 	  }
