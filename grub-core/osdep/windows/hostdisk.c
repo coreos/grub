@@ -98,7 +98,7 @@ grub_util_tchar_to_utf8 (LPCTSTR in)
 #endif
 
 
-LPTSTR
+static LPTSTR
 grub_util_get_windows_path_real (const char *path)
 {
   LPTSTR fpa;

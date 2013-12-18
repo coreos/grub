@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make grub_util_get_windows_path_real static.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/fileXX.c: Silence cast-align.
 	* grub-core/loader/i386/xen_fileXX.c: Likewise.
 
