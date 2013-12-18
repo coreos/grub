@@ -1,5 +1,11 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add __attribute__ ((sysv_abi)) only if it's really needed.
+
+	Some compilers don't support it.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/syslinux_parse.c: Declare timeout unsigned.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>

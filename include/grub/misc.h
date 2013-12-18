@@ -104,6 +104,14 @@ grub_memcpy (void *dest, const void *src, grub_size_t n)
 #define GRUB_BUILTIN_ATTR
 #endif
 
+#if defined(__x86_64__) && !defined (GRUB_UTIL)
+#if defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MINGW64__)
+#define GRUB_ASM_ATTR __attribute__ ((sysv_abi))
+#else
+#define GRUB_ASM_ATTR
+#endif
+#endif
+
 /* Prototypes for aliases.  */
 #ifndef GRUB_UTIL
 int GRUB_BUILTIN_ATTR EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
