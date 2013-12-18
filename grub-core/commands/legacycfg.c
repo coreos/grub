@@ -314,7 +314,11 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
       /* First try Linux.  */
       if (kernel_type == GUESS_IT || kernel_type == LINUX)
 	{
+#ifdef GRUB_MACHINE_PCBIOS
 	  cmd = grub_command_find ("linux16");
+#else
+	  cmd = grub_command_find ("linux");
+#endif
 	  if (cmd)
 	    {
 	      if (!(cmd->func) (cmd, cutargc, cutargs))
@@ -469,10 +473,19 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
 
   if (kernel_type == LINUX)
     {
+#ifdef GRUB_MACHINE_PCBIOS
       cmd = grub_command_find ("initrd16");
+#else
+      cmd = grub_command_find ("initrd");
+#endif
       if (!cmd)
 	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
-			   "initrd16");
+#ifdef GRUB_MACHINE_PCBIOS
+			   "initrd16"
+#else
+			   "initrd"
+#endif
+			   );
 
       return cmd->func (cmd, argc, args);
     }

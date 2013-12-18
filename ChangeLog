@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/legacycfg.c: Use 32-bit Linux protocol on non-BIOS.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Support cpuid --pae.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
