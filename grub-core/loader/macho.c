@@ -28,6 +28,9 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/i18n.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 grub_err_t
 grub_macho_close (grub_macho_t macho)

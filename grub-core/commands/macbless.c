@@ -30,6 +30,8 @@
 #include <grub/mm.h>
 #include <grub/err.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 struct find_node_context
 {
   grub_uint64_t inode_found;

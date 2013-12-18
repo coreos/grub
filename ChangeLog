@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add missing license section in macbless.mod and macho.mod.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Allow compilation without thumb-interwork as long as no thumb is
 	involved or only thumb2 is used.
 
