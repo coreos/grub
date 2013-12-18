@@ -1,5 +1,9 @@
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Silence spurious warning.
+
+2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove check_nt_hiberfil as it's been superseeded by file command.
 
 2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>

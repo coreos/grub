@@ -972,7 +972,7 @@ write_entry (struct output_buffer *outbuf,
 	if (grub_strcasecmp (basename, "chain.c32") == 0)
 	  {
 	    char *file = NULL;
-	    int is_fd = -1, devn;
+	    int is_fd = -1, devn = 0;
 	    int part = -1;
 	    int swap = 0;
 	    char *ptr;
