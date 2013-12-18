@@ -1,5 +1,12 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove -Wold-style-definition.
+
+	Not very useful and interaction of it with regexp depends on GCC
+	version.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make grub_util_get_windows_path_real static.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
