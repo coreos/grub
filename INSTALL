@@ -17,6 +17,7 @@ configuring the GRUB.
         much bigger binaries.
 	earlier versions not tested
   Note: clang 3.2 or later works for arm
+	None of tested clang versions generated usable thumb code
 	earlier versions not tested
   Note: clang 3.3 or later works for arm64
 	earlier versions have no arm64 support

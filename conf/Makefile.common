@@ -15,8 +15,6 @@ if COND_sparc64_emu
   LDFLAGS_PLATFORM = -Wl,--no-relax
 endif
 if COND_arm
-  CFLAGS_PLATFORM += -mthumb-interwork
-  CCASFLAGS_PLATFORM = -mthumb-interwork
 if !COND_emu
   LDFLAGS_PLATFORM = -Wl,--wrap=__clear_cache
 endif

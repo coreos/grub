@@ -1,5 +1,10 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Allow compilation without thumb-interwork as long as no thumb is
+	involved or only thumb2 is used.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Use -Wl,--no-relax rather than -mno-relax for uniformity.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
