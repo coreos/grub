@@ -1,8 +1,12 @@
-2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-file.c (main): Fix sizeof usage.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Silence spurious warning.
 
-2013-12-17  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove check_nt_hiberfil as it's been superseeded by file command.
 

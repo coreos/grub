@@ -55,7 +55,7 @@ main (int argc, char *argv[])
 
   grub_util_host_init (&argc, &argv);
 
-  argv2 = xmalloc (argc * sizeof (argv));
+  argv2 = xmalloc (argc * sizeof (argv2[0]));
 
   if (argc == 2 && strcmp (argv[1], "--version") == 0)
     {
