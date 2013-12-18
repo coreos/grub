@@ -1,6 +1,10 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
-	* grub-core/loader/arm/linux.c: Use common initd functions.
+	* include/grub/efi/api.h (PRIxGRUB_EFI_UINTN_T): Remove leftover.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/arm/linux.c: Use common initrd functions.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
