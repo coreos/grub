@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/arm/linux.c: Use common initd functions.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Decrease number of strings to translate.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>

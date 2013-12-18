@@ -27,6 +27,7 @@
 #include <grub/cache.h>
 #include <grub/cpu/linux.h>
 #include <grub/lib/cmdline.h>
+#include <grub/linux.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -265,7 +266,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
 {
   grub_file_t file;
-  int size;
+  grub_size_t size = 0;
+  struct grub_linux_initrd_context initrd_ctx;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
@@ -274,9 +276,10 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (!file)
     return grub_errno;
 
-  size = grub_file_size (file);
-  if (size == 0)
+  if (grub_initrd_init (argc, argv, &initrd_ctx))
     goto fail;
+
+  size = grub_get_initrd_size (&initrd_ctx);
 
   if (initrd_start)
     grub_free ((void *) initrd_start);
@@ -295,14 +298,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("loader", "Loading initrd to 0x%08x\n",
 		(grub_addr_t) initrd_start);
 
-  if (grub_file_read (file, (void *) initrd_start, size) != size)
-    {
-      initrd_start = 0;
-      if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-		    argv[0]);
-      goto fail;
-    }
+  if (grub_initrd_load (&initrd_ctx, argv, (void *) initrd_start))
+    goto fail;
 
   initrd_end = initrd_start + size;
 
