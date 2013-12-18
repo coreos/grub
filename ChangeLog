@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Use -Wl,--no-relax rather than -mno-relax for uniformity.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* INSTALL: Update comment as to why sparc64 clang isn't usable.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -8,7 +8,7 @@ unexport LC_ALL
 # Platform specific options
 if COND_sparc64_ieee1275
   CFLAGS_PLATFORM += -mno-app-regs
-  LDFLAGS_PLATFORM = -Wl,-melf64_sparc -mno-relax
+  LDFLAGS_PLATFORM = -Wl,-melf64_sparc -Wl,--no-relax
 endif
 if COND_sparc64_emu
   CFLAGS_PLATFORM += -mno-app-regs
