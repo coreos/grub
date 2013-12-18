@@ -19,6 +19,8 @@
 #include <grub/fileid.h>
 #include <grub/elfload.h>
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 int
 grub_file_check_netbsdXX (grub_elf_t elf)
 {

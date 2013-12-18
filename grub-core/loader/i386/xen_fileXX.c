@@ -156,6 +156,8 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
   return GRUB_ERR_NONE;
 }
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 static grub_err_t
 parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
 	    grub_off_t off, grub_size_t sz)
@@ -257,8 +259,6 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
     }
   return GRUB_ERR_NONE;
 }
-
-#pragma GCC diagnostic ignored "-Wcast-align"
 
 grub_err_t
 grub_xen_get_infoXX (grub_elf_t elf, struct grub_xen_file_info *xi)
