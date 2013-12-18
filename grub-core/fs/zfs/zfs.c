@@ -293,9 +293,13 @@ static grub_err_t
 zlib_decompress (void *s, void *d,
 		 grub_size_t slen, grub_size_t dlen)
 {
-  if (grub_zlib_decompress (s, slen, 0, d, dlen) < 0)
-    return grub_errno;
-  return GRUB_ERR_NONE;
+  if (grub_zlib_decompress (s, slen, 0, d, dlen) == (grub_ssize_t) dlen)
+    return GRUB_ERR_NONE;
+
+  if (!grub_errno)
+    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+		"premature end of compressed");
+  return grub_errno;
 }
 
 static grub_err_t 

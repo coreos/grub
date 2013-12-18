@@ -1,5 +1,11 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make grub_zlib_decompress handle incomplete chunks.
+
+	Fixes squash4.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/Makefile.am: Don't attempt to export grub_bios_interrupt
 	on i386-multiboot.
 

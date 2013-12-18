@@ -1104,7 +1104,12 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 					 - (grub_uint8_t *) data->extent),
 					extoff, buf, csize)
 		  != (grub_ssize_t) csize)
-		return -1;
+		{
+		  if (!grub_errno)
+		    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+				"premature end of compressed");
+		  return -1;
+		}
 	    }
 	  else if (data->extent->compression == GRUB_BTRFS_COMPRESSION_LZO)
 	    {
@@ -1158,7 +1163,12 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 	      grub_free (tmp);
 
 	      if (ret != (grub_ssize_t) csize)
-		return -1;
+		{
+		  if (!grub_errno)
+		    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+				"premature end of compressed");
+		  return -1;
+		}
 
 	      break;
 	    }

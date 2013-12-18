@@ -1303,12 +1303,6 @@ grub_zlib_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
   ret = grub_gzio_read_real (gzio, off, outbuf, outsize);
   grub_free (gzio);
 
-  if (!grub_errno && ret != (grub_ssize_t) outsize)
-    {
-      grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, "premature end of compressed");
-      ret = -1;
-    }
-
   /* FIXME: Check Adler.  */
   return ret;
 }

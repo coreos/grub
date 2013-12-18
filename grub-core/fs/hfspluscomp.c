@@ -156,8 +156,12 @@ hfsplus_read_compressed_real (struct grub_hfsplus_file *node,
 	  if (ts > node->size - (pos & ~(HFSPLUS_COMPRESS_BLOCK_SIZE)))
 	    ts = node->size - (pos & ~(HFSPLUS_COMPRESS_BLOCK_SIZE));
 	  if (grub_zlib_decompress (tmp_buf, sz, 0,
-				    node->cbuf, ts) < 0)
+				    node->cbuf, ts) != (grub_ssize_t) ts)
 	    {
+	      if (!grub_errno)
+		grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+			    "premature end of compressed");
+
 	      grub_free (tmp_buf);
 	      return -1;
 	    }
@@ -288,8 +292,14 @@ hfsplus_open_compressed_real (struct grub_hfsplus_file *node)
   if (grub_zlib_decompress ((char *) (cmp_head + 1),
 			    grub_cpu_to_be64 (attr_head->size)
 			    - sizeof (*cmp_head), 0,
-			    node->cbuf, node->size) < 0)
-    return grub_errno;
+			    node->cbuf, node->size)
+      != (grub_ssize_t) node->size)
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+		    "premature end of compressed");
+      return grub_errno;
+    }
   node->compressed = 1;
   return 0;
 }
