@@ -210,10 +210,6 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    /* Thumb instructions can be 16-bit aligned */
 	    grub_int32_t offset;
 
-	    if (!(sym_addr & 1))
-	      return grub_error (GRUB_ERR_BAD_MODULE,
-				 N_("Relocation targeting wrong execution state"));
-
 	    sym_addr += grub_arm_thm_jump19_get_offset ((grub_uint16_t *) target);
 
 	    offset = sym_addr - (grub_uint32_t) target;

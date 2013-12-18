@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/arm/dl.c: Remove unnecessarry execution mode check.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Mark strings for translation and add remaining ones to exclude list.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
