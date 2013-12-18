@@ -1761,6 +1761,7 @@ module = {
   common = normal/term.c;
   common = normal/context.c;
   common = normal/charset.c;
+  common = lib/getline.c;
 
   common = script/main.c;
   common = script/script.c;
@@ -2140,6 +2141,12 @@ module = {
   enable = x86_64_efi;
   enable = emu;
   enable = xen;
+};
+
+module = {
+  name = syslinuxcfg;
+  common = lib/syslinux_parse.c;
+  common = commands/syslinuxcfg.c;
 };
 
 module = {

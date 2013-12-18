@@ -40,64 +40,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static int nested_level = 0;
 int grub_normal_exit_level = 0;
 
-/* Read a line from the file FILE.  */
-char *
-grub_file_getline (grub_file_t file)
-{
-  char c;
-  grub_size_t pos = 0;
-  char *cmdline;
-  int have_newline = 0;
-  grub_size_t max_len = 64;
-
-  /* Initially locate some space.  */
-  cmdline = grub_malloc (max_len);
-  if (! cmdline)
-    return 0;
-
-  while (1)
-    {
-      if (grub_file_read (file, &c, 1) != 1)
-	break;
-
-      /* Skip all carriage returns.  */
-      if (c == '\r')
-	continue;
-
-
-      if (pos + 1 >= max_len)
-	{
-	  char *old_cmdline = cmdline;
-	  max_len = max_len * 2;
-	  cmdline = grub_realloc (cmdline, max_len);
-	  if (! cmdline)
-	    {
-	      grub_free (old_cmdline);
-	      return 0;
-	    }
-	}
-
-      if (c == '\n')
-	{
-	  have_newline = 1;
-	  break;
-	}
-
-      cmdline[pos++] = c;
-    }
-
-  cmdline[pos] = '\0';
-
-  /* If the buffer is empty, don't return anything at all.  */
-  if (pos == 0 && !have_newline)
-    {
-      grub_free (cmdline);
-      cmdline = 0;
-    }
-
-  return cmdline;
-}
-
 void
 grub_normal_free_menu (grub_menu_t menu)
 {

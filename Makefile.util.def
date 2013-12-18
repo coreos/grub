@@ -1236,6 +1236,24 @@ program = {
 };
 
 program = {
+  name = grub-syslinux2cfg;
+  mansection = 1;
+  common = util/grub-syslinux2cfg.c;
+  common = grub-core/lib/syslinux_parse.c;
+  common = grub-core/lib/getline.c;
+  common = grub-core/osdep/init.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/disk/host.c;
+  common = grub-core/kern/emu/argp_common.c;
+
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
   name = grub-glue-efi;
   mansection = 1;
 
