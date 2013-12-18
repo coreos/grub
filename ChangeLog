@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/syslinux_parse.c: Declare timeout unsigned.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove -Wold-style-definition.
 
 	Not very useful and interaction of it with regexp depends on GCC

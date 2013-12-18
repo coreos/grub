@@ -71,7 +71,7 @@ struct syslinux_menu
   const char *current_target_directory;
   const char *filename;
   grub_size_t commentslen;
-  int timeout;
+  unsigned long timeout;
   struct syslinux_say *say;
   grub_syslinux_flavour_t flavour;
 };
