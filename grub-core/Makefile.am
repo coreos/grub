@@ -135,12 +135,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 endif
 
 if COND_x86_64_xen
@@ -150,12 +144,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video_fb.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
-KERNEL_HEADER_FILES += $(top_builddir)/include/grub/keyboard_layouts.h
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 endif
 
 if COND_x86_64_efi

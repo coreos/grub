@@ -27,8 +27,6 @@
 #include <grub/i386/tsc.h>
 #include <grub/term.h>
 #include <grub/loader.h>
-#include <grub/keyboard_layouts.h>
-#include <grub/video.h>
 
 grub_addr_t grub_modbase;
 struct start_info *grub_xen_start_page_addr;
@@ -69,7 +67,6 @@ grub_xen_alloc_shared_page (domid_t dom, grub_xen_grant_t * grnum)
   ret = grub_memalign (GRUB_XEN_PAGE_SIZE, GRUB_XEN_PAGE_SIZE);
   if (!ret)
     return NULL;
-  grub_memset (ret, 0, GRUB_XEN_PAGE_SIZE);
   mfn = grub_xen_ptr2mfn (ret);
   entry->frame = mfn;
   entry->domid = dom;
@@ -255,8 +252,6 @@ grub_xenstore_write_file (const char *dir, const void *buf, grub_size_t len)
   struct xsd_sockmsg msg;
   grub_size_t dirlen = grub_strlen (dir) + 1;
   char *resp;
-
-  grub_dprintf ("xen", "writing `%s'\n", dir);
 
   grub_memset (&msg, 0, sizeof (msg));
   msg.type = XS_WRITE;
@@ -544,13 +539,6 @@ grub_machine_init (void)
 
   map_all_pages ();
 
-  grub_video_xen_init ();
-  grub_font_init ();
-  grub_gfxterm_init ();
-
-  grub_keylayouts_init ();
-  grub_xen_keyboard_init ();
-
   grub_console_init ();
 
   grub_tsc_init ();
@@ -574,8 +562,6 @@ void
 grub_machine_fini (int flags __attribute__ ((unused)))
 {
   grub_xendisk_fini ();
-  grub_video_xen_fini ();
-  grub_xen_keyboard_fini ();
   grub_boot_fini ();
 }
 

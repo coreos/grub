@@ -192,9 +192,6 @@ kernel = {
   xen = term/xen/console.c;
   xen = disk/xen/xendisk.c;
   xen = commands/boot.c;
-  xen = commands/keylayouts.c;
-  xen = video/xen/xenfb.c;
-  xen = term/xen/xen_kbd.c;
 
   ia64_efi = kern/ia64/efi/startup.S;
   ia64_efi = kern/ia64/efi/init.c;

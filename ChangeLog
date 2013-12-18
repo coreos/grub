@@ -1,5 +1,12 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove xen VFB.
+
+	Due to XEN bug it prevents Linux boot. Remove it at least, until
+	workaround is found.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* po/exclude.pot: Add 2 missing excludes.
 
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
