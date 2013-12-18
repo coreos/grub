@@ -1513,7 +1513,7 @@ grub_ehci_check_transfer (grub_usb_controller_t dev,
   struct grub_ehci *e = dev->data;
   struct grub_ehci_transfer_controller_data *cdata =
     transfer->controller_data;
-  grub_uint32_t token;
+  grub_uint32_t token, token_ftd;
 
   grub_dprintf ("ehci",
 		"check_transfer: EHCI STATUS=%08x, cdata=%p, qh=%p\n",
@@ -1541,13 +1541,18 @@ grub_ehci_check_transfer (grub_usb_controller_t dev,
     return grub_ehci_parse_notrun (dev, transfer, actual);
 
   token = grub_le_to_cpu32 (cdata->qh_virt->td_overlay.token);
+  /* If the transfer consist from only one TD, we should check */
+  /* if the TD was really executed and deactivated - to prevent */
+  /* false detection of transfer finish. */
+  token_ftd = grub_le_to_cpu32 (cdata->td_first_virt->token);
 
   /* Detect QH halted */
   if ((token & GRUB_EHCI_STATUS_HALTED) != 0)
     return grub_ehci_parse_halt (dev, transfer, actual);
 
   /* Detect QH not active - QH is not active and no next TD */
-  if ((token & GRUB_EHCI_STATUS_ACTIVE) == 0)
+  if (token && ((token & GRUB_EHCI_STATUS_ACTIVE) == 0)
+	&& ((token_ftd & GRUB_EHCI_STATUS_ACTIVE) == 0))
     {
       /* It could be finish at all or short packet condition */
       if ((grub_le_to_cpu32 (cdata->qh_virt->td_overlay.next_td)

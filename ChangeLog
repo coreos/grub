@@ -1,3 +1,9 @@
+2013-12-18  Aleš Nesrsta  <starous@volny.cz>
+
+	* grub-core/bus/usb/ehci.c: Fix handling of newborn transfers.
+
+	Avoid confusing them with already completed transfers.
+
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove xen VFB.
