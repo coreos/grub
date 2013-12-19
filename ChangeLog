@@ -1,3 +1,8 @@
+2013-12-18  Allen Pais <allen.pais@oracle.com>
+2013-12-18  Bob Picco <bob.picco@oracle.com>
+
+	* grub-core/boot/sparc64/ieee1275/boot.S: Fix order of fields.
+
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Make grub_zlib_decompress handle incomplete chunks.

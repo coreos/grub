@@ -44,8 +44,8 @@ pic_base:
 	. = _start + GRUB_BOOT_MACHINE_BOOT_DEVPATH
 boot_path:
 	. = _start + GRUB_BOOT_MACHINE_KERNEL_BYTE
-kernel_byte:		.xword (2 << 9)
 boot_path_end:
+kernel_byte:		.xword (2 << 9)
 kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
 #else
 #define boot_path (_start + 512 + SCRATCH_PAD_BOOT_SIZE)
