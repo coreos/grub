@@ -1,3 +1,15 @@
+2013-12-20  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix various build problems on GNU/Hurd.
+
+	* grub-core/osdep/unix/getroot.c (strip_extra_slashes): Move inside
+	!defined (__GNU__).
+	(xgetcwd): Likewise.
+	* include/grub/emu/hostdisk.h (grub_util_hurd_get_disk_info)
+	[__GNU__]: Add prototype.
+	* util/getroot.c (grub_util_biosdisk_get_grub_dev) [__GNU__]: Format
+	long int using %ld rather than %d.
+
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Set version to 2.02~beta1.
