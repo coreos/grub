@@ -363,9 +363,9 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 		char *t;
 		t = dri;
 		if (*q >= 'a' && *q <= 'g')
-		  dri = xasprintf ("%s,%d,%d", t, n, *q - 'a' + 1);
+		  dri = xasprintf ("%s,%ld,%d", t, n, *q - 'a' + 1);
 		else
-		  dri = xasprintf ("%s,%d", t, n);
+		  dri = xasprintf ("%s,%ld", t, n);
 		free (t);
 	      }
 	  }

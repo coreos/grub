@@ -75,6 +75,12 @@ grub_hostdisk_find_partition_start_os (const char *dev);
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev);
 
+#ifdef __GNU__
+int
+grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize, grub_disk_addr_t *offset,
+			      grub_disk_addr_t *size, char **parent);
+#endif
+
 struct grub_util_hostdisk_data
 {
   char *dev;

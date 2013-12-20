@@ -116,6 +116,7 @@
 #include <sys/mount.h>
 #endif
 
+#if !defined (__GNU__)
 static void
 strip_extra_slashes (char *dir)
 {
@@ -155,7 +156,6 @@ xgetcwd (void)
   return path;
 }
 
-#if !defined (__GNU__)
 char **
 grub_util_find_root_devices_from_poolname (char *poolname)
 {

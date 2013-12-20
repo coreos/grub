@@ -745,7 +745,7 @@ if test x"$efiemu_excuse" = x ; then
   fi
 fi
 if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
-  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled ($efiemu_excuse)])
 fi
 if test x"$efiemu_excuse" = x ; then
 enable_efiemu=yes
@@ -1144,7 +1144,7 @@ AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
       [grub_emu_usb_excuse=["need libusb headers"]])
 [fi]
 if test x"$enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
-  AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled ($grub_emu_usb_excuse)])
 fi
 if test x"$grub_emu_usb_excuse" = x ; then
 enable_grub_emu_usb=yes
@@ -1169,7 +1169,7 @@ AC_CHECK_LIB([SDL], [SDL_Init], [LIBSDL="-lSDL"],
 [fi]
 
 if test x"enable_grub_emu_sdl" = xyes && test x"$grub_emu_sdl_excuse" != x ; then
-  AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled])
+  AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled ($grub_emu_sdl_excuse)])
 fi
 if test x"$grub_emu_sdl_excuse" = x ; then
 enable_grub_emu_sdl=yes
@@ -1249,7 +1249,7 @@ if test x"$grub_mkfont_excuse" = x ; then
 fi
 
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
-  AC_MSG_ERROR([grub-mkfont was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([grub-mkfont was explicitly requested but can't be compiled ($grub_mkfont_excuse)])
 fi
 if test x"$grub_mkfont_excuse" = x ; then
 enable_grub_mkfont=yes
@@ -1308,7 +1308,7 @@ if test x"$grub_build_mkfont_excuse" = x ; then
 fi
 
 if test x"$enable_build_grub_mkfont" = xyes && test x"$grub_build_mkfont_excuse" != x ; then
-  AC_MSG_ERROR([build-grub-mkfont was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([build-grub-mkfont was explicitly requested but can't be compiled ($grub_build_mkfont_excuse)])
 fi
 if test x"$grub_build_mkfont_excuse" = x ; then
   enable_build_grub_mkfont=yes
@@ -1316,7 +1316,11 @@ else
   enable_build_grub_mkfont=no
 fi
 if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$target_cpu"-"$platform" = xpowerpc-ieee1275 || test "x$platform" = xcoreboot ); then
-  AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports needs build-time grub-mkfont])
+  if test x"$grub_build_mkfont_excuse" = x ; then
+    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports needs build-time grub-mkfont])
+  else
+    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports needs build-time grub-mkfont ($grub_build_mkfont_excuse)])
+  fi
 fi
 
 AC_SUBST([build_freetype_cflags])
@@ -1359,7 +1363,7 @@ if test x"$starfield_excuse" = x; then
 fi
 
 if test x"$enable_grub_themes" = xyes &&  test x"$starfield_excuse" != x; then
-   AC_MSG_ERROR([themes were explicitly requested but requirements are not satisfied])
+   AC_MSG_ERROR([themes were explicitly requested but requirements are not satisfied ($starfield_excuse)])
 fi
 
 AC_SUBST([DJVU_FONT_SOURCE])
@@ -1385,7 +1389,11 @@ if test x"$enable_build_grub_mkfont" = xno ; then
 fi
 
 if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$target_cpu"-"$platform" = xpowerpc-ieee1275 || test "x$platform" = xcoreboot ); then
-   AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports need unifont])
+  if test x"$grub_build_mkfont_excuse" = x ; then
+    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports need unifont])
+  else
+    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports need unifont ($grub_build_mkfont_excuse)])
+  fi
 fi
 
 AC_SUBST([FONT_SOURCE])
@@ -1417,7 +1425,7 @@ if test x"$grub_mount_excuse" = x ; then
 fi
 
 if test x"$enable_grub_mount" = xyes && test x"$grub_mount_excuse" != x ; then
-  AC_MSG_ERROR([grub-mount was explicitly requested but can't be compiled])
+  AC_MSG_ERROR([grub-mount was explicitly requested but can't be compiled ($grub_mount_excuse)])
 fi
 if test x"$grub_mount_excuse" = x ; then
 enable_grub_mount=yes
@@ -1485,7 +1493,7 @@ AC_CHECK_HEADER([lzma.h], [], [liblzma_excuse="need lzma header"])
 fi
 
 if test x"$enable_liblzma" = xyes && test x"$liblzma_excuse" != x ; then
-  AC_MSG_ERROR([liblzma support was explicitly requested but requirements are not satisfied])
+  AC_MSG_ERROR([liblzma support was explicitly requested but requirements are not satisfied ($liblzma_excuse)])
 fi
 
 
@@ -1522,7 +1530,7 @@ if test x"$libzfs_excuse" = x ; then
 fi
 
 if test x"$enable_libzfs" = xyes && test x"$libzfs_excuse" != x ; then
-  AC_MSG_ERROR([libzfs support was explicitly requested but requirements are not satisfied])
+  AC_MSG_ERROR([libzfs support was explicitly requested but requirements are not satisfied ($libzfs_excuse)])
 fi
 
 if test x"$libzfs_excuse" = x ; then
