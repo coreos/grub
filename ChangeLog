@@ -1,5 +1,9 @@
 2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.c: Inform user about install platform.
+
+2013-12-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Set version to 2.02~beta1.
 
 2013-12-18  Allen Pais <allen.pais@oracle.com>

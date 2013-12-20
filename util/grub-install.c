@@ -862,6 +862,12 @@ main (int argc, char *argv[])
 
   platform = grub_install_get_target (grub_install_source_directory);
 
+  {
+    char *platname = grub_install_get_platform_name (platform);
+    fprintf (stderr, _("Installing for %s platform.\n"), platname);
+    free (platname);
+  }
+
   switch (platform)
     {
     case GRUB_INSTALL_PLATFORM_I386_PC:
