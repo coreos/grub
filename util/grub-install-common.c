@@ -120,7 +120,7 @@ grub_install_copy_file (const char *src,
   return 1;
 }
 
-int
+static int
 grub_install_compress_file (const char *in_name,
 			    const char *out_name,
 			    int is_needed)

@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add missing static qualifiers.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add missing includes.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>

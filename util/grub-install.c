@@ -536,7 +536,7 @@ is_same_disk (const char *a, const char *b)
     }
 }
 
-char *
+static char *
 get_rndstr (void)
 {
   grub_uint8_t rnd[15];

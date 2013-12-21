@@ -888,7 +888,7 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
   return path;
 }
 
-char *
+static char *
 grub_util_get_raid_grub_dev (const char *os_dev)
 {
   char *grub_dev = NULL;
