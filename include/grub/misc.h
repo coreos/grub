@@ -296,7 +296,7 @@ static inline long
 grub_strtol (const char *str, char **end, int base)
 {
   int negative = 0;
-  unsigned long magnitude;
+  unsigned long long magnitude;
 
   while (*str && grub_isspace (*str))
     str++;

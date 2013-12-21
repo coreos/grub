@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (grub_strtol): Fix overflow.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/term.h (grub_unicode_estimate_width): Use grub_size_t
 	as return type in both conditionals.
 
