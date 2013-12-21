@@ -405,7 +405,7 @@ grub_unicode_estimate_width (const struct grub_unicode_glyph *c);
 
 #else
 
-static inline grub_ssize_t
+static inline grub_size_t
 grub_unicode_estimate_width (const struct grub_unicode_glyph *c __attribute__ ((unused)))
 {
   if (grub_unicode_get_comb_type (c->base))

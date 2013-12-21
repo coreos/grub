@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/term.h (grub_unicode_estimate_width): Use grub_size_t
+	as return type in both conditionals.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/video.h (grub_video_rgba_color_rgb): Fix prototype
 	to use uint8_t for color.
 
