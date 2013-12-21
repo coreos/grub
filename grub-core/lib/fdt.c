@@ -265,10 +265,9 @@ static grub_uint32_t *find_prop (void *fdt, unsigned int nodeoffset,
    the size allocated for the FDT; if this function is called before the other
    functions in this file and returns success, the other functions are
    guaranteed not to access memory locations outside the allocated memory. */
-int grub_fdt_check_header (void *fdt, unsigned int size)
+int grub_fdt_check_header_nosize (void *fdt)
 {
   if (((grub_addr_t) fdt & 0x7) || (grub_fdt_get_magic (fdt) != FDT_MAGIC)
-      || (grub_fdt_get_totalsize (fdt) > size)
       || (grub_fdt_get_version (fdt) < FDT_SUPPORTED_VERSION)
       || (grub_fdt_get_last_comp_version (fdt) > FDT_SUPPORTED_VERSION)
       || (grub_fdt_get_off_dt_struct (fdt) & 0x00000003)
@@ -280,6 +279,15 @@ int grub_fdt_check_header (void *fdt, unsigned int size)
       || (grub_fdt_get_off_mem_rsvmap (fdt) & 0x00000007)
       || (grub_fdt_get_off_mem_rsvmap (fdt)
           > grub_fdt_get_totalsize (fdt) - 2 * sizeof(grub_uint64_t)))
+    return -1;
+  return 0;
+}
+
+int grub_fdt_check_header (void *fdt, unsigned int size)
+{
+  if (size < sizeof (grub_fdt_header_t)
+      || (grub_fdt_get_totalsize (fdt) > size)
+      || grub_fdt_check_header_nosize (fdt) == -1)
     return -1;
   return 0;
 }

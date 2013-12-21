@@ -23,15 +23,19 @@
 #define LINUX_ZIMAGE_OFFSET 0x24
 #define LINUX_ZIMAGE_MAGIC  0x016f2818
 
-#define ARM_FDT_MACHINE_TYPE 0xFFFFFFFF
+enum
+  {
+    GRUB_ARM_MACHINE_TYPE_RASPBERRY_PI = 3138,
+    GRUB_ARM_MACHINE_TYPE_FDT = 0xFFFFFFFF
+  };
 
 #if defined GRUB_MACHINE_UBOOT
 # include <grub/uboot/uboot.h>
 # define LINUX_ADDRESS        (start_of_ram + 0x8000)
 # define LINUX_INITRD_ADDRESS (start_of_ram + 0x02000000)
 # define LINUX_FDT_ADDRESS    (LINUX_INITRD_ADDRESS - 0x10000)
-# define firmware_get_boot_data grub_uboot_get_boot_data
-# define firmware_get_machine_type grub_uboot_get_machine_type
+# define grub_arm_firmware_get_boot_data grub_uboot_get_boot_data
+# define grub_arm_firmware_get_machine_type grub_uboot_get_machine_type
 #elif defined GRUB_MACHINE_EFI
 # include <grub/efi/efi.h>
 # include <grub/machine/loader.h>
@@ -41,19 +45,17 @@
 # define LINUX_INITRD_PHYS_OFFSET (LINUX_PHYS_OFFSET + 0x02000000)
 # define LINUX_FDT_PHYS_OFFSET    (LINUX_INITRD_PHYS_OFFSET - 0x10000)
 static inline grub_addr_t
-firmware_get_boot_data (void)
+grub_arm_firmware_get_boot_data (void)
 {
   return 0;
 }
 static inline grub_uint32_t
-firmware_get_machine_type (void)
+grub_arm_firmware_get_machine_type (void)
 {
-  return ARM_FDT_MACHINE_TYPE;
+  return GRUB_ARM_MACHINE_TYPE_FDT;
 }
 #endif
 
 #define FDT_ADDITIONAL_ENTRIES_SIZE	0x300
-
-typedef void (*kernel_entry_t) (int, unsigned long, void *);
 
 #endif /* ! GRUB_LINUX_CPU_HEADER */

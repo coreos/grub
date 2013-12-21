@@ -1,3 +1,7 @@
+2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix ARM Linux Loader on non-FDT platforms.
+
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Choose link format based on host_os on emu.

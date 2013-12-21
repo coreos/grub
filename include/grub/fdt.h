@@ -83,6 +83,7 @@ typedef struct {
 	grub_fdt_set_header(fdt, size_dt_struct, value)
 
 int grub_fdt_check_header (void *fdt, unsigned int size);
+int grub_fdt_check_header_nosize (void *fdt);
 int grub_fdt_find_subnode (const void *fdt, unsigned int parentoffset,
 			   const char *name);
 int grub_fdt_add_subnode (void *fdt, unsigned int parentoffset,
