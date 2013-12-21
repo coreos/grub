@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/misc.c (grub_util_get_image_size): Check for overflow.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/raid6_recover.c (grub_raid_block_mulx): Use grub_size_t
 	for size.
 

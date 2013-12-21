@@ -79,6 +79,7 @@ grub_util_get_image_size (const char *path)
 {
   FILE *f;
   size_t ret;
+  off_t sz;
 
   f = grub_util_fopen (path, "rb");
 
@@ -87,7 +88,10 @@ grub_util_get_image_size (const char *path)
 
   fseeko (f, 0, SEEK_END);
   
-  ret = ftello (f);
+  sz = ftello (f);
+  if (sz != (size_t) sz)
+    grub_util_error (_("file `%s' is too big"), path);
+  ret = (size_t) sz;
 
   fclose (f);
 
