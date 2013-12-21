@@ -764,6 +764,8 @@ grub_util_biosdisk_is_floppy (grub_disk_t disk)
 
 #else
 
+#include <grub/emu/getroot.h>
+
 void
 grub_util_pull_lvm_by_command (const char *os_dev __attribute__ ((unused)))
 {

@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/getroot.c: Non-unix build fix.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/emu/main.c: Build fix for emu.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
