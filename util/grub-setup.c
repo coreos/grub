@@ -39,7 +39,11 @@
 #include <grub/emu/getroot.h>
 #include <grub/util/install.h>
 
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 #include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 /* On SPARC this program fills in various fields inside of the 'boot' and 'core'
  * image files.

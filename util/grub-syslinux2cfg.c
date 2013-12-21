@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <argp.h>
 #include <unistd.h>
 #include <errno.h>
 #include <grub/err.h>
@@ -39,6 +38,12 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/syslinux_parse.h>
+
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 #include "progname.h"
 

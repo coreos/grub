@@ -26,7 +26,11 @@
 #include <grub/i18n.h>
 
 #define _GNU_SOURCE	1
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 #include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 #include "progname.h"
 

@@ -41,7 +41,11 @@
 #include <string.h>
 
 #include "progname.h"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 #include "argp.h"
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 static grub_err_t
 execute_command (const char *name, int n, char **args)

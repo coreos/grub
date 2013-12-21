@@ -22,8 +22,13 @@
 #include <grub/util/misc.h>
 #include <grub/emu/config.h>
 
-#include <argp.h>
 #include <string.h>
+
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 static char *output_image;
 static char **files;

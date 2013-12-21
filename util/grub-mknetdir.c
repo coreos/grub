@@ -21,9 +21,14 @@
 #include <grub/emu/config.h>
 #include <grub/util/misc.h>
 
-#include <argp.h>
 #include <string.h>
 #include <errno.h>
+
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
+#include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 static char *rootdir = NULL, *subdir = NULL;
 static char *debug_image = NULL;
