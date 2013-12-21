@@ -757,14 +757,35 @@ AC_SUBST([EFIEMU64_LINK_FORMAT])
 
 CFLAGS="$TARGET_CFLAGS"
 
-if test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
+
+if test x"$platform" = xemu ; then
+  TARGET_OBJ2ELF=
+  grub_cv_target_cc_link_format=
+  case "$host_os" in
+    *darwin* | *mac*)
+       grub_cv_target_cc_link_format="-arch,${target_cpu}"
+       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
+        ;;
+    *windows* | *cygwin* | *mingw*)
+      if test x${target_cpu} = xi386 ; then
+        grub_cv_target_cc_link_format=-mi386pe;
+	TARGET_OBJ2ELF='./build-grub-pe2elf';
+      fi
+      if test x${target_cpu} = xx86_64 ; then
+        grub_cv_target_cc_link_format=-mi386pep;
+	TARGET_OBJ2ELF='./build-grub-pep2elf';
+      fi
+      TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
+      ;;
+  esac
+elif test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
   AC_CACHE_CHECK([for target linking format], [grub_cv_target_cc_link_format], [
     grub_cv_target_cc_link_format=unknown
     for format in -melf_${target_cpu} -melf_${target_cpu}_fbsd -melf_${target_cpu}_obsd -melf_${target_cpu}_haiku -mi386pe -mi386pep -arch,${target_cpu}; do
-      if test x${target_cpu} != xi386 && test x$format = xi386pe; then
+      if test x${target_cpu} != xi386 && test x$format = x-mi386pe; then
         continue
       fi
-      if test x${target_cpu} != xx86_64 && test x$format = xi386pep; then
+      if test x${target_cpu} != xx86_64 && test x$format = x-mi386pep; then
         continue
       fi
       CFLAGS="$TARGET_CFLAGS"

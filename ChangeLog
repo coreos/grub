@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Choose link format based on host_os on emu.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/getroot.c: Non-unix build fix.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
