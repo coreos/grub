@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/lvm.c: Use grub_size_t for sizes and grub_ssize_t
+	for pointer difference.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/import_gcry.py: Skip sample keys.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
