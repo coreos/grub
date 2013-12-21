@@ -203,13 +203,13 @@ gcry_err_code_t
 grub_crypto_ecb_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, const void *in, grub_size_t size)
 {
-  const grub_uint8_t *inptr;
-  grub_uint8_t *outptr, *end;
+  const grub_uint8_t *inptr, *end;
+  grub_uint8_t *outptr;
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
     return GPG_ERR_INV_ARG;
-  end = (grub_uint8_t *) in + size;
+  end = (const grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
     cipher->cipher->decrypt (cipher->ctx, outptr, inptr);
@@ -220,13 +220,13 @@ gcry_err_code_t
 grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, const void *in, grub_size_t size)
 {
-  const grub_uint8_t *inptr;
-  grub_uint8_t *outptr, *end;
+  const grub_uint8_t *inptr, *end;
+  grub_uint8_t *outptr;
   if (!cipher->cipher->encrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
     return GPG_ERR_INV_ARG;
-  end = (grub_uint8_t *) in + size;
+  end = (const grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
     cipher->cipher->encrypt (cipher->ctx, outptr, inptr);
@@ -235,16 +235,17 @@ grub_crypto_ecb_encrypt (grub_crypto_cipher_handle_t cipher,
 
 gcry_err_code_t
 grub_crypto_cbc_encrypt (grub_crypto_cipher_handle_t cipher,
-			 void *out, void *in, grub_size_t size,
+			 void *out, const void *in, grub_size_t size,
 			 void *iv_in)
 {
-  grub_uint8_t *inptr, *outptr, *end;
+  grub_uint8_t *outptr;
+  const grub_uint8_t *inptr, *end;
   void *iv;
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
   if (size % cipher->cipher->blocksize != 0)
     return GPG_ERR_INV_ARG;
-  end = (grub_uint8_t *) in + size;
+  end = (const grub_uint8_t *) in + size;
   iv = iv_in;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
@@ -262,8 +263,8 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
 			 void *out, const void *in, grub_size_t size,
 			 void *iv)
 {
-  const grub_uint8_t *inptr;
-  grub_uint8_t *outptr, *end;
+  const grub_uint8_t *inptr, *end;
+  grub_uint8_t *outptr;
   grub_uint8_t ivt[GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE];
   if (!cipher->cipher->decrypt)
     return GPG_ERR_NOT_SUPPORTED;
@@ -271,7 +272,7 @@ grub_crypto_cbc_decrypt (grub_crypto_cipher_handle_t cipher,
     return GPG_ERR_INV_ARG;
   if (cipher->cipher->blocksize > GRUB_CRYPTO_MAX_CIPHER_BLOCKSIZE)
     return GPG_ERR_INV_ARG;
-  end = (grub_uint8_t *) in + size;
+  end = (const grub_uint8_t *) in + size;
   for (inptr = in, outptr = out; inptr < end;
        inptr += cipher->cipher->blocksize, outptr += cipher->cipher->blocksize)
     {

@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/crypto.c: Don't discard const attribute.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/disk.c: Fix potential overflow.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
