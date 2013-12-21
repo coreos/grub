@@ -37,7 +37,7 @@ grub_disk_cache_invalidate (unsigned long dev_id, unsigned long disk_id,
   unsigned cache_index;
   struct grub_disk_cache *cache;
 
-  sector &= ~(GRUB_DISK_CACHE_SIZE - 1);
+  sector &= ~((grub_disk_addr_t) GRUB_DISK_CACHE_SIZE - 1);
   cache_index = grub_disk_cache_get_index (dev_id, disk_id, sector);
   cache = grub_disk_cache_table + cache_index;
 
@@ -63,8 +63,8 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
   if (grub_disk_adjust_range (disk, &sector, &offset, size) != GRUB_ERR_NONE)
     return -1;
 
-  aligned_sector = (sector & ~((1 << (disk->log_sector_size
-				      - GRUB_DISK_SECTOR_BITS)) - 1));
+  aligned_sector = (sector & ~((1ULL << (disk->log_sector_size
+					 - GRUB_DISK_SECTOR_BITS)) - 1));
   real_offset = offset + ((sector - aligned_sector) << GRUB_DISK_SECTOR_BITS);
   sector = aligned_sector;
 
@@ -77,14 +77,14 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  grub_size_t len;
 	  grub_partition_t part;
 
-	  tmp_buf = grub_malloc (1 << disk->log_sector_size);
+	  tmp_buf = grub_malloc (1U << disk->log_sector_size);
 	  if (!tmp_buf)
 	    return grub_errno;
 
 	  part = disk->partition;
 	  disk->partition = 0;
 	  if (grub_disk_read (disk, sector,
-			      0, (1 << disk->log_sector_size), tmp_buf)
+			      0, (1U << disk->log_sector_size), tmp_buf)
 	      != GRUB_ERR_NONE)
 	    {
 	      disk->partition = part;
@@ -93,7 +93,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	    }
 	  disk->partition = part;
 
-	  len = (1 << disk->log_sector_size) - real_offset;
+	  len = (1U << disk->log_sector_size) - real_offset;
 	  if (len > size)
 	    len = size;
 
@@ -110,7 +110,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 
 	  grub_free (tmp_buf);
 
-	  sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
+	  sector += (1U << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	  buf = (const char *) buf + len;
 	  size -= len;
 	  real_offset = 0;
@@ -120,7 +120,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  grub_size_t len;
 	  grub_size_t n;
 
-	  len = size & ~((1 << disk->log_sector_size) - 1);
+	  len = size & ~((1ULL << disk->log_sector_size) - 1);
 	  n = size >> disk->log_sector_size;
 
 	  if (n > (disk->max_agglomerate
@@ -137,7 +137,7 @@ grub_disk_write (grub_disk_t disk, grub_disk_addr_t sector,
 	  while (n--)
 	    {
 	      grub_disk_cache_invalidate (disk->dev->id, disk->id, sector);
-	      sector += (1 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
+	      sector += (1U << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	    }
 
 	  buf = (const char *) buf + len;
