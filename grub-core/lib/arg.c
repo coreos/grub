@@ -35,22 +35,22 @@ static const struct grub_arg_option help_options[] =
   };
 
 /* Helper for find_short.  */
-static struct grub_arg_option *
+static const struct grub_arg_option *
 fnd_short (const struct grub_arg_option *opt, char c)
 {
   while (opt->doc)
     {
       if (opt->shortarg == c)
-	return (struct grub_arg_option *) opt;
+	return opt;
       opt++;
     }
   return 0;
 }
 
-static struct grub_arg_option *
+static const struct grub_arg_option *
 find_short (const struct grub_arg_option *options, char c)
 {
-  struct grub_arg_option *found = 0;
+  const struct grub_arg_option *found = 0;
 
   if (options)
     found = fnd_short (options, c);
@@ -60,11 +60,11 @@ find_short (const struct grub_arg_option *options, char c)
       switch (c)
 	{
 	case 'h':
-	  found = (struct grub_arg_option *) help_options;
+	  found = help_options;
 	  break;
 
 	case 'u':
-	  found = (struct grub_arg_option *) (help_options + 1);
+	  found = (help_options + 1);
 	  break;
 
 	default:
@@ -76,23 +76,23 @@ find_short (const struct grub_arg_option *options, char c)
 }
 
 /* Helper for find_long.  */
-static struct grub_arg_option *
+static const struct grub_arg_option *
 fnd_long (const struct grub_arg_option *opt, const char *s, int len)
 {
   while (opt->doc)
     {
       if (opt->longarg && ! grub_strncmp (opt->longarg, s, len) &&
 	  opt->longarg[len] == '\0')
-	return (struct grub_arg_option *) opt;
+	return opt;
       opt++;
     }
   return 0;
 }
 
-static struct grub_arg_option *
+static const struct grub_arg_option *
 find_long (const struct grub_arg_option *options, const char *s, int len)
 {
-  struct grub_arg_option *found = 0;
+  const struct grub_arg_option *found = 0;
 
   if (options)
     found = fnd_long (options, s, len);
@@ -240,7 +240,7 @@ grub_arg_parse (grub_extcmd_t cmd, int argc, char **argv,
   for (curarg = 0; curarg < argc; curarg++)
     {
       char *arg = argv[curarg];
-      struct grub_arg_option *opt;
+      const struct grub_arg_option *opt;
       char *option = 0;
 
       /* No option is used.  */
