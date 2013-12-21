@@ -369,6 +369,14 @@ for cipher_file in cipher_files:
             if not m is None:
                 skip_statement = True
                 continue
+            m = re.match ("static const char sample_secret_key", line)
+            if not m is None:
+                skip_statement = True
+                continue
+            m = re.match ("static const char sample_public_key", line)
+            if not m is None:
+                skip_statement = True
+                continue
             m = re.match ("static void sign|static gpg_err_code_t sign|static gpg_err_code_t generate",
                           line)
             if not m is None:
