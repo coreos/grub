@@ -36,12 +36,12 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static const struct grub_arg_option options[] = {
   {"is-i386-xen-pae-domu", 0, 0,
-   N_("Check if FILE can be booted as i386 PAE xen unprivilegied guest"),
+   N_("Check if FILE can be booted as i386 PAE xen unprivileged guest kernel"),
    0, 0},
   {"is-x86_64-xen-domu", 0, 0,
-   N_("Check if FILE can be booted as x86_64 xen unprivilegied guest"), 0, 0},
+   N_("Check if FILE can be booted as x86_64 xen unprivileged guest kernel"), 0, 0},
   {"is-x86-xen-dom0", 0, 0,
-   N_("Check if FILE can be used as xen x86 privilegied guest kernel"), 0, 0},
+   N_("Check if FILE can be used as xen x86 privileged guest kernel"), 0, 0},
   {"is-x86-multiboot", 0, 0,
    N_("Check if FILE can be used as x86 multiboot kernel"), 0, 0},
   {"is-x86-multiboot2", 0, 0,

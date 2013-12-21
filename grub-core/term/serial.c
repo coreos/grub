@@ -247,7 +247,7 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 	config.rtscts = 0;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
-			   N_("unsupported serial port flow"));
+			   N_("unsupported serial port flow control"));
     }
 
   if (state[OPTION_STOP].set)

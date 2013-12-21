@@ -55,7 +55,7 @@ GRUB_MOD_INIT(cmosdump)
 {
   cmd = grub_register_command ("cmosdump", grub_cmd_cmosdump,
 			       0,
-			       N_("Dump CMOS contents."));
+			       N_("Show raw dump of the CMOS contents."));
 }
 
 GRUB_MOD_FINI(cmosdump)

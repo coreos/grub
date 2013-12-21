@@ -455,7 +455,7 @@ GRUB_MOD_INIT(loadenv)
 {
   cmd_load =
     grub_register_extcmd ("load_env", grub_cmd_load_env, 0,
-			  N_("[-f FILE] [-s|--skip-sig] [whitelisted_variable_name] [...]"),
+			  N_("[-f FILE] [-s|--skip-sig] [variable_name_to_whitelist] [...]"),
 			  N_("Load variables from environment block file."),
 			  options);
   cmd_list =

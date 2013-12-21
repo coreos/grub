@@ -37,5 +37,7 @@ grub_get_random (void *out, grub_size_t len)
 Some functions like grub-mkpaswd and installing on UUID-less disks will be \
 disabled."
   grub_util_error ("%s",
+		   /* TRANSLATORS: The OS itself may very well have a random
+		      number generator but GRUB doesn't know how to access it.  */
 		   _("no random number generator is available for your OS"));
 }

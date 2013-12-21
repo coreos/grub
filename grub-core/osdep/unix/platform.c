@@ -74,7 +74,7 @@ get_ofpathname (const char *dev)
   return ret;
 
  fail:
-  grub_util_error (_("couldn't find IEEE1275 device tree path for %s.\nYou will have to set `boot-device' variable manually"),
+  grub_util_error (_("couldn't find IEEE1275 device path for %s.\nYou will have to set `boot-device' variable manually"),
 		   dev);
 }
 

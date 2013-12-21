@@ -70,12 +70,12 @@ grub_util_hurd_get_disk_info (const char *dev, grub_uint32_t *secsize, grub_disk
 			       &data, &data_len);
 
   if (num_ints < 1)
-    grub_util_error (_("Storage info for `%s' does not include type"), dev);
+    grub_util_error (_("Storage information for `%s' does not include type"), dev);
   if (ints[0] != STORAGE_DEVICE)
     grub_util_error (_("`%s' is not a local disk"), dev);
 
   if (num_offsets != 2)
-    grub_util_error (_("Storage info for `%s' does indicate neither plain partition nor plain disk"), dev);
+    grub_util_error (_("Storage information for `%s' indicates neither a plain partition nor a plain disk"), dev);
   if (parent)
     {
       *parent = NULL;

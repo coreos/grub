@@ -1182,7 +1182,7 @@ main (int argc, char *argv[])
 	  if (grub_strcmp (fs->name, "hfs") != 0
 	      && grub_strcmp (fs->name, "hfsplus") != 0
 	      && !is_guess)
-	    grub_util_error (_("%s is neither hfs nor hfsplus"),
+	    grub_util_error (_("filesystem on %s is neither HFS nor HFS+"),
 			     macppcdir);
 	  if (grub_strcmp (fs->name, "hfs") == 0
 	      || grub_strcmp (fs->name, "hfsplus") == 0)
@@ -1250,7 +1250,7 @@ main (int argc, char *argv[])
     }
 
   if (!config.is_cryptodisk_enabled && have_cryptodisk)
-    grub_util_error (_("attempt to install to cryptodisk without cryptodisk enabled. "
+    grub_util_error (_("attempt to install to encrypted disk without cryptodisk enabled. "
 		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=1",
 		     grub_util_get_config_filename ());
 
@@ -1845,7 +1845,7 @@ main (int argc, char *argv[])
 
 	  /* Try to make this image bootable using the EFI Boot Manager, if available.  */
 	  if (!efi_distributor || efi_distributor[0] == '\0')
-	    grub_util_error ("%s", _("EFI distributor id isn't specified."));
+	    grub_util_error ("%s", _("EFI bootloader id isn't specified."));
 	  efifile_path = xasprintf ("\\EFI\\%s\\%s",
 				    efi_distributor,
 				    efi_file);

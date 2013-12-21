@@ -1,3 +1,8 @@
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-12-21  Colin Watson  <cjwatson@ubuntu.com>
+
+	Clarify several translatable messages.
+
 2013-12-20  Colin Watson  <cjwatson@ubuntu.com>
 
 	Be more verbose about some configure failures.

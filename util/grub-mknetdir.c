@@ -80,7 +80,8 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 struct argp argp = {
   options, argp_parser, NULL,
-  "\v"N_("copies GRUB images into net_directory/subdir/target_cpu-platform."), 
+  "\v"N_("Prepares GRUB network boot images at net_directory/subdir "
+	 "assuming net_directory being TFTP root."), 
   NULL, grub_install_help_filter, NULL
 };
 

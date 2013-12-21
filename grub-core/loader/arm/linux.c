@@ -132,7 +132,7 @@ linux_boot (void)
 
   if (!fdt_addr && machine_type == ARM_FDT_MACHINE_TYPE)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
-		       N_("device tree must be supplied"));
+		       N_("device tree must be supplied (see `devicetree' command)"));
 
   grub_arch_sync_caches ((void *) linux_addr, linux_size);
 
@@ -288,7 +288,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (!initrd_start)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("memory allocation failed"));
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
       goto fail;
     }
 #else
@@ -347,7 +347,7 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
   fdt_addr = grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
   if (!fdt_addr)
     {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("memory allocation failed"));
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
       goto out;
     }
 #else
@@ -384,6 +384,7 @@ GRUB_MOD_INIT (linux)
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
 				      0, N_("Load initrd."));
   cmd_devicetree = grub_register_command ("devicetree", grub_cmd_devicetree,
+					  /* TRANSLATORS: DTB stands for device tree blob.  */
 					  0, N_("Load DTB file."));
   my_mod = mod;
   fdt_addr = (void *) firmware_get_boot_data ();

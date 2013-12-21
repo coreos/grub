@@ -47,14 +47,14 @@ syslinux_file_getline (char **line, int cont __attribute__ ((unused)),
 static const struct grub_arg_option options[] =
   {
     {"root",  'r', 0,
-     N_("root directory of the syslinux disk (default /)."),
+     N_("root directory of the syslinux disk [default=/]."),
      N_("DIR"), ARG_TYPE_STRING},
     {"cwd",  'c', 0,
-     N_("home directory of the syslinux config (default directory of configfile)."),
+     N_("current directory of the syslinux [default is parent directory of input file]."),
      N_("DIR"), ARG_TYPE_STRING},
-    {"isolinux",     'i',  0, N_("assume isolinux."), 0, 0},
-    {"pxelinux",     'p',  0, N_("assume pxelinux."), 0, 0},
-    {"syslinux",     's',  0, N_("assume syslinux."), 0, 0},
+    {"isolinux",     'i',  0, N_("assume input is an isolinux configuration file."), 0, 0},
+    {"pxelinux",     'p',  0, N_("assume input is a pxelinux configuration file."), 0, 0},
+    {"syslinux",     's',  0, N_("assume input is a syslinux configuration file."), 0, 0},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -183,25 +183,25 @@ GRUB_MOD_INIT(syslinuxcfg)
 			    N_("FILE"),
 			    /* TRANSLATORS: "syslinux config" means
 			       "config as used by syslinux".  */
-			    N_("Parse syslinux config in same context"),
+			    N_("Execute syslinux config in same context"),
 			    options);
   cmd_configfile
     = grub_register_extcmd ("syslinux_configfile",
 			    grub_cmd_syslinux_source, 0,
 			    N_("FILE"),
-			    N_("Parse syslinux config in new context"),
+			    N_("Execute syslinux config in new context"),
 			    options);
   cmd_source_extract
     = grub_register_extcmd ("extract_syslinux_entries_source",
 			    grub_cmd_syslinux_source, 0,
 			    N_("FILE"),
-			    N_("Parse syslinux config in same context taking only menu entries"),
+			    N_("Execute syslinux config in same context taking only menu entries"),
 			    options);
   cmd_configfile_extract
     = grub_register_extcmd ("extract_syslinux_entries_configfile",
 			    grub_cmd_syslinux_source, 0,
 			    N_("FILE"),
-			    N_("Parse syslinux config in new context taking only menu entries"),
+			    N_("Execute syslinux config in new context taking only menu entries"),
 			    options);
 }
 

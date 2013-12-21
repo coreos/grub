@@ -166,7 +166,7 @@ GRUB_MOD_INIT(pcidump)
 {
   cmd = grub_register_extcmd ("pcidump", grub_cmd_pcidump, 0,
 			      N_("[-s POSITION] [-d DEVICE]"),
-			      N_("Dump PCI configuration space."), options);
+			      N_("Show raw dump of the PCI configuration space."), options);
 }
 
 GRUB_MOD_FINI(pcidump)

@@ -41,7 +41,7 @@ enum
 static const struct grub_arg_option options[] =
   {
     {"skip-sig", 's', 0,
-     N_("Skip signature-checking of the signature file."), 0, ARG_TYPE_NONE},
+     N_("Skip signature-checking of the public key file."), 0, ARG_TYPE_NONE},
     {0, 0, 0, 0, 0, 0}
   };
 
@@ -970,7 +970,7 @@ GRUB_MOD_INIT(verify)
 				     options);
   cmd_list = grub_register_command ("list_trusted", grub_cmd_list,
 				    0,
-				    N_("List trusted keys."));
+				    N_("Show the list of trusted keys."));
   cmd_distrust = grub_register_command ("distrust", grub_cmd_distrust,
 					N_("PUBKEY_ID"),
 					N_("Remove KEYID from trusted keys."));
