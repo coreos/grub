@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/misc.c (grub_qsort_strcmp): Don't discard const attribute.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Remove duplicate warning arguments.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>

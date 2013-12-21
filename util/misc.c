@@ -262,6 +262,6 @@ grub_register_exported_symbols (void)
 int
 grub_qsort_strcmp (const void *p1, const void *p2)
 {
-  return strcmp(*(char **)p1, *(char **)p2);
+  return strcmp(*(char *const *)p1, *(char *const *)p2);
 }
 
