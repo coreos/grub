@@ -342,9 +342,9 @@ grub_disk_read_small_real (grub_disk_t disk, grub_disk_addr_t sector,
     {
       grub_err_t err;
       err = (disk->dev->read) (disk, transform_sector (disk, sector),
-			       1 << (GRUB_DISK_CACHE_BITS
-				     + GRUB_DISK_SECTOR_BITS
-				     - disk->log_sector_size), tmp_buf);
+			       1U << (GRUB_DISK_CACHE_BITS
+				      + GRUB_DISK_SECTOR_BITS
+				      - disk->log_sector_size), tmp_buf);
       if (!err)
 	{
 	  /* Copy it and store it in the disk cache.  */
@@ -366,11 +366,11 @@ grub_disk_read_small_real (grub_disk_t disk, grub_disk_addr_t sector,
 
     sector += (offset >> GRUB_DISK_SECTOR_BITS);
     offset &= ((1 << GRUB_DISK_SECTOR_BITS) - 1);
-    aligned_sector = (sector & ~((1 << (disk->log_sector_size
-					- GRUB_DISK_SECTOR_BITS))
+    aligned_sector = (sector & ~((1ULL << (disk->log_sector_size
+					   - GRUB_DISK_SECTOR_BITS))
 				 - 1));
     offset += ((sector - aligned_sector) << GRUB_DISK_SECTOR_BITS);
-    num = ((size + offset + (1 << (disk->log_sector_size))
+    num = ((size + offset + (1ULL << (disk->log_sector_size))
 	    - 1) >> (disk->log_sector_size));
 
     tmp_buf = grub_malloc (num << disk->log_sector_size);
@@ -431,7 +431,7 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
       grub_err_t err;
       grub_size_t len;
 
-      start_sector = sector & ~(GRUB_DISK_CACHE_SIZE - 1);
+      start_sector = sector & ~((grub_disk_addr_t) GRUB_DISK_CACHE_SIZE - 1);
       pos = (sector - start_sector) << GRUB_DISK_SECTOR_BITS;
       len = ((GRUB_DISK_SECTOR_SIZE << GRUB_DISK_CACHE_BITS)
 	     - pos - offset);

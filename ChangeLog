@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk.c: Fix potential overflow.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* conf/Makefile.common: Don't include non-existing directory
 	grub-core/lib/libgcrypt-grub/include.
 
