@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/crypto.h: Don't discard const attribute.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/net/bootp.c (grub_cmd_dhcpopt): Use snprintf where it
 	was intended.
 
