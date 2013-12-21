@@ -35,7 +35,6 @@ CPPFLAGS_DEFAULT += -I$(top_builddir)
 CPPFLAGS_DEFAULT += -I$(top_srcdir)
 CPPFLAGS_DEFAULT += -I$(top_srcdir)/include
 CPPFLAGS_DEFAULT += -I$(top_builddir)/include
-CPPFLAGS_DEFAULT += -I$(top_srcdir)/grub-core/lib/libgcrypt-grub/include
 CPPFLAGS_DEFAULT += -I$(top_srcdir)/grub-core/lib/libgcrypt-grub/src/
 CCASFLAGS_DEFAULT = $(CPPFLAGS_DEFAULT) -DASM_FILE=1
 BUILD_CPPFLAGS += $(CPPFLAGS_DEFAULT)

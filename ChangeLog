@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* conf/Makefile.common: Don't include non-existing directory
+	grub-core/lib/libgcrypt-grub/include.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Clarify several translatable messages.
 
 2013-12-21  David Prévot  <david@tilapin.org>
