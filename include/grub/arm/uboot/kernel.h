@@ -27,6 +27,6 @@
 #endif /* ! ASM_FILE */
 
 #define GRUB_KERNEL_MACHINE_STACK_SIZE 0x40000
-#define GRUB_KERNEL_MACHINE_HEAP_SIZE  (grub_size_t) (2 * 1024 * 1024)
+#define GRUB_KERNEL_MACHINE_HEAP_SIZE  (grub_size_t) (16 * 1024 * 1024)
 
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */
