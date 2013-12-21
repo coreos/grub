@@ -1,5 +1,12 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-glue-efi.c: Use "universal binary" rather "fat binary"
+	in strings.
+
+	Suggested by: David Prévot.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/crypto.h (grub_crypto_xor): Fix cast-align warning.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
