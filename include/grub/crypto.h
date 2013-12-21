@@ -293,9 +293,10 @@ grub_crypto_xor (void *out, const void *in1, const void *in2, grub_size_t size)
     }
   while (size >= sizeof (grub_uint64_t))
     {
-      *(grub_uint64_t *) outptr
-	= (*(const grub_uint64_t *) in1ptr
-	   ^ *(const grub_uint64_t *) in2ptr);
+      /* We've already checked that all pointers are aligned.  */
+      *(grub_uint64_t *) (void *) outptr
+	= (*(const grub_uint64_t *) (const void *) in1ptr
+	   ^ *(const grub_uint64_t *) (const void *) in2ptr);
       in1ptr += sizeof (grub_uint64_t);
       in2ptr += sizeof (grub_uint64_t);
       outptr += sizeof (grub_uint64_t);

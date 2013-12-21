@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/crypto.h (grub_crypto_xor): Fix cast-align warning.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enable -Wformat=2 if it's supported.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
