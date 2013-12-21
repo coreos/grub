@@ -109,7 +109,7 @@ GRUB_MOD_INIT(cbtime)
 {
   cmd_boottime =
     grub_register_command ("coreboot_boottime", grub_cmd_coreboot_boottime,
-			   0, N_("Get coreboot boot time statistics."));
+			   0, N_("Show coreboot boot time statistics."));
 }
 
 GRUB_MOD_FINI(cbtime)

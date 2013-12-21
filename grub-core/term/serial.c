@@ -60,7 +60,7 @@ static const struct grub_arg_option options[] =
   {"word",   'w', 0, N_("Set the serial port word length."), 0, ARG_TYPE_INT},
   {"parity", 'r', 0, N_("Set the serial port parity."),      0, ARG_TYPE_STRING},
   {"stop",   't', 0, N_("Set the serial port stop bits."),   0, ARG_TYPE_INT},
-  {"base-clock",   'b', 0, N_("Set the base clock."),   0, ARG_TYPE_STRING},
+  {"base-clock",   'b', 0, N_("Set the base frequency."),   0, ARG_TYPE_STRING},
   {"rtscts",   'f', 0, N_("Enable/disable RTS/CTS."),   "on|off", ARG_TYPE_STRING},
   {0, 0, 0, 0, 0, 0}
 };

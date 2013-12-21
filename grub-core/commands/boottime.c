@@ -56,7 +56,7 @@ GRUB_MOD_INIT(boottime)
 {
   cmd_boottime =
     grub_register_command ("boottime", grub_cmd_boottime,
-			   0, N_("Get boot time statistics."));
+			   0, N_("Show boot time statistics."));
 }
 
 GRUB_MOD_FINI(boottime)
