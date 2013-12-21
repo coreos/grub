@@ -552,7 +552,7 @@ grub_video_check_mode_flag (grub_video_mode_type_t flags,
 grub_video_driver_id_t EXPORT_FUNC (grub_video_get_driver_id) (void);
 
 static __inline grub_video_rgba_color_t
-grub_video_rgba_color_rgb (int r, int g, int b)
+grub_video_rgba_color_rgb (grub_uint8_t r, grub_uint8_t g, grub_uint8_t b)
 {
   grub_video_rgba_color_t c;
   c.red = r;
