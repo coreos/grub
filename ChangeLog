@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Inline printf templates when possible to enable format checking.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/crypto.h: Don't discard const attribute.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>

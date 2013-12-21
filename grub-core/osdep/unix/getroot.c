@@ -443,17 +443,18 @@ grub_find_device (const char *dir, dev_t dev)
 	  /* Found!  */
 	  char *res;
 	  char *cwd;
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-	  /* Convert this block device to its character (raw) device.  */
-	  const char *template = "%s/r%s";
-#else
-	  /* Keep the device name as it is.  */
-	  const char *template = "%s/%s";
-#endif
 
 	  cwd = xgetcwd ();
 	  res = xmalloc (strlen (cwd) + strlen (ent->d_name) + 3);
-	  sprintf (res, template, cwd, ent->d_name);
+	  sprintf (res, 
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+		   /* Convert this block device to its character (raw) device.  */
+		   "%s/r%s",
+#else
+		   /* Keep the device name as it is.  */
+		   "%s/%s",
+#endif
+		   cwd, ent->d_name);
 	  strip_extra_slashes (res);
 	  free (cwd);
 

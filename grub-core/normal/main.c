@@ -194,14 +194,13 @@ grub_normal_init_page (struct grub_term_output *term,
 {
   grub_ssize_t msg_len;
   int posx;
-  const char *msg = _("GNU GRUB  version %s");
   char *msg_formatted;
   grub_uint32_t *unicode_msg;
   grub_uint32_t *last_position;
  
   grub_term_cls (term);
 
-  msg_formatted = grub_xasprintf (msg, PACKAGE_VERSION);
+  msg_formatted = grub_xasprintf (_("GNU GRUB  version %s"), PACKAGE_VERSION);
   if (!msg_formatted)
     return;
  
@@ -350,13 +349,13 @@ static grub_err_t
 grub_normal_reader_init (int nested)
 {
   struct grub_term_output *term;
-  const char *msg = _("Minimal BASH-like line editing is supported. For "
-		      "the first word, TAB lists possible command completions. Anywhere "
-		      "else TAB lists possible device or file completions. %s");
   const char *msg_esc = _("ESC at any time exits.");
   char *msg_formatted;
 
-  msg_formatted = grub_xasprintf (msg, nested ? msg_esc : "");
+  msg_formatted = grub_xasprintf (_("Minimal BASH-like line editing is supported. For "
+				    "the first word, TAB lists possible command completions. Anywhere "
+				    "else TAB lists possible device or file completions. %s"),
+				  nested ? msg_esc : "");
   if (!msg_formatted)
     return grub_errno;
 

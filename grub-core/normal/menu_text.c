@@ -165,11 +165,11 @@ command-line or ESC to discard edits and return to the GRUB menu."),
     }
   else
     {
-      const char *msg = _("Use the %C and %C keys to select which "
-			  "entry is highlighted.");
       char *msg_translated;
 
-      msg_translated = grub_xasprintf (msg, GRUB_UNICODE_UPARROW,
+      msg_translated = grub_xasprintf (_("Use the %C and %C keys to select which "
+					 "entry is highlighted."),
+				       GRUB_UNICODE_UPARROW,
 				       GRUB_UNICODE_DOWNARROW);
       if (!msg_translated)
 	return 0;
@@ -430,9 +430,6 @@ grub_menu_init_page (int nested, int edit,
 static void
 menu_text_print_timeout (int timeout, void *dataptr)
 {
-  const char *msg =
-    _("The highlighted entry will be executed automatically in %ds.");
-  const char *msg_terse = _("%ds");
   struct menu_viewer_data *data = dataptr;
   char *msg_translated = 0;
 
@@ -441,9 +438,9 @@ menu_text_print_timeout (int timeout, void *dataptr)
 
   if (data->timeout_msg == TIMEOUT_TERSE
       || data->timeout_msg == TIMEOUT_TERSE_NO_MARGIN)
-    msg_translated = grub_xasprintf (msg_terse, timeout);
+    msg_translated = grub_xasprintf (_("%ds"), timeout);
   else
-    msg_translated = grub_xasprintf (msg, timeout);
+    msg_translated = grub_xasprintf (_("The highlighted entry will be executed automatically in %ds."), timeout);
   if (!msg_translated)
     {
       grub_print_error ();
@@ -459,7 +456,7 @@ menu_text_print_timeout (int timeout, void *dataptr)
       if (data->timeout_msg == TIMEOUT_TERSE)
 	{
 	  grub_free (msg_translated);
-	  msg_translated = grub_xasprintf (msg_terse, timeout);
+	  msg_translated = grub_xasprintf (_("%ds"), timeout);
 	  if (grub_term_width (data->term) < 10)
 	    data->timeout_msg = TIMEOUT_TERSE_NO_MARGIN;
 	}
