@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Add -Wmissing-include-dirs -Wmissing-prototypes
+	-Wmissing-declarations if supported.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/macbless.c (grub_mac_bless_inode): Pass inode as
 	u32 as both HFS and HFS+ have 32-bit inodes.
 
