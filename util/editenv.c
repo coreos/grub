@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/emu/misc.h>
 #include <grub/util/misc.h>
+#include <grub/util/install.h>
 #include <grub/lib/envblk.h>
 #include <grub/i18n.h>
 #include <grub/emu/hostfile.h>
