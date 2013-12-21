@@ -237,6 +237,8 @@ have_devfs (void)
   return dev_devfsd_exists;
 }
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static int
 grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 {
@@ -324,6 +326,8 @@ grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 
   return 0;
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 void
 grub_hostdisk_flush_initial_buffer (const char *os_dev)

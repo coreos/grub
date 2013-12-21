@@ -94,6 +94,8 @@ static struct argp_option options[] = {
   { 0, 0, 0, 0, 0, 0 }
 };
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static char *
 help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
@@ -115,6 +117,8 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
         return (char *) text;
     }
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 struct arguments
 {

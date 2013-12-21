@@ -45,6 +45,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 char *
 grub_install_help_filter (int key, const char *text,
 				 void *input __attribute__ ((unused)))
@@ -66,6 +68,8 @@ grub_install_help_filter (int key, const char *text,
       return (char *) text;
     }
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 static int (*compress_func) (const char *src, const char *dest) = NULL;
 char *grub_install_copy_buffer;

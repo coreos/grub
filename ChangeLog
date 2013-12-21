@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable -Wformat=2 if it's supported.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* configure.ac: Add -Wmissing-include-dirs -Wmissing-prototypes
 	-Wmissing-declarations if supported.
 

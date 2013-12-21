@@ -112,6 +112,8 @@ static struct argp_option options[] = {
   {0, 0, 0, 0, 0, 0}
 };
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static char *
 help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
@@ -123,6 +125,8 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
       return grub_install_help_filter (key, text, input);
     }
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 enum {
   SYS_AREA_AUTO,

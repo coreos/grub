@@ -229,6 +229,9 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 }
 
 #ifdef GRUB_UTIL
+
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static grub_err_t
 pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 			unsigned int max_nsectors,
@@ -401,6 +404,9 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 		     N_("your embedding area is unusually small.  "
 			"core.img won't fit in it."));
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
+
 #endif
 
 

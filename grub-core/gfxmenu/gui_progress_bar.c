@@ -183,6 +183,8 @@ draw_pixmap_bar (grub_gui_progress_bar_t self)
     }
 }
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static void
 draw_text (grub_gui_progress_bar_t self)
 {
@@ -211,6 +213,8 @@ draw_text (grub_gui_progress_bar_t self)
       grub_free (text);
     }
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 static void
 progress_bar_paint (void *vself, const grub_video_rect_t *region)

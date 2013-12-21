@@ -326,6 +326,8 @@ get_default_platform (void)
 #endif
 }
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static char *
 help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
@@ -341,6 +343,8 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
       return grub_install_help_filter (key, text, input);
     }
 }
+
+#pragma GCC diagnostic error "-Wformat-nonliteral"
 
 /* TRANSLATORS: INSTALL_DEVICE isn't an identifier and is the DEVICE you
    install to.  */

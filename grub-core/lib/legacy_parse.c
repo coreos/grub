@@ -24,6 +24,8 @@
 #include <grub/i386/pc/vesa_modes_table.h>
 #include <grub/i18n.h>
 
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 struct legacy_command
 {
   const char *name;
