@@ -59,7 +59,7 @@ find_inode (const char *filename,
 }
 
 grub_err_t
-grub_mac_bless_inode (grub_device_t dev, grub_uint64_t inode, int is_dir,
+grub_mac_bless_inode (grub_device_t dev, grub_uint32_t inode, int is_dir,
 		      int intel)
 {
   grub_err_t err;
@@ -174,8 +174,8 @@ grub_mac_bless_file (grub_device_t dev, const char *path_in, int intel)
     }
   grub_free (path);
 
-  return grub_mac_bless_inode (dev, ctx.inode_found, (ctx.found == DIR),
-			       intel);
+  return grub_mac_bless_inode (dev, (grub_uint32_t) ctx.inode_found,
+			       (ctx.found == DIR), intel);
 }
 
 static grub_err_t

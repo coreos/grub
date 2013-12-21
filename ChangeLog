@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/macbless.c (grub_mac_bless_inode): Pass inode as
+	u32 as both HFS and HFS+ have 32-bit inodes.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_strtol): Fix overflow.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
