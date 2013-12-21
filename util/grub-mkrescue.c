@@ -212,7 +212,9 @@ struct argp argp = {
   options, argp_parser, N_("[OPTION] SOURCE..."),
   /* TRANSLATORS: it generates one single image which is bootable through any method. */
   N_("Make GRUB CD-ROM, disk, pendrive and floppy bootable image.")"\v"
-  N_("Generates a bootable CD/USB stick/floppy image with specified source files, source directories, or mkisofs options listed by the output of `%s'.\n\n"
+  N_("Generates a bootable CD/USB/floppy image.  Arguments other than options to this program"
+     " are passed to xorriso, and indicate source files, source directories, or any of the "
+     "mkisofs options listed by the output of `%s'.\n\n"
      "Option -- switches to native xorriso command mode.\n\n"
      "Mail xorriso support requests to <bug-xorriso@gnu.org>."), 
   NULL, help_filter, NULL
