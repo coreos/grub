@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/net/bootp.c (grub_cmd_dhcpopt): Use snprintf where it
+	was intended.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/lib/crypto.c: Don't discard const attribute.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>

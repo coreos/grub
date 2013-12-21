@@ -415,7 +415,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
       else
 	{
 	  char valn[64];
-	  grub_printf (valn, sizeof (valn), "%lld\n", (unsigned long long) val);
+	  grub_snprintf (valn, sizeof (valn), "%lld\n", (unsigned long long) val);
 	  return grub_env_set (args[0], valn);
 	}
       return GRUB_ERR_NONE;
