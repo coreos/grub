@@ -94,7 +94,7 @@ get_platform (void)
 
   if (!get_efi_privilegies ())
     {
-      grub_util_warn (_("Insufficient privilegies to access firmware, assuming BIOS"));
+      grub_util_warn (_("Insufficient privileges to access firmware, assuming BIOS"));
       platform = PLAT_BIOS;
     }
 

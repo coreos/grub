@@ -966,14 +966,14 @@ GRUB_MOD_INIT(verify)
 			      options);
   cmd_trust = grub_register_extcmd ("trust", grub_cmd_trust, 0,
 				     N_("[-s|--skip-sig] PUBKEY_FILE"),
-				     N_("Add PKFILE to trusted keys."),
+				     N_("Add PUBKEY_FILE to trusted keys."),
 				     options);
   cmd_list = grub_register_command ("list_trusted", grub_cmd_list,
 				    0,
 				    N_("Show the list of trusted keys."));
   cmd_distrust = grub_register_command ("distrust", grub_cmd_distrust,
 					N_("PUBKEY_ID"),
-					N_("Remove KEYID from trusted keys."));
+					N_("Remove PUBKEY_ID from trusted keys."));
 }
 
 GRUB_MOD_FINI(verify)

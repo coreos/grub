@@ -87,7 +87,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 static struct argp argp = {
   options, argp_parser, N_("[OPTIONS]"),
-  N_("Glue 32-bit and 64-binary into Apple fat one."),
+  N_("Glue 32-bit and 64-bit binary into Apple fat one."),
   NULL, NULL, NULL
 };
 

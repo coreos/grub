@@ -1379,7 +1379,7 @@ SUFFIX (locate_sections) (const char *kernel_path,
 		!= image_target->link_addr)
 	      {
 		char *msg
-		  = grub_xasprintf (_("`%s' is miscompiled: it's start address is 0x%llx"
+		  = grub_xasprintf (_("`%s' is miscompiled: its start address is 0x%llx"
 				      " instead of 0x%llx: ld.gold bug?"),
 				    kernel_path,
 				    (unsigned long long) grub_host_to_target_addr (s->sh_addr),
