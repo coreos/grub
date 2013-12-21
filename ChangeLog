@@ -1,5 +1,9 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/emu/main.c: Build fix for emu.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Build fixes for argp.h with older gcc.
 
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
