@@ -1,5 +1,10 @@
 2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/raid6_recover.c (grub_raid_block_mulx): Use grub_size_t
+	for size.
+
+2013-12-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/lvm.c: Use grub_size_t for sizes and grub_ssize_t
 	for pointer difference.
 

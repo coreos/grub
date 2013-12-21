@@ -34,9 +34,9 @@ static unsigned powx_inv[256];
 static const grub_uint8_t poly = 0x1d;
 
 static void
-grub_raid_block_mulx (unsigned mul, char *buf, int size)
+grub_raid_block_mulx (unsigned mul, char *buf, grub_size_t size)
 {
-  int i;
+  grub_size_t i;
   grub_uint8_t *p;
 
   p = (grub_uint8_t *) buf;
