@@ -119,8 +119,22 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 {
   switch (key)
     {
+    case ARGP_KEY_HELP_PRE_DOC:
+      /* TRANSLATORS: it generates one single image which is bootable through any method. */
+      return strdup (_("Make GRUB CD-ROM, disk, pendrive and floppy bootable image."));
     case ARGP_KEY_HELP_POST_DOC:
-      return xasprintf (text, "xorriso -as mkisofs -help");
+      {
+	char *p1, *out;
+
+	p1 = xasprintf (_("Generates a bootable CD/USB/floppy image.  Arguments other than options to this program"
+      " are passed to xorriso, and indicate source files, source directories, or any of the "
+      "mkisofs options listed by the output of `%s'."), "xorriso -as mkisofs -help");
+	out = xasprintf ("%s\n\n%s\n\n%s", p1,
+	  _("Option -- switches to native xorriso command mode."),
+	  _("Mail xorriso support requests to <bug-xorriso@gnu.org>."));
+	free (p1);
+	return out;
+      }
     default:
       return grub_install_help_filter (key, text, input);
     }
@@ -214,14 +228,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
 struct argp argp = {
   options, argp_parser, N_("[OPTION] SOURCE..."),
-  /* TRANSLATORS: it generates one single image which is bootable through any method. */
-  N_("Make GRUB CD-ROM, disk, pendrive and floppy bootable image.")"\v"
-  N_("Generates a bootable CD/USB/floppy image.  Arguments other than options to this program"
-     " are passed to xorriso, and indicate source files, source directories, or any of the "
-     "mkisofs options listed by the output of `%s'.\n\n"
-     "Option -- switches to native xorriso command mode.\n\n"
-     "Mail xorriso support requests to <bug-xorriso@gnu.org>."), 
-  NULL, help_filter, NULL
+  NULL, NULL, help_filter, NULL
 };
 
 static void

@@ -1,3 +1,8 @@
+2013-12-22  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-mkrescue.c: Split single help message string in several
+	strings used in previous shell version.
+
 2013-12-22  Leif Lindholm <leif.lindholm@linaro.org>
 
 	Add arm64 Linux loader.
