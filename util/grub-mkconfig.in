@@ -284,9 +284,9 @@ for i in "${grub_mkconfig_dir}"/* ; do
 		      xx86)
 			  echo "if [ x\"\$grub_platform\" != xxen \\(  x\"\$grub_cpu\" = xi386 -o x\"\$grub_cpu\" = xx86_64 -o x\"\$grub_platform\" = x \\) ]; then" ;;
 		      xi386-xen-pae)
-			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xi386-xen -o x\"\$grub_cpu-\$grub_platform\" = x ]; then" ;;
+			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xi386-xen -o x\"\$grub_cpu-\$grub_platform\" = x- ]; then" ;;
 		      xx86_64-xen)
-			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xx86_64-xen -o x\"\$grub_cpu-\$grub_platform\" = x ]; then" ;;
+			  echo "if [ x\"\$grub_cpu-\$grub_platform\" = xx86_64-xen -o x\"\$grub_cpu-\$grub_platform\" = x- ]; then" ;;
 		      *)
 			  echo "if [ x\"\$grub_cpu\" = x$platform -o x\"\$grub_platform\" = x ]; then" ;;
 		  esac
