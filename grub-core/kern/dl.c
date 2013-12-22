@@ -657,6 +657,8 @@ grub_dl_load_core (void *addr, grub_size_t size)
 {
   grub_dl_t mod;
 
+  grub_boot_time ("Parsing module");
+
   mod = grub_dl_load_core_noinit (addr, size);
 
   if (!mod)
@@ -677,6 +679,8 @@ grub_dl_load_file (const char *filename)
   grub_ssize_t size;
   void *core = 0;
   grub_dl_t mod = 0;
+
+  grub_boot_time ("Loading module %s", filename);
 
   file = grub_file_open (filename);
   if (! file)

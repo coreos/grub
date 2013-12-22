@@ -1,5 +1,9 @@
 2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add module loading and parsing boot time checkpoints.
+
+2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/arm/linux.c: Pass arguments through on ATAG
 	platforms.
 
