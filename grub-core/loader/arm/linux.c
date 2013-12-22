@@ -74,6 +74,8 @@ linux_prepare_atag (void)
   grub_uint32_t *tmp_atag, *from, *to;
   grub_size_t tmp_size;
   grub_size_t arg_size = grub_strlen (linux_args);
+  char *cmdline_orig = NULL;
+  grub_size_t cmdline_orig_len = 0;
 
   /* some place for cmdline, initrd and terminator.  */
   tmp_size = get_atag_size (atag_orig) + 20 + (arg_size) / 4;
@@ -88,7 +90,13 @@ linux_prepare_atag (void)
       case 0x54410004:
       case 0x54410005:
       case 0x54420005:
-      case 0x54420009:
+	break;
+      case 0x54410009:
+	if (*(char *) (from + 2))
+	  {
+	    cmdline_orig = (char *) (from + 2);
+	    cmdline_orig_len = grub_strlen (cmdline_orig) + 1;
+	  }
 	break;
       default:
 	grub_memcpy (to, from, sizeof (grub_uint32_t) * from[0]);
@@ -96,15 +104,22 @@ linux_prepare_atag (void)
 	break;
       }
 
+  grub_dprintf ("linux", "linux inherited args: '%s'\n",
+		cmdline_orig ? : "");
   grub_dprintf ("linux", "linux_args: '%s'\n", linux_args);
 
   /* Generate and set command line */
-  to[0] = 3 + arg_size / 4;
+  to[0] = 3 + (arg_size + cmdline_orig_len) / 4;
   to[1] = 0x54410009;
-  grub_memcpy (to + 2, linux_args, arg_size);
-  grub_memset ((char *) to + 8 + arg_size, 0,
-	       4 - (arg_size & 3));
-  to += 3 + arg_size / 4;
+  if (cmdline_orig)
+    {
+      grub_memcpy ((char *) to + 8, cmdline_orig, cmdline_orig_len - 1);
+      *((char *) to + 8 + cmdline_orig_len - 1) = ' ';
+    }
+  grub_memcpy ((char *) to + 8 + cmdline_orig_len, linux_args, arg_size);
+  grub_memset ((char *) to + 8 + cmdline_orig_len + arg_size, 0,
+	       4 - ((arg_size + cmdline_orig_len) & 3));
+  to += to[0];
 
   if (initrd_start && initrd_end)
     {

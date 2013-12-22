@@ -1,3 +1,8 @@
+2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/arm/linux.c: Pass arguments through on ATAG
+	platforms.
+
 2013-12-22  Lars Wendler <polynomial-c@gentoo.org>
 
 	* util/grub-mkconfig.in: Skip non-executable files.
