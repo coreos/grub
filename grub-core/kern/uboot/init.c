@@ -30,6 +30,7 @@
 #include <grub/uboot/disk.h>
 #include <grub/uboot/uboot.h>
 #include <grub/uboot/api_public.h>
+#include <grub/cpu/system.h>
 
 extern char __bss_start[];
 extern char _end[];
@@ -69,6 +70,19 @@ uboot_timer_ms (void)
   return (((grub_uint64_t) high) << 32) | cur;
 }
 
+#ifdef __arm__
+static grub_uint64_t
+rpi_timer_ms (void)
+{
+  static grub_uint32_t last = 0, high = 0;
+  grub_uint32_t cur = *(volatile grub_uint32_t *) 0x20003004;
+  if (cur < last)
+    high++;
+  last = cur;
+  return grub_divmod64 ((((grub_uint64_t) high) << 32) | cur, 1000, 0);
+}
+#endif
+
 void
 grub_machine_init (void)
 {
@@ -106,8 +120,17 @@ grub_machine_init (void)
   grub_uboot_probe_hardware ();
 
   /* Initialise timer */
-  timer_start = grub_uboot_get_timer (0);
-  grub_install_get_time_ms (uboot_timer_ms);
+#ifdef __arm__
+  if (grub_uboot_get_machine_type () == GRUB_ARM_MACHINE_TYPE_RASPBERRY_PI)
+    {
+      grub_install_get_time_ms (rpi_timer_ms);
+    }
+  else
+#endif
+    {
+      timer_start = grub_uboot_get_timer (0);
+      grub_install_get_time_ms (uboot_timer_ms);
+    }
 
   /* Initialize  */
   grub_ubootdisk_init ();

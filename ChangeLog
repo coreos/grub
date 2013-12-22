@@ -1,5 +1,10 @@
 2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Workaround buggy timer in raspberry pie by using our own timer
+	implementation.
+
+2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/arm/uboot/kernel.h (GRUB_KERNEL_MACHINE_HEAP_SIZE):
 	Increase to 16 MiB to allow loading the whole memdisk.
 

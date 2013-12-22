@@ -23,11 +23,7 @@
 #define LINUX_ZIMAGE_OFFSET 0x24
 #define LINUX_ZIMAGE_MAGIC  0x016f2818
 
-enum
-  {
-    GRUB_ARM_MACHINE_TYPE_RASPBERRY_PI = 3138,
-    GRUB_ARM_MACHINE_TYPE_FDT = 0xFFFFFFFF
-  };
+#include "system.h"
 
 #if defined GRUB_MACHINE_UBOOT
 # include <grub/uboot/uboot.h>
