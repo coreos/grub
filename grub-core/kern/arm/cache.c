@@ -114,15 +114,13 @@ grub_arm_disable_caches_mmu (void)
     probe_caches ();
   switch (type)
     {
+    case ARCH_ARMV5_WRITE_THROUGH:
     case ARCH_ARMV6_UNIFIED:
     case ARCH_ARMV6:
       grub_arm_disable_caches_mmu_armv6 ();
       break;
     case ARCH_ARMV7:
       grub_arm_disable_caches_mmu_armv7 ();
-      break;
-      /* Nothing to do.  */
-    case ARCH_ARMV5_WRITE_THROUGH:
       break;
       /* Pacify GCC.  */
     case ARCH_UNKNOWN:

@@ -1,3 +1,10 @@
+2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/arm/cache.c (grub_arm_disable_caches_mmu): Use v6
+	algorithm on v5.
+
+	Suggested by: Leif Lindholm.
+
 2013-12-22  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-mkconfig.in: Fix Xen platform conditions.
