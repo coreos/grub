@@ -260,10 +260,12 @@ for i in "${grub_mkconfig_dir}"/* ; do
       | "${grub_mkconfig_dir}"/30_os-prober \
       | "${grub_mkconfig_dir}"/40_custom \
       | "${grub_mkconfig_dir}"/41_custom)
+          if test -x "$i" ; then
 	      echo
               echo "### BEGIN $i ###"
               "$i"
               echo "### END $i ###"
+          fi
       ;;
     # emacsen backup files. FIXME: support other editors
     *~) ;;
