@@ -1,5 +1,11 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Enable cache on ARM U-Boot port.
+
+	Without it the port is reidiculously slow.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix ARM cache maintainance.
 
 	More code was converted from ASM to C for easier handling.

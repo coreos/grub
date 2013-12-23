@@ -45,4 +45,9 @@ grub_arch_sync_dma_caches (void *address __attribute__ ((unused)),
 #endif
 #endif
 
+#ifdef __arm__
+void
+grub_arm_cache_enable (void);
+#endif
+
 #endif /* ! GRUB_CACHE_HEADER */

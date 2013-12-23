@@ -198,6 +198,5 @@ grub_efi_prepare_platform (void)
   if (err != GRUB_ERR_NONE)
     return err;
 
-  grub_arm_disable_caches_mmu();
   return GRUB_ERR_NONE;
 }

@@ -283,6 +283,8 @@ linux_boot (void)
   }
 #endif
 
+  grub_arm_disable_caches_mmu ();
+
   linuxmain (0, machine_type, fdt_addr);
 
   return grub_error (GRUB_ERR_BAD_OS, "Linux call returned");

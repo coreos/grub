@@ -31,6 +31,7 @@
 #include <grub/uboot/uboot.h>
 #include <grub/uboot/api_public.h>
 #include <grub/cpu/system.h>
+#include <grub/cache.h>
 
 extern char __bss_start[];
 extern char _end[];
@@ -106,6 +107,11 @@ grub_machine_init (void)
 
   /* Enumerate memory and initialize the memory management system. */
   grub_uboot_mm_init ();
+
+  /* Should be earlier but it needs memalign.  */
+#ifdef __arm__
+  grub_arm_enable_caches_mmu ();
+#endif
 
   grub_dprintf ("init", "__bss_start: %p\n", __bss_start);
   grub_dprintf ("init", "_end: %p\n", _end);
