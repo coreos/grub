@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ARM64 support for grub-mkrescue.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Install modinfo.sh to keep build information around.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>

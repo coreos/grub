@@ -441,6 +441,9 @@ main (int argc, char *argv[])
       if (source_dirs[GRUB_INSTALL_PLATFORM_I386_PC]
 	  || source_dirs[GRUB_INSTALL_PLATFORM_POWERPC_IEEE1275]
 	  || source_dirs[GRUB_INSTALL_PLATFORM_I386_EFI]
+	  || source_dirs[GRUB_INSTALL_PLATFORM_IA64_EFI]
+	  || source_dirs[GRUB_INSTALL_PLATFORM_ARM_EFI]
+	  || source_dirs[GRUB_INSTALL_PLATFORM_ARM64_EFI]
 	  || source_dirs[GRUB_INSTALL_PLATFORM_X86_64_EFI])
 	system_area = SYS_AREA_COMMON;
       else if (source_dirs[GRUB_INSTALL_PLATFORM_SPARC64_IEEE1275])
@@ -636,7 +639,8 @@ main (int argc, char *argv[])
   if (source_dirs[GRUB_INSTALL_PLATFORM_I386_EFI]
       || source_dirs[GRUB_INSTALL_PLATFORM_X86_64_EFI]
       || source_dirs[GRUB_INSTALL_PLATFORM_IA64_EFI]
-      || source_dirs[GRUB_INSTALL_PLATFORM_ARM_EFI])
+      || source_dirs[GRUB_INSTALL_PLATFORM_ARM_EFI]
+      || source_dirs[GRUB_INSTALL_PLATFORM_ARM64_EFI])
     {
       char *efidir = grub_util_make_temporary_dir ();
       char *efidir_efi = grub_util_path_concat (2, efidir, "efi");
@@ -657,6 +661,11 @@ main (int argc, char *argv[])
 
       imgname = grub_util_path_concat (2, efidir_efi_boot, "bootarm.efi");
       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_ARM_EFI, "arm-efi", imgname);
+      free (imgname);
+
+      imgname = grub_util_path_concat (2, efidir_efi_boot, "bootaarch64.efi");
+      make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_ARM64_EFI, "arm64-efi",
+			     imgname);
       free (imgname);
 
       if (source_dirs[GRUB_INSTALL_PLATFORM_I386_EFI])
