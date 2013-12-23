@@ -1168,7 +1168,7 @@ enable_grub_emu_usb=no
 fi
 
 if test x"$enable_grub_emu_sdl" = xno ; then
-  grub_emu_sdl_excuse="explicitely disabled"
+  grub_emu_sdl_excuse="explicitly disabled"
 fi
 [if [ x"$grub_emu_sdl_excuse" = x ]; then
     # Check for libSDL libraries.]
@@ -1184,7 +1184,7 @@ AC_CHECK_LIB([SDL], [SDL_Init], [LIBSDL="-lSDL"],
 [fi]
 
 if test x"enable_grub_emu_sdl" = xyes && test x"$grub_emu_sdl_excuse" != x ; then
-  AC_MSG_ERROR([SDL support for grub-emu was explicitely requested but can't be compiled ($grub_emu_sdl_excuse)])
+  AC_MSG_ERROR([SDL support for grub-emu was explicitly requested but can't be compiled ($grub_emu_sdl_excuse)])
 fi
 if test x"$grub_emu_sdl_excuse" = x ; then
 enable_grub_emu_sdl=yes

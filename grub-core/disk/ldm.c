@@ -1012,7 +1012,7 @@ grub_util_ldm_embed (struct grub_disk *disk, unsigned int *nsectors,
 			      usable for bootloaders (called generically
 			      "embedding zone") and this operation is
 			      called "embedding".  */
-			   N_("your LDM embedding Partition is too small;"
+			   N_("your LDM Embedding Partition is too small;"
 			      " embedding won't be possible"));
       *nsectors = lv->size;
       if (*nsectors > max_nsectors)
