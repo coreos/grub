@@ -273,7 +273,8 @@ for i in "${grub_mkconfig_dir}"/* ; do
     */\#*\#) ;;
     *)
       if grub_file_is_not_garbage "$i" && test -x "$i" ; then
-	  for platform in x86 i386-xen-pae x86_64-xen mips mipsel sparc64 powerpc ia64 arm; do
+	  for platform in x86 i386-xen-pae x86_64-xen mips mipsel sparc64 powerpc ia64 arm arm64; do
+
 	      GRUB_PLATFORM=$platform
 	      export GRUB_PLATFORM
               buf="$($i)"

@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	ARM64 grub-file and grub-mkconfig support.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Remove leftover options defines.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>

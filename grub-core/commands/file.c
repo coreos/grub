@@ -48,6 +48,8 @@ static const struct grub_arg_option options[] = {
    N_("Check if FILE can be used as x86 multiboot2 kernel"), 0, 0},
   {"is-arm-linux", 0, 0,
    N_("Check if FILE is ARM Linux"), 0, 0},
+  {"is-arm64-linux", 0, 0,
+   N_("Check if FILE is ARM64 Linux"), 0, 0},
   {"is-ia64-linux", 0, 0,
    N_("Check if FILE is IA64 Linux"), 0, 0},
   {"is-mips-linux", 0, 0,
@@ -107,6 +109,7 @@ enum
   IS_MULTIBOOT,
   IS_MULTIBOOT2,
   IS_ARM_LINUX,
+  IS_ARM64_LINUX,
   IS_IA64_LINUX,
   IS_MIPS_LINUX,
   IS_MIPSEL_LINUX,
@@ -395,6 +398,21 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 	if (grub_file_read (file, &sig, 4) != 4)
 	  break;
 	if (sig == grub_cpu_to_le32_compile_time (0x016f2818))
+	  {
+	    ret = 1;
+	    break;
+	  }
+	break;
+      }
+    case IS_ARM64_LINUX:
+      {
+	grub_uint32_t sig;
+
+	if (grub_file_seek (file, 0x38) == (grub_size_t) -1)
+	  break;
+	if (grub_file_read (file, &sig, 4) != 4)
+	  break;
+	if (sig == grub_cpu_to_le32_compile_time (0x644d5241))
 	  {
 	    ret = 1;
 	    break;
