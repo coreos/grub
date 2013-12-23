@@ -21,13 +21,10 @@
 
 #include <grub/efi/efi.h>
 
-#define GRUB_EFI_KERNEL_STUB_ENTRY_OFFSET 0
-#define GRUB_LINUX_MAX_LOAD_ADDR 0xffffffffffffULL
-
-#define GRUB_LINUX_MAGIC 0x644d5241 /* 'ARM\x64' */
+#define GRUB_ARM64_LINUX_MAGIC 0x644d5241 /* 'ARM\x64' */
 
 /* From linux/Documentation/arm64/booting.txt */
-struct linux_kernel_header
+struct grub_arm64_linux_kernel_header
 {
   grub_uint32_t code0;		/* Executable code */
   grub_uint32_t code1;		/* Executable code */
@@ -40,15 +37,5 @@ struct linux_kernel_header
   grub_uint32_t magic;		/* Magic number, little endian, "ARM\x64" */
   grub_uint32_t hdr_offset;	/* Offset of PE/COFF header */
 };
-
-#define grub_linux_get_params() NULL
-extern grub_err_t grub_linux_init_params (void);
-extern grub_err_t grub_linux_finalize_params (void);
-extern grub_err_t grub_linux_register_kernel (struct linux_kernel_header *lh);
-extern grub_err_t grub_linux_register_cmdline (void * addr);
-extern grub_err_t grub_linux_register_initrd (void * addr, grub_size_t size);
-
-extern void grub_efi_linux_arch_register_commands (void);
-extern void grub_efi_linux_arch_unregister_commands (void);
 
 #endif /* ! GRUB_LINUX_CPU_HEADER */

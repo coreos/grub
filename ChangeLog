@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/arm64/linux.h: Remove leftovers. Add missing prefixes.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/arm64/linux.c: Add missing bracket.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>

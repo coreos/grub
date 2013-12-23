@@ -113,9 +113,9 @@ get_fdt (void)
 }
 
 static grub_err_t
-check_kernel (struct linux_kernel_header *lh)
+check_kernel (struct grub_arm64_linux_kernel_header *lh)
 {
-  if (lh->magic != GRUB_LINUX_MAGIC)
+  if (lh->magic != GRUB_ARM64_LINUX_MAGIC)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
 
   if ((lh->code0 & 0xffff) != GRUB_EFI_PE_MAGIC)
@@ -381,7 +381,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_file_t file = 0;
-  struct linux_kernel_header lh;
+  struct grub_arm64_linux_kernel_header lh;
 
   grub_dl_ref (my_mod);
 
