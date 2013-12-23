@@ -6385,7 +6385,7 @@ just do:
 @end group
 @end example
 
-Also, the latest version is available using Bazaar. See
+Also, the latest version is available using Git. See
 @uref{http://www.gnu.org/software/grub/grub-download.html} for more
 information.
 

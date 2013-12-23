@@ -1,3 +1,11 @@
+2013-12-23  Colin Watson  <cjwatson@debian.org>
+
+	Update some documentation to refer to Git rather than Bazaar.
+
+	* docs/grub.texi (Obtaining and Building GRUB): Refer to Git rather
+	than Bazaar.
+	* po/README: Likewise.  Fix spelling mistake.
+
 2013-12-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	Don't distribute config.h.
