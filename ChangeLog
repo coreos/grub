@@ -1,3 +1,9 @@
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Fix ARM cache maintainance.
+
+	More code was converted from ASM to C for easier handling.
+
 2013-12-22  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache.c (grub_arm_disable_caches_mmu): Use v6

@@ -13,12 +13,19 @@ static enum
     ARCH_ARMV7
   } type = ARCH_UNKNOWN;
 
-grub_uint32_t grub_arch_cache_dlinesz;
-grub_uint32_t grub_arch_cache_ilinesz;
+static grub_uint32_t grub_arch_cache_dlinesz;
+static grub_uint32_t grub_arch_cache_ilinesz;
+static grub_uint32_t grub_arch_cache_max_linesz;
 
 /* Prototypes for asm functions.  */
-void grub_arch_sync_caches_armv6 (void *address, grub_size_t len);
-void grub_arch_sync_caches_armv7 (void *address, grub_size_t len);
+void grub_arm_clean_dcache_range_armv6 (grub_addr_t start, grub_addr_t end,
+					grub_addr_t dlinesz);
+void grub_arm_clean_dcache_range_armv7 (grub_addr_t start, grub_addr_t end,
+					grub_addr_t dlinesz);
+void grub_arm_invalidate_icache_range_armv6 (grub_addr_t start, grub_addr_t end,
+					     grub_addr_t dlinesz);
+void grub_arm_invalidate_icache_range_armv7 (grub_addr_t start, grub_addr_t end,
+					     grub_addr_t dlinesz);
 void grub_arm_disable_caches_mmu_armv6 (void);
 void grub_arm_disable_caches_mmu_armv7 (void);
 grub_uint32_t grub_arm_main_id (void);
@@ -82,20 +89,33 @@ probe_caches (void)
     default:
       grub_fatal ("Unsupported cache type 0x%x", cache_type);
     }
+  if (grub_arch_cache_dlinesz > grub_arch_cache_ilinesz)
+    grub_arch_cache_max_linesz = grub_arch_cache_dlinesz;
+  else
+    grub_arch_cache_max_linesz = grub_arch_cache_ilinesz;
 }
 
 void
 grub_arch_sync_caches (void *address, grub_size_t len)
 {
+  grub_addr_t start = (grub_addr_t) address;
+  grub_addr_t end = start + len;
+
   if (type == ARCH_UNKNOWN)
     probe_caches ();
+  start = ALIGN_DOWN (start, grub_arch_cache_max_linesz);
+  end = ALIGN_UP (end, grub_arch_cache_max_linesz);
   switch (type)
     {
     case ARCH_ARMV6:
-      grub_arch_sync_caches_armv6 (address, len);
+      grub_arm_clean_dcache_range_armv6 (start, end, grub_arch_cache_dlinesz);
+      grub_arm_invalidate_icache_range_armv6 (start, end,
+					      grub_arch_cache_ilinesz);
       break;
     case ARCH_ARMV7:
-      grub_arch_sync_caches_armv7 (address, len);
+      grub_arm_clean_dcache_range_armv7 (start, end, grub_arch_cache_dlinesz);
+      grub_arm_invalidate_icache_range_armv7 (start, end,
+					      grub_arch_cache_ilinesz);
       break;
       /* Nothing to do.  */
     case ARCH_ARMV5_WRITE_THROUGH:

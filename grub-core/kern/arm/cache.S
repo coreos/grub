@@ -37,20 +37,16 @@
  * Simple cache maintenance functions
  */
 
-dlinesz_addr:
-	.long EXT_C(grub_arch_cache_dlinesz)
-ilinesz_addr:
-	.long EXT_C(grub_arch_cache_ilinesz)
-
 @ r0 - *beg (inclusive)
 @ r1 - *end (exclusive)
-clean_dcache_range:
+@void grub_arm_clean_dcache_range (grub_addr_t start, grub_addr_t end, grub_addr_t dlinesz)
+#ifdef ARMV6
+FUNCTION(grub_arm_clean_dcache_range_armv6)
+#else
+FUNCTION(grub_arm_clean_dcache_range_armv7)
+#endif
+	DSB
 	@ Clean data cache for range to point-of-unification
-	ldr	r2, dlinesz_addr
-	ldr	r2, [r2]
-	sub	r3, r2, #1		@ align "beg" to start of line
-	mvn	r3, r3
-	and	r0, r0, r3
 1:	cmp	r0, r1
 	bge	2f
 #ifdef ARMV6
@@ -65,13 +61,12 @@ clean_dcache_range:
 
 @ r0 - *beg (inclusive)
 @ r1 - *end (exclusive)
-invalidate_icache_range:
+#ifdef ARMV6
+FUNCTION(grub_arm_invalidate_icache_range_armv6)
+#else
+FUNCTION(grub_arm_invalidate_icache_range_armv7)
+#endif
 	@ Invalidate instruction cache for range to point-of-unification
-	ldr	r2, ilinesz_addr
-	ldr	r2, [r2]
-	sub	r3, r2, #1		@ align "beg" to start of line
-	mvn	r3, r3
-	and	r0, r0, r3
 1:	cmp	r0, r1
 	bge	2f
 	mcr	p15, 0, r0, c7, c5, 1	@ ICIMVAU
@@ -81,21 +76,6 @@ invalidate_icache_range:
 2:	mcr	p15, 0, r0, c7,	c5, 6	@ BPIALL
 	DSB
 	ISB
-	bx	lr
-
-@void grub_arch_sync_caches (void *address, grub_size_t len)
-#ifdef ARMV6
-FUNCTION(grub_arch_sync_caches_armv6)
-#else
-FUNCTION(grub_arch_sync_caches_armv7)
-#endif
-	DSB
-	add	r1, r0, r1
-	push	{r0-r2, lr}
-	bl	clean_dcache_range
-	pop	{r0, r1}
-	bl	invalidate_icache_range
-	pop	{r2, lr}
 	bx	lr
 
 #ifdef ARMV6
