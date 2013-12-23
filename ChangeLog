@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Recognize raspberry pi kernel in grub-file.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Enable cache on ARM U-Boot port.
 
 	Without it the port is reidiculously slow.

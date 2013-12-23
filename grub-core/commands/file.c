@@ -377,14 +377,25 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
       }
     case IS_ARM_LINUX:
       {
-	grub_uint32_t sig;
+	grub_uint32_t sig, sig_pi;
+	if (grub_file_read (file, &sig_pi, 4) != 4)
+	  break;
+	/* Raspberry pi.  */
+	if (sig_pi == grub_cpu_to_le32_compile_time (0xea000006))
+	  {
+	    ret = 1;
+	    break;
+	  }
+
 	if (grub_file_seek (file, 0x24) == (grub_size_t) -1)
 	  break;
 	if (grub_file_read (file, &sig, 4) != 4)
 	  break;
-	if (sig != grub_cpu_to_le32_compile_time (0x016f2818))
-	  break;
-	ret = 1;
+	if (sig == grub_cpu_to_le32_compile_time (0x016f2818))
+	  {
+	    ret = 1;
+	    break;
+	  }
 	break;
       }
     case IS_PAE_DOMU ... IS_DOM0:
