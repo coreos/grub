@@ -82,6 +82,8 @@ static const struct grub_arg_option options[] = {
    N_("Check if FILE is x86_64 EFI file"), 0, 0},
   {"is-ia64-efi", 0, 0,
    N_("Check if FILE is IA64 EFI file"), 0, 0},
+  {"is-arm64-efi", 0, 0,
+   N_("Check if FILE is ARM64 EFI file"), 0, 0},
   {"is-arm-efi", 0, 0,
    N_("Check if FILE is ARM EFI file"), 0, 0},
   {"is-hibernated-hiberfil", 0, 0,
@@ -121,6 +123,7 @@ enum
   IS_32_EFI,
   IS_64_EFI,
   IS_IA_EFI,
+  IS_ARM64_EFI,
   IS_ARM_EFI,
   IS_HIBERNATED,
   IS_XNU64,
@@ -546,6 +549,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
     case IS_32_EFI:
     case IS_64_EFI:
     case IS_IA_EFI:
+    case IS_ARM64_EFI:
     case IS_ARM_EFI:
       {
 	char signature[4];
@@ -584,11 +588,15 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 	    && coff_head.machine !=
 	    grub_cpu_to_le16_compile_time (GRUB_PE32_MACHINE_IA64))
 	  break;
+	if (type == IS_ARM64_EFI
+	    && coff_head.machine !=
+	    grub_cpu_to_le16_compile_time (GRUB_PE32_MACHINE_ARM64))
+	  break;
 	if (type == IS_ARM_EFI
 	    && coff_head.machine !=
 	    grub_cpu_to_le16_compile_time (GRUB_PE32_MACHINE_ARMTHUMB_MIXED))
 	  break;
-	if (type == IS_IA_EFI || type == IS_64_EFI)
+	if (type == IS_IA_EFI || type == IS_64_EFI || type == IS_ARM64_EFI)
 	  {
 	    struct grub_pe64_optional_header o64;
 	    if (grub_file_read (file, &o64, sizeof (o64)) != sizeof (o64))

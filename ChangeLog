@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add arm64-efi recognition to grub-file.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Fix ia64-efi recognition in grub-file.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
