@@ -120,7 +120,7 @@ check_kernel (struct linux_kernel_header *lh)
 
   if ((lh->code0 & 0xffff) != GRUB_EFI_PE_MAGIC)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       N_("plain Image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled");
+		       N_("plain Image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled"));
 
   grub_dprintf ("linux", "UEFI stub kernel:\n");
   grub_dprintf ("linux", "text_offset = 0x%012llx\n",
