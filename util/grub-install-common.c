@@ -741,7 +741,7 @@ grub_install_copy_files (const char *src,
 			       "fs.lst", "partmap.lst",
 			       "parttool.lst",
 			       "video.lst", "crypto.lst",
-			       "terminal.lst" };
+			       "terminal.lst", "modinfo.sh" };
   size_t i;
 
   for (i = 0; i < ARRAY_SIZE (pkglib_DATA); i++)

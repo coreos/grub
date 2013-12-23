@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Install modinfo.sh to keep build information around.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/modinfo.sh.in: Add build config information.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
