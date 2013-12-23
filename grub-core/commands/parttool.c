@@ -133,7 +133,7 @@ show_help (grub_device_t dev)
 	  }
       }
   if (! found)
-    grub_printf_ (N_("Sorry no parttool is available for %s\n"),
+    grub_printf_ (N_("Sorry, no parttool is available for %s\n"),
 		  dev->disk->partition->partmap->name);
   return GRUB_ERR_NONE;
 }

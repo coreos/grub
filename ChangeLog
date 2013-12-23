@@ -1,3 +1,10 @@
+2013-12-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Fix spelling.
+	* grub-core/commands/parttool.c: Fix grammar.
+	* grub-core/disk/ldm.c: Use consistent capitalisation for "LDM
+	Embedding Partition".
+
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* include/grub/arm64/linux.h: Remove leftovers. Add missing prefixes.
