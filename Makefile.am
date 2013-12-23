@@ -127,7 +127,7 @@ widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec
 CLEANFILES += widthspec.h
 
 # Install config.h into platformdir
-platform_HEADERS = config.h
+nodist_platform_HEADERS = config.h
 
 pkgdata_DATA += grub-mkconfig_lib
 
