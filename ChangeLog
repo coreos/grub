@@ -1,5 +1,9 @@
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix ia64-efi recognition in grub-file.
+
+2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Recognize raspberry pi kernel in grub-file.
 
 2013-12-23  Vladimir Serbinenko  <phcoder@gmail.com>

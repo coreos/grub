@@ -588,7 +588,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 	    && coff_head.machine !=
 	    grub_cpu_to_le16_compile_time (GRUB_PE32_MACHINE_ARMTHUMB_MIXED))
 	  break;
-	if (type == IS_64_EFI || type == IS_64_EFI)
+	if (type == IS_IA_EFI || type == IS_64_EFI)
 	  {
 	    struct grub_pe64_optional_header o64;
 	    if (grub_file_read (file, &o64, sizeof (o64)) != sizeof (o64))
