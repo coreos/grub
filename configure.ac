@@ -214,20 +214,14 @@ case "$platform" in
   qemu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_QEMU=1" ;;
   pc)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_PCBIOS=1" ;;
   emu)		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_EMU=1" ;;
-  loongson)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_LOONGSON=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
-  qemu_mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1 -DGRUB_MACHINE_MIPS_BONITO=1" ;;
+  loongson)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_LOONGSON=1" ;;
+  qemu_mips)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS_QEMU_MIPS=1" ;;
   arc)	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARC=1" ;;
-esac
-case "$target_cpu" in
-  arm)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARM=1" ;;
-  arm64)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_ARM64=1" ;;
-  mips |mipsel)      	machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_MIPS=1" ;;
-  sparc64)      machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE_SPARC64=1" ;;
 esac
 if test x${target_cpu} = xmipsel ; then
    machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo mips_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 else
-   machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,` -DGRUB_TARGET_CPU_`echo ${target_cpu} | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`=1"
+   machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_MACHINE=`echo ${target_cpu}_$platform | sed y,abcdefghijklmnopqrstuvwxyz,ABCDEFGHIJKLMNOPQRSTUVWXYZ,`"
 fi
 
 case "${target_cpu}-$platform" in
@@ -1580,7 +1574,6 @@ AC_SUBST(BSS_START_SYMBOL)
 AC_SUBST(END_SYMBOL)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
-AC_SUBST(NEED_REGISTER_FRAME_INFO)
 
 AC_ARG_ENABLE([werror],
 	      [AS_HELP_STRING([--disable-werror],

@@ -51,12 +51,6 @@
 #define PACKAGE_NAME "@PACKAGE_NAME@"
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
-/* Default boot directory name" */
-#define GRUB_BOOT_DIR_NAME "@bootdirname@"
-/* Default grub directory name */
-#define GRUB_DIR_NAME "@grubdirname@"
-/* Define to 1 if GCC generates calls to __register_frame_info().  */
-#define NEED_REGISTER_FRAME_INFO @NEED_REGISTER_FRAME_INFO@
 
 #define GRUB_TARGET_CPU "@GRUB_TARGET_CPU@"
 #define GRUB_PLATFORM "@GRUB_PLATFORM@"

@@ -271,7 +271,7 @@ grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
     grub_ieee1275_cell_t mode;
     grub_ieee1275_cell_t size;
     grub_ieee1275_cell_t virt;
-#ifdef GRUB_MACHINE_SPARC64
+#ifdef __sparc__
     grub_ieee1275_cell_t phys_high;
 #endif
     grub_ieee1275_cell_t phys_low;
@@ -279,7 +279,7 @@ grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
   } args;
 
   INIT_IEEE1275_COMMON (&args.common, "call-method",
-#ifdef GRUB_MACHINE_SPARC64
+#ifdef __sparc__
 			7,
 #else
 			6,
@@ -287,7 +287,7 @@ grub_ieee1275_map (grub_addr_t phys, grub_addr_t virt, grub_size_t size,
 			1);
   args.method = (grub_ieee1275_cell_t) "map";
   args.ihandle = grub_ieee1275_mmu;
-#ifdef GRUB_MACHINE_SPARC64
+#ifdef __sparc__
   args.phys_high = 0;
 #endif
   args.phys_low = phys;
