@@ -48,7 +48,8 @@ grub_err_t
 grub_net_recv_ip_packets (struct grub_net_buff *nb,
 			  struct grub_net_card *card,
 			  const grub_net_link_level_address_t *hwaddress,
-			  const grub_net_link_level_address_t *src_hwaddress);
+			  const grub_net_link_level_address_t *src_hwaddress,
+                          grub_uint16_t *vlantag);
 
 grub_err_t
 grub_net_send_ip_packet (struct grub_net_network_level_interface *inf,

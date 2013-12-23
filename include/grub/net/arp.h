@@ -22,10 +22,11 @@
 #include <grub/net.h>
 
 extern grub_err_t grub_net_arp_receive (struct grub_net_buff *nb,
-					struct grub_net_card *card);
+                                        struct grub_net_card *card,
+                                        grub_uint16_t *vlantag);
 
 grub_err_t
 grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
-			   const grub_net_network_level_address_t *proto_addr);
+                           const grub_net_network_level_address_t *proto_addr);
 
 #endif 
