@@ -1,5 +1,13 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Add -Qn to TARGET_CFLAGS if it's supported.
+	Fixes compilation on cygwin.
+
+	Reported by: Andrey Borzenkov.
+	Suggested by: Andrey Borzenkov.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Save TARGET_CC version in modinfo.sh.
 
 	Suggested by: Andrey Borzenkov.
