@@ -71,7 +71,7 @@ grub_util_rename (const char *from, const char *to)
   return rename (from, to);
 }
 
-#define grub_util_mkdir(a) mkdir ((a), 0700)
+#define grub_util_mkdir(a) mkdir ((a), 0755)
 
 #if defined (__NetBSD__)
 /* NetBSD uses /boot for its boot block.  */

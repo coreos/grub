@@ -106,7 +106,7 @@ grub_util_fd_open (const char *os_dev, int flags)
       return GRUB_UTIL_FD_INVALID;
     }
 
-  ret = open (os_dev, flags, S_IRUSR | S_IWUSR);
+  ret = open (os_dev, flags, S_IROTH | S_IRGRP | S_IRUSR | S_IWUSR);
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (! (sysctl_oldflags & 0x10)

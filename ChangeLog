@@ -1,3 +1,7 @@
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Make newly-created files other than grub.cfg world-readable.
+
 2013-12-24  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub.d/00_header.in: Improve compatibility with old config.
