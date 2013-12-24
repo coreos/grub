@@ -1,5 +1,11 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Save TARGET_CC version in modinfo.sh.
+
+	Suggested by: Andrey Borzenkov.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make grub_util_devmapper_part_to_disk and grub_util_find_partition_start
 	follow the same algorithm to avoid method mismatch. Don't assume
 	DMRAID- UUID to mean full disk but instead check that mapping is linear.

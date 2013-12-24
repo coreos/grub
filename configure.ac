@@ -503,6 +503,8 @@ if test "x$target_cpu" != xi386 && test "x$target_cpu" != xx86_64; then
 TARGET_CFLAGS="$TARGET_CFLAGS -Wcast-align"
 fi
 
+TARGET_CC_VERSION="$(LC_ALL=C $TARGET_CC --version | head -n1)"
+
 AC_CACHE_CHECK([which extra warnings work], [grub_cv_target_cc_w_extra_flags], [
   LDFLAGS="$TARGET_LDFLAGS -nostdlib -static"
 
@@ -1605,6 +1607,7 @@ AC_SUBST(TARGET_CPP)
 AC_SUBST(TARGET_CCAS)
 AC_SUBST(TARGET_OBJ2ELF)
 AC_SUBST(TARGET_MODULE_FORMAT)
+AC_SUBST(TARGET_CC_VERSION)
 
 AC_SUBST(TARGET_CFLAGS)
 AC_SUBST(TARGET_LDFLAGS)

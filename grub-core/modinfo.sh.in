@@ -16,6 +16,7 @@ grub_end_symbol="@END_SYMBOL@"
 
 # Build environment
 grub_target_cc='@TARGET_CC@'
+grub_target_cc_version='@TARGET_CC_VERSION@'
 grub_target_cflags='@TARGET_CFLAGS@'
 grub_target_cppflags='@TARGET_CPPFLAGS@'
 grub_target_ccasflags='@TARGET_CCASFLAGS@'
