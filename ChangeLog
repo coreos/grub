@@ -1,5 +1,9 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Revert grub-file usage in grub-mkconfig.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make newly-created files other than grub.cfg world-readable.
 
 2013-12-24  Andrey Borzenkov <arvidjaar@gmail.com>

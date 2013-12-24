@@ -21,16 +21,6 @@ prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
 
-if [ x$GRUB_PLATFORM = xx86 ]; then
-    check=--is-x86-multiboot
-elif [ x$GRUB_PLATFORM = xi386-xen-pae ]; then
-    check=--is-i386-xen-pae-domu
-elif [ x$GRUB_PLATFORM = xx86_64-xen ]; then
-    check=--is-x86_64-xen-domu
-else
-    exit 0
-fi
-
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
@@ -50,11 +40,11 @@ all_of_them=true
 
 # FIXME: add l4 here?
 kernel=
-for i in "$GRUB_ROOT"/boot/gnumach* ; do
-  if test -f "$i" && "${grub_file}" $check "$i" ; then
-    basename=`basename "$i"`
-    dirname=`dirname "$i"`
-    rel_dirname=`make_system_path_relative_to_its_root "$dirname"`
+for i in /boot/gnumach* ; do
+  if test -e $i ; then
+    basename=`basename $i`
+    dirname=`dirname $i`
+    rel_dirname=`make_system_path_relative_to_its_root $dirname`
     gettext_printf "Found GNU Mach: %s" "$i" >&2
     echo >&2
     kernels="${kernels} ${rel_dirname}/${basename}"
@@ -68,8 +58,8 @@ case "${GRUB_FS}" in
   *)	hurd_fs="${GRUB_FS}fs" ;;
 esac
 
-for i in "$GRUB_ROOT"/hurd/${hurd_fs}.static "$GRUB_ROOT"/hurd/exec ; do
-  if test -f "$i" ; then
+for i in /hurd/${hurd_fs}.static /hurd/exec ; do
+  if test -e "$i" ; then
     gettext_printf "Found Hurd module: %s" "$i" >&2
     echo >&2
     at_least_one=true
@@ -83,7 +73,7 @@ if ${at_least_one} ; then : ; else
   exit 0
 fi
 
-if ${all_of_them} && test -f "$GRUB_ROOT"/lib/ld.so.1 ; then : ; else
+if ${all_of_them} && test -e /lib/ld.so.1 ; then : ; else
   gettext "Some Hurd stuff found, but not enough to boot." >&2
   echo >&2
   exit 1

@@ -26,31 +26,6 @@ datarootdir="@datarootdir@"
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
-if [ x$GRUB_PLATFORM = xx86 ]; then
-    check=--is-x86-linux32
-elif [ x$GRUB_PLATFORM = xi386-xen-pae ]; then
-    check=--is-i386-xen-pae-domu
-elif [ x$GRUB_PLATFORM = xx86_64-xen ]; then
-    check=--is-x86_64-xen-domu
-else
-    check=--is-${GRUB_PLATFORM}-linux
-fi
-
-case "x$GRUB_PLATFORM" in
-    xx86)
-	list=`for i in "$GRUB_ROOT"/boot/vmlinuz-* "$GRUB_ROOT"/vmlinuz-* "$GRUB_ROOT"/boot/kernel-* ; do
-                  if grub_file_is_not_garbage "$i" && "${grub_file}" $check "$i" ; then echo -n "$i " ; fi
-              done` ;;
-    *) 
-	list=`for i in "$GRUB_ROOT"/boot/vmlinuz-* "$GRUB_ROOT"/boot/vmlinux-* "$GRUB_ROOT"/vmlinuz-* "$GRUB_ROOT"/vmlinux-* "$GRUB_ROOT"/boot/kernel-* ; do
-                  if grub_file_is_not_garbage "$i" && "${grub_file}" $check "$i" ; then echo -n "$i " ; fi
-	     done` ;;
-esac
-
-if [ x"$list" = x ]; then
-    exit 0
-fi
-
 CLASS="--class gnu-linux --class gnu --class os"
 
 if [ "x${GRUB_DISTRIBUTOR}" = "x" ] ; then
@@ -78,14 +53,14 @@ fi
 
 case x"$GRUB_FS" in
     xbtrfs)
-	rootsubvol="`make_system_path_relative_to_its_root "$GRUB_ROOT"/`"
+	rootsubvol="`make_system_path_relative_to_its_root /`"
 	rootsubvol="${rootsubvol#/}"
 	if [ "x${rootsubvol}" != x ]; then
 	    GRUB_CMDLINE_LINUX="rootflags=subvol=${rootsubvol} ${GRUB_CMDLINE_LINUX}"
 	fi;;
     xzfs)
 	rpool=`${grub_probe} --device ${GRUB_DEVICE} --target=fs_label 2>/dev/null || true`
-	bootfs="`make_system_path_relative_to_its_root "$GRUB_ROOT"/ | sed -e "s,@$,,"`"
+	bootfs="`make_system_path_relative_to_its_root / | sed -e "s,@$,,"`"
 	LINUX_ROOT_DEVICE="ZFS=${rpool}${bootfs}"
 	;;
 esac
@@ -140,7 +115,7 @@ linux_entry ()
 
   echo "	insmod gzio" | sed "s/^/$submenu_indentation/"
 
-  if [ x$dirname = x"$GRUB_ROOT"/ ]; then
+  if [ x$dirname = x/ ]; then
     if [ -z "${prepare_root_cache}" ]; then
       prepare_root_cache="$(prepare_grub_to_access_device ${GRUB_DEVICE} | grub_add_tab)"
     fi
@@ -169,12 +144,24 @@ EOF
 EOF
 }
 
-case "$GRUB_PLATFORM" in
-    x86 | i386-xen-pae | x86_64-xen) GENKERNEL_ARCH="x86" ;;
+machine=`uname -m`
+case "x$machine" in
+    xi?86 | xx86_64)
+	list=`for i in /boot/vmlinuz-* /vmlinuz-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+              done` ;;
+    *) 
+	list=`for i in /boot/vmlinuz-* /boot/vmlinux-* /vmlinuz-* /vmlinux-* /boot/kernel-* ; do
+                  if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
+	     done` ;;
+esac
+
+case "$machine" in
+    i?86) GENKERNEL_ARCH="x86" ;;
     mips|mips64) GENKERNEL_ARCH="mips" ;;
     mipsel|mips64el) GENKERNEL_ARCH="mipsel" ;;
     arm*) GENKERNEL_ARCH="arm" ;;
-    *) GENKERNEL_ARCH="$GRUB_PLATFORM" ;;
+    *) GENKERNEL_ARCH="$machine" ;;
 esac
 
 prepare_boot_cache=
@@ -213,7 +200,7 @@ while [ "x$list" != "x" ] ; do
   done
 
   config=
-  for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "$GRUB_ROOT/etc/kernels/kernel-config-${version}" ; do
+  for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
     if test -e "${i}" ; then
       config="${i}"
       break

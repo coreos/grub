@@ -22,16 +22,6 @@ exec_prefix="@exec_prefix@"
 datarootdir="@datarootdir@"
 . "@datadir@/@PACKAGE@/grub-mkconfig_lib"
 
-if [ x$GRUB_PLATFORM = xx86 ]; then
-    check=--is-x86-kfreebsd
-elif [ x$GRUB_PLATFORM = xi386-xen-pae ]; then
-    check=--is-i386-xen-pae-domu
-elif [ x$GRUB_PLATFORM = xx86_64-xen ]; then
-    check=--is-x86_64-xen-domu
-else
-    exit 0
-fi
-
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
@@ -46,13 +36,19 @@ netbsd_load_fs_module ()
   loader="$1"	# "knetbsd" or "multiboot"
   kernel="$2"	# absolute path to the kernel file
 
-  if "${grub_file}" --is-x86_64-kfreebsd "${kernel}"; then
-      karch="amd64"
-  else
+  case $(zcat -f "${kernel}" | file -bL - | cut -d , -f 2 | tr -d ' ') in
+    Intel80386)
       karch="i386"
-  fi
+      ;;
+    x86-64)
+      karch="amd64"
+      ;;
+    *)
+      return
+      ;;
+  esac
 
-  case $GRUB_FS in
+  case $(${grub_probe} --target=fs -d ${GRUB_DEVICE}) in
     ext2)
       kmod="ext2fs"
       ;;
@@ -71,7 +67,7 @@ netbsd_load_fs_module ()
   esac
 
   kversion=$(zcat -f "${kernel}" | strings | sed -n -e '/^@(#)NetBSD/ { s/^@(#)NetBSD \([0-9\.]*\) .*$/\1/g ; p ; q ; }')
-  kmodule="$GRUB_ROOT/stand/${karch}/${kversion}/modules/${kmod}/${kmod}.kmod"
+  kmodule="/stand/${karch}/${kversion}/modules/${kmod}/${kmod}.kmod"
 
   if test -z "$karch" -o -z "$kversion" -o ! -f "${kmodule}"; then
     return
@@ -97,10 +93,6 @@ netbsd_entry ()
   kernel="$2"	# absolute path to the kernel file
   type="$3"
   args="$4"	# extra arguments appended to loader command
-
-  if [ "x${loader}" = xmultiboot ] && [ x$GRUB_PLATFORM = xx86 ] && ! "$grub_file" --is-x86-multiboot "$kernel"; then
-      return
-  fi
 
   kroot_device="$(echo ${GRUB_DEVICE} | sed -e 's,^/dev/r,,')"
 
@@ -155,11 +147,8 @@ pattern="^ELF[^,]*executable.*statically linked"
 submenu_indentation=""
 
 is_top_level=true
-for k in "$GRUB_ROOT"/netbsd $(ls -t "$GRUB_ROOT"/netbsd?* 2>/dev/null) ; do
+for k in /netbsd $(ls -t /netbsd?* 2>/dev/null) ; do
   if ! grub_file_is_not_garbage "$k" ; then
-    continue
-  fi
-  if ! "$grub_file" $check "$k"; then
     continue
   fi
   if ! (zcat -f "$k" | file -bL - | grep -q "${pattern}") 2>/dev/null ; then

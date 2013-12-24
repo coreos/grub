@@ -439,42 +439,49 @@ script = {
   name = '10_hurd';
   common = util/grub.d/10_hurd.in;
   installdir = grubconf;
+  condition = COND_HOST_HURD;
 };
 
 script = {
   name = '10_kfreebsd';
   common = util/grub.d/10_kfreebsd.in;
   installdir = grubconf;
+  condition = COND_HOST_KFREEBSD;
 };
 
 script = {
   name = '10_illumos';
   common = util/grub.d/10_illumos.in;
   installdir = grubconf;
+  condition = COND_HOST_ILLUMOS;
 };
 
 script = {
   name = '10_netbsd';
   common = util/grub.d/10_netbsd.in;
   installdir = grubconf;
+  condition = COND_HOST_NETBSD;
 };
 
 script = {
   name = '10_linux';
   common = util/grub.d/10_linux.in;
   installdir = grubconf;
+  condition = COND_HOST_LINUX;
 };
 
 script = {
   name = '10_xnu';
   common = util/grub.d/10_xnu.in;
   installdir = grubconf;
+  condition = COND_HOST_XNU;
 };
 
 script = {
   name = '20_linux_xen';
   common = util/grub.d/20_linux_xen.in;
   installdir = grubconf;
+  condition = COND_HOST_LINUX;
 };
 
 script = {
