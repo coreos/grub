@@ -83,6 +83,23 @@ grub_util_device_is_mapped (const char *dev)
 }
 
 int
+grub_util_device_is_mapped_stat (struct stat *st)
+{
+#if GRUB_DISK_DEVS_ARE_CHAR
+  if (! S_ISCHR (st->st_mode))
+#else
+  if (! S_ISBLK (st->st_mode))
+#endif
+    return 0;
+
+  if (!grub_device_mapper_supported ())
+    return 0;
+
+  return dm_is_dm_major (major (st->st_rdev));
+}
+
+
+int
 grub_util_get_dm_node_linear_info (dev_t dev,
 				   int *maj, int *min,
 				   grub_disk_addr_t *st)
@@ -195,6 +212,12 @@ grub_util_get_dm_node_linear_info (dev_t dev __attribute__ ((unused)),
 				   int *maj __attribute__ ((unused)),
 				   int *min __attribute__ ((unused)),
 				   grub_disk_addr_t *st __attribute__ ((unused)))
+{
+  return 0;
+}
+
+int
+grub_util_device_is_mapped_stat (struct stat *st __attribute__ ((unused)))
 {
   return 0;
 }

@@ -1,5 +1,9 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make grub_util_device_is_mapped_stat available in grub-emu core.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Add -Qn to TARGET_CFLAGS if it's supported.
 	Fixes compilation on cygwin.
 

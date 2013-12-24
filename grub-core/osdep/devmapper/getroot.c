@@ -211,22 +211,6 @@ grub_util_devmapper_part_to_disk (struct stat *st,
   return xstrdup (path);
 }
 
-int
-grub_util_device_is_mapped_stat (struct stat *st)
-{
-#if GRUB_DISK_DEVS_ARE_CHAR
-  if (! S_ISCHR (st->st_mode))
-#else
-  if (! S_ISBLK (st->st_mode))
-#endif
-    return 0;
-
-  if (!grub_device_mapper_supported ())
-    return 0;
-
-  return dm_is_dm_major (major (st->st_rdev));
-}
-
 char *
 grub_util_get_devmapper_grub_dev (const char *os_dev)
 {
@@ -309,12 +293,6 @@ void
 grub_util_pull_devmapper (const char *os_dev __attribute__ ((unused)))
 {
   return;
-}
-
-int
-grub_util_device_is_mapped_stat (struct stat *st __attribute__ ((unused)))
-{
-  return 0;
 }
 
 void
