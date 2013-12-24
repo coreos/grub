@@ -89,8 +89,7 @@ struct piwg_full_device_path
 	  .subtype = GRUB_EFI_PIWG_DEVICE_PATH_SUBTYPE,			\
 	  .length = sizeof (struct grub_efi_piwg_device_path)		\
 	},								\
-	.guid = {0x2B0585EB, 0xD8B8, 0x49A9, {0x8B, 0x8C, 0xE2, 0x1B,	\
-					      0x01, 0xAE, 0xF2, 0xB7}}	\
+	.guid = GRUB_EFI_VENDOR_APPLE_GUID				\
       },								\
        .end =								\
 	  {								\
