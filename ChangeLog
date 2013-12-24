@@ -1,5 +1,9 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix buffer overflow in grub_efi_print_device_path.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Show SATA device path.
 
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
