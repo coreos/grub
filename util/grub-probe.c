@@ -77,8 +77,57 @@ enum {
   PRINT_DISK
 };
 
+static const char *targets[] =
+  {
+    [PRINT_FS]                 = "fs",
+    [PRINT_FS_UUID]            = "fs_uuid",
+    [PRINT_FS_LABEL]           = "fs_label",
+    [PRINT_DRIVE]              = "drive",
+    [PRINT_DEVICE]             = "device",
+    [PRINT_PARTMAP]            = "partmap",
+    [PRINT_ABSTRACTION]        = "abstraction",
+    [PRINT_CRYPTODISK_UUID]    = "cryptodisk_uuid",
+    [PRINT_HINT_STR]           = "hints_string",
+    [PRINT_BIOS_HINT]          = "bios_hints",
+    [PRINT_IEEE1275_HINT]      = "ieee1275_hints",
+    [PRINT_BAREMETAL_HINT]     = "baremetal_hints",
+    [PRINT_EFI_HINT]           = "efi_hints",
+    [PRINT_ARC_HINT]           = "arc_hints",
+    [PRINT_COMPATIBILITY_HINT] = "compatibility_hint",
+    [PRINT_MSDOS_PARTTYPE]     = "msdos_parttype",
+    [PRINT_GPT_PARTTYPE]       = "gpt_parttype",
+    [PRINT_ZERO_CHECK]         = "zero_check",
+    [PRINT_DISK]               = "disk",
+  };
+
 static int print = PRINT_FS;
 static unsigned int argument_is_device = 0;
+
+static char *
+get_targets_string (void)
+{
+  char **arr = xmalloc (sizeof (targets));
+  int len = 0;
+  char *str;
+  char *ptr;
+  unsigned i;
+
+  memcpy (arr, targets, sizeof (targets));
+  qsort (arr, ARRAY_SIZE (targets), sizeof (char *), grub_qsort_strcmp);
+  for (i = 0; i < ARRAY_SIZE (targets); i++)
+    len += grub_strlen (targets[i]) + 2;
+  ptr = str = xmalloc (len);
+  for (i = 0; i < ARRAY_SIZE (targets); i++)
+    {
+      ptr = grub_stpcpy (ptr, arr[i]);
+      *ptr++ = ',';
+      *ptr++ = ' ';
+    }
+  ptr[-2] = '\0';
+  free (arr);
+
+  return str;
+}
 
 static void
 do_print (const char *x)
@@ -660,8 +709,7 @@ static struct argp_option options[] = {
    N_("given argument is a system device, not a path"), 0},
   {"device-map",  'm', N_("FILE"), 0,
    N_("use FILE as the device map [default=%s]"), 0},
-  {"target",  't', "(fs|fs_uuid|fs_label|drive|device|partmap|abstraction|cryptodisk_uuid|msdos_parttype)", 0,
-   N_("print filesystem module, GRUB drive, system device, partition map module, abstraction module or cryptographic container UUID [default=fs]"), 0},
+  {"target",  't', N_("TARGET"), 0, 0, 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
@@ -675,6 +723,16 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
     {
       case 'm':
         return xasprintf (text, DEFAULT_DEVICE_MAP);
+
+      case 't':
+	{
+	  char *ret, *t = get_targets_string ();
+
+	  ret = xasprintf ("%s\n%s %s [default=%s]", _("print TARGET"),
+			    _("available targets:"), t, targets[print]);
+	  free (t);
+	  return ret;
+	}
 
       default:
         return (char *) text;
@@ -713,46 +771,18 @@ argp_parser (int key, char *arg, struct argp_state *state)
       break;
 
     case 't':
-      if (!strcmp (arg, "fs"))
-	print = PRINT_FS;
-      else if (!strcmp (arg, "fs_uuid"))
-	print = PRINT_FS_UUID;
-      else if (!strcmp (arg, "fs_label"))
-	print = PRINT_FS_LABEL;
-      else if (!strcmp (arg, "drive"))
-	print = PRINT_DRIVE;
-      else if (!strcmp (arg, "device"))
-	print = PRINT_DEVICE;
-      else if (!strcmp (arg, "partmap"))
-	print = PRINT_PARTMAP;
-      else if (!strcmp (arg, "abstraction"))
-	print = PRINT_ABSTRACTION;
-      else if (!strcmp (arg, "cryptodisk_uuid"))
-	print = PRINT_CRYPTODISK_UUID;
-      else if (!strcmp (arg, "msdos_parttype"))
-	print = PRINT_MSDOS_PARTTYPE;
-      else if (!strcmp (arg, "gpt_parttype"))
-	print = PRINT_GPT_PARTTYPE;
-      else if (!strcmp (arg, "hints_string"))
-	print = PRINT_HINT_STR;
-      else if (!strcmp (arg, "bios_hints"))
-	print = PRINT_BIOS_HINT;
-      else if (!strcmp (arg, "ieee1275_hints"))
-	print = PRINT_IEEE1275_HINT;
-      else if (!strcmp (arg, "baremetal_hints"))
-	print = PRINT_BAREMETAL_HINT;
-      else if (!strcmp (arg, "efi_hints"))
-	print = PRINT_EFI_HINT;
-      else if (!strcmp (arg, "arc_hints"))
-	print = PRINT_ARC_HINT;
-      else if (!strcmp (arg, "compatibility_hint"))
-	print = PRINT_COMPATIBILITY_HINT;
-      else if (strcmp (arg, "zero_check") == 0)
-	print = PRINT_ZERO_CHECK;
-      else if (!strcmp (arg, "disk"))
-	print = PRINT_DISK;
-      else
-	argp_usage (state);
+      {
+	int i;
+
+	for (i = PRINT_FS; i < ARRAY_SIZE (targets); i++)
+	  if (strcmp (arg, targets[i]) == 0)
+	    {
+	      print = i;
+	      break;
+	    }
+	if (i == ARRAY_SIZE (targets))
+	  argp_usage (state);
+      }
       break;
 
     case '0':

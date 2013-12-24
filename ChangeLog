@@ -1,3 +1,7 @@
+2013-12-24  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-probe.c: Improve help message and simplify list handling.
+
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Fix buffer overflow in grub_efi_print_device_path.
