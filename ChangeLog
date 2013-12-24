@@ -1,5 +1,9 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* configure.ac: Set version to 2.02~beta2.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/efi/efidisk.c (name_devices): Skip Apple ghosts.
 
 2013-12-24  Andrey Borzenkov <arvidjaar@gmail.com>
