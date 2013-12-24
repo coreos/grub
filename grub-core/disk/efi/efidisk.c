@@ -333,6 +333,21 @@ name_devices (struct grub_efidisk_data *devices)
       if (! dp)
 	continue;
 
+      /* Ghosts proudly presented by Apple.  */
+      if (GRUB_EFI_DEVICE_PATH_TYPE (dp) == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE
+	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (dp)
+	  == GRUB_EFI_VENDOR_MEDIA_DEVICE_PATH_SUBTYPE)
+	{
+	  grub_efi_vendor_device_path_t *vendor = (grub_efi_vendor_device_path_t *) dp;
+	  const struct grub_efi_guid apple = GRUB_EFI_VENDOR_APPLE_GUID;
+
+	  if (vendor->header.length == sizeof (*vendor)
+	      && grub_memcmp (&vendor->vendor_guid, &apple,
+			      sizeof (vendor->vendor_guid)) == 0
+	      && find_parent_device (devices, d))
+	    continue;
+	}
+
       m = d->block_io->media;
       if (GRUB_EFI_DEVICE_PATH_TYPE (dp) == GRUB_EFI_ACPI_DEVICE_PATH_TYPE
 	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (dp)
