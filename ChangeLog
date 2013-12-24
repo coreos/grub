@@ -1,5 +1,11 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Make rijndael.c respect aliasing rules.
+
+	Trivial backport of dfb4673da8ee52d95e0a62c9f49ca8599943f22e.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Make grub_util_device_is_mapped_stat available in grub-emu core.
 
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
