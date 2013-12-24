@@ -1,5 +1,9 @@
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Show SATA device path.
+
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Revert grub-file usage in grub-mkconfig.
 
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>

@@ -677,6 +677,17 @@ grub_efi_print_device_path (grub_efi_device_path_t *dp)
 			     uart.stop_bits);
 	      }
 	      break;
+	    case GRUB_EFI_SATA_DEVICE_PATH_SUBTYPE:
+	      {
+		grub_efi_sata_device_path_t *sata;
+		sata = (grub_efi_sata_device_path_t *) dp;
+		grub_printf ("/Sata(%x,%x,%x)",
+			     sata->hba_port,
+			     sata->multiplier_port,
+			     sata->lun);
+	      }
+	      break;
+
 	    case GRUB_EFI_VENDOR_MESSAGING_DEVICE_PATH_SUBTYPE:
 	      dump_vendor_path ("Messaging",
 				(grub_efi_vendor_device_path_t *) dp);

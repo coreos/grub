@@ -819,6 +819,17 @@ struct grub_efi_uart_device_path
 } GRUB_PACKED;
 typedef struct grub_efi_uart_device_path grub_efi_uart_device_path_t;
 
+#define GRUB_EFI_SATA_DEVICE_PATH_SUBTYPE		18
+
+struct grub_efi_sata_device_path
+{
+  grub_efi_device_path_t header;
+  grub_efi_uint16_t hba_port;
+  grub_efi_uint16_t multiplier_port;
+  grub_efi_uint16_t lun;
+} GRUB_PACKED;
+typedef struct grub_efi_sata_device_path grub_efi_sata_device_path_t;
+
 #define GRUB_EFI_VENDOR_MESSAGING_DEVICE_PATH_SUBTYPE	10
 
 /* Media Device Path.  */
