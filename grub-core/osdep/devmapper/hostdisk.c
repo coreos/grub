@@ -83,7 +83,7 @@ grub_util_device_is_mapped (const char *dev)
 }
 
 int
-grub_util_get_dm_node_linear_info (const char *dev,
+grub_util_get_dm_node_linear_info (dev_t dev,
 				   int *maj, int *min,
 				   grub_disk_addr_t *st)
 {
@@ -97,14 +97,16 @@ grub_util_get_dm_node_linear_info (const char *dev,
   grub_disk_addr_t partstart = 0;
   const char *node_uuid;
 
+  major = major (dev);
+  minor = minor (dev);
+
   while (1)
     {
       dmt = dm_task_create(DM_DEVICE_TABLE);
       if (!dmt)
 	break;
       
-      if (! (first ? dm_task_set_name (dmt, dev)
-	     : dm_task_set_major_minor (dmt, major, minor, 0)))
+      if (! (dm_task_set_major_minor (dmt, major, minor, 0)))
 	{
 	  dm_task_destroy (dmt);
 	  break;
@@ -117,8 +119,7 @@ grub_util_get_dm_node_linear_info (const char *dev,
 	}
       node_uuid = dm_task_get_uuid (dmt);
       if (node_uuid && (strncmp (node_uuid, "LVM-", 4) == 0
-			|| strncmp (node_uuid, "mpath-", 6) == 0
-			|| strncmp (node_uuid, "DMRAID-", 7) == 0))
+			|| strncmp (node_uuid, "mpath-", 6) == 0))
 	{
 	  dm_task_destroy (dmt);
 	  break;
@@ -190,7 +191,7 @@ grub_util_device_is_mapped (const char *dev __attribute__ ((unused)))
 }
 
 int
-grub_util_get_dm_node_linear_info (const char *dev __attribute__ ((unused)),
+grub_util_get_dm_node_linear_info (dev_t dev __attribute__ ((unused)),
 				   int *maj __attribute__ ((unused)),
 				   int *min __attribute__ ((unused)),
 				   grub_disk_addr_t *st __attribute__ ((unused)))

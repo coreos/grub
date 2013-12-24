@@ -288,6 +288,7 @@ grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
     {
       grub_util_fd_t fd;
       grub_disk_addr_t start;
+      struct stat st;
 
       sprintf (p, format, i);
 
@@ -300,13 +301,15 @@ grub_hostdisk_linux_find_partition (char *dev, grub_disk_addr_t sector)
 	    return 0;
 	}
       missing = 0;
-      close (fd);
 
-      if (!grub_util_device_is_mapped (real_dev)
-	  || !grub_util_get_dm_node_linear_info (real_dev, 0, 0, &start))
+      if (fstat (fd, &st) < 0
+	  || !grub_util_device_is_mapped_stat (&st)
+	  || !grub_util_get_dm_node_linear_info (st.st_rdev, 0, 0, &start))
 	start = grub_util_find_partition_start_os (real_dev);
       /* We don't care about errors here.  */
       grub_errno = GRUB_ERR_NONE;
+
+      close (fd);
 
       if (start == sector)
 	{

@@ -61,7 +61,7 @@ char *
 grub_util_get_os_disk (const char *os_dev);
 
 int
-grub_util_get_dm_node_linear_info (const char *dev,
+grub_util_get_dm_node_linear_info (dev_t dev,
 				   int *maj, int *min,
 				   grub_disk_addr_t *st);
 

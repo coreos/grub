@@ -198,124 +198,17 @@ char *
 grub_util_devmapper_part_to_disk (struct stat *st,
 				  int *is_part, const char *path)
 {
-  struct dm_tree *tree;
-  uint32_t maj, min;
-  struct dm_tree_node *node = NULL, *child;
-  void *handle;
-  const char *node_uuid, *mapper_name = NULL, *child_uuid, *child_name;
+  int major, minor;
 
-  tree = dm_tree_create ();
-  if (! tree)
+  if (grub_util_get_dm_node_linear_info (st->st_rdev,
+					 &major, &minor, 0))
     {
-      grub_util_info ("dm_tree_create failed");
-      goto devmapper_out;
+      *is_part = 1;
+      return grub_find_device ("/dev",
+			       (major << 8) | minor);
     }
-
-  maj = major (st->st_rdev);
-  min = minor (st->st_rdev);
-  if (! dm_tree_add_dev (tree, maj, min))
-    {
-      grub_util_info ("dm_tree_add_dev failed");
-      goto devmapper_out;
-    }
-
-  node = dm_tree_find_node (tree, maj, min);
-  if (! node)
-    {
-      grub_util_info ("dm_tree_find_node failed");
-      goto devmapper_out;
-    }
- reiterate:
-  node_uuid = dm_tree_node_get_uuid (node);
-  if (! node_uuid)
-    {
-      grub_util_info ("%s has no DM uuid", path);
-      goto devmapper_out;
-    }
-  if (strncmp (node_uuid, "LVM-", 4) == 0)
-    {
-      grub_util_info ("%s is an LVM", path);
-      goto devmapper_out;
-    }
-  if (strncmp (node_uuid, "mpath-", 6) == 0)
-    {
-      /* Multipath partitions have partN-mpath-* UUIDs, and are
-	 linear mappings so are handled by
-	 grub_util_get_dm_node_linear_info.  Multipath disks are not
-	 linear mappings and must be handled specially.  */
-      grub_util_info ("%s is a multipath disk", path);
-      goto devmapper_out;
-    }
-  if (strncmp (node_uuid, "DMRAID-", 7) != 0)
-    {
-      int major, minor;
-      const char *node_name;
-      grub_util_info ("%s is not DM-RAID", path);
-
-      if ((node_name = dm_tree_node_get_name (node))
-	  && grub_util_get_dm_node_linear_info (node_name,
-						&major, &minor, 0))
-	{
-	  *is_part = 1;
-	  if (tree)
-	    dm_tree_free (tree);
-	  char *ret = grub_find_device ("/dev",
-					(major << 8) | minor);
-	  return ret;
-	}
-
-      goto devmapper_out;
-    }
-
-  handle = NULL;
-  /* Counter-intuitively, device-mapper refers to the disk-like
-     device containing a DM-RAID partition device as a "child" of
-     the partition device.  */
-  child = dm_tree_next_child (&handle, node, 0);
-  if (! child)
-    {
-      grub_util_info ("%s has no DM children", path);
-      goto devmapper_out;
-    }
-  child_uuid = dm_tree_node_get_uuid (child);
-  if (! child_uuid)
-    {
-      grub_util_info ("%s child has no DM uuid", path);
-      goto devmapper_out;
-    }
-  else if (strncmp (child_uuid, "DMRAID-", 7) != 0)
-    {
-      grub_util_info ("%s child is not DM-RAID", path);
-      goto devmapper_out;
-    }
-  child_name = dm_tree_node_get_name (child);
-  if (! child_name)
-    {
-      grub_util_info ("%s child has no DM name", path);
-      goto devmapper_out;
-    }
-  mapper_name = child_name;
-  *is_part = 1;
-  node = child;
-  goto reiterate;
-
- devmapper_out:
-  if (! mapper_name && node)
-    {
-      /* This is a DM-RAID disk, not a partition.  */
-      mapper_name = dm_tree_node_get_name (node);
-      if (! mapper_name)
-	grub_util_info ("%s has no DM name", path);
-    }
-  char *ret;
-  if (mapper_name)
-    ret = xasprintf ("/dev/mapper/%s", mapper_name);
-  else
-    ret = NULL;
-
-  if (tree)
-    dm_tree_free (tree);
-  return ret;
+  *is_part = 0;
+  return xstrdup (path);
 }
 
 int
