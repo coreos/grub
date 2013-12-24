@@ -282,48 +282,50 @@ fi
 
 make_timeout ()
 {
-    if [ "x${1}${3}" != "x" ] ; then
-	if [ "x${3}" != "x" ] ; then
-	    timeout="${2}"
-	    style="${3}"
-	else
-	    # Handle the deprecated GRUB_HIDDEN_TIMEOUT scheme.
-	    timeout="${1}"
-	    if [ "x${2}" != "x0" ] ; then
-		grub_warn "$(gettext "Setting GRUB_TIMEOUT to a non-zero value when GRUB_HIDDEN_TIMEOUT is set is no longer supported.")"
-	    fi
-	    if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then
-		style="hidden"
-	    else
-		style="countdown"
-	    fi
+    if [ "x${3}" != "x" ] ; then
+	timeout="${2}"
+	style="${3}"
+    elif [ "x${1}" != "x" -a "x${1}" != "x0" ] ; then
+	# Handle the deprecated GRUB_HIDDEN_TIMEOUT scheme.
+	timeout="${1}"
+	if [ "x${2}" != "x0" ] ; then
+	    grub_warn "$(gettext "Setting GRUB_TIMEOUT to a non-zero value when GRUB_HIDDEN_TIMEOUT is set is no longer supported.")"
 	fi
-	if [ "x${style}" = "xcountdown" ] ; then
-	    verbose=" --verbose"
-	else
+	if [ "x${GRUB_HIDDEN_TIMEOUT_QUIET}" = "xtrue" ] ; then
+	    style="hidden"
 	    verbose=
+	else
+	    style="countdown"
+	    verbose=" --verbose"
 	fi
-	cat << EOF
+    else
+	# No hidden timeout, so treat as GRUB_TIMEOUT_STYLE=menu
+	timeout="${2}"
+	style="menu"
+    fi
+    cat << EOF
 if [ x\$feature_timeout_style = xy ] ; then
   set timeout_style=${style}
   set timeout=${timeout}
 EOF
-	if [ "x${style}" != "xmenu" ] ; then
-	    cat << EOF
+    if [ "x${style}" = "xmenu" ] ; then
+	cat << EOF
+# Fallback normal timeout code in case the timeout_style feature is
+# unavailable.
+else
+  set timeout=${timeout}
+EOF
+    else
+	cat << EOF
 # Fallback hidden-timeout code in case the timeout_style feature is
 # unavailable.
 elif sleep${verbose} --interruptible ${timeout} ; then
   set timeout=0
 EOF
-	fi
-	cat << EOF
+    fi
+    cat << EOF
 fi
 EOF
-    else
-	cat << EOF
-set timeout=${2}
-EOF
-    fi
 }
 
 if [ "x$GRUB_BUTTON_CMOS_ADDRESS" != "x" ]; then
