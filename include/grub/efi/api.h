@@ -815,14 +815,6 @@ typedef struct grub_efi_uart_device_path grub_efi_uart_device_path_t;
 
 #define GRUB_EFI_VENDOR_MESSAGING_DEVICE_PATH_SUBTYPE	10
 
-struct grub_efi_vendor_messaging_device_path
-{
-  grub_efi_device_path_t header;
-  grub_efi_packed_guid_t vendor_guid;
-  grub_efi_uint8_t vendor_defined_data[0];
-} GRUB_PACKED;
-typedef struct grub_efi_vendor_messaging_device_path grub_efi_vendor_messaging_device_path_t;
-
 /* Media Device Path.  */
 #define GRUB_EFI_MEDIA_DEVICE_PATH_TYPE			4
 

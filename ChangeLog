@@ -1,3 +1,7 @@
+2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Dump type and vendor specific data when printing device path.
+
 2013-12-23  Colin Watson  <cjwatson@debian.org>
 
 	Update some documentation to refer to Git rather than Bazaar.
