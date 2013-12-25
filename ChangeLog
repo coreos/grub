@@ -1,3 +1,8 @@
+2013-12-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/osdep/windows/platform.c (get_platform): Fix EFI
+	detection.
+
 2013-12-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* configure.ac: Set version to 2.02~beta2.

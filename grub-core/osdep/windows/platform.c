@@ -100,7 +100,7 @@ get_platform (void)
 
   if (!func_GetFirmwareEnvironmentVariableW (L"BootOrder", GRUB_EFI_GLOBAL_VARIABLE_GUID_WINDOWS_STR,
 					     buffer, sizeof (buffer))
-      && GetLastError () != ERROR_INVALID_FUNCTION)
+      && GetLastError () == ERROR_INVALID_FUNCTION)
     {
       platform = PLAT_BIOS;
       return;
