@@ -22,7 +22,6 @@
 	.text
 	.syntax	unified
 	.arm
-	.arch	armv6
 
 # define DMB	mcr	p15, 0, r0, c7, c10, 5
 # define DSB	mcr	p15, 0, r0, c7, c10, 4
