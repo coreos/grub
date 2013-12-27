@@ -1,9 +1,18 @@
-2013-12-25  Vladimir Serbinenko  <phcoder@gmail.com>
+2013-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache_armv6.S: Remove .arch directive.
 
 	As these functions are used on pre-ARMv6 CPUs as well we don't want
 	to make assembler assume that architecture is higher than default one.
+
+2013-12-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: First draft of 2.02 entry.
+
+2013-12-27  Colin Watson  <cjwatson@ubuntu.com>
+
+	* INSTALL (Cross-compiling the GRUB): Fix some spelling mistakes.
+	* docs/grub.texi (Getting the source code): Likewise.
 
 2013-12-25  Andrey Borzenkov <arvidjaar@gmail.com>
 

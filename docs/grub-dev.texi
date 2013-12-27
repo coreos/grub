@@ -108,16 +108,16 @@ The branches available are:
 
 @table @samp
 @item master
-      Main developpement branch.
+      Main development branch.
 @item grub-legacy
       GRUB 0.97 codebase. Kept for reference and legal reasons
 @item multiboot
       Multiboot specfication
 @item multiboot2
       Multiboot2 specfication
-@item developper branches
-      Prefixed with developper name. Every developper of a team manages his own branches.
-      Developper branches do not need changelog entries.
+@item developer branches
+      Prefixed with developer name. Every developer of a team manages his own branches.
+      Developer branches do not need changelog entries.
 @end table
 
 Once you have used @kbd{git clone} to fetch an initial copy of a branch, you
