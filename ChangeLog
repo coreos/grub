@@ -1,5 +1,9 @@
 2013-12-27  Colin Watson  <cjwatson@ubuntu.com>
 
+	* NEWS: First draft of 2.02 entry.
+
+2013-12-27  Colin Watson  <cjwatson@ubuntu.com>
+
 	* INSTALL (Cross-compiling the GRUB): Fix some spelling mistakes.
 	* docs/grub.texi (Getting the source code): Likewise.
 

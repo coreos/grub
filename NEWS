@@ -1,3 +1,122 @@
+New in 2.02:
+
+* New/improved filesystem and disk support:
+  * Big-endian UFS1.
+  * Experimental 64-bit ext2 support.
+  * Various fixes for non-512-byte sector devices.
+  * New `proc' filesystem framework, used by LUKS disks.
+  * Fix DM-RAID partition handling.
+  * New `nativedisk' command to switch from firmware to native disk drivers.
+  * Compressed HFS+.
+  * DragonFly BSD labels.
+  * CBFS (coreboot).
+  * Handle partitioned LVM properly.
+  * Use LVM UUIDs whenever possible.
+  * GPT PReP.
+  * New `progress' module that shows progress information while reading
+    files.
+
+* New/improved terminal and video support:
+  * Monochrome text (matching `hercules' in GRUB Legacy).
+  * Morse code output using system speaker.
+  * `spkmodem' output (simple data protocol using system speaker).
+  * Handle Japanese special keys.
+  * coreboot framebuffer.
+  * Serial on ARC.
+  * Native vt100 handling for grub-emu, replacing the use of the curses
+    library.
+  * New gfxmenu options for terminal window positioning, theme background
+    image handling, and scrollbar padding, plus `item_pixmap_style' and
+    `highlight_overlay'.
+  * Support several more image types (paletted and greyscale).
+
+* Boot protocol improvements:
+  * Support Apple FAT binaries on non-Apple platforms.
+  * Improve FreeDOS direct loading support compatibility.
+  * Enable `linux16' on all x86 platforms, not just BIOS.
+  * New TrueCrypt ISO loader.
+
+* New/improved network support:
+  * New variables `net_default_*' containing properties of the default
+    interface.
+  * Autoload `http' and `tftp' modules if necessary.
+  * Improve TFTP robustness.
+  * Parse `nd' disk names in GRUB Legacy configuration files.
+  * Issue separate DNS queries for IPv4 and IPv6.
+
+* New/improved platform support:
+  * New `efifwsetup' and `lsefi' commands on EFI platforms.
+  * New `cmosclean', `cmosdump', and `cmosset' commands on platforms with
+    CMOS support.
+  * New `cbmemc', `coreboot_boottime', and `lscoreboot' commands on
+    coreboot.
+  * Improve opcode parsing in ACPI halt implementation.
+  * Use the TSC as a possible time source on i386-ieee1275.
+  * Merge PowerPC grub-mkrescue implementation with the common one.
+  * Support grub-mkrescue on i386-ieee1275, sparc64, bootinfo machines such
+    as pSeries, and mips-arc.
+  * Make grub-mkrescue better support Apple Intel Macs on CD.
+  * Enable GRUB Legacy configuration file parsing on EFI.
+  * Support halt for Loongson 2E.
+  * ARM U-Boot and EFI ports.
+  * Reorganise platform-dependent code in utilities to avoid #ifdef mess.
+  * AROS and Haiku support for userspace utilities.
+  * Xen PV port.
+  * Fix EFI stack alignment.
+  * ARM64 EFI port.
+  * On Linux, read partition start offsets from sysfs if possible.
+  * New grub-macbless utility, and better integration with Mac firmware in
+    grub-install.
+  * Support Yeeloong 3A.
+  * Add `cpuid --pae' option to detect Physical Address Extension on x86.
+
+* Security:
+  * Add optional facility to enforce that all files read by the core image
+    from disk have a valid detached digital signature.
+
+* Performance:
+  * Avoid costly division operations in many places.
+  * New boot time analysis framework (`./configure --enable-boot-time').
+  * Initialise USB ports in parallel.
+  * New `testspeed' command to test file read speed.
+
+* Scripting:
+  * New `eval' and `tr' commands.
+  * grub-script-check fails on scripts containing no commands.
+
+* Installation and other utility improvements:
+  * Add option to compress files on installation or image creation.
+  * Using grub-reboot no longer requires setting `GRUB_DEFAULT=saved'.
+  * Support probing EFI System Partition (requires os-prober >= 1.58).
+  * Fix inconsistent use of `GRUB_CRYPTODISK_ENABLE' and
+    `GRUB_ENABLE_CRYPTODISK'; the latter is now used consistently.
+  * grub-mount handles symbolic links to directories.
+  * Support disabling submenus with `GRUB_DISABLE_SUBMENU' configuration key
+    for grub-mkconfig.
+  * grub-install, grub-mknetdir, grub-mkrescue, and grub-mkstandalone
+    rewritten in C.  They should now work in supported non-Unix-like
+    environments.
+  * Reorganise timeout handling using new `timeout_style' environment
+    variable and `GRUB_TIMEOUT_STYLE' configuration key for grub-mkconfig.
+    Menu hotkeys pressed during a hidden timeout now boot the corresponding
+    menu entry immediately.
+  * New `file' command and grub-file utility to check file types.
+  * New syslinux configuration file parser.
+
+* Build system:
+  * Remove all uses of nested functions; GRUB no longer requires an
+    executable stack.
+  * Fix documentation build with Texinfo >= 5.1.
+  * More robust and documented cross-compiling support.
+  * Partial clang support for some platforms.
+  * Eliminate the use of AutoGen.  This allowed some performance
+    improvements to the build system.
+  * Fix build with FreeType >= 2.5.1.
+  * Make gentpl.py compatible with Python 3.  It now requires at least
+    Python 2.6.
+
+* Revision control moved to git.
+
 New in 2.00:
 
 * Appearance:
