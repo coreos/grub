@@ -1,3 +1,8 @@
+2013-12-28  Colin Watson  <cjwatson@ubuntu.com>
+
+	* NEWS: The cmosclean command in fact dates back to 1.99.  Remove
+	mention of it from 2.02.
+
 2013-12-27  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/arm/cache_armv6.S: Remove .arch directive.
