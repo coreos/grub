@@ -55,7 +55,7 @@ grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t,
     if (check_signature (table_header))
       goto signature_found;
 
-  grub_fatal ("Could not find coreboot table\n");
+  return 0;
 
 signature_found:
 

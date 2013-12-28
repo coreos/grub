@@ -1,3 +1,7 @@
+2013-12-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Don't abort() on unavailable coreboot tables if not running on coreboot.
+
 2013-12-28  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/kern/emu/misc.c: Remove unused error.h; fixes compilation

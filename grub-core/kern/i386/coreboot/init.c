@@ -51,6 +51,7 @@ grub_exit (void)
 
 grub_addr_t grub_modbase = GRUB_KERNEL_I386_COREBOOT_MODULES_ADDR;
 static grub_uint64_t modend;
+static int have_memory = 0;
 
 /* Helper for grub_machine_init.  */
 static int
@@ -82,6 +83,8 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 
   grub_mm_init_region ((void *) (grub_addr_t) begin, (grub_size_t) (end - begin));
 
+  have_memory = 1;
+
   return 0;
 }
 
@@ -97,6 +100,8 @@ grub_machine_init (void)
   grub_vga_text_init ();
 
   grub_machine_mmap_iterate (heap_init, NULL);
+  if (!have_memory)
+    grub_fatal ("No memory found");
 
   grub_video_coreboot_fb_late_init ();
 
