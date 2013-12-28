@@ -1,3 +1,8 @@
+2013-12-28  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/kern/emu/misc.c: Remove unused error.h; fixes compilation
+	on mingw.
+
 2013-12-28  Colin Watson  <cjwatson@ubuntu.com>
 
 	* NEWS: The cmosclean command in fact dates back to 1.99.  Remove
