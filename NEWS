@@ -35,6 +35,8 @@ New in 2.02:
   * Improve FreeDOS direct loading support compatibility.
   * Enable `linux16' on all x86 platforms, not just BIOS.
   * New TrueCrypt ISO loader.
+  * multiboot2 boot-services EFI specification.
+  * multiboot2 full-file specfication.
 
 * New/improved network support:
   * New variables `net_default_*' containing properties of the default
@@ -44,11 +46,17 @@ New in 2.02:
   * Parse `nd' disk names in GRUB Legacy configuration files.
   * Issue separate DNS queries for IPv4 and IPv6.
 
+* Coreboot improvements:
+  * CBFS support both in on-disk images (loopback) and flash.
+  * Ability to launch another payload from flash or disk
+  * Coreboot framebuffer
+  * CBMEMC support (both logging and inspecting logs)
+  * Inspecting coreboot timestamps.
+  * Inspecting coreboot tables.
+
 * New/improved platform support:
   * New `efifwsetup' and `lsefi' commands on EFI platforms.
   * New `cmosdump' and `cmosset' commands on platforms with CMOS support.
-  * New `cbmemc', `coreboot_boottime', and `lscoreboot' commands on
-    coreboot.
   * Improve opcode parsing in ACPI halt implementation.
   * Use the TSC as a possible time source on i386-ieee1275.
   * Merge PowerPC grub-mkrescue implementation with the common one.
@@ -68,6 +76,7 @@ New in 2.02:
     grub-install.
   * Support Yeeloong 3A.
   * Add `cpuid --pae' option to detect Physical Address Extension on x86.
+  * Support for USB debug dongles.
 
 * Security:
   * Add optional facility to enforce that all files read by the core image
@@ -78,6 +87,7 @@ New in 2.02:
   * New boot time analysis framework (`./configure --enable-boot-time').
   * Initialise USB ports in parallel.
   * New `testspeed' command to test file read speed.
+  * Speed-up gfxterm by storing intermediate results in more compact format.
 
 * Scripting:
   * New `eval' and `tr' commands.
@@ -95,6 +105,7 @@ New in 2.02:
   * grub-install, grub-mknetdir, grub-mkrescue, and grub-mkstandalone
     rewritten in C.  They should now work in supported non-Unix-like
     environments.
+  * Native mingw support, including ability to install on EFI under windows.
   * Reorganise timeout handling using new `timeout_style' environment
     variable and `GRUB_TIMEOUT_STYLE' configuration key for grub-mkconfig.
     Menu hotkeys pressed during a hidden timeout now boot the corresponding
@@ -107,12 +118,19 @@ New in 2.02:
     executable stack.
   * Fix documentation build with Texinfo >= 5.1.
   * More robust and documented cross-compiling support.
-  * Partial clang support for some platforms.
+  * Partial clang support for some platforms (experimental).
+  * Partial mingw64 x86_64-efi compile support (highly experimental).
+  * Partial mingw32 i386-* (other than already present i386-pc)
+    compile support (highly experimental).
   * Eliminate the use of AutoGen.  This allowed some performance
     improvements to the build system.
+  * Remove variable length arrays.
+  * OpenBSD compile and tools support (NetBSD and FreeBSD were already supported).
   * Fix build with FreeType >= 2.5.1.
   * Make gentpl.py compatible with Python 3.  It now requires at least
     Python 2.6.
+  * modinfo.sh contains build information now.
+  * Added many new tests to improve robustness.
 
 * Revision control moved to git.
 
@@ -142,7 +160,6 @@ New in 2.00:
   * IEEE1275 serial.
   * EFI serial.
   * Network stack for BIOS, IEEE1275, EMU and EFI, including TFTP, HTTP and DNS.
-  * VBE on coreboot support.
 
 * New filesystem, filters and disks formats:
   * DVH partition map.
@@ -166,7 +183,7 @@ New in 2.00:
   * multidevice, mirrored and raidz(2,3) ZFS support.
   * RAID LVM (internal RAIDing) support.
   * ZFS crypto support.
-  * ZLE and GZIP on ZFS support.
+  * ZLE, LZ4 and GZIP on ZFS support.
   * Support ZFS up to 33.
   * HFS string is now treated like mac-roman and not UTF-8
   * HFS mtime support.

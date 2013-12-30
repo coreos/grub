@@ -1,3 +1,7 @@
+2013-12-30  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Add few missing entries. Correct existing ones.
+
 2013-12-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Don't abort() on unavailable coreboot tables if not running on coreboot.
