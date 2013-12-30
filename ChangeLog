@@ -1,3 +1,7 @@
+2013-12-30  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/Makefile.core.def: strip .eh_frame section for arm64-efi.
+
 2013-12-30  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* NEWS: Add few missing entries. Correct existing ones.

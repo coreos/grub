@@ -66,7 +66,7 @@ kernel = {
   arm_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   arm64_efi_ldflags          = '-Wl,-r,-d';
-  arm64_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
+  arm64_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version -R .eh_frame';
 
   i386_pc_ldflags          = '$(TARGET_IMG_LDFLAGS)';
   i386_pc_ldflags          = '$(TARGET_IMG_BASE_LDOPT),0x9000';
