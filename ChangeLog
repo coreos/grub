@@ -1,3 +1,7 @@
+2014-01-07  Leif Lindholm <leif.lindholm@linaro.org>
+
+	* grub-core/loader/arm64/linux.c: correctly set device path end length.
+
 2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-install.c: Use bootaa64.efi instead of bootaarch64.efi on

@@ -268,7 +268,7 @@ grub_linux_boot (void)
 
   mempath[1].header.type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   mempath[1].header.subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
-  mempath[1].header.length = 0;
+  mempath[1].header.length = sizeof (grub_efi_device_path_t);
 
   b = grub_efi_system_table->boot_services;
   status = b->load_image (0, grub_efi_image_handle,
