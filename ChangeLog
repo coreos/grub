@@ -1,3 +1,8 @@
+2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* include/grub/osdep/hostfile_windows.h: Do not redefine fseeko/ftello
+	on MinGW-64 when compiling for 32 bits.
+
 2013-12-30  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/Makefile.core.def: strip .eh_frame section for arm64-efi.

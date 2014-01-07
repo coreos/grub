@@ -69,8 +69,11 @@ enum grub_util_fd_open_flags_t
 
 #if defined (__MINGW32__) && !defined (__MINGW64__)
 
+/* 32 bit on MinGW-64 already redefines them if _FILE_OFFSET_BITS=64 */
+#if !defined(_FILE_OFFSET_BITS)
 #define fseeko fseeko64
 #define ftello ftello64
+#endif
 
 #endif
 
