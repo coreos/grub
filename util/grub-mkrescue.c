@@ -663,7 +663,7 @@ main (int argc, char *argv[])
       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_ARM_EFI, "arm-efi", imgname);
       free (imgname);
 
-      imgname = grub_util_path_concat (2, efidir_efi_boot, "bootaarch64.efi");
+      imgname = grub_util_path_concat (2, efidir_efi_boot, "bootaa64.efi");
       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_ARM64_EFI, "arm64-efi",
 			     imgname);
       free (imgname);

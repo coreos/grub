@@ -1,5 +1,12 @@
 2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* util/grub-install.c: Use bootaa64.efi instead of bootaarch64.efi on
+	arm64 to comply with EFI specification. Also use grubaa64.efi for
+	consistency.
+	* util/grub-mkrescue.c: Change to use bootaa64.efi too.
+
+2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* include/grub/osdep/hostfile_windows.h: Do not redefine fseeko/ftello
 	on MinGW-64 when compiling for 32 bits.
 
