@@ -1091,7 +1091,7 @@ main (int argc, char *argv[])
 	      efi_file = "BOOTARM.EFI";
 	      break;
 	    case GRUB_INSTALL_PLATFORM_ARM64_EFI:
-	      efi_file = "BOOTAARCH64.EFI";
+	      efi_file = "BOOTAA64.EFI";
 	      break;
 	    default:
 	      grub_util_error ("%s", _("You've found a bug"));
@@ -1118,7 +1118,7 @@ main (int argc, char *argv[])
 	      efi_file = "grubarm.efi";
 	      break;
 	    case GRUB_INSTALL_PLATFORM_ARM64_EFI:
-	      efi_file = "grubarm64.efi";
+	      efi_file = "grubaa64.efi";
 	      break;
 	    default:
 	      efi_file = "grub.efi";
