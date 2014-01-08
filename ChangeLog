@@ -1,3 +1,7 @@
+2014-01-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* Makefile.util.def (grub-macbless): Change mansection to 8.
+
 2014-01-07  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/loader/arm64/linux.c: correctly set device path end length.
