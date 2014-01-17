@@ -108,7 +108,6 @@ grub_util_fd_open (const char *os_dev, int flags)
 
   ret = open (os_dev, flags, S_IROTH | S_IRGRP | S_IRUSR | S_IWUSR);
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
   if (! (sysctl_oldflags & 0x10)
       && sysctlbyname ("kern.geom.debugflags", NULL , 0, &sysctl_oldflags, sysctl_size))
     {
@@ -116,7 +115,6 @@ grub_util_fd_open (const char *os_dev, int flags)
       close (ret);
       return GRUB_UTIL_FD_INVALID;
     }
-#endif
 
   return ret;
 }
