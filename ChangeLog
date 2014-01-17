@@ -1,3 +1,10 @@
+2014-01-19  Colin Watson  <cjwatson@ubuntu.com>
+
+	* grub-core/osdep/freebsd/hostdisk.c (grub_util_fd_open): Ignore
+	EPERM when modifying kern.geom.debugflags.  It is only a problem for
+	such things as installing GRUB to the MBR, in which case there'll be
+	an error later anyway, not for opening files during tests.
+
 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* grub-core/Makefile.am: Build grub_emu_init.[ch] from MODULE_FILES
