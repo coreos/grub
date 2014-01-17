@@ -285,7 +285,7 @@ make_timeout ()
     if [ "x${3}" != "x" ] ; then
 	timeout="${2}"
 	style="${3}"
-    elif [ "x${1}" != "x" -a "x${1}" != "x0" ] ; then
+    elif [ "x${1}" != "x" ] && [ "x${1}" != "x0" ] ; then
 	# Handle the deprecated GRUB_HIDDEN_TIMEOUT scheme.
 	timeout="${1}"
 	if [ "x${2}" != "x0" ] ; then

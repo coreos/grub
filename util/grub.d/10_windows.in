@@ -66,11 +66,11 @@ for drv in $drives ; do
   osid=
 
   # Check for Vista bootmgr.
-  if [ -f "$dir"/bootmgr -a -f "$dir"/boot/bcd ] ; then
+  if [ -f "$dir"/bootmgr ] && [ -f "$dir"/boot/bcd ] ; then
     OS="$(gettext "Windows Vista/7 (loader)")"
     osid=bootmgr
   # Check for NTLDR.
-  elif [ -f "$dir"/ntldr -a -f "$dir"/ntdetect.com -a -f "$dir"/boot.ini ] ; then
+  elif [ -f "$dir"/ntldr ] && [ -f "$dir"/ntdetect.com ] && [ -f "$dir"/boot.ini ] ; then
     OS=`get_os_name_from_boot_ini "$dir"/boot.ini` || OS="$(gettext "Windows NT/2000/XP (loader)")"
     osid=ntldr
     needmap=t

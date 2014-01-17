@@ -30,7 +30,7 @@ if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
   exit 0
 fi
 
-if [ -z "`which os-prober 2> /dev/null`" -o -z "`which linux-boot-prober 2> /dev/null`" ] ; then
+if [ -z "`which os-prober 2> /dev/null`" ] || [ -z "`which linux-boot-prober 2> /dev/null`" ] ; then
   # missing os-prober and/or linux-boot-prober
   exit 0
 fi
@@ -119,7 +119,7 @@ for OS in ${OSPROBED} ; do
       EXPUUID="${EXPUUID}@${DEVICE#*@}"
   fi
 
-  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" -a "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
+  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
     echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
     continue
   fi

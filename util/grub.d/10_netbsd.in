@@ -69,7 +69,7 @@ netbsd_load_fs_module ()
   kversion=$(zcat -f "${kernel}" | strings | sed -n -e '/^@(#)NetBSD/ { s/^@(#)NetBSD \([0-9\.]*\) .*$/\1/g ; p ; q ; }')
   kmodule="/stand/${karch}/${kversion}/modules/${kmod}/${kmod}.kmod"
 
-  if test -z "$karch" -o -z "$kversion" -o ! -f "${kmodule}"; then
+  if test -z "$karch" || test -z "$kversion" || test ! -f "${kmodule}"; then
     return
   fi
 
