@@ -1,5 +1,12 @@
 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* configure.ac: Add support for BUILD_EXEEXT and use it ...
+	* Makefile.am: ... here.
+	* Makefile.util.def: ... and here.
+	* grub-core/Makefile.am: ... and here.
+
+2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* include/grub/osdep/hostfile_windows.h: Use _W64 instead of
 	FILE_OFFSET_BITS to differentiate between native MinGW and Mingw W64.
 

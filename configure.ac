@@ -38,7 +38,8 @@ AC_CONFIG_AUX_DIR([build-aux])
 # We don't want -g -O2 by default in CFLAGS
 : ${CFLAGS=""}
 
-# Checks for host and target systems.
+# Checks for build, host and target systems.
+AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 save_program_prefix="${program_prefix}"
 AC_CANONICAL_TARGET
@@ -422,6 +423,16 @@ case "$build_os" in
   haiku*)				BUILD_LIBM= ;;
   *) 					BUILD_LIBM=-lm ;;
 esac
+
+dnl FIXME proper test seems to require too deep dive into Autoconf internals.
+dnl For now just list known platforms that we support.
+
+case "$build_os" in
+  cygwin*|mingw32*|mingw64*)		BUILD_EXEEXT=.exe ;;
+  *)					BUILD_EXEEXT= ;;
+esac
+AC_SUBST(BUILD_EXEEXT)
+
 # For gnulib.
 gl_INIT
 
@@ -765,11 +776,11 @@ if test x"$platform" = xemu ; then
     *windows* | *cygwin* | *mingw*)
       if test x${target_cpu} = xi386 ; then
         grub_cv_target_cc_link_format=-mi386pe;
-	TARGET_OBJ2ELF='./build-grub-pe2elf';
+	TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
       fi
       if test x${target_cpu} = xx86_64 ; then
         grub_cv_target_cc_link_format=-mi386pep;
-	TARGET_OBJ2ELF='./build-grub-pep2elf';
+	TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
       fi
       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
       ;;
@@ -803,10 +814,10 @@ elif test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
   fi
   TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
   if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
-    TARGET_OBJ2ELF='./build-grub-pe2elf';
+    TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
   fi
   if test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
-    TARGET_OBJ2ELF='./build-grub-pep2elf';
+    TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
   fi
 fi
 

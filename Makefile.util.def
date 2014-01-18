@@ -708,7 +708,7 @@ script = {
   name = grub-fs-tester;
   common = tests/util/grub-fs-tester.in;
   installdir = noinst;
-  dependencies = garbage-gen;
+  dependencies = 'garbage-gen$(BUILD_EXEEXT)';
 };
 
 script = {

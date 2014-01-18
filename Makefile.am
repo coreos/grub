@@ -66,22 +66,22 @@ endif
 
 starfield_theme_files = $(srcdir)/themes/starfield/blob_w.png $(srcdir)/themes/starfield/boot_menu_c.png $(srcdir)/themes/starfield/boot_menu_e.png $(srcdir)/themes/starfield/boot_menu_ne.png $(srcdir)/themes/starfield/boot_menu_n.png $(srcdir)/themes/starfield/boot_menu_nw.png $(srcdir)/themes/starfield/boot_menu_se.png $(srcdir)/themes/starfield/boot_menu_s.png $(srcdir)/themes/starfield/boot_menu_sw.png $(srcdir)/themes/starfield/boot_menu_w.png $(srcdir)/themes/starfield/slider_c.png $(srcdir)/themes/starfield/slider_n.png $(srcdir)/themes/starfield/slider_s.png $(srcdir)/themes/starfield/starfield.png $(srcdir)/themes/starfield/terminal_box_c.png $(srcdir)/themes/starfield/terminal_box_e.png $(srcdir)/themes/starfield/terminal_box_ne.png $(srcdir)/themes/starfield/terminal_box_n.png $(srcdir)/themes/starfield/terminal_box_nw.png $(srcdir)/themes/starfield/terminal_box_se.png $(srcdir)/themes/starfield/terminal_box_s.png $(srcdir)/themes/starfield/terminal_box_sw.png $(srcdir)/themes/starfield/terminal_box_w.png $(srcdir)/themes/starfield/theme.txt $(srcdir)/themes/starfield/README $(srcdir)/themes/starfield/COPYING.CC-BY-SA-3.0
 
-build-grub-mkfont: util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/misc.c util/misc.c
+build-grub-mkfont$(BUILD_EXEEXT): util/grub-mkfont.c grub-core/unidata.c grub-core/kern/emu/misc.c util/misc.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-mkfont\" $^ $(build_freetype_cflags) $(build_freetype_libs)
-CLEANFILES += build-grub-mkfont
+CLEANFILES += build-grub-mkfont$(BUILD_EXEEXT)
 
-garbage-gen: util/garbage-gen.c
+garbage-gen$(BUILD_EXEEXT): util/garbage-gen.c
 	$(BUILD_CC) -o $@ $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS)  $^
-CLEANFILES += garbage-gen
+CLEANFILES += garbage-gen$(BUILD_EXEEXT)
 EXTRA_DIST += util/garbage-gen.c
 
-build-grub-gen-asciih: util/grub-gen-asciih.c
+build-grub-gen-asciih$(BUILD_EXEEXT): util/grub-gen-asciih.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
-CLEANFILES += build-grub-gen-asciih
+CLEANFILES += build-grub-gen-asciih$(BUILD_EXEEXT)
 
-build-grub-gen-widthspec: util/grub-gen-widthspec.c
+build-grub-gen-widthspec$(BUILD_EXEEXT): util/grub-gen-widthspec.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_MKFONT=1 -DGRUB_BUILD=1 -DGRUB_UTIL=1 $^ $(build_freetype_cflags) $(build_freetype_libs) -Wall -Werror
-CLEANFILES += build-grub-gen-widthspec
+CLEANFILES += build-grub-gen-widthspec$(BUILD_EXEEXT)
 
 if COND_STARFIELD
 starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
