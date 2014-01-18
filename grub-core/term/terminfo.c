@@ -460,28 +460,31 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	{'@', GRUB_TERM_KEY_INSERT},
       };
 
-    static struct
-    {
-      char key;
-      unsigned ascii;
-    }
-    four_code_table[] =
+    static unsigned four_code_table[] =
       {
-	{'1', GRUB_TERM_KEY_HOME},
-	{'3', GRUB_TERM_KEY_DC},
-	{'5', GRUB_TERM_KEY_PPAGE},
-	{'6', GRUB_TERM_KEY_NPAGE},
-	{'7', GRUB_TERM_KEY_HOME},
-	{'8', GRUB_TERM_KEY_END}
+	[1] = GRUB_TERM_KEY_HOME,
+	[3] = GRUB_TERM_KEY_DC,
+	[5] = GRUB_TERM_KEY_PPAGE,
+	[6] = GRUB_TERM_KEY_NPAGE,
+	[7] = GRUB_TERM_KEY_HOME,
+	[8] = GRUB_TERM_KEY_END,
+	[17] = GRUB_TERM_KEY_F6,
+	[18] = GRUB_TERM_KEY_F7,
+	[19] = GRUB_TERM_KEY_F8,
+	[20] = GRUB_TERM_KEY_F9,
+	[21] = GRUB_TERM_KEY_F10,
+	[23] = GRUB_TERM_KEY_F11,
+	[24] = GRUB_TERM_KEY_F12,
       };
     char fx_key[] = 
       { 'P', 'Q', 'w', 'x', 't', 'u',
-        'q', 'r', 'p', 'M', 'A', 'B' };
+        'q', 'r', 'p', 'M', 'A', 'B', 'H', 'F' };
     unsigned fx_code[] = 
 	{ GRUB_TERM_KEY_F1, GRUB_TERM_KEY_F2, GRUB_TERM_KEY_F3,
 	  GRUB_TERM_KEY_F4, GRUB_TERM_KEY_F5, GRUB_TERM_KEY_F6,
 	  GRUB_TERM_KEY_F7, GRUB_TERM_KEY_F8, GRUB_TERM_KEY_F9,
-	  GRUB_TERM_KEY_F10, GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12 };
+	  GRUB_TERM_KEY_F10, GRUB_TERM_KEY_F11, GRUB_TERM_KEY_F12,
+	  GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_END };
     unsigned i;
 
     if (c == '\e')
@@ -492,19 +495,13 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	  {
 	    CONTINUE_READ;
 
-	    switch (c)
-	      {
-	      case 'H':
-		keys[0] = GRUB_TERM_KEY_HOME;
-		*len = 1;
-		return;
-	      case 'F':
-		keys[0] = GRUB_TERM_KEY_END;
-		*len = 1;
-		return;
-	      default:
-		return;
-	      }
+	    for (i = 0; i < ARRAY_SIZE (fx_key); i++)
+	      if (fx_key[i] == c)
+		{
+		  keys[0] = fx_code[i];
+		  *len = 1;
+		  return;
+		}
 	  }
 
 	if (c != '[')
@@ -523,6 +520,15 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 
     switch (c)
       {
+      case '[':
+	CONTINUE_READ;
+	if (c >= 'A' && c <= 'E')
+	  {
+	    keys[0] = GRUB_TERM_KEY_F1 + c - 'A';
+	    *len = 1;
+	    return;
+	  }
+	return;
       case 'O':
 	CONTINUE_READ;
 	for (i = 0; i < ARRAY_SIZE (fx_key); i++)
@@ -555,18 +561,26 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	  return;
 	}	  
 
-      default:
-	for (i = 0; i < ARRAY_SIZE (four_code_table); i++)
-	  if (four_code_table[i].key == c)
+      case '1' ... '9':
+	{
+	  unsigned val = c - '0';
+	  CONTINUE_READ;
+	  if (c >= '0' && c <= '9')
 	    {
+	      val = val * 10 + (c - '0');
 	      CONTINUE_READ;
-	      if (c != '~')
-		return;
-	      keys[0] = four_code_table[i].ascii;
-	      *len = 1;
-	      return;
 	    }
-	return;
+	  if (c != '~')
+	    return;
+	  if (val >= ARRAY_SIZE (four_code_table)
+	      || four_code_table[val] == 0)
+	    return;
+	  keys[0] = four_code_table[val];
+	  *len = 1;
+	  return;
+	}
+	default:
+	  return;
       }
   }
 #undef CONTINUE_READ

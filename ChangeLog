@@ -1,3 +1,7 @@
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/terminfo.c: Recognize keys F1-F12.
+
 2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* configure.ac: Add support for BUILD_LDFLAGS.
