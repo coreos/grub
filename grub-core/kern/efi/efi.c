@@ -309,7 +309,7 @@ grub_efi_modules_addr (void)
 char *
 grub_efi_get_filename (grub_efi_device_path_t *dp0)
 {
-  char *name = 0, *p;
+  char *name = 0, *p, *pi;
   grub_size_t filesize = 0;
   grub_efi_device_path_t *dp;
 
@@ -328,7 +328,7 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
 	  grub_efi_uint16_t len;
 	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
 		 / sizeof (grub_efi_char16_t));
-	  filesize += GRUB_MAX_UTF8_PER_UTF16 * len + 1;
+	  filesize += GRUB_MAX_UTF8_PER_UTF16 * len + 2;
 	}
 
       dp = GRUB_EFI_NEXT_DEVICE_PATH (dp);
@@ -356,12 +356,12 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
 	  grub_efi_file_path_device_path_t *fp;
 	  grub_efi_uint16_t len;
 
-	  if (p != name)
-	    *p++ = '/';
+	  *p++ = '/';
 
 	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
 		 / sizeof (grub_efi_char16_t));
 	  fp = (grub_efi_file_path_device_path_t *) dp;
+
 	  p = (char *) grub_utf16_to_utf8 ((unsigned char *) p, fp->path_name, len);
 	}
 
@@ -370,10 +370,19 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
 
   *p = '\0';
 
-  /* EFI breaks paths with backslashes.  */
-  for (p = name; *p; p++)
-    if (*p == '\\')
-      *p = '/';
+  for (pi = name, p = name; *pi;)
+    {
+      /* EFI breaks paths with backslashes.  */
+      if (*pi == '\\' || *pi == '/')
+	{
+	  *p++ = '/';
+	  while (*pi == '\\' || *pi == '/')
+	    pi++;
+	  continue;
+	}
+      *p++ = *pi++;
+    }
+  *p = '\0';
 
   return name;
 }
