@@ -1,5 +1,9 @@
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-install.c: Fix a typo.
+
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/main.c (read_config_file): Buffer config file.
 	Reduces boot time.
 

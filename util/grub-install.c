@@ -1259,7 +1259,7 @@ main (int argc, char *argv[])
 
   if (!config.is_cryptodisk_enabled && have_cryptodisk)
     grub_util_error (_("attempt to install to encrypted disk without cryptodisk enabled. "
-		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=1",
+		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=y",
 		     grub_util_get_config_filename ());
 
   if (disk_module && grub_strcmp (disk_module, "ata") == 0)
