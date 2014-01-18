@@ -1,3 +1,10 @@
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/macbless.c: Rename FILE and DIR to avoid
+	conflicts.
+
+	Reported by: Andrey Borzenkov.
+
 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* include/grub/misc.h: Move macros for compiler features to ...
