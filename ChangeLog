@@ -1,4 +1,9 @@
-2014-01-01  Mike Gilbert <floppym@gentoo.org>
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* Makefile.am (default_payload.elf): Add modules
+	multiboot cbmemc linux16 gzio echo help.
+
+2014-01-18  Mike Gilbert <floppym@gentoo.org>
 
 	* Makefile.util.def: Link grub-ofpathname with zfs libs.
 
