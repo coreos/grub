@@ -1,3 +1,11 @@
+2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* grub-core/Makefile.am: Build grub_emu_init.[ch] from MODULE_FILES
+	instead of MOD_FILES.
+	* grub-core/genemuinit.sh: Simplify stripping of suffix so it works
+	both with and without .exe.
+	* grub-core/genemuinitheader.sh: Same.
+
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-install.c: Fix a typo.
