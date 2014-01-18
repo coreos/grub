@@ -1,5 +1,9 @@
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mount.c: Extend GCC warning workaround to grub-mount.
+
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/efi.c: Ensure that the result starts with /
 	and has no //.
 
