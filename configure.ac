@@ -26,11 +26,10 @@ dnl This is necessary because the target type in autoconf does not
 dnl describe such a system very well.
 dnl
 dnl The current strategy is to use variables with no prefix (such as
-dnl CC, CFLAGS, etc.) for the host type as well as the build type,
-dnl because GRUB does not need to use those variables for the build
-dnl type, so there is no conflict. Variables with the prefix "TARGET_"
-dnl (such as TARGET_CC, TARGET_CFLAGS, etc.) are used for the target
-dnl type.
+dnl CC, CFLAGS, etc.) for the host type, variables with prefix "BUILD_"
+dnl (such as BUILD_CC, BUILD_CFLAGS, etc.) for the build type and variables
+dnl with the prefix "TARGET_" (such as TARGET_CC, TARGET_CFLAGS, etc.) are
+dnl used for the target type. See INSTALL for full list of variables.
 
 AC_INIT([GRUB],[2.02~beta2],[bug-grub@gnu.org])
 
@@ -477,6 +476,7 @@ AC_SUBST(HOST_CC)
 AC_SUBST(BUILD_CC)
 AC_SUBST(BUILD_CFLAGS)
 AC_SUBST(BUILD_CPPFLAGS)
+AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(TARGET_CC)
 AC_SUBST(TARGET_NM)
 AC_SUBST(TARGET_RANLIB)
@@ -1290,10 +1290,12 @@ SAVED_CC="$CC"
 SAVED_CPP="$CPP"
 SAVED_CFLAGS="$CFLAGS"
 SAVED_CPPFLAGS="$CPPFLAGS"
+SAVED_LDFLAGS="$LDFLAGS"
 CC="$BUILD_CC"
 CPP="$BUILD_CPP"
 CFLAGS="$BUILD_CFLAGS"
 CPPFLAGS="$BUILD_CPPFLAGS"
+LDFLAGS="$BUILD_LDFAGS"
 
 unset ac_cv_c_bigendian
 unset ac_cv_header_ft2build_h
@@ -1356,6 +1358,7 @@ CC="$SAVED_CC"
 CPP="$SAVED_CPP"
 CFLAGS="$SAVED_CFLAGS"
 CPPFLAGS="$SAVED_CPPFLAGS"
+LDFLAGS="$SAVED_LDFLAGS"
 
 
 DJVU_FONT_SOURCE=

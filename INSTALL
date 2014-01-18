@@ -168,7 +168,8 @@ corresponding platform are not needed for the platform in question.
        generate sin and cos tables.
     2. BUILD_CFLAGS= for C options for build.
     3. BUILD_CPPFLAGS= for C preprocessor options for build.
-    4. BUILD_FREETYPE= for freetype-config for build (optional).
+    4. BUILD_LDFLAGS= for linker options for build.
+    5. BUILD_FREETYPE= for freetype-config for build (optional).
 
   - For host
     1. --host= to autoconf name of host.

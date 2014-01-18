@@ -1,3 +1,10 @@
+2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* configure.ac: Add support for BUILD_LDFLAGS.
+	* Makefile.am: Use BUILD_LDFLAGS for build time programs here ...
+	* grub-core/Makefile.am: ... and here.
+	* INSTALL: Mention BUILD_LDFLAGS.
+
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mount.c: Extend GCC warning workaround to grub-mount.
