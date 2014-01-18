@@ -1,3 +1,7 @@
+2014-01-01  Mike Gilbert <floppym@gentoo.org>
+
+	* Makefile.util.def: Link grub-ofpathname with zfs libs.
+
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/macbless.c: Rename FILE and DIR to avoid
