@@ -15,6 +15,8 @@ New in 2.02:
   * GPT PReP.
   * New `progress' module that shows progress information while reading
     files.
+  * ZFS features support.
+  * ZFS LZ4 support.
 
 * New/improved terminal and video support:
   * Monochrome text (matching `hercules' in GRUB Legacy).
@@ -36,6 +38,7 @@ New in 2.02:
   * Enable `linux16' on all x86 platforms, not just BIOS.
   * New TrueCrypt ISO loader.
   * multiboot2 boot-services EFI specification.
+  * multiboot2 EFI memory map specification.
   * multiboot2 full-file specfication.
 
 * New/improved network support:
@@ -51,12 +54,15 @@ New in 2.02:
   * Ability to launch another payload from flash or disk
   * Coreboot framebuffer
   * CBMEMC support (both logging and inspecting logs)
-  * Inspecting coreboot timestamps.
-  * Inspecting coreboot tables.
+  * Command for inspecting coreboot timestamps (`coreboot_boottime').
+  * Command for inspecting coreboot tables (`lscoreboot').
+  * New target default_payload.elf.
+  * Increased maximal core size.
 
 * New/improved platform support:
   * New `efifwsetup' and `lsefi' commands on EFI platforms.
   * New `cmosdump' and `cmosset' commands on platforms with CMOS support.
+  * New command `pcidump' for PCI platforms.
   * Improve opcode parsing in ACPI halt implementation.
   * Use the TSC as a possible time source on i386-ieee1275.
   * Merge PowerPC grub-mkrescue implementation with the common one.
@@ -77,6 +83,8 @@ New in 2.02:
   * Support Yeeloong 3A.
   * Add `cpuid --pae' option to detect Physical Address Extension on x86.
   * Support for USB debug dongles.
+  * Support for *-emu on all platforms (previously only i386/x86_64 worked).
+  * Support *-emu on Windows.
 
 * Security:
   * Add optional facility to enforce that all files read by the core image
@@ -88,6 +96,8 @@ New in 2.02:
   * Initialise USB ports in parallel.
   * New `testspeed' command to test file read speed.
   * Speed-up gfxterm by storing intermediate results in more compact format.
+  * Lazy LVM/mdraid scan.
+  * Disk hints.
 
 * Scripting:
   * New `eval' and `tr' commands.
@@ -105,7 +115,8 @@ New in 2.02:
   * grub-install, grub-mknetdir, grub-mkrescue, and grub-mkstandalone
     rewritten in C.  They should now work in supported non-Unix-like
     environments.
-  * Native mingw support, including ability to install on EFI under windows.
+  * Native mingw support.
+  * Ability to install on EFI under windows.
   * Reorganise timeout handling using new `timeout_style' environment
     variable and `GRUB_TIMEOUT_STYLE' configuration key for grub-mkconfig.
     Menu hotkeys pressed during a hidden timeout now boot the corresponding
@@ -122,6 +133,7 @@ New in 2.02:
   * Partial mingw64 x86_64-efi compile support (highly experimental).
   * Partial mingw32 i386-* (other than already present i386-pc)
     compile support (highly experimental).
+  * Support for grub-mkpasswd on Windows.
   * Eliminate the use of AutoGen.  This allowed some performance
     improvements to the build system.
   * Remove variable length arrays.

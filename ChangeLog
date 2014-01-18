@@ -1,3 +1,7 @@
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* NEWS: Add few missing entries.
+
 2014-01-17  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/00_header.in (make_timeout): Use && rather than test
