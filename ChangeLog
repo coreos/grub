@@ -1,3 +1,8 @@
+2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/main.c (read_config_file): Buffer config file.
+	Reduces boot time.
+
 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* acinclude.m4 (grub_CHECK_LINK_DIR): Check that we can also remove

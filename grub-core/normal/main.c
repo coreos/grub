@@ -32,6 +32,7 @@
 #include <grub/i18n.h>
 #include <grub/charset.h>
 #include <grub/script_sh.h>
+#include <grub/bufio.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -104,7 +105,7 @@ read_config_file_getline (char **line, int cont __attribute__ ((unused)),
 static grub_menu_t
 read_config_file (const char *config)
 {
-  grub_file_t file;
+  grub_file_t rawfile, file;
   char *old_file = 0, *old_dir = 0;
   char *config_dir, *ptr = 0;
   const char *ctmp;
@@ -122,9 +123,16 @@ read_config_file (const char *config)
     }
 
   /* Try to open the config file.  */
-  file = grub_file_open (config);
-  if (! file)
+  rawfile = grub_file_open (config);
+  if (! rawfile)
     return 0;
+
+  file = grub_bufio_open (rawfile, 0);
+  if (! file)
+    {
+      grub_file_close (file);
+      return 0;
+    }
 
   ctmp = grub_env_get ("config_file");
   if (ctmp)
