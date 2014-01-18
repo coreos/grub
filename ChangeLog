@@ -2,7 +2,7 @@
 
 	* grub-core/term/terminfo.c: Recognize keys F1-F12.
 
-2014-01-07  Andrey Borzenkov <arvidjaar@gmail.com>
+2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* configure.ac: Add support for BUILD_LDFLAGS.
 	* Makefile.am: Use BUILD_LDFLAGS for build time programs here ...
