@@ -1,3 +1,8 @@
+2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* include/grub/osdep/hostfile_windows.h: Use _W64 instead of
+	FILE_OFFSET_BITS to differentiate between native MinGW and Mingw W64.
+
 2014-01-18  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/terminfo.c: Recognize keys F1-F12.
