@@ -418,15 +418,15 @@ else
 [fi]
 ])
 
-dnl Check if ln can handle directories properly (mingw).
+dnl Check if ln -s can handle directories properly (mingw).
 AC_DEFUN([grub_CHECK_LINK_DIR],[
-AC_MSG_CHECKING([whether ln can handle directories properly])
+AC_MSG_CHECKING([whether ln -s can handle directories properly])
 [mkdir testdir 2>/dev/null
 case $srcdir in
 [\\/$]* | ?:[\\/]* ) reldir=$srcdir/include/grub/util ;;
     *) reldir=../$srcdir/include/grub/util ;;
 esac
-if ln -s $reldir testdir/util 2>/dev/null ; then]
+if ln -s $reldir testdir/util 2>/dev/null && rm -f testdir/util 2>/dev/null ; then]
   AC_MSG_RESULT([yes])
   [link_dir=yes
 else
