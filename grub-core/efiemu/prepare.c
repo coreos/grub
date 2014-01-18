@@ -21,6 +21,7 @@
 #include <grub/err.h>
 #include <grub/mm.h>
 #include <grub/types.h>
+#include <grub/misc.h>
 #include <grub/efiemu/efiemu.h>
 #include <grub/crypto.h>
 

@@ -18,6 +18,7 @@
 
 #include <grub/fileid.h>
 #include <grub/elfload.h>
+#include <grub/misc.h>
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 

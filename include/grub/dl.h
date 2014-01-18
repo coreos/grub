@@ -26,6 +26,7 @@
 #include <grub/types.h>
 #include <grub/elf.h>
 #include <grub/list.h>
+#include <grub/misc.h>
 #endif
 
 /*

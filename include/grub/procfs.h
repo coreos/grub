@@ -20,6 +20,7 @@
 #define GRUB_PROCFS_HEADER	1
 
 #include <grub/list.h>
+#include <grub/types.h>
 
 struct grub_procfs_entry
 {

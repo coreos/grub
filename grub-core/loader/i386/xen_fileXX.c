@@ -17,6 +17,7 @@
  */
 
 #include <grub/xen_file.h>
+#include <grub/misc.h>
 
 static grub_err_t
 parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,

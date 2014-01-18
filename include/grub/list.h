@@ -21,8 +21,8 @@
 #define GRUB_LIST_HEADER 1
 
 #include <grub/symbol.h>
-#include <grub/types.h>
-#include <grub/misc.h>
+#include <grub/err.h>
+#include <grub/compiler.h>
 
 struct grub_list
 {

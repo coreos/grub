@@ -1,5 +1,19 @@
 2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* include/grub/misc.h: Move macros for compiler features to ...
+	* include/grub/compiler.h: ... new file.
+	* include/grub/list.h: Include <grub/compiler.h> instead of <grub/misc.h>.
+	* grub-core/commands/fileXX.c: Include <grub/misc.h>.
+	* grub-core/efiemu/prepare.c: Include <grub/misc.h>.
+	* grub-core/loader/i386/xen_file.c: Include <grub/misc.h>.
+	* grub-core/loader/i386/xen_fileXX.c: Include <grub/misc.h>.
+	* grub-core/video/capture.c: Include <grub/misc.h>.
+	* include/grub/command.h: Include <grub/misc.h>.
+	* include/grub/dl.h: Include <grub/misc.h>.
+	* include/grub/procfs.h: Include <grub/misc.h>.
+
+2014-01-18  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* configure.ac: Add support for BUILD_EXEEXT and use it ...
 	* Makefile.am: ... here.
 	* Makefile.util.def: ... and here.

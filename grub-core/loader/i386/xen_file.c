@@ -18,6 +18,7 @@
 
 #include <grub/xen_file.h>
 #include <grub/i386/linux.h>
+#include <grub/misc.h>
 
 grub_elf_t
 grub_xen_file (grub_file_t file)

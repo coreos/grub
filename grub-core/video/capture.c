@@ -4,6 +4,7 @@
 #include <grub/video.h>
 #include <grub/video_fb.h>
 #include <grub/mm.h>
+#include <grub/misc.h>
 
 static struct
 {

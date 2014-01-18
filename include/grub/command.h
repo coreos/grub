@@ -22,6 +22,7 @@
 #include <grub/symbol.h>
 #include <grub/err.h>
 #include <grub/list.h>
+#include <grub/misc.h>
 
 typedef enum grub_command_flags
   {
