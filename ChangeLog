@@ -1,3 +1,7 @@
+2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
+
 2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	* grub-core/net/arp.c (grub_net_arp_send_request): Increase network try

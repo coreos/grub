@@ -1389,7 +1389,7 @@ fi
 
 if test x"$starfield_excuse" = x; then
    for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
-     for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu /usr/share/fonts/dejavu; do
+     for dir in . /usr/src /usr/share/fonts/X11/misc /usr/share/fonts/truetype/ttf-dejavu /usr/share/fonts/dejavu /usr/share/fonts/truetype; do
         if test -f "$dir/DejaVuSans.$ext"; then
           DJVU_FONT_SOURCE="$dir/DejaVuSans.$ext"
           break 2
