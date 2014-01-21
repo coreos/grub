@@ -1558,8 +1558,9 @@ grub_net_fs_read_real (grub_file_t file, char *buf, grub_size_t len)
       if (!net->eof)
 	{
 	  try++;
-	  grub_net_poll_cards (GRUB_NET_INTERVAL, &net->stall);
-	}
+	  grub_net_poll_cards (GRUB_NET_INTERVAL +
+                               (try * GRUB_NET_INTERVAL_ADDITION), &net->stall);
+        }
       else
 	return total;
     }

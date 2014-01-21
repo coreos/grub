@@ -1,5 +1,14 @@
 2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
+	* grub-core/net/arp.c (grub_net_arp_send_request): Increase network try
+	interval gradually.
+	* grub-core/net/icmp6.c (grub_net_icmp6_send_request): Likewise.
+	* grub-core/net/net.c (grub_net_fs_read_real): Likewise.
+	* grub-core/net/tftp.c (tftp_open): Likewise.
+	* include/grub/net.h (GRUB_NET_INTERVAL_ADDITION): New define.
+
+2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
 	* grub-core/net/net.c (receive_packets): Change stop condition to avoid
 	infinite loops.
 

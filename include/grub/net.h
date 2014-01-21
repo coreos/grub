@@ -532,5 +532,6 @@ extern char *grub_net_default_server;
 
 #define GRUB_NET_TRIES 40
 #define GRUB_NET_INTERVAL 400
+#define GRUB_NET_INTERVAL_ADDITION 20
 
 #endif /* ! GRUB_NET_HEADER */

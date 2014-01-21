@@ -110,7 +110,8 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
 	return GRUB_ERR_NONE;
       pending_req = proto_addr->ipv4;
       have_pending = 0;
-      grub_net_poll_cards (GRUB_NET_INTERVAL, &have_pending);
+      grub_net_poll_cards (GRUB_NET_INTERVAL + (i * GRUB_NET_INTERVAL_ADDITION),
+                           &have_pending);
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	return GRUB_ERR_NONE;
       nb.data = nbd;

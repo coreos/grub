@@ -398,7 +398,8 @@ tftp_open (struct grub_file *file, const char *filename)
 	  destroy_pq (data);
 	  return err;
 	}
-      grub_net_poll_cards (GRUB_NET_INTERVAL, &data->have_oack);
+      grub_net_poll_cards (GRUB_NET_INTERVAL + (i * GRUB_NET_INTERVAL_ADDITION),
+                           &data->have_oack);
       if (data->have_oack)
 	break;
     }

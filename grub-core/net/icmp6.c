@@ -518,7 +518,8 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
     {
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	break;
-      grub_net_poll_cards (GRUB_NET_INTERVAL, 0);
+      grub_net_poll_cards (GRUB_NET_INTERVAL + (i * GRUB_NET_INTERVAL_ADDITION),
+                           0);
       if (grub_net_link_layer_resolve_check (inf, proto_addr))
 	break;
       nb->data = nbd;
