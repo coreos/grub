@@ -1,6 +1,7 @@
 2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
+	Show detected font path in summary.
 
 2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 

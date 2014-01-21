@@ -1816,6 +1816,7 @@ echo grub-mount: No "($grub_mount_excuse)"
 fi
 if [ x"$starfield_excuse" = x ]; then
 echo starfield theme: Yes
+echo With DejaVuSans font from $DJVU_FONT_SOURCE
 else
 echo starfield theme: No "($starfield_excuse)"
 fi
