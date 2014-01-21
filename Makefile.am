@@ -420,10 +420,14 @@ windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)
 	for x in $(starfield_DATA); do \
 		cp -fp $$x $(windowsdir)/themes/starfield/$$(basename $$x); \
 	done
+	for x in $(GRUB_WINDOWS_EXTRA_DIST); do \
+		cp -fp $$x $(windowsdir); \
+	done
 
 windowszip=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows.zip
 windowszip: windowsdir
 	test -f $(windowszip) && rm $(windowszip) || true
 	zip -r $(windowszip) $(windowsdir)
+	rm -rf $(windowsdir)
 
 EXTRA_DIST += linguas.sh

@@ -1,5 +1,10 @@
 2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
 
+	* Makefile.am: Allow adding extra files to generated Windows ZIP
+	archive by setting GRUB_WINDOWS_EXTRA_DIST.
+
+2014-01-21  Andrey Borzenkov <arvidjaar@gmail.com>
+
 	* configure.ac: Look for DejaVuSans also in /usr/share/fonts/truetype.
 	Show detected font path in summary.
 
