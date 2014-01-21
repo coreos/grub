@@ -1,3 +1,15 @@
+2014-01-21  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	* grub-core/net/net.c (receive_packets): Change stop condition to avoid
+	infinite loops.
+
+	In net/net.c there is a while (1) that only exits if there is a stop
+	condition and more then 10 packages or if there is no package received.
+
+	If GRUB is idle and enter in this loop, the only condition to leave is
+	if it doesn't have incoming packages. In a network with heavy traffic
+	this never happens.
+
 2014-01-19  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/osdep/freebsd/hostdisk.c (grub_util_fd_open): Ignore

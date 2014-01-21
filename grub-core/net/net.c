@@ -1453,7 +1453,7 @@ receive_packets (struct grub_net_card *card, int *stop_condition)
 	}
       card->opened = 1;
     }
-  while (1)
+  while (received < 100)
     {
       /* Maybe should be better have a fixed number of packets for each card
 	 and just mark them as used and not used.  */ 
