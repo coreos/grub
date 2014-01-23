@@ -675,6 +675,7 @@ write_to_disk (grub_device_t dev, const char *fn)
 
   core_img = grub_util_read_image (fn);    
 
+  grub_util_info ("writing `%s' to `%s'", fn, dev->disk->name);
   err = grub_disk_write (dev->disk, 0, 0,
 			 core_size, core_img);
   free (core_img);
