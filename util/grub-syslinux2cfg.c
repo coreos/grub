@@ -66,10 +66,10 @@ static struct argp_option options[] = {
    N_("root directory of the syslinux disk [default=/]."), 0},
   {"target-cwd",  'T', N_("DIR"), 0,
    N_(
-      "current directory of the syslinux as it will be seen on runtime  [default is parent directory of input file]."
+      "current directory of syslinux as it will be seen on runtime  [default is parent directory of input file]."
 ), 0},
   {"cwd",  'c', N_("DIR"), 0,
-   N_("current directory of the syslinux [default is parent directory of input file]."), 0},
+   N_("current directory of syslinux [default is parent directory of input file]."), 0},
 
   {"output",  'o', N_("FILE"), 0, N_("write output to FILE [default=stdout]."), 0},
   {"isolinux",     'i', 0,      0, N_("assume input is an isolinux configuration file."), 0},

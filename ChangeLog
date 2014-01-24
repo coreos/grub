@@ -1,5 +1,11 @@
 2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Fix several translatable strings.
+
+	Suggested by: D. Prévot.
+
+2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* util/grub-install.c: List available targets.
 
 2014-01-23  Colin Watson  <cjwatson@ubuntu.com>

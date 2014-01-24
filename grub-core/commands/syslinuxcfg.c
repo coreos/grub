@@ -50,7 +50,7 @@ static const struct grub_arg_option options[] =
      N_("root directory of the syslinux disk [default=/]."),
      N_("DIR"), ARG_TYPE_STRING},
     {"cwd",  'c', 0,
-     N_("current directory of the syslinux [default is parent directory of input file]."),
+     N_("current directory of syslinux [default is parent directory of input file]."),
      N_("DIR"), ARG_TYPE_STRING},
     {"isolinux",     'i',  0, N_("assume input is an isolinux configuration file."), 0, 0},
     {"pxelinux",     'p',  0, N_("assume input is a pxelinux configuration file."), 0, 0},
