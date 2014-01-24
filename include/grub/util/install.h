@@ -138,6 +138,8 @@ grub_install_get_platform_cpu (enum grub_install_plat platid);
 const char *
 grub_install_get_platform_platform (enum grub_install_plat platid);
 
+char *
+grub_install_get_platforms_string (void);
 
 typedef enum {
   GRUB_COMPRESSION_AUTO,

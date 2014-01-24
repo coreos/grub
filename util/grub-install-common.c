@@ -668,6 +668,36 @@ static struct
   }; 
 
 char *
+grub_install_get_platforms_string (void)
+{
+  char **arr = xmalloc (sizeof (char *) * ARRAY_SIZE (platforms));
+  int platform_strins_len = 0;
+  char *platforms_string;
+  char *ptr;
+  unsigned i;
+  for (i = 0; i < ARRAY_SIZE (platforms); i++)
+    {
+      arr[i] = xasprintf ("%s-%s", platforms[i].cpu,
+			  platforms[i].platform);
+      platform_strins_len += strlen (arr[i]) + 2;
+    }
+  ptr = platforms_string = xmalloc (platform_strins_len);
+  qsort (arr, ARRAY_SIZE (platforms), sizeof (char *), grub_qsort_strcmp);
+  for (i = 0; i < ARRAY_SIZE (platforms); i++)
+    {
+      strcpy (ptr, arr[i]);
+      ptr += strlen (arr[i]);
+      *ptr++ = ',';
+      *ptr++ = ' ';
+      free (arr[i]);
+    }
+  ptr[-2] = 0;
+  free (arr);
+ 
+  return platforms_string;
+}
+
+char *
 grub_install_get_platform_name (enum grub_install_plat platid)
 {
   return xasprintf ("%s-%s", platforms[platid].cpu,

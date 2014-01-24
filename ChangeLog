@@ -1,3 +1,7 @@
+2014-01-24  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-install.c: List available targets.
+
 2014-01-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub-install.c (write_to_disk): Add an info message.
