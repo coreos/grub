@@ -534,6 +534,12 @@ for src in sorted (os.listdir (os.path.join (indir, "src"))):
         fw.close ()
         continue
 
+    if src == "g10lib.h":
+        fw.write (f.read ().replace ("(printf,f,a)", "(__printf__,f,a)"))
+        f.close ()
+        fw.close ()
+        continue
+
     fw.write (f.read ())
     f.close ()
     fw.close ()

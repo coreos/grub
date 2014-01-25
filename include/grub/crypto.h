@@ -408,7 +408,7 @@ void _gcry_assert_failed (const char *expr, const char *file, int line,
                           const char *func) __attribute__ ((noreturn));
 
 void _gcry_burn_stack (int bytes);
-void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (printf, 1, 2)));
+void _gcry_log_error( const char *fmt, ... )  __attribute__ ((format (__printf__, 1, 2)));
 
 
 #ifdef GRUB_UTIL

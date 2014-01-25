@@ -1,3 +1,12 @@
+
+2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* include/grub/crypto.h: Replace __attribute__ ((format (printf)) with
+	__attribute__ ((format (__printf__)) to fix compilation under MinGW-w64.
+	* include/grub/emu/misc.h: ... and here.
+	* include/grub/err.h: ... and here.
+	* util/import_gcry.py: ... and here (in files g10lib.h).
+
 2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
 
 	* util/grub-mkimage.c: Make prefix argument mandatory.
