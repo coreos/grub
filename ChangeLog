@@ -1,3 +1,10 @@
+2014-01-26  Mike Gilbert <floppym@gentoo.org>
+
+	grub-install: support for partitioned partx loop devices.
+
+	* grub-core/osdep/linux/getroot.c (grub_util_part_to_disk): Detect
+	/dev/loopX as being the parent of /dev/loopXpY.
+
 2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/serial.c (grub_serial_register): Fix invalid free.

@@ -883,6 +883,19 @@ grub_util_part_to_disk (const char *os_dev, struct stat *st,
 	  *pp = '\0';
 	  return path;
 	}
+
+      /* If this is a loop device */
+      if ((strncmp ("loop", p, 4) == 0) && p[4] >= '0' && p[4] <= '9')
+	{
+	  char *pp = p + 4;
+	  while (*pp >= '0' && *pp <= '9')
+	    pp++;
+	  if (*pp == 'p')
+	    *is_part = 1;
+	  /* /dev/loop[0-9]+p[0-9]* */
+	  *pp = '\0';
+	  return path;
+	}
     }
 
   return path;
