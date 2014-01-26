@@ -1,3 +1,8 @@
+2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/serial.c (grub_serial_register): Fix invalid free.
+	Ensure that pointers are inited to NULL and that pointers are not
+	accessed after free.
 
 2014-01-25  Andrey Borzenkov <arvidjaar@gmail.com>
 

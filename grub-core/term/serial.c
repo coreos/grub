@@ -338,23 +338,23 @@ grub_serial_register (struct grub_serial_port *port)
       grub_free (indata);
       return grub_errno;
     }
-  
-  out = grub_malloc (sizeof (*out));
+
+  out = grub_zalloc (sizeof (*out));
   if (!out)
     {
-      grub_free (in);
       grub_free (indata);
       grub_free ((char *) in->name);
+      grub_free (in);
       return grub_errno;
     }
 
   outdata = grub_malloc (sizeof (*outdata));
   if (!outdata)
     {
-      grub_free (in);
       grub_free (indata);
       grub_free ((char *) in->name);
       grub_free (out);
+      grub_free (in);
       return grub_errno;
     }
 
