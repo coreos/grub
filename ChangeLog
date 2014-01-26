@@ -1,3 +1,7 @@
+2014-01-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/at_keyboard.c: Tolerate missing keyboard.
+
 2014-01-26  Mike Gilbert <floppym@gentoo.org>
 
 	grub-install: support for partitioned partx loop devices.

@@ -396,6 +396,9 @@ fetch_key (int *is_break)
   if (! KEYBOARD_ISREADY (grub_inb (KEYBOARD_REG_STATUS)))
     return -1;
   at_key = grub_inb (KEYBOARD_REG_DATA);
+  /* May happen if no keyboard is connected. Just ignore this.  */
+  if (at_key == 0xff)
+    return -1;
   if (at_key == 0xe0)
     {
       e0_received = 1;
