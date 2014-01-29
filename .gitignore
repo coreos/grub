@@ -58,6 +58,8 @@ grub-emu.exe
 grub-emu-lite.exe
 grub_emu_init.c
 grub_emu_init.h
+/grub-file
+/grub-file.exe
 grub-fstest
 grub-fstest.exe
 grub_fstest_init.c
@@ -66,6 +68,8 @@ grub_func_test
 grub-install
 grub-install.exe
 grub-kbdcomp
+/grub-macbless
+/grub-macbless.exe
 grub-macho2img
 /grub-menulst2cfg
 /grub-menulst2cfg.exe
@@ -120,6 +124,8 @@ grub-shell
 grub-shell-tester
 grub-sparc64-setup
 grub-sparc64-setup.exe
+/grub-syslinux2cfg
+/grub-syslinux2cfg.exe
 gzcompress_test
 hddboot_test
 help_test
@@ -194,6 +200,7 @@ grub-core/modinfo.sh
 grub-core/*.module
 grub-core/*.module.exe
 grub-core/*.pp
+grub-core/kernel.img.bin
 util/bash-completion.d/grub
 grub-core/gnulib/alloca.h
 grub-core/gnulib/arg-nonnull.h
