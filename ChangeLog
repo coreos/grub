@@ -1,5 +1,10 @@
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Increase timeout. Some SSDs take up to
+	7 seconds to recover if last poweroff was bad.
+
+2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c: Properly handle transactions with no
 	transferred data.
 
