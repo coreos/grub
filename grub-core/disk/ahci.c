@@ -358,7 +358,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	grub_dprintf ("ahci", "err: %x\n",
 		      adevs[i]->hba->ports[adevs[i]->port].sata_error);
 
-	adevs[i]->command_list_chunk = grub_memalign_dma32 (1024, sizeof (struct grub_ahci_cmd_head));
+	adevs[i]->command_list_chunk = grub_memalign_dma32 (1024, sizeof (struct grub_ahci_cmd_head) * 32);
 	if (!adevs[i]->command_list_chunk)
 	  {
 	    adevs[i] = 0;
@@ -376,6 +376,12 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 
 	adevs[i]->command_list = grub_dma_get_virt (adevs[i]->command_list_chunk);
 	adevs[i]->command_table = grub_dma_get_virt (adevs[i]->command_table_chunk);
+
+	grub_memset ((void *) adevs[i]->command_list, 0,
+		     sizeof (struct grub_ahci_cmd_table));
+	grub_memset ((void *) adevs[i]->command_table, 0,
+		     sizeof (struct grub_ahci_cmd_head) * 32);
+
 	adevs[i]->command_list->command_table_base
 	  = grub_dma_get_phys (adevs[i]->command_table_chunk);
 
