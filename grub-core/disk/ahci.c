@@ -932,7 +932,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   if (parms->size > GRUB_AHCI_PRDT_MAX_CHUNK_LENGTH)
     return grub_error (GRUB_ERR_BUG, "too big data buffer");
 
-  bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
+  if (parms->size)
+    bufc = grub_memalign_dma32 (1024, parms->size + (parms->size & 1));
+  else
+    bufc = grub_memalign_dma32 (1024, 512);
 
   grub_dprintf ("ahci", "AHCI tfd = %x, CL=%p\n",
 		dev->hba->ports[dev->port].task_file_data,
@@ -942,7 +945,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
     = (5 << GRUB_AHCI_CONFIG_CFIS_LENGTH_SHIFT)
     //    | GRUB_AHCI_CONFIG_CLEAR_R_OK
     | (0 << GRUB_AHCI_CONFIG_PMP_SHIFT)
-    | (1 << GRUB_AHCI_CONFIG_PRDT_LENGTH_SHIFT)
+    | ((parms->size ? 1 : 0) << GRUB_AHCI_CONFIG_PRDT_LENGTH_SHIFT)
     | (parms->cmdsize ? GRUB_AHCI_CONFIG_ATAPI : 0)
     | (parms->write ? GRUB_AHCI_CONFIG_WRITE : GRUB_AHCI_CONFIG_READ)
     | (parms->taskfile.cmd == 8 ? (1 << 8) : 0);

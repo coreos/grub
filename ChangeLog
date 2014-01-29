@@ -1,5 +1,10 @@
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Properly handle transactions with no
+	transferred data.
+
+2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c: Add safety cleanups.
 
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
