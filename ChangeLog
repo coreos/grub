@@ -1,5 +1,10 @@
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* util/grub-mkfont.c: Downgrade warnings about unhandled features
+	to debug.
+
+2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/at_keyboard.c: Tolerate missing keyboard.
 
 2014-01-29  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
