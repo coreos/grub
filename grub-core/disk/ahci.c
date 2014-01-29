@@ -454,6 +454,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	adevs[i]->hba->ports[adevs[i]->port].fis_base = grub_dma_get_phys (adevs[i]->rfis);
 	adevs[i]->hba->ports[adevs[i]->port].command_list_base
 	  = grub_dma_get_phys (adevs[i]->command_list_chunk);
+	adevs[i]->hba->ports[adevs[i]->port].command_issue = 0;
 	adevs[i]->hba->ports[adevs[i]->port].command |= GRUB_AHCI_HBA_PORT_CMD_FRE;
       }
 
@@ -600,6 +601,9 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	failed_adevs[i] = adevs[i];
 	adevs[i] = 0;
       }
+
+  grub_dprintf ("ahci", "cleaning up failed devs\n");
+
   for (i = 0; i < nports; i++)
     if (failed_adevs[i] && (fr_running & (1 << i)))
       failed_adevs[i]->hba->ports[failed_adevs[i]->port].command &= ~GRUB_AHCI_HBA_PORT_CMD_FRE;
@@ -855,6 +859,12 @@ grub_ahci_reset_port (struct grub_ahci_device *dev, int force)
     {
       struct grub_disk_ata_pass_through_parms parms2;
       dev->hba->ports[dev->port].command &= ~GRUB_AHCI_HBA_PORT_CMD_ST;
+      dev->hba->ports[dev->port].command_issue = 0;
+      dev->command_list[0].config = 0;
+      dev->command_table[0].prdt[0].unused = 0;
+      dev->command_table[0].prdt[0].size = 0;
+      dev->command_table[0].prdt[0].data_base = 0;
+
       endtime = grub_get_time_ms () + 1000;
       while ((dev->hba->ports[dev->port].command & GRUB_AHCI_HBA_PORT_CMD_CR))
 	if (grub_get_time_ms () > endtime)

@@ -1,5 +1,9 @@
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ahci.c: Add safety cleanups.
+
+2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ahci.c: Allocate and clean space for all possible 32
 	slots to avoid pointing to uninited area.
 
