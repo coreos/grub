@@ -194,10 +194,8 @@ grub_ahci_pciinit (grub_pci_device_t dev,
     return 0;
 
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
-  grub_pci_write_word (addr, grub_pci_read_word (addr) | 
-		    GRUB_PCI_COMMAND_IO_ENABLED
-		    | GRUB_PCI_COMMAND_MEM_ENABLED
-		    | GRUB_PCI_COMMAND_BUS_MASTER);
+  grub_pci_write_word (addr, grub_pci_read_word (addr)
+		    | GRUB_PCI_COMMAND_MEM_ENABLED);
 
   hba = grub_pci_device_map_range (dev, bar & GRUB_PCI_ADDR_MEM_MASK,
 				   sizeof (hba));
@@ -620,6 +618,10 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   for (i = 0; i < nports; i++)
     if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].sig >> 16) == 0xeb14)
       adevs[i]->atapi = 1;
+
+  addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write_word (addr, grub_pci_read_word (addr)
+		    | GRUB_PCI_COMMAND_BUS_MASTER);
 
   for (i = 0; i < nports; i++)
     if (adevs[i])
