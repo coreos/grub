@@ -25,7 +25,11 @@
 #include <grub/emu/exec.h>
 #include <grub/emu/config.h>
 #include <grub/emu/hostdisk.h>
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 #include <argp.h>
+#pragma GCC diagnostic error "-Wmissing-prototypes"
+#pragma GCC diagnostic error "-Wmissing-declarations"
 
 #include <sys/types.h>
 #include <sys/wait.h>
