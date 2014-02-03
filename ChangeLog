@@ -1,3 +1,7 @@
+2014-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* util/grub-mkfont.c: Build fix for argp.h with older gcc.
+
 2014-01-29  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ahci.c: Increase timeout. Some SSDs take up to
