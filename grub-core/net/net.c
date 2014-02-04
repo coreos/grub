@@ -1480,6 +1480,44 @@ receive_packets (struct grub_net_card *card, int *stop_condition)
   grub_print_error ();
 }
 
+static char *
+grub_env_write_readonly (struct grub_env_var *var __attribute__ ((unused)),
+			 const char *val __attribute__ ((unused)))
+{
+  return NULL;
+}
+
+grub_err_t
+grub_env_set_net_property (const char *intername, const char *suffix,
+                           const char *value, grub_size_t len)
+{
+  char *varname, *varvalue;
+  char *ptr;
+
+  varname = grub_xasprintf ("net_%s_%s", intername, suffix);
+  if (!varname)
+    return grub_errno;
+  for (ptr = varname; *ptr; ptr++)
+    if (*ptr == ':')
+      *ptr = '_';
+  varvalue = grub_malloc (len + 1);
+  if (!varvalue)
+    {
+      grub_free (varname);
+      return grub_errno;
+    }
+
+  grub_memcpy (varvalue, value, len);
+  varvalue[len] = 0;
+  grub_err_t ret = grub_env_set (varname, varvalue);
+  grub_register_variable_hook (varname, 0, grub_env_write_readonly);
+  grub_env_export (varname);
+  grub_free (varname);
+  grub_free (varvalue);
+
+  return ret;
+}
+
 void
 grub_net_poll_cards (unsigned time, int *stop_condition)
 {

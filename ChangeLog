@@ -1,3 +1,11 @@
+2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
+	Add grub_env_set_net_property function.
+
+	* grub-core/net/bootp.c: Remove set_env_limn_ro.
+	* grub-core/net/net.c: Add grub_env_set_net_property.
+	* include/grub/net.h: Likewise.
+
 2014-02-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* util/grub-mkrescue.c: Build fix for argp.h with older gcc.

@@ -480,6 +480,10 @@ grub_net_addr_to_str (const grub_net_network_level_address_t *target,
 void
 grub_net_hwaddr_to_str (const grub_net_link_level_address_t *addr, char *str);
 
+grub_err_t
+grub_env_set_net_property (const char *intername, const char *suffix,
+                           const char *value, grub_size_t len);
+
 void
 grub_net_poll_cards (unsigned time, int *stop_condition);
 
