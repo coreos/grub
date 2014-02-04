@@ -1,5 +1,18 @@
 2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
+	Add bootpath parser for open firmware.
+
+	It enables net boot even when there is no bootp/dhcp server.
+
+	* grub-core/net/drivers/ieee1275/ofnet.c: Add grub_ieee1275_parse_bootpath
+	and call it at grub_ieee1275_net_config_real.
+	* grub-core/kern/ieee1275/init.c: Add bootpath to
+	grub_ieee1275_net_config.
+	* include/grub/ieee1275/ieee1275.h: Likewise.
+
+
+2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
+
 	Add grub_env_set_net_property function.
 
 	* grub-core/net/bootp.c: Remove set_env_limn_ro.

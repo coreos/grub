@@ -80,9 +80,8 @@ grub_translate_ieee1275_path (char *filepath)
     }
 }
 
-void (*grub_ieee1275_net_config) (const char *dev,
-				  char **device,
-				  char **path);
+void (*grub_ieee1275_net_config) (const char *dev, char **device, char **path,
+                                  char *bootpath);
 void
 grub_machine_get_bootlocation (char **device, char **path)
 {
@@ -126,7 +125,7 @@ grub_machine_get_bootlocation (char **device, char **path)
       *ptr = 0;
 
       if (grub_ieee1275_net_config)
-	grub_ieee1275_net_config (canon, device, path);
+	grub_ieee1275_net_config (canon, device, path, bootpath);
       grub_free (dev);
       grub_free (canon);
     }
