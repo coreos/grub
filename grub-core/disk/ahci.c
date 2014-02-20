@@ -322,7 +322,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 
   grub_dprintf ("ahci", "GLC:%x\n", hba->global_control);
 
-  nports = (hba->cap & GRUB_AHCI_HBA_CAP_NPORTS_MASK) + 1;
+  nports = (GRUB_AHCI_HBA_CAP_NPORTS_MASK) + 1;
 
   grub_dprintf ("ahci", "%d AHCI ports, PI = 0x%x\n", nports,
 		hba->ports_implemented);

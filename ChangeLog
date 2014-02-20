@@ -1,3 +1,8 @@
+2014-02-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ahci.c: Ignore NPORTS field and rely on PI
+	exclusively.
+
 2014-02-04  Paulo Flabiano Smorigo  <pfsmorigo@br.ibm.com>
 
 	Add bootpath parser for open firmware.
