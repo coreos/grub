@@ -1646,6 +1646,7 @@ grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
       serial.device = (GRUB_OPENBSD_COM_MAJOR << 8) | port;
       serial.speed = speed;
+      serial.addr = grub_ns8250_hw_get_port (port);
 	  
       grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
       bootflags |= OPENBSD_RB_SERCONS;
@@ -1656,6 +1657,7 @@ grub_cmd_openbsd (grub_extcmd_context_t ctxt, int argc, char *argv[])
 
       grub_memset (&serial, 0, sizeof (serial));
       serial.device = (GRUB_OPENBSD_VGA_MAJOR << 8);
+      serial.addr = 0xffffffff;
       grub_bsd_add_meta (OPENBSD_BOOTARG_CONSOLE, &serial, sizeof (serial));
       bootflags &= ~OPENBSD_RB_SERCONS;
     }

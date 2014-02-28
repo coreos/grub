@@ -75,6 +75,8 @@ struct grub_openbsd_bootarg_console
 {
   grub_uint32_t device;
   grub_uint32_t speed;
+  grub_uint32_t addr;
+  grub_uint32_t frequency;
 };
 
 struct grub_openbsd_bootarg_pcibios

@@ -1,5 +1,12 @@
 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/i386/openbsd_bootarg.h: Add addr and frequency fields.
+	* grub-core/loader/i386/bsd.c (grub_cmd_openbsd): Fill addr field.
+
+	Suggested by: Markus Müller.
+
+2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/pc/mmap.c: Fallback to EISA memory map
 	if E820 failed to return any regions.
 
