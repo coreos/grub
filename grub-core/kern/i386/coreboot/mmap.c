@@ -44,18 +44,44 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
   mem_region =
     (mem_region_t) ((long) table_item +
 			       sizeof (struct grub_linuxbios_table_item));
-  while ((long) mem_region < (long) table_item + (long) table_item->size)
+  for (; (long) mem_region < (long) table_item + (long) table_item->size;
+       mem_region++)
     {
-      if (ctx->hook (mem_region->addr, mem_region->size,
+      grub_uint64_t start = mem_region->addr;
+      grub_uint64_t end = mem_region->addr + mem_region->size;
+      /* Mark region 0xa0000 - 0x100000 as reserved.  */
+      if (start < 0x100000 && end >= 0xa0000
+	  && mem_region->type == GRUB_MACHINE_MEMORY_AVAILABLE)
+	{
+	  if (start < 0xa0000
+	      && ctx->hook (start, 0xa0000 - start,
+			    /* Multiboot mmaps match with the coreboot mmap
+			       definition.  Therefore, we can just pass type
+			       through.  */
+			    mem_region->type,
+			    ctx->hook_data))
+	    return 1;
+	  if (start < 0xa0000)
+	    start = 0xa0000;
+	  if (start >= end)
+	    continue;
+
+	  if (ctx->hook (start, (end > 0x100000 ? 0x100000 : end) - start,
+			 GRUB_MEMORY_RESERVED,
+			 ctx->hook_data))
+	    return 1;
+	  start = 0x100000;
+
+	  if (end <= start)
+	    continue;
+	}
+      if (ctx->hook (start, end - start,
 		     /* Multiboot mmaps match with the coreboot mmap
 		        definition.  Therefore, we can just pass type
 		        through.  */
-		     (((mem_region->type <= GRUB_MACHINE_MEMORY_BADRAM) && (mem_region->type >= GRUB_MACHINE_MEMORY_AVAILABLE))
-		      || mem_region->type == GRUB_MEMORY_COREBOOT_TABLES) ? mem_region->type : GRUB_MEMORY_RESERVED,
+		     mem_region->type,
 		     ctx->hook_data))
 	return 1;
-
-      mem_region++;
     }
 
   return 0;

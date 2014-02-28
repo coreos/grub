@@ -1,3 +1,8 @@
+2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/coreboot/mmap.c: Filter out 0xa0000-0x100000
+	region.
+
 2014-02-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/disk/ahci.c: Ignore NPORTS field and rely on PI
