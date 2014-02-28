@@ -1,5 +1,10 @@
 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi): Limit
+	location to 640K.
+
+2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/coreboot/mmap.c: Filter out 0xa0000-0x100000
 	region.
 
