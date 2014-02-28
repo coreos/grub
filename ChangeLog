@@ -1,5 +1,10 @@
 2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/mmap/i386/uppermem.c (lower_hook) [COREBOOT]: Ignore low
+	tables for low memory calculations.
+
+2014-02-28  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/multiboot_mbi.c (grub_multiboot_make_mbi): Limit
 	location to 640K.
 

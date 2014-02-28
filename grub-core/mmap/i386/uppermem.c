@@ -31,8 +31,12 @@ lower_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 
   if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
+#ifdef GRUB_MACHINE_COREBOOT
+  if (addr <= 0x1000)
+#else
   if (addr == 0)
-    *lower = size;
+#endif
+    *lower = size + addr;
   return 0;
 }
 
