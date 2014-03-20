@@ -84,8 +84,10 @@ grub_ieee1275_find_options (void)
 
   rc = grub_ieee1275_get_property (root, "model",
 				   tmp,	sizeof (tmp), 0);
-  if (rc >= 0 && !grub_strcmp (tmp, "Emulated PC"))
+  if (rc >= 0 && (!grub_strcmp (tmp, "Emulated PC")
+		  || !grub_strcmp (tmp, "IBM pSeries (emulated by qemu)"))) {
     is_qemu = 1;
+  }
 
   if (rc >= 0 && grub_strncmp (tmp, "IBM", 3) == 0)
     grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS);
