@@ -865,6 +865,8 @@ malloc_in_range (struct grub_relocator *rel,
 			% GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
 		      struct grub_relocator_fw_leftover *lo
 			= events[last_lo].leftover;
+		      if (offend == 0 && alloc_end != alloc_start)
+			offend = GRUB_RELOCATOR_FIRMWARE_REQUESTS_QUANT;
 		      lo->freebytes[offstart / 8]
 			&= ((1 << (8 - (start % 8))) - 1);
 		      grub_memset (lo->freebytes + (offstart + 7) / 8, 0,

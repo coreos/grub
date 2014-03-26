@@ -1,3 +1,7 @@
+2014-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/relocator.c: Fix the case when end of leftover is used.
+
 2014-03-26  Fu Wei <fu.wei@linaro.org>
 
 	* grub-core/loader/arm64/linux.c: Remove redundant "0x".
