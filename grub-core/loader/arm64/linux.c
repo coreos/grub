@@ -68,7 +68,7 @@ get_firmware_fdt (void)
     if (grub_memcmp (&tables[i].vendor_guid, &fdt_guid, sizeof (fdt_guid)) == 0)
       {
 	firmware_fdt = tables[i].vendor_table;
-	grub_dprintf ("linux", "found registered FDT @ 0x%p\n", firmware_fdt);
+	grub_dprintf ("linux", "found registered FDT @ %p\n", firmware_fdt);
 	break;
       }
 
