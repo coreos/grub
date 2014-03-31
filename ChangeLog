@@ -1,3 +1,10 @@
+2014-03-31  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+
+	btrfs: fix get_root key comparison failures due to endianness
+
+	* grub-core/fs/btrfs.c (get_root): Convert
+	GRUB_BTRFS_ROOT_VOL_OBJECTID to little-endian.
+
 2014-03-31  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix partmap, cryptodisk, and abstraction handling in grub-mkconfig.

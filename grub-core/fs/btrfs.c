@@ -1201,7 +1201,7 @@ get_root (struct grub_btrfs_data *data, struct grub_btrfs_key *key,
   struct grub_btrfs_key key_out, key_in;
   struct grub_btrfs_root_item ri;
 
-  key_in.object_id = GRUB_BTRFS_ROOT_VOL_OBJECTID;
+  key_in.object_id = grub_cpu_to_le64_compile_time (GRUB_BTRFS_ROOT_VOL_OBJECTID);
   key_in.offset = 0;
   key_in.type = GRUB_BTRFS_ITEM_TYPE_ROOT_ITEM;
   err = lower_bound (data, &key_in, &key_out,
