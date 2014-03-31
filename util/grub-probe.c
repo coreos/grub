@@ -711,6 +711,7 @@ static struct argp_option options[] = {
    N_("use FILE as the device map [default=%s]"), 0},
   {"target",  't', N_("TARGET"), 0, 0, 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
+  {0, '0', 0, 0, N_("separate items in output using ASCII NUL characters"), 0},
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -884,11 +885,7 @@ main (int argc, char *argv[])
   else
     probe (arguments.devices[0], NULL, delim);
 
-  if (!arguments.zero_delim && (print == PRINT_BIOS_HINT
-				|| print == PRINT_IEEE1275_HINT
-				|| print == PRINT_BAREMETAL_HINT
-				|| print == PRINT_EFI_HINT
-				|| print == PRINT_ARC_HINT))
+  if (delim == ' ')
     putchar ('\n');
 
   /* Free resources.  */

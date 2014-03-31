@@ -1,3 +1,9 @@
+2014-03-31  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub-probe,c (options): Make -0 work again (broken by
+	conversion to argp).
+	(main): Simplify logic.
+
 2014-03-26  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/lib/relocator.c: Fix the case when end of leftover is used.
