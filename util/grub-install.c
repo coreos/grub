@@ -387,7 +387,7 @@ probe_raid_level (grub_disk_t disk)
 }
 
 static void
-push_partmap_module (const char *map)
+push_partmap_module (const char *map, void *data __attribute__ ((unused)))
 {
   char buf[50];
 
@@ -402,6 +402,12 @@ push_partmap_module (const char *map)
 }
 
 static void
+push_cryptodisk_module (const char *mod, void *data __attribute__ ((unused)))
+{
+  grub_install_push_module (mod);
+}
+
+static void
 probe_mods (grub_disk_t disk)
 {
   grub_partition_t part;
@@ -412,11 +418,11 @@ probe_mods (grub_disk_t disk)
     grub_util_info ("no partition map found for %s", disk->name);
 
   for (part = disk->partition; part; part = part->parent)
-    push_partmap_module (part->partmap->name);
+    push_partmap_module (part->partmap->name, NULL);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID)
     {
-      grub_diskfilter_get_partmap (disk, push_partmap_module);
+      grub_diskfilter_get_partmap (disk, push_partmap_module, NULL);
       have_abstractions = 1;
     }
 
@@ -432,7 +438,7 @@ probe_mods (grub_disk_t disk)
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
     {
       grub_util_cryptodisk_get_abstraction (disk,
-					    grub_install_push_module);
+					    push_cryptodisk_module, NULL);
       have_abstractions = 1;
       have_cryptodisk = 1;
     }

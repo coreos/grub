@@ -1,5 +1,30 @@
 2014-03-31  Colin Watson  <cjwatson@ubuntu.com>
 
+	Fix partmap, cryptodisk, and abstraction handling in grub-mkconfig.
+
+	Commit 588744d0dc655177d5883bdcb8f72ff5160109ed caused grub-mkconfig
+	no longer to be forgiving of trailing spaces on grub-probe output
+	lines, which among other things means that util/grub.d/10_linux.in
+	no longer detects LVM.  To fix this, make grub-probe's output
+	delimiting more consistent.  As a bonus, this improves the coverage
+	of the -0 option.
+
+	Fixes Debian bug #735935.
+
+	* grub-core/disk/cryptodisk.c
+	(grub_util_cryptodisk_get_abstraction): Add a user-data argument.
+	* grub-core/disk/diskfilter.c (grub_diskfilter_get_partmap):
+	Likewise.
+	* include/grub/cryptodisk.h (grub_util_cryptodisk_get_abstraction):
+	Update prototype.
+	* include/grub/diskfilter.h (grub_diskfilter_get_partmap): Likewise.
+	* util/grub-install.c (push_partmap_module, push_cryptodisk_module,
+	probe_mods): Adjust for extra user-data arguments.
+	* util/grub-probe.c (do_print, probe_partmap, probe_cryptodisk_uuid,
+	probe_abstraction): Use configured delimiter.  Update callers.
+
+2014-03-31  Colin Watson  <cjwatson@ubuntu.com>
+
 	* util/grub-probe,c (options): Make -0 work again (broken by
 	conversion to argp).
 	(main): Simplify logic.

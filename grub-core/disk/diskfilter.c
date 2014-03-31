@@ -354,7 +354,8 @@ grub_diskfilter_memberlist (grub_disk_t disk)
 
 void
 grub_diskfilter_get_partmap (grub_disk_t disk,
-			     void (*cb) (const char *pm))
+			     void (*cb) (const char *pm, void *data),
+			     void *data)
 {
   struct grub_diskfilter_lv *lv = disk->data;
   struct grub_diskfilter_pv *pv;
@@ -376,7 +377,7 @@ grub_diskfilter_get_partmap (grub_disk_t disk,
 	    continue;
 	  }
 	for (s = 0; pv->partmaps[s]; s++)
-	  cb (pv->partmaps[s]);
+	  cb (pv->partmaps[s], data);
       }
 }
 

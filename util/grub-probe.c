@@ -130,13 +130,14 @@ get_targets_string (void)
 }
 
 static void
-do_print (const char *x)
+do_print (const char *x, void *data)
 {
-  grub_printf ("%s ", x);
+  char delim = *(const char *) data;
+  grub_printf ("%s%c", x, delim);
 }
 
 static void
-probe_partmap (grub_disk_t disk)
+probe_partmap (grub_disk_t disk, char delim)
 {
   grub_partition_t part;
   grub_disk_memberlist_t list = NULL, tmp;
@@ -147,10 +148,10 @@ probe_partmap (grub_disk_t disk)
     }
 
   for (part = disk->partition; part; part = part->parent)
-    printf ("%s ", part->partmap->name);
+    printf ("%s%c", part->partmap->name, delim);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID)
-    grub_diskfilter_get_partmap (disk, do_print);
+    grub_diskfilter_get_partmap (disk, do_print, &delim);
 
   /* In case of LVM/RAID, check the member devices as well.  */
   if (disk->dev->memberlist)
@@ -159,7 +160,7 @@ probe_partmap (grub_disk_t disk)
     }
   while (list)
     {
-      probe_partmap (list->disk);
+      probe_partmap (list->disk, delim);
       tmp = list->next;
       free (list);
       list = tmp;
@@ -167,7 +168,7 @@ probe_partmap (grub_disk_t disk)
 }
 
 static void
-probe_cryptodisk_uuid (grub_disk_t disk)
+probe_cryptodisk_uuid (grub_disk_t disk, char delim)
 {
   grub_disk_memberlist_t list = NULL, tmp;
 
@@ -178,7 +179,7 @@ probe_cryptodisk_uuid (grub_disk_t disk)
     }
   while (list)
     {
-      probe_cryptodisk_uuid (list->disk);
+      probe_cryptodisk_uuid (list->disk, delim);
       tmp = list->next;
       free (list);
       list = tmp;
@@ -186,7 +187,7 @@ probe_cryptodisk_uuid (grub_disk_t disk)
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
     {
       const char *uu = grub_util_cryptodisk_get_uuid (disk);
-      grub_printf ("%s ", uu);
+      grub_printf ("%s%c", uu, delim);
     }
 }
 
@@ -210,7 +211,7 @@ probe_raid_level (grub_disk_t disk)
 }
 
 static void
-probe_abstraction (grub_disk_t disk)
+probe_abstraction (grub_disk_t disk, char delim)
 {
   grub_disk_memberlist_t list = NULL, tmp;
   int raid_level;
@@ -219,7 +220,7 @@ probe_abstraction (grub_disk_t disk)
     list = disk->dev->memberlist (disk);
   while (list)
     {
-      probe_abstraction (list->disk);
+      probe_abstraction (list->disk, delim);
 
       tmp = list->next;
       free (list);
@@ -229,26 +230,26 @@ probe_abstraction (grub_disk_t disk)
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID
       && (grub_memcmp (disk->name, "lvm/", sizeof ("lvm/") - 1) == 0 ||
 	  grub_memcmp (disk->name, "lvmid/", sizeof ("lvmid/") - 1) == 0))
-    printf ("lvm ");
+    printf ("lvm%c", delim);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_DISKFILTER_ID
       && grub_memcmp (disk->name, "ldm/", sizeof ("ldm/") - 1) == 0)
-    printf ("ldm ");
+    printf ("ldm%c", delim);
 
   if (disk->dev->id == GRUB_DISK_DEVICE_CRYPTODISK_ID)
-    grub_util_cryptodisk_get_abstraction (disk, do_print);
+    grub_util_cryptodisk_get_abstraction (disk, do_print, &delim);
 
   raid_level = probe_raid_level (disk);
   if (raid_level >= 0)
     {
-      printf ("diskfilter ");
+      printf ("diskfilter%c", delim);
       if (disk->dev->raidname)
-	printf ("%s ", disk->dev->raidname (disk));
+	printf ("%s%c", disk->dev->raidname (disk), delim);
     }
   if (raid_level == 5)
-    printf ("raid5rec ");
+    printf ("raid5rec%c", delim);
   if (raid_level == 6)
-    printf ("raid6rec ");
+    printf ("raid6rec%c", delim);
 }
 
 static void
@@ -630,16 +631,14 @@ probe (const char *path, char **device_names, char delim)
 
       if (print == PRINT_ABSTRACTION)
 	{
-	  probe_abstraction (dev->disk);
-	  putchar (delim);
+	  probe_abstraction (dev->disk, delim);
 	  grub_device_close (dev);
 	  continue;
 	}
 
       if (print == PRINT_CRYPTODISK_UUID)
 	{
-	  probe_cryptodisk_uuid (dev->disk);
-	  putchar (delim);
+	  probe_cryptodisk_uuid (dev->disk, delim);
 	  grub_device_close (dev);
 	  continue;
 	}
@@ -647,8 +646,7 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_PARTMAP)
 	{
 	  /* Check if dev->disk itself is contained in a partmap.  */
-	  probe_partmap (dev->disk);
-	  putchar (delim);
+	  probe_partmap (dev->disk, delim);
 	  grub_device_close (dev);
 	  continue;
 	}

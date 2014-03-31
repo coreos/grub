@@ -762,25 +762,26 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
 
 void
 grub_util_cryptodisk_get_abstraction (grub_disk_t disk,
-				      void (*cb) (const char *val))
+				      void (*cb) (const char *val, void *data),
+				      void *data)
 {
   grub_cryptodisk_t dev = (grub_cryptodisk_t) disk->data;
 
-  cb ("cryptodisk");
-  cb (dev->modname);
+  cb ("cryptodisk", data);
+  cb (dev->modname, data);
 
   if (dev->cipher)
-    cb (dev->cipher->cipher->modname);
+    cb (dev->cipher->cipher->modname, data);
   if (dev->secondary_cipher)
-    cb (dev->secondary_cipher->cipher->modname);
+    cb (dev->secondary_cipher->cipher->modname, data);
   if (dev->essiv_cipher)
-    cb (dev->essiv_cipher->cipher->modname);
+    cb (dev->essiv_cipher->cipher->modname, data);
   if (dev->hash)
-    cb (dev->hash->modname);
+    cb (dev->hash->modname, data);
   if (dev->essiv_hash)
-    cb (dev->essiv_hash->modname);
+    cb (dev->essiv_hash->modname, data);
   if (dev->iv_hash)
-    cb (dev->iv_hash->modname);
+    cb (dev->iv_hash->modname, data);
 }
 
 const char *

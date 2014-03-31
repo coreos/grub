@@ -202,7 +202,8 @@ grub_diskfilter_get_pv_from_disk (grub_disk_t disk,
 				  struct grub_diskfilter_vg **vg);
 void
 grub_diskfilter_get_partmap (grub_disk_t disk,
-			     void (*cb) (const char *val));
+			     void (*cb) (const char *val, void *data),
+			     void *data);
 #endif
 
 #endif /* ! GRUB_RAID_H */
