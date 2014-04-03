@@ -1,3 +1,8 @@
+2014-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/linux/getroot.c (grub_util_part_to_disk): Support NVMe
+	device names.
+
 2014-03-31  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
 	btrfs: fix get_root key comparison failures due to endianness
