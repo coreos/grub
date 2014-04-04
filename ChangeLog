@@ -1,5 +1,10 @@
 2014-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/libgcc.h: Remove ctzsi2 and ctzdi2. They're no longer
+	pulled from libgcc.
+
+2014-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace few instances of memcmp/memcpy in the code that should be
 	grub_memcmp/grub_memcpy.
 
