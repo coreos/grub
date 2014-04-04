@@ -1082,7 +1082,7 @@ grub_netbsd_add_boot_disk_and_wedge (void)
 
     grub_crypto_hash (GRUB_MD_MD5, hash,
 		      buf.raw, GRUB_DISK_SECTOR_SIZE);
-    memcpy (biw.matchhash, hash, 16);
+    grub_memcpy (biw.matchhash, hash, 16);
 
     grub_bsd_add_meta (NETBSD_BTINFO_BOOTWEDGE, &biw, sizeof (biw));
   }
@@ -1100,7 +1100,7 @@ grub_netbsd_add_boot_disk_and_wedge (void)
 	bid.labelsector = partmapsector;
 	bid.label.type = buf.label.type;
 	bid.label.checksum = buf.label.checksum;
-	memcpy (bid.label.packname, buf.label.packname, 16);
+	grub_memcpy (bid.label.packname, buf.label.packname, 16);
       }
     else
       {

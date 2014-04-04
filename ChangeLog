@@ -1,3 +1,8 @@
+2014-04-04  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace few instances of memcmp/memcpy in the code that should be
+	grub_memcmp/grub_memcpy.
+
 2014-04-03  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/osdep/linux/getroot.c (grub_util_part_to_disk): Support NVMe

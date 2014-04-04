@@ -214,8 +214,8 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
 	  }
 	case GRUB_ACPI_OPCODE_NAME:
 	  ptr++;
-	  if ((!scope || memcmp (scope, "\\", scope_len) == 0) &&
-	      (memcmp (ptr, "_S5_", 4) == 0 || memcmp (ptr, "\\_S5_", 4) == 0))
+	  if ((!scope || grub_memcmp (scope, "\\", scope_len) == 0) &&
+	      (grub_memcmp (ptr, "_S5_", 4) == 0 || grub_memcmp (ptr, "\\_S5_", 4) == 0))
 	    {
 	      int ll;
 	      grub_uint8_t *ptr2 = ptr;

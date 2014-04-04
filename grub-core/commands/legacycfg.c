@@ -580,7 +580,7 @@ check_password_md5_real (const char *entered,
   GRUB_MD_MD5->write (ctx, entered, enteredlen);
   digest = GRUB_MD_MD5->read (ctx);
   GRUB_MD_MD5->final (ctx);
-  memcpy (alt_result, digest, MD5_HASHLEN);
+  grub_memcpy (alt_result, digest, MD5_HASHLEN);
   
   GRUB_MD_MD5->init (ctx);
   GRUB_MD_MD5->write (ctx, entered, enteredlen);
@@ -596,7 +596,7 @@ check_password_md5_real (const char *entered,
 
   for (i = 0; i < 1000; i++)
     {
-      memcpy (alt_result, digest, 16);
+      grub_memcpy (alt_result, digest, 16);
 
       GRUB_MD_MD5->init (ctx);
       if ((i & 1) != 0)
