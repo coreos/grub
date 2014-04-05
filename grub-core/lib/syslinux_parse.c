@@ -1432,7 +1432,7 @@ config_file (struct output_buffer *outbuf,
       for (curentry = menu.entries; curentry->next; curentry = curentry->next);
       lentry = curentry;
 
-      print_string ("set timeout='");
+      print_string ("set timeout=");
       err = print_num (outbuf, (menu.timeout + 9) / 10);
       if (err)
 	return err;
