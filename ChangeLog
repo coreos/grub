@@ -1,5 +1,14 @@
 2014-04-10  Colin Watson  <cjwatson@ubuntu.com>
 
+	* util/grub.d/30_os-prober.in: Tolerate devices with no filesystem
+	UUID.  Other parts of grub-mkconfig tolerate these, they were
+	previously allowed here up to commit
+	55e706c918922def17f5012c23cfe88c4c645208, and they can arise in
+	practice when the system has active LVM snapshots.
+	Fixes Ubuntu bug #1287436.
+
+2014-04-10  Colin Watson  <cjwatson@ubuntu.com>
+
 	* grub-core/disk/lvm.c (grub_lvm_detect): Search for
 	"logical_volumes" block a little more accurately.
 

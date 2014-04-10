@@ -112,16 +112,17 @@ for OS in ${OSPROBED} ; do
   LONGNAME="`echo ${OS} | cut -d ':' -f 2 | tr '^' ' '`"
   LABEL="`echo ${OS} | cut -d ':' -f 3 | tr '^' ' '`"
   BOOT="`echo ${OS} | cut -d ':' -f 4`"
-  UUID="`${grub_probe} --target=fs_uuid --device ${DEVICE%@*}`"
-  EXPUUID="$UUID"
+  if UUID="`${grub_probe} --target=fs_uuid --device ${DEVICE%@*}`"; then
+    EXPUUID="$UUID"
 
-  if [ x"${DEVICE#*@}" != x ] ; then
+    if [ x"${DEVICE#*@}" != x ] ; then
       EXPUUID="${EXPUUID}@${DEVICE#*@}"
-  fi
+    fi
 
-  if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
-    echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
-    continue
+    if [ "x${GRUB_OS_PROBER_SKIP_LIST}" != "x" ] && [ "x`echo ${GRUB_OS_PROBER_SKIP_LIST} | grep -i -e '\b'${EXPUUID}'\b'`" != "x" ] ; then
+      echo "Skipped ${LONGNAME} on ${DEVICE} by user request." >&2
+      continue
+    fi
   fi
 
   BTRFS="`echo ${OS} | cut -d ':' -f 5`"
@@ -277,9 +278,11 @@ EOF
       echo "$title_correction_code"
     ;;
     macosx)
-      OSXUUID="${UUID}"
-      osx_entry xnu_kernel 32
-      osx_entry xnu_kernel64 64
+      if [ "${UUID}" ]; then
+	OSXUUID="${UUID}"
+	osx_entry xnu_kernel 32
+	osx_entry xnu_kernel64 64
+      fi
     ;;
     hurd)
       onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
