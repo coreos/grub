@@ -333,10 +333,10 @@ grub_lvm_detect (grub_disk_t disk,
 	    }
 	}
 
-      p = grub_strstr (p, "logical_volumes");
+      p = grub_strstr (p, "logical_volumes {");
       if (p)
 	{
-	  p += sizeof ("logical_volumes = ") - 1;
+	  p += sizeof ("logical_volumes {") - 1;
 
 	  /* And add all the lvs to the volume group. */
 	  while (1)
