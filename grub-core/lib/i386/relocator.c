@@ -81,10 +81,13 @@ grub_relocator32_boot (struct grub_relocator *rel,
   void *relst;
   grub_relocator_chunk_t ch;
 
-  err = grub_relocator_alloc_chunk_align (rel, &ch, 0,
-					  (0xffffffff - RELOCATOR_SIZEOF (32))
-					  + 1, RELOCATOR_SIZEOF (32), 16,
-					  GRUB_RELOCATOR_PREFERENCE_NONE,
+  /* Specific memory range due to Global Descriptor Table for use by payload
+     that we will store in returned chunk.  The address range and preference
+     are based on "THE LINUX/x86 BOOT PROTOCOL" specification.  */
+  err = grub_relocator_alloc_chunk_align (rel, &ch, 0x1000,
+					  0x9a000 - RELOCATOR_SIZEOF (32),
+					  RELOCATOR_SIZEOF (32), 16,
+					  GRUB_RELOCATOR_PREFERENCE_LOW,
 					  avoid_efi_bootservices);
   if (err)
     return err;
