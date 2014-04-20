@@ -1,3 +1,9 @@
+2014-04-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/misc.c (__bzero): Don't compile in GRUB_UTIL.
+
+	Reported by: Yves Blusseau <blusseau@zetam.org>.
+
 2014-04-20  Piotr Krysiuk  <piotras@gmail.com>
 
 	* grub-core/lib/i386/relocator.c: Allow loading old kernels by placing

@@ -542,6 +542,9 @@ memset (void *s, int c, grub_size_t n)
   return grub_memset (s, c, n);
 }
 
+#endif
+
+#if !defined(GRUB_UTIL) && defined(__APPLE__)
 void GRUB_BUILTIN_ATTR
 __bzero (void *s, grub_size_t n)
 {
