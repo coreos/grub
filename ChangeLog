@@ -1,5 +1,9 @@
 2014-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/verify.c (grub_pubkey_open): Trust procfs.
+
+2014-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/verify.c (grub_pubkey_open): Fix memdisk
 	check.
 

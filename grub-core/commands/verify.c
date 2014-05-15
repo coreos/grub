@@ -835,7 +835,9 @@ grub_pubkey_open (grub_file_t io, const char *filename)
 
   if (!sec)
     return io;
-  if (io->device->disk && io->device->disk->dev->id == GRUB_DISK_DEVICE_MEMDISK_ID)
+  if (io->device->disk && 
+      (io->device->disk->dev->id == GRUB_DISK_DEVICE_MEMDISK_ID
+       || io->device->disk->dev->id == GRUB_DISK_DEVICE_PROCFS_ID))
     return io;
   fsuf = grub_malloc (grub_strlen (filename) + sizeof (".sig"));
   if (!fsuf)
