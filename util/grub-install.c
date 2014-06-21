@@ -94,7 +94,6 @@ enum
     OPTION_RECHECK, 
     OPTION_FORCE,
     OPTION_FORCE_FILE_ID,
-    OPTION_MODULE, 
     OPTION_NO_NVRAM, 
     OPTION_REMOVABLE, 
     OPTION_BOOTLOADER_ID, 
@@ -273,7 +272,7 @@ static struct argp_option options[] = {
    N_("install even if problems are detected"), 2},
   {"force-file-id", OPTION_FORCE_FILE_ID, 0, 0,
    N_("use identifier file even if UUID is available"), 2},
-  {"disk-module", OPTION_MODULE, N_("MODULE"), 0,
+  {"disk-module", OPTION_DISK_MODULE, N_("MODULE"), 0,
    N_("disk module to use (biosdisk or native). "
       "This option is only available on BIOS target."), 2},
   {"no-nvram", OPTION_NO_NVRAM, 0, 0,
