@@ -263,7 +263,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
       for (q = p->next; q; q = q->next)
         {
 	  grub_disk_addr_t s1, s2;
-	  grub_disk_addr_t e1, e2, t;
+	  grub_disk_addr_t e1, e2;
 
 	  s1 = p->sector;
 	  e1 = s1 + ((p->length + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
@@ -271,16 +271,7 @@ check_blocklists (grub_envblk_t envblk, struct blocklist *blocklists,
 	  s2 = q->sector;
 	  e2 = s2 + ((q->length + GRUB_DISK_SECTOR_SIZE - 1) >> GRUB_DISK_SECTOR_BITS);
 
-	  if (s2 > s1)
-	    {
-	      t = s2;
-	      s2 = s1;
-	      s1 = t;
-	      t = e2;
-	      e2 = e1;
-	      e1 = t;
-	    }
-          if (e1 > s2)
+	  if (s1 < e2 && s2 < e1)
             {
               /* This might be actually valid, but it is unbelievable that
                  any filesystem makes such a silly allocation.  */

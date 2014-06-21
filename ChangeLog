@@ -1,3 +1,7 @@
+2014-06-21  Роман Пехов <roman_pekhov>
+
+	* grub-core/commands/loadenv.c (check_blocklists): Fix overlap check.
+
 2014-06-21  Glenn Washburn <development@efficientek.com>
 
 	* util/grub-install.c: Fix handling of --disk-module.
