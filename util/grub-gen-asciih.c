@@ -81,14 +81,14 @@ add_glyph (FT_UInt glyph_idx, FT_Face face,
   err = FT_Load_Glyph (face, glyph_idx, flag);
   if (err)
     {
-      printf ("Freetype Error %d loading glyph 0x%x for U+0x%x",
+      fprintf (stderr, "Freetype Error %d loading glyph 0x%x for U+0x%x",
 	      err, glyph_idx, char_code);
 
       if (err > 0 && err < (signed) ARRAY_SIZE (ft_errmsgs))
-	printf (": %s\n", ft_errmsgs[err]);
+	fprintf (stderr, ": %s\n", ft_errmsgs[err]);
       else
-	printf ("\n");
-      return;
+	fprintf (stderr, "\n");
+      exit (1);
     }
 
   glyph = face->glyph;
@@ -128,7 +128,6 @@ add_glyph (FT_UInt glyph_idx, FT_Face face,
 static void
 write_font_ascii_bitmap (FILE *file, FT_Face face)
 {
-  struct grub_glyph_info glyph;
   int char_code;
 
   fprintf (file, "/* THIS CHUNK OF BYTES IS AUTOMATICALLY GENERATED */\n");
@@ -138,10 +137,14 @@ write_font_ascii_bitmap (FILE *file, FT_Face face)
   for (char_code = 0; char_code <= 0x7f; char_code++)
     {
       FT_UInt glyph_idx;
-      
+      struct grub_glyph_info glyph;
+
       glyph_idx = FT_Get_Char_Index (face, char_code);
       if (!glyph_idx)
 	return;
+
+      memset (&glyph, 0, sizeof(glyph));
+
       add_glyph (glyph_idx, face, char_code, &glyph);
 
       if (glyph.width == 8 && glyph.height == 16

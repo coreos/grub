@@ -1,3 +1,7 @@
+2014-06-21  Trevor Woerner <trevor.woerner@linaro.org>
+
+	* util/grub-gen-asciih.c (add_glyph): Fix uninitialised variable.
+
 2014-06-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/commands/verify.c (grub_pubkey_open): Trust procfs.
