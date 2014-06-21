@@ -1145,6 +1145,14 @@ grub_netbsd_boot (void)
   if (err)
     return err;
 
+#ifdef GRUB_MACHINE_EFI
+  err = grub_bsd_add_meta (NETBSD_BTINFO_EFI,
+			   &grub_efi_system_table,
+			   sizeof (grub_efi_system_table));
+  if (err)
+    return err;
+#endif
+
   {
     struct bsd_tag *tag;
     tag_buf_len = 0;

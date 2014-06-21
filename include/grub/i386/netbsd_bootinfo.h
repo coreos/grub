@@ -58,6 +58,8 @@
 #define NETBSD_BTINFO_BOOTWEDGE		10
 #define NETBSD_BTINFO_MODULES		11
 #define NETBSD_BTINFO_FRAMEBUF		12
+#define NETBSD_BTINFO_USERCONFCOMMANDS  13
+#define NETBSD_BTINFO_EFI	        14
 
 struct grub_netbsd_bootinfo
 {
@@ -145,5 +147,10 @@ struct grub_netbsd_btinfo_framebuf
 };
 
 #define GRUB_NETBSD_MAX_ROOTDEVICE_LEN 16
+
+struct grub_netbsd_btinfo_efi
+{
+  void *pa_systbl;  /* Physical address of the EFI System Table */
+};
 
 #endif

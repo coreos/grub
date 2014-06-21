@@ -1,5 +1,10 @@
 2014-06-21  Stephane Rochoy <sheda>
 
+	* grub-core/loader/i386/bsd.c (grub_netbsd_boot): Pass pointer to
+	EFI system table.
+
+2014-06-21  Stephane Rochoy <sheda>
+
 	* grub-core/commands/efi/lsefisystab.c (grub_cmd_lsefisystab): Show
 	EFI system table physical address.
 
