@@ -1,3 +1,8 @@
+2014-06-21  Stephane Rochoy <sheda>
+
+	* grub-core/commands/efi/lsefisystab.c (grub_cmd_lsefisystab): Show
+	EFI system table physical address.
+
 2014-06-21  Trevor Woerner <trevor.woerner@linaro.org>
 
 	* util/grub-gen-asciih.c (add_glyph): Fix uninitialised variable.

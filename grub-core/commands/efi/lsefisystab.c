@@ -52,6 +52,7 @@ grub_cmd_lsefisystab (struct grub_command *cmd __attribute__ ((unused)),
   grub_efi_configuration_table_t *t;
   unsigned int i;
 
+  grub_printf ("Address: %p\n", st);
   grub_printf ("Signature: %016" PRIxGRUB_UINT64_T " revision: %08x\n",
 	       st->hdr.signature, st->hdr.revision);
   {
