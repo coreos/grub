@@ -228,12 +228,12 @@ The opening @samp{/*} and closing @samp{*/} should be placed together on a line 
 Here is a brief map of the GRUB code base.
 
 GRUB uses Autoconf and Automake, with most of the Automake input generated
-by AutoGen.  The top-level build rules are in @file{configure.ac},
+by a Python script.  The top-level build rules are in @file{configure.ac},
 @file{grub-core/Makefile.core.def}, and @file{Makefile.util.def}.  Each
 block in a @file{*.def} file represents a build target, and specifies the
 source files used to build it on various platforms.  The @file{*.def} files
-are processed into AutoGen input by @file{gentpl.py} (which you only need to
-look at if you are extending the build system).  If you are adding a new
+are processed into Automake input by @file{gentpl.py} (which you only need
+to look at if you are extending the build system).  If you are adding a new
 module which follows an existing pattern, such as a new command or a new
 filesystem implementation, it is usually easiest to grep
 @file{grub-core/Makefile.core.def} and @file{Makefile.util.def} for an

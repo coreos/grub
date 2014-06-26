@@ -1,3 +1,8 @@
+2014-06-26  Colin Watson  <cjwatson@ubuntu.com>
+
+	* docs/grub-dev.texi (Finding your way around): The build system no
+	longer uses AutoGen directly.
+
 2014-06-21  Роман Пехов <roman_pekhov>
 
 	* grub-core/commands/loadenv.c (check_blocklists): Fix overlap check.
