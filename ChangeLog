@@ -1,3 +1,13 @@
+2014-07-08  Colin Watson  <cjwatson@ubuntu.com>
+
+	* util/grub.d/10_hurd.in: Make kernel list progression not fail on
+	kernels whose paths contain regex metacharacters.
+	* util/grub.d/10_kfreebsd.in: Likewise.
+	* util/grub.d/10_linux.in: Likewise.
+	* util/grub.d/20_linux_xen.in: Likewise.
+
+	Reported by: Heimo Stranner.
+
 2014-06-26  Colin Watson  <cjwatson@ubuntu.com>
 
 	* docs/grub-dev.texi (Finding your way around): The build system no

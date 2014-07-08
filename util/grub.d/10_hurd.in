@@ -168,7 +168,7 @@ while [ "x$kernels" != "x" ] ; do
   hurd_entry "$kernel" advanced
   hurd_entry "$kernel" recovery
 
-  kernels=`echo $kernels | tr ' ' '\n' | grep -vx $kernel | tr '\n' ' '`
+  kernels=`echo $kernels | tr ' ' '\n' | fgrep -vx "$kernel" | tr '\n' ' '`
 done
 
 # If at least one kernel was found, then we need to
