@@ -603,8 +603,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 		       - grub_be_to_cpu32 (tail->leaf_stale));
 
 	    /* Iterate over all entries within this block.  */
-	    while (pos < (dirblk_size
-			  - (int) sizeof (struct grub_xfs_dir2_entry)))
+	    while (pos < tail_start)
 	      {
 		struct grub_xfs_dir2_entry *direntry;
 		grub_uint8_t *freetag;
