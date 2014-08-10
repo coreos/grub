@@ -2,6 +2,8 @@
 
 	* grub-core/fs/cbfs.c: Don't probe disks of unknow size.
 
+	Fixes hang on virtualbox.
+
 2014-07-08  Colin Watson  <cjwatson@ubuntu.com>
 
 	* util/grub.d/10_hurd.in: Make kernel list progression not fail on
