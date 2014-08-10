@@ -149,6 +149,9 @@ grub_cbfs_mount (grub_disk_t disk)
   grub_off_t header_off;
   struct cbfs_header head;
 
+  if (grub_disk_get_size (disk) == GRUB_DISK_SIZE_UNKNOWN)
+    goto fail;
+
   if (grub_disk_read (disk, grub_disk_get_size (disk) - 1,
 		      GRUB_DISK_SECTOR_SIZE - sizeof (ptr),
 		      sizeof (ptr), &ptr))
