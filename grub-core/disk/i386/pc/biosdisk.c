@@ -455,6 +455,14 @@ grub_biosdisk_rw (int cmd, grub_disk_t disk,
 {
   struct grub_biosdisk_data *data = disk->data;
 
+  /* VirtualBox fails with sectors above 2T on CDs.
+     Since even BD-ROMS are never that big anyway, return error.  */
+  if ((data->flags & GRUB_BIOSDISK_FLAG_CDROM)
+      && (sector >> 32))
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       N_("attempt to read or write outside of disk `%s'"),
+		       disk->name);
+
   if (data->flags & GRUB_BIOSDISK_FLAG_LBA)
     {
       struct grub_biosdisk_dap *dap;
