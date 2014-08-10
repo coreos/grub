@@ -1,5 +1,9 @@
 2014-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/disk_common.c: Clump disk size to 1EiB.
+
+2014-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/i386/pc/biosdisk.c (grub_biosdisk_rw): Add
 	safety to avoid triggerring VirtualBox bug.
 
