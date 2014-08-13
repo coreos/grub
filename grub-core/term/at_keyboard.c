@@ -226,7 +226,7 @@ static const struct
     {0x7d, GRUB_KEYBOARD_KEY_PPAGE},
   };
 
-static int alive = 0, ping_sent;
+static int ping_sent;
 
 static void
 keyboard_controller_wait_until_ready (void)
@@ -373,7 +373,7 @@ set_scancodes (void)
   grub_dprintf ("atkeyb", "returned set %d\n", current_set);
   if (current_set == 1)
     return;
-  grub_printf ("No supported scancode set found\n");
+  grub_dprintf ("atkeyb", "no supported scancode set found\n");
 #endif
 }
 
@@ -543,7 +543,7 @@ grub_keyboard_getkey (void)
 int
 grub_at_keyboard_is_alive (void)
 {
-  if (alive)
+  if (current_set != 0)
     return 1;
   if (ping_sent
       && KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS))
@@ -611,7 +611,6 @@ static void
 grub_keyboard_controller_init (void)
 {
   at_keyboard_status = 0;
-  alive = 1;
   /* Drain input buffer. */
   while (1)
     {
@@ -639,7 +638,7 @@ grub_keyboard_controller_init (void)
 static grub_err_t
 grub_keyboard_controller_fini (struct grub_term_input *term __attribute__ ((unused)))
 {
-  if (!alive)
+  if (current_set == 0)
     return GRUB_ERR_NONE;
   if (grub_keyboard_orig_set)
     write_mode (grub_keyboard_orig_set);
@@ -656,7 +655,7 @@ grub_at_fini_hw (int noreturn __attribute__ ((unused)))
 static grub_err_t
 grub_at_restore_hw (void)
 {
-  if (!alive)
+  if (current_set == 0)
     return GRUB_ERR_NONE;
 
   /* Drain input buffer. */

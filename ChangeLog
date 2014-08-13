@@ -1,3 +1,8 @@
+2014-08-13  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/at_keyboard.c: Retry probing keyboard if
+	scancode setup failed.
+
 2014-08-10  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/kern/disk_common.c: Clump disk size to 1EiB.
