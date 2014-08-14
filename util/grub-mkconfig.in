@@ -124,7 +124,7 @@ set $grub_probe dummy
 if test -f "$1"; then
     :
 else
-    gettext_print "%s: Not found.\n" "$1" 1>&2
+    gettext_printf "%s: Not found.\n" "$1" 1>&2
     exit 1
 fi
 

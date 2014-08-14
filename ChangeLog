@@ -1,3 +1,8 @@
+2014-08-14  Andrey Borzenkov <arvidjaar@gmail.com>
+
+	* util/grub-mkconfig.in: Fix typo (gettext_print instead of
+	gettext_printf).
+
 2014-08-13  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/term/at_keyboard.c: Retry probing keyboard if
