@@ -1,3 +1,9 @@
+2014-09-08  Michael Chang  <mchang@suse.com>
+
+	* grub-core/fs/btrfs.c (grub_btrfs_extent_read): Fix extent size
+	check; comparing &data->extent against addresses in the region it
+	points to is unpredictable.
+
 2014-09-07  Colin Watson  <cjwatson@ubuntu.com>
 
 	Support grub-emu on x32 (ILP32 but with x86-64 instruction set)

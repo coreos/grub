@@ -1051,7 +1051,7 @@ grub_btrfs_extent_read (struct grub_btrfs_data *data,
 
 	  data->extend = data->extstart + grub_le_to_cpu64 (data->extent->size);
 	  if (data->extent->type == GRUB_BTRFS_EXTENT_REGULAR
-	      && (char *) &data->extent + elemsize
+	      && (char *) data->extent + elemsize
 	      >= (char *) &data->extent->filled + sizeof (data->extent->filled))
 	    data->extend =
 	      data->extstart + grub_le_to_cpu64 (data->extent->filled);
