@@ -67,7 +67,7 @@ grub_machine_fini (int flags)
 
   b = grub_efi_system_table->boot_services;
 
-  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_PERIODIC, 0);
+  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_CANCEL, 0);
   efi_call_1 (b->close_event, tmr_evt);
 
   grub_efi_fini ();
