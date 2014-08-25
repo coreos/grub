@@ -360,7 +360,7 @@ grub_machine_get_bootlocation (char **device, char **path)
   char *loaddev = boot_location;
   char *pptr, *partptr;
   char *dname;
-  grub_disk_addr_t poff = -1, pend;
+  grub_disk_addr_t poff = -1, pend = -1;
   struct get_device_name_ctx ctx;
   grub_disk_t parent = 0;
   unsigned i;
