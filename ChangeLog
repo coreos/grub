@@ -1,5 +1,18 @@
 2014-09-07  Colin Watson  <cjwatson@ubuntu.com>
 
+	Support grub-emu on x32 (ILP32 but with x86-64 instruction set)
+
+	* configure.ac: Remove -m64 from checks for -mcmodel=large and
+	-mno-red-zone.  These are always either unnecessary (x86_64-emu) or
+	already in TARGET_CFLAGS at this point, and they produce incorrect
+	results when building for x32.
+	* grub-core/kern/x86_64/dl.c (grub_arch_dl_relocate_symbols): Cast
+	pointers to Elf64_Xword via grub_addr_t, in order to work on x32.
+	* include/grub/x86_64/types.h (GRUB_TARGET_SIZEOF_VOID_P,
+	GRUB_TARGET_SIZEOF_LONG): Define to 4 on x32.
+
+2014-09-07  Colin Watson  <cjwatson@ubuntu.com>
+
 	* configure.ac: Remove several unnecessary semicolons.
 
 2014-08-25  Colin Watson  <cjwatson@ubuntu.com>

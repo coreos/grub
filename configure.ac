@@ -862,7 +862,7 @@ LDFLAGS="$TARGET_LDFLAGS"
 if test "$target_cpu" = x86_64 || test "$target_cpu-$platform" = sparc64-emu ; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
-    CFLAGS="$TARGET_CFLAGS -m64 -mcmodel=large"
+    CFLAGS="$TARGET_CFLAGS -mcmodel=large"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_mcmodel=yes],
 		      [grub_cv_cc_mcmodel=no])
@@ -877,7 +877,7 @@ fi
 if test "$target_cpu"-"$platform" = x86_64-efi; then
   # EFI writes to stack below %rsp, we must not use the red zone
   AC_CACHE_CHECK([whether option -mno-red-zone works], grub_cv_cc_no_red_zone, [
-    CFLAGS="$TARGET_CFLAGS -m64 -mno-red-zone"
+    CFLAGS="$TARGET_CFLAGS -mno-red-zone"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		      [grub_cv_cc_no_red_zone=yes],
 		      [grub_cv_cc_no_red_zone=no])

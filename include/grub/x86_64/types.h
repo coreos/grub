@@ -20,10 +20,14 @@
 #define GRUB_TYPES_CPU_HEADER	1
 
 /* The size of void *.  */
+#ifdef __ILP32__
+#define GRUB_TARGET_SIZEOF_VOID_P	4
+#else
 #define GRUB_TARGET_SIZEOF_VOID_P	8
+#endif
 
 /* The size of long.  */
-#ifdef __MINGW32__
+#if defined(__MINGW32__) || defined(__ILP32__)
 #define GRUB_TARGET_SIZEOF_LONG		4
 #else
 #define GRUB_TARGET_SIZEOF_LONG		8

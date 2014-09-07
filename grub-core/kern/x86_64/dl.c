@@ -73,7 +73,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  {
 	    grub_int64_t value;
 	    value = ((grub_int32_t) *addr32) + rel->r_addend + sym->st_value -
-	      (Elf64_Xword) seg->addr - rel->r_offset;
+	      (Elf64_Xword) (grub_addr_t) seg->addr - rel->r_offset;
 	    if (value != (grub_int32_t) value)
 	      return grub_error (GRUB_ERR_BAD_MODULE, "relocation out of range");
 	    *addr32 = value;
@@ -83,7 +83,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	case R_X86_64_PC64:
 	  {
 	    *addr64 += rel->r_addend + sym->st_value -
-	      (Elf64_Xword) seg->addr - rel->r_offset;
+	      (Elf64_Xword) (grub_addr_t) seg->addr - rel->r_offset;
 	  }
 	  break;
 
