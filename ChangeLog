@@ -1,3 +1,7 @@
+2014-09-07  Colin Watson  <cjwatson@ubuntu.com>
+
+	* configure.ac: Remove several unnecessary semicolons.
+
 2014-08-25  Colin Watson  <cjwatson@ubuntu.com>
 
 	* grub-core/kern/mips/arc/init.c (grub_machine_get_bootlocation):

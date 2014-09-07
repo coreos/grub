@@ -90,18 +90,18 @@ case "$target_cpu" in
   amd64)	target_cpu=x86_64 ;;
   sparc)	target_cpu=sparc64 ;;
   mipsel|mips64el)
-                target_cpu=mipsel;
-		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_CPU_MIPSEL=1";
+                target_cpu=mipsel
+		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_CPU_MIPSEL=1"
 		;;
   mips|mips64)
-                target_cpu=mips;
-		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_CPU_MIPS=1";
+                target_cpu=mips
+		machine_CPPFLAGS="$machine_CPPFLAGS -DGRUB_CPU_MIPS=1"
 		;;
   arm*)
-		target_cpu=arm;
+		target_cpu=arm
 		;;
   aarch64*)
-		target_cpu=arm64;
+		target_cpu=arm64
 		;;
 esac
 
@@ -178,7 +178,7 @@ if test x$platform != xemu ; then
 fi
 
 if test x"$target_cpu-$platform" = xsparc64-emu ; then
-   target_m64=1 ;
+   target_m64=1
 fi
 
 case "$target_os" in
@@ -742,7 +742,7 @@ if test x"$efiemu_excuse" = x ; then
       ]], [[]])], [flag=1], [flag=0])
       if test x"$flag" = x1; then
         grub_cv_target_cc_efiemu64_link_format="$format"
-	break;
+	break
       fi
     done])
   if test x"$grub_cv_target_cc_efiemu64_link_format" = xunknown; then
@@ -775,12 +775,12 @@ if test x"$platform" = xemu ; then
         ;;
     *windows* | *cygwin* | *mingw*)
       if test x${target_cpu} = xi386 ; then
-        grub_cv_target_cc_link_format=-mi386pe;
-	TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
+        grub_cv_target_cc_link_format=-mi386pe
+	TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)'
       fi
       if test x${target_cpu} = xx86_64 ; then
-        grub_cv_target_cc_link_format=-mi386pep;
-	TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
+        grub_cv_target_cc_link_format=-mi386pep
+	TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)'
       fi
       TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
       ;;
@@ -806,7 +806,7 @@ elif test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
       ]], [[]])], [flag=1], [flag=0])
       if test x"$flag" = x1; then
         grub_cv_target_cc_link_format="$format"
-	break;
+	break
       fi
     done])
   if test x"$grub_cv_target_cc_link_format" = xunknown; then
@@ -814,10 +814,10 @@ elif test x"$target_cpu" = xi386 || test x"$target_cpu" = xx86_64; then
   fi
   TARGET_LDFLAGS="$TARGET_LDFLAGS -Wl,$grub_cv_target_cc_link_format"
   if test x"$grub_cv_target_cc_link_format" = x-mi386pe ; then
-    TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)';
+    TARGET_OBJ2ELF='./build-grub-pe2elf$(BUILD_EXEEXT)'
   fi
   if test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
-    TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)';
+    TARGET_OBJ2ELF='./build-grub-pep2elf$(BUILD_EXEEXT)'
   fi
 fi
 
@@ -995,7 +995,7 @@ if test "$target_cpu" = arm; then
       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])], [flag=1], [flag=0])
       if test x"$flag" = x1; then
         grub_cv_target_cc_strict_align="$arg"
-	break;
+	break
       fi
     done])
 
@@ -1416,7 +1416,7 @@ for ext in pcf pcf.gz bdf bdf.gz ttf ttf.gz; do
       md5="$(md5sum "$dir/unifont.$ext"|awk '{ print $1; }')"
       # PCF and BDF from version 6.3 isn't hanled properly by libfreetype.
       if test "$md5" = 0a54834d2788c83886a3e1785a6a1e61 || test "$md5" = 28f2565c7a41d8d407e2551159385edb || test "$md5" = dae5e588461b3b92b87b6ffee734f936 || test "$md5" = 4a3d687aa5bb329ed05f4263a1016791 ; then
-        continue;
+        continue
       fi
       FONT_SOURCE="$dir/unifont.$ext"
       break 2
@@ -1501,7 +1501,7 @@ if test x"$device_mapper_excuse" = x ; then
 fi
 
 if test x"$device_mapper_excuse" = x ; then
-   LIBDEVMAPPER="-ldevmapper";
+   LIBDEVMAPPER="-ldevmapper"
    AC_DEFINE([HAVE_DEVICE_MAPPER], [1],
              [Define to 1 if you have the devmapper library.])
 fi
