@@ -1,3 +1,15 @@
+2014-21-15  Peter Jones  <pjones@redhat.com>
+
+	* grub-core/loader/arm/linux.c: Initialized initrd_ctx so
+	we don't free a random pointer from the stack.
+	* grub-core/loader/arm64/linux.c: Likewise.
+	* grub-core/loader/i386/linux.c: Likewise.
+	* grub-core/loader/i386/pc/linux.c: Likewise.
+	* grub-core/loader/ia64/efi/linux.c: Likewise.
+	* grub-core/loader/mips/linux.c: Likewise.
+	* grub-core/loader/powerpc/ieee1275/linux.c: Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c: Likewise.
+
 2014-09-15  Khem Raj  <raj.khem@gmail.com>
 
 	* grub-core/kern/emu/hostfs.c: use _DEFAULT_SOURCE in addition to

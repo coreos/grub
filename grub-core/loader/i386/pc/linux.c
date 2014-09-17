@@ -388,7 +388,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_uint8_t *initrd_chunk;
   grub_addr_t initrd_addr;
   grub_err_t err;
-  struct grub_linux_initrd_context initrd_ctx;
+  struct grub_linux_initrd_context initrd_ctx = { 0, };
 
   if (argc == 0)
     {

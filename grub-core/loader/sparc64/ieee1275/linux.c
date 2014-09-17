@@ -373,7 +373,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_addr_t paddr;
   grub_addr_t addr;
   int ret;
-  struct grub_linux_initrd_context initrd_ctx;
+  struct grub_linux_initrd_context initrd_ctx = { 0, };
 
   if (argc == 0)
     {

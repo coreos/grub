@@ -333,7 +333,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_size_t size = 0;
   grub_addr_t first_addr;
   grub_addr_t addr;
-  struct grub_linux_initrd_context initrd_ctx;
+  struct grub_linux_initrd_context initrd_ctx = { 0, };
 
   if (argc == 0)
     {

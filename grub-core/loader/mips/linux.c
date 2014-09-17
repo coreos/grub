@@ -415,7 +415,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   void *initrd_src;
   grub_addr_t initrd_dest;
   grub_err_t err;
-  struct grub_linux_initrd_context initrd_ctx;
+  struct grub_linux_initrd_context initrd_ctx = { 0, };
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
