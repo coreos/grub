@@ -1,4 +1,5 @@
-2014-09-15  Khem Raj <raj.khem@gmail.com>
+2014-09-15  Khem Raj  <raj.khem@gmail.com>
+
 	* grub-core/kern/emu/hostfs.c: use _DEFAULT_SOURCE in addition to
 	_BSD_SOURCE to avoid warnings under glibc 2.20+.
 
