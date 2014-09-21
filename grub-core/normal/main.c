@@ -302,7 +302,7 @@ grub_enter_normal_mode (const char *config)
   nested_level++;
   grub_normal_execute (config, 0, 0);
   grub_boot_time ("Entering shell");
-  grub_cmdline_run (0, 1);
+  grub_cmdline_run (0);
   nested_level--;
   if (grub_normal_exit_level)
     grub_normal_exit_level--;
@@ -424,15 +424,11 @@ grub_normal_read_line (char **line, int cont,
 }
 
 void
-grub_cmdline_run (int nested, int force_auth)
+grub_cmdline_run (int nested)
 {
   grub_err_t err = GRUB_ERR_NONE;
 
-  do
-    {
-      err = grub_auth_check_authentication (NULL);
-    }
-  while (err && force_auth);
+  err = grub_auth_check_authentication (NULL);
 
   if (err)
     {
