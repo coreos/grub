@@ -1,4 +1,8 @@
-2014-21-15  Peter Jones  <pjones@redhat.com>
+2014-09-21  Michael Chang  <mchang@suse.com>
+
+	* grub-core/osdep/unix/config.c: Remove extraneous comma.
+
+2014-09-21  Peter Jones  <pjones@redhat.com>
 
 	* grub-core/loader/arm/linux.c: Initialized initrd_ctx so
 	we don't free a random pointer from the stack.

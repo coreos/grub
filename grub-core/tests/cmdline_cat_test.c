@@ -109,7 +109,7 @@ cmdline_cat_test (void)
       grub_video_checksum ("cmdline_cat");
 
       if (!grub_test_use_gfxterm ())
-	grub_cmdline_run (1);
+	grub_cmdline_run (1, 0);
 
       grub_test_use_gfxterm_end ();
 

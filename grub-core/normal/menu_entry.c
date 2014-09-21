@@ -1396,7 +1396,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 
 	case GRUB_TERM_CTRL | 'c':
 	case GRUB_TERM_KEY_F2:
-	  grub_cmdline_run (1);
+	  grub_cmdline_run (1, 0);
 	  goto refresh;
 
 	case GRUB_TERM_CTRL | 'x':
