@@ -773,7 +773,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
 	    case 'c':
 	      menu_fini ();
-	      grub_cmdline_run (1);
+	      grub_cmdline_run (1, 0);
 	      goto refresh;
 
 	    case 'e':

@@ -66,7 +66,7 @@ void grub_menu_init_page (int nested, int edit,
 			  struct grub_term_output *term);
 void grub_normal_init_page (struct grub_term_output *term, int y);
 char *grub_file_getline (grub_file_t file);
-void grub_cmdline_run (int nested);
+void grub_cmdline_run (int nested, int force_auth);
 
 /* Defined in `cmdline.c'.  */
 char *grub_cmdline_get (const char *prompt);
