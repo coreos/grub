@@ -1,3 +1,15 @@
+2014-09-21  Valentin Dornauer  <valentin@unimplemented.org>
+
+	The AML parser implements only a small subset of possible AML
+	opcodes. On the Fujitsu Lifebook E744 this and another bug in
+	the parser (incorrect handling of TermArg data types) would lead
+	to the laptop not turning off (_S5 not found).
+
+	* grub-core/commands/acpihalt.c: Support OpAlias in the AML parser;
+	in skip_ext_op(), handle some Type2Opcodes more correctly (TermArgs
+	aren't always simply strings!); Add function to skip TermArgs
+	* include/grub/acpi.h: Add new opcodes
+
 2014-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	* grub-core/normal/main.c: Don't drop to rescue console in
