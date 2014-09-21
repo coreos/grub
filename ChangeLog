@@ -1,5 +1,9 @@
 2014-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/keylayouts.c: Ignore unknown keys.
+
+2014-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/gmodule.pl.in: Accept newer binutils which output
 	empty column rather than 0x0.
 

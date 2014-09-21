@@ -173,8 +173,10 @@ grub_term_map_key (grub_keyboard_key_t code, int status)
 
   key = map_key_core (code, status, &alt_gr_consumed);
   
-  if (key == 0 || key == GRUB_TERM_SHIFT)
+  if (key == 0 || key == GRUB_TERM_SHIFT) {
     grub_printf ("Unknown key 0x%x detected\n", code);
+    return GRUB_TERM_NO_KEY;
+  }
   
   if (status & GRUB_TERM_STATUS_CAPS)
     {
