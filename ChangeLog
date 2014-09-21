@@ -1,3 +1,8 @@
+2014-09-21  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/gmodule.pl.in: Accept newer binutils which output
+	empty column rather than 0x0.
+
 2014-09-21  Michael Chang  <mchang@suse.com>
 
 	* grub-core/osdep/unix/config.c: Remove extraneous comma.
