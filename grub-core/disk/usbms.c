@@ -307,7 +307,7 @@ grub_usbms_transfer_bo (struct grub_scsi *scsi, grub_size_t cmdsize, char *cmd,
 
   /* Setup the request.  */
   grub_memset (&cbw, 0, sizeof (cbw));
-  cbw.signature = grub_cpu_to_le32 (0x43425355);
+  cbw.signature = grub_cpu_to_le32_compile_time (0x43425355);
   cbw.tag = tag;
   cbw.transfer_length = grub_cpu_to_le32 (size);
   cbw.flags = (!read_write) << GRUB_USBMS_DIRECTION_BIT;
@@ -414,7 +414,7 @@ CheckCSW:
   
   /* If phase error or not valid signature, do bulk-only reset device. */
   if ((status.status == 2) ||
-      (status.signature != grub_cpu_to_le32(0x53425355)))
+      (status.signature != grub_cpu_to_le32_compile_time(0x53425355)))
     { /* Bulk-only reset device. */
       grub_dprintf ("usb", "Bulk-only reset device - bad status\n");
       grub_usbms_reset (dev);

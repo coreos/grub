@@ -288,16 +288,16 @@ grub_video_capture_write_bmp (const char *fname,
   if (mode_info->mode_type & GRUB_VIDEO_MODE_TYPE_RGB)
     {
       head.filesize = grub_cpu_to_le32 (sizeof (head) + mode_info->width * mode_info->height * 3);
-      head.bmp_off = grub_cpu_to_le32 (sizeof (head));
+      head.bmp_off = grub_cpu_to_le32_compile_time (sizeof (head));
       head.bpp = grub_cpu_to_le16_compile_time (24);
     }
   else
     {
       head.filesize = grub_cpu_to_le32 (sizeof (head) + 3 * 256 + mode_info->width * mode_info->height);
-      head.bmp_off = grub_cpu_to_le32 (sizeof (head) + 3 * 256);
+      head.bmp_off = grub_cpu_to_le32_compile_time (sizeof (head) + 3 * 256);
       head.bpp = grub_cpu_to_le16_compile_time (8);
     }
-  head.head_size = grub_cpu_to_le32 (sizeof (head) - 14);
+  head.head_size = grub_cpu_to_le32_compile_time (sizeof (head) - 14);
   head.width = grub_cpu_to_le16 (mode_info->width);
   head.height = grub_cpu_to_le16 (mode_info->height);
   head.planes = grub_cpu_to_le16_compile_time (1);

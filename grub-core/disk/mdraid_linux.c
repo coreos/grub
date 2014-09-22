@@ -33,16 +33,16 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define grub_md_to_cpu64 grub_be_to_cpu64
 #define grub_md_to_cpu32 grub_be_to_cpu32
 #define grub_md_to_cpu16 grub_be_to_cpu16
-#define grub_cpu_to_md64_compile_time grub_cpu_to_be64
-#define grub_cpu_to_md32_compile_time grub_cpu_to_be32
-#define grub_cpu_to_md16_compile_time grub_cpu_to_be16
+#define grub_cpu_to_md64_compile_time grub_cpu_to_be64_compile_time
+#define grub_cpu_to_md32_compile_time grub_cpu_to_be32_compile_time
+#define grub_cpu_to_md16_compile_time grub_cpu_to_be16_compile_time
 #else
 #define grub_md_to_cpu64 grub_le_to_cpu64
 #define grub_md_to_cpu32 grub_le_to_cpu32
 #define grub_md_to_cpu16 grub_le_to_cpu16
-#define grub_cpu_to_md64_compile_time grub_cpu_to_le64
-#define grub_cpu_to_md32_compile_time grub_cpu_to_le32
-#define grub_cpu_to_md16_compile_time grub_cpu_to_le16
+#define grub_cpu_to_md64_compile_time grub_cpu_to_le64_compile_time
+#define grub_cpu_to_md32_compile_time grub_cpu_to_le32_compile_time
+#define grub_cpu_to_md16_compile_time grub_cpu_to_le16_compile_time
 #endif
 
 #define RESERVED_BYTES			(64 * 1024)

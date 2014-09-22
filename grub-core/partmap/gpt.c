@@ -65,7 +65,7 @@ grub_gpt_partition_map_iterate (grub_disk_t disk,
     return grub_errno;
 
   /* Check if it is valid.  */
-  if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
+  if (mbr.signature != grub_cpu_to_le16_compile_time (GRUB_PC_PARTITION_SIGNATURE))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
   /* Make sure the MBR is a protective MBR and not a normal MBR.  */

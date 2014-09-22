@@ -201,7 +201,7 @@ grub_scsi_read_capacity16 (grub_scsi_t scsi)
   rc.opcode = grub_scsi_cmd_read_capacity16;
   rc.lun = (scsi->lun << GRUB_SCSI_LUN_SHIFT) | 0x10;
   rc.logical_block_addr = 0;
-  rc.alloc_len = grub_cpu_to_be32 (sizeof (rcd));
+  rc.alloc_len = grub_cpu_to_be32_compile_time (sizeof (rcd));
   rc.PMI = 0;
   rc.control = 0;
 	

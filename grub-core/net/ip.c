@@ -611,7 +611,7 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface *inf,
   grub_netbuff_push (nb, sizeof (*iph));
   iph = (struct ip6hdr *) nb->data;
 
-  iph->version_class_flow = grub_cpu_to_be32 ((6 << 28));
+  iph->version_class_flow = grub_cpu_to_be32_compile_time ((6 << 28));
   iph->len = grub_cpu_to_be16 (nb->tail - nb->data - sizeof (*iph));
   iph->protocol = proto;
   iph->ttl = 0xff;

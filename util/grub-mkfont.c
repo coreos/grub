@@ -704,7 +704,7 @@ write_be16_section (const char *name, grub_uint16_t data, int* offset,
 {
   grub_uint32_t leng;
 
-  leng = grub_cpu_to_be32 (2);
+  leng = grub_cpu_to_be32_compile_time (2);
   data = grub_cpu_to_be16 (data);
   grub_util_write_image (name, 4, file, filename);
   grub_util_write_image ((char *) &leng, 4, file, filename);
@@ -801,7 +801,7 @@ write_font_pf2 (struct grub_font_info *font_info, char *output_file)
 
   offset = 0;
 
-  leng = grub_cpu_to_be32 (4);
+  leng = grub_cpu_to_be32_compile_time (4);
   grub_util_write_image (FONT_FORMAT_SECTION_NAMES_FILE,
   			 sizeof(FONT_FORMAT_SECTION_NAMES_FILE) - 1, file,
 			 output_file);

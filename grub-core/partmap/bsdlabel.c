@@ -53,7 +53,7 @@ iterate_real (grub_disk_t disk, grub_disk_addr_t sector, int freebsd,
     return grub_errno;
 
   /* Check if it is valid.  */
-  if (label.magic != grub_cpu_to_le32 (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
+  if (label.magic != grub_cpu_to_le32_compile_time (GRUB_PC_PARTITION_BSD_LABEL_MAGIC))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
   /* A kludge to determine a base of be.offset.  */

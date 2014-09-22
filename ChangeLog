@@ -1,3 +1,7 @@
+2014-09-22  Andrei Borzenkov <arvidjaar@gmail.com>
+
+	Use grub_cpu_to_XXX_compile_time for constants.
+
 2014-09-21  Valentin Dornauer  <valentin@unimplemented.org>
 
 	The AML parser implements only a small subset of possible AML

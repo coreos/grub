@@ -522,8 +522,8 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  grub_netbuff_push (nb, sizeof (*udph));
 
 	  udph = (struct udphdr *) nb->data;
-	  udph->src = grub_cpu_to_be16 (68);
-	  udph->dst = grub_cpu_to_be16 (67);
+	  udph->src = grub_cpu_to_be16_compile_time (68);
+	  udph->dst = grub_cpu_to_be16_compile_time (67);
 	  udph->chksum = 0;
 	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
 	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;

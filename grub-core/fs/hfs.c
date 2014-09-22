@@ -369,7 +369,7 @@ grub_hfs_mount (grub_disk_t disk)
 
   /* Lookup the root directory node in the catalog tree using the
      volume name.  */
-  key.parent_dir = grub_cpu_to_be32 (1);
+  key.parent_dir = grub_cpu_to_be32_compile_time (1);
   key.strlen = data->sblock.volname[0];
   grub_strcpy ((char *) key.str, (char *) (data->sblock.volname + 1));
 

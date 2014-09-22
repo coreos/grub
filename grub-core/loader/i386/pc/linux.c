@@ -151,7 +151,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (lh.boot_flag != grub_cpu_to_le16 (0xaa55))
+  if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55))
     {
       grub_error (GRUB_ERR_BAD_OS, "invalid magic number");
       goto fail;
@@ -169,7 +169,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   maximal_cmdline_size = 256;
 
-  if (lh.header == grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (lh.header == grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
       && grub_le_to_cpu16 (lh.version) >= 0x0200)
     {
       grub_linux_is_bzimage = (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL);
@@ -188,7 +188,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
       if (grub_le_to_cpu16 (lh.version) >= 0x0201)
 	{
-	  lh.heap_end_ptr = grub_cpu_to_le16 (GRUB_LINUX_HEAP_END_OFFSET);
+	  lh.heap_end_ptr = grub_cpu_to_le16_compile_time (GRUB_LINUX_HEAP_END_OFFSET);
 	  lh.loadflags |= GRUB_LINUX_FLAG_CAN_USE_HEAP;
 	}
 
@@ -196,17 +196,17 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	lh.cmd_line_ptr = grub_linux_real_target + GRUB_LINUX_CL_OFFSET;
       else
 	{
-	  lh.cl_magic = grub_cpu_to_le16 (GRUB_LINUX_CL_MAGIC);
-	  lh.cl_offset = grub_cpu_to_le16 (GRUB_LINUX_CL_OFFSET);
-	  lh.setup_move_size = grub_cpu_to_le16 (GRUB_LINUX_CL_OFFSET
+	  lh.cl_magic = grub_cpu_to_le16_compile_time (GRUB_LINUX_CL_MAGIC);
+	  lh.cl_offset = grub_cpu_to_le16_compile_time (GRUB_LINUX_CL_OFFSET);
+	  lh.setup_move_size = grub_cpu_to_le16_compile_time (GRUB_LINUX_CL_OFFSET
 						 + maximal_cmdline_size);
 	}
     }
   else
     {
       /* Your kernel is quite old...  */
-      lh.cl_magic = grub_cpu_to_le16 (GRUB_LINUX_CL_MAGIC);
-      lh.cl_offset = grub_cpu_to_le16 (GRUB_LINUX_CL_OFFSET);
+      lh.cl_magic = grub_cpu_to_le16_compile_time (GRUB_LINUX_CL_MAGIC);
+      lh.cl_offset = grub_cpu_to_le16_compile_time (GRUB_LINUX_CL_OFFSET);
 
       setup_sects = GRUB_LINUX_DEFAULT_SETUP_SECTS;
 
@@ -319,7 +319,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (lh.header != grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
       || grub_le_to_cpu16 (lh.version) < 0x0200)
     /* Clear the heap space.  */
     grub_memset (grub_linux_real_chunk
@@ -404,7 +404,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   lh = (struct linux_kernel_header *) grub_linux_real_chunk;
 
-  if (!(lh->header == grub_cpu_to_le32 (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (!(lh->header == grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
 	&& grub_le_to_cpu16 (lh->version) >= 0x0200))
     {
       grub_error (GRUB_ERR_BAD_OS, "the kernel is too old for initrd");

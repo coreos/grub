@@ -162,7 +162,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	lastaddr = p.offset;
 
       /* Check if it is valid.  */
-      if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
+      if (mbr.signature != grub_cpu_to_le16_compile_time (GRUB_PC_PARTITION_SIGNATURE))
 	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
       for (i = 0; i < 4; i++)
@@ -280,7 +280,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	lastaddr = offset;
 
       /* Check if it is valid.  */
-      if (mbr.signature != grub_cpu_to_le16 (GRUB_PC_PARTITION_SIGNATURE))
+      if (mbr.signature != grub_cpu_to_le16_compile_time (GRUB_PC_PARTITION_SIGNATURE))
 	return grub_error (GRUB_ERR_BAD_PART_TABLE, "no signature");
 
       for (i = 0; i < 4; i++)
