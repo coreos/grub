@@ -21,7 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
-#ifndef GRUB_MACHINE_EMU
+#if !defined(GRUB_MACHINE_EMU) && !defined(GRUB_UTIL)
 #include <grub/cpu/time.h>
 #else
 static inline void

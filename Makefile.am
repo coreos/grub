@@ -1,7 +1,11 @@
 AUTOMAKE_OPTIONS = subdir-objects -Wno-portability
 
 DEPDIR = .deps-util
-SUBDIRS = grub-core/gnulib . grub-core po docs util/bash-completion.d
+SUBDIRS = grub-core/gnulib .
+if COND_real_platform
+SUBDIRS += grub-core
+endif
+SUBDIRS += po docs util/bash-completion.d
 
 include $(top_srcdir)/conf/Makefile.common
 include $(top_srcdir)/conf/Makefile.extra-dist
@@ -131,6 +135,8 @@ nodist_platform_HEADERS = config.h
 
 pkgdata_DATA += grub-mkconfig_lib
 
+
+if COND_real_platform
 
 if COND_i386_coreboot
 QEMU32=qemu-system-i386
@@ -383,8 +389,6 @@ if COND_powerpc_ieee1275
 BOOTCHECKS = bootcheck-linux-ppc
 endif
 
-EXTRA_DIST += grub-core/tests/boot/kbsd.init-i386.S grub-core/tests/boot/kbsd.init-x86_64.S grub-core/tests/boot/kbsd.spec.txt grub-core/tests/boot/kernel-8086.S grub-core/tests/boot/kernel-i386.S grub-core/tests/boot/kfreebsd-aout.cfg grub-core/tests/boot/kfreebsd.cfg grub-core/tests/boot/kfreebsd.init-i386.S grub-core/tests/boot/kfreebsd.init-x86_64.S grub-core/tests/boot/knetbsd.cfg grub-core/tests/boot/kopenbsd.cfg grub-core/tests/boot/kopenbsdlabel.txt grub-core/tests/boot/linux16.cfg grub-core/tests/boot/linux.cfg grub-core/tests/boot/linux.init-i386.S grub-core/tests/boot/linux.init-mips.S grub-core/tests/boot/linux.init-ppc.S grub-core/tests/boot/linux.init-x86_64.S grub-core/tests/boot/linux-ppc.cfg grub-core/tests/boot/multiboot2.cfg grub-core/tests/boot/multiboot.cfg grub-core/tests/boot/ntldr.cfg grub-core/tests/boot/pc-chainloader.cfg grub-core/tests/boot/qemu-shutdown-x86.S
-
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
        bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \
        bootcheck-knetbsd-i386 bootcheck-knetbsd-x86_64 \
@@ -401,6 +405,10 @@ if COND_i386_coreboot
 default_payload.elf: grub-mkstandalone grub-mkimage
 	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci pata ehci uhci ohci usb_keyboard usbms part_msdos xfs ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump regexp setpci lsacpi chain test serial multiboot cbmemc linux16 gzio echo help' --fonts= --themes= --locales= -d grub-core/ /boot/grub/grub.cfg=$(srcdir)/coreboot.cfg
 endif
+
+endif
+
+EXTRA_DIST += grub-core/tests/boot/kbsd.init-i386.S grub-core/tests/boot/kbsd.init-x86_64.S grub-core/tests/boot/kbsd.spec.txt grub-core/tests/boot/kernel-8086.S grub-core/tests/boot/kernel-i386.S grub-core/tests/boot/kfreebsd-aout.cfg grub-core/tests/boot/kfreebsd.cfg grub-core/tests/boot/kfreebsd.init-i386.S grub-core/tests/boot/kfreebsd.init-x86_64.S grub-core/tests/boot/knetbsd.cfg grub-core/tests/boot/kopenbsd.cfg grub-core/tests/boot/kopenbsdlabel.txt grub-core/tests/boot/linux16.cfg grub-core/tests/boot/linux.cfg grub-core/tests/boot/linux.init-i386.S grub-core/tests/boot/linux.init-mips.S grub-core/tests/boot/linux.init-ppc.S grub-core/tests/boot/linux.init-x86_64.S grub-core/tests/boot/linux-ppc.cfg grub-core/tests/boot/multiboot2.cfg grub-core/tests/boot/multiboot.cfg grub-core/tests/boot/ntldr.cfg grub-core/tests/boot/pc-chainloader.cfg grub-core/tests/boot/qemu-shutdown-x86.S
 
 windowsdir=$(top_builddir)/$(PACKAGE)-$(VERSION)-for-windows
 windowsdir: $(PROGRAMS) $(starfield_DATA) $(platform_DATA)

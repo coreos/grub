@@ -1,3 +1,17 @@
+2014-09-23  Colin Watson  <cjwatson@ubuntu.com>
+
+	Add a new "none" platform that only builds utilities
+
+	* configure.ac: Add "none" platform.  Default to it for unsupported
+	CPUs rather than stopping with a fatal error.  Don't downgrade
+	x86_64-none to i386.  Define COND_real_platform Automake conditional
+	if the platform is anything other than "none".  Don't do any include
+	directory linking for "none".
+	* Makefile.am: Skip building grub-core and all bootcheck targets if
+	!COND_real_platform.
+	* include/grub/time.h: Don't include <grub/cpu/time.h> if GRUB_UTIL
+	is defined.
+
 2014-09-22  Andrei Borzenkov <arvidjaar@gmail.com>
 
 	Use grub_cpu_to_XXX_compile_time for constants.

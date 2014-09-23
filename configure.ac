@@ -125,7 +125,10 @@ if test "x$with_platform" = x; then
     ia64-*) platform=efi ;;
     arm-*) platform=uboot ;;
     arm64-*) platform=efi ;;
-    *) AC_MSG_ERROR([unsupported CPU: "$target_cpu"]) ;;
+    *)
+      AC_MSG_WARN([unsupported CPU: "$target_cpu" - only building utilities])
+      platform=none
+      ;;
   esac
 else
   platform="$with_platform"
@@ -135,6 +138,7 @@ case "$target_cpu"-"$platform" in
   x86_64-efi) ;;
   x86_64-emu) ;;
   x86_64-xen) ;;
+  x86_64-none) ;;
   x86_64-*) target_cpu=i386 ;;
   powerpc64-ieee1275) target_cpu=powerpc ;;
 esac
@@ -167,6 +171,7 @@ case "$target_cpu"-"$platform" in
   arm-efi) ;;
   arm64-efi) ;;
   *-emu) ;;
+  *-none) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
 esac
 
@@ -1653,6 +1658,7 @@ AC_SUBST(BUILD_LIBM)
 # Automake conditionals
 #
 
+AM_CONDITIONAL([COND_real_platform], [test x$platform != xnone])
 AM_CONDITIONAL([COND_emu], [test x$platform = xemu])
 AM_CONDITIONAL([COND_clang], [test x$grub_cv_cc_target_clang = xyes])
 AM_CONDITIONAL([COND_i386_pc], [test x$target_cpu = xi386 -a x$platform = xpc])
@@ -1726,24 +1732,30 @@ AC_DEFINE_UNQUOTED(GRUB_SYSCONFDIR, "$grub_sysconfdir", [Configuration dir])
 
 
 # Output files.
-cpudir="${target_cpu}"
-if test x${cpudir} = xmipsel; then
-  cpudir=mips;
-fi
-grub_CHECK_LINK_DIR
-if test x"$link_dir" = xyes ; then
-  AC_CONFIG_LINKS([include/grub/cpu:include/grub/$cpudir])
-  if test "$platform" != emu ; then
-    AC_CONFIG_LINKS([include/grub/machine:include/grub/$cpudir/$platform])
+if test "$platform" != none; then
+  cpudir="${target_cpu}"
+  if test x${cpudir} = xmipsel; then
+    cpudir=mips;
+  fi
+  grub_CHECK_LINK_DIR
+  if test x"$link_dir" = xyes ; then
+    AC_CONFIG_LINKS([include/grub/cpu:include/grub/$cpudir])
+    if test "$platform" != emu ; then
+      AC_CONFIG_LINKS([include/grub/machine:include/grub/$cpudir/$platform])
+    fi
+  else
+    mkdir -p include/grub 2>/dev/null
+    rm -rf include/grub/cpu
+    cp -rp $srcdir/include/grub/$cpudir include/grub/cpu 2>/dev/null
+    if test "$platform" != emu ; then
+      rm -rf include/grub/machine
+      cp -rp $srcdir/include/grub/$cpudir/$platform include/grub/machine 2>/dev/null
+    fi
   fi
 else
-  mkdir -p include/grub 2>/dev/null
-  rm -rf include/grub/cpu
-  cp -rp $srcdir/include/grub/$cpudir include/grub/cpu 2>/dev/null
-  if test "$platform" != emu ; then
-    rm -rf include/grub/machine
-    cp -rp $srcdir/include/grub/$cpudir/$platform include/grub/machine 2>/dev/null
-  fi
+  # Just enough to stop the compiler failing with -I$(srcdir)/include.
+  mkdir -p include 2>/dev/null
+  rm -rf include/grub
 fi
 
 AC_CONFIG_FILES([Makefile])
