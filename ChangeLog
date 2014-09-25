@@ -1,3 +1,11 @@
+2014-09-25  Colin Watson  <cjwatson@ubuntu.com>
+
+	Fix in-tree --platform=none
+
+	* configure.ac: Only remove include/grub/cpu and
+	include/grub/machine in the --platform=none case, not all of
+	include/grub.
+
 2014-09-23  Colin Watson  <cjwatson@ubuntu.com>
 
 	Add a new "none" platform that only builds utilities

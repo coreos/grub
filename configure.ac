@@ -1755,7 +1755,7 @@ if test "$platform" != none; then
 else
   # Just enough to stop the compiler failing with -I$(srcdir)/include.
   mkdir -p include 2>/dev/null
-  rm -rf include/grub
+  rm -rf include/grub/cpu include/grub/machine
 fi
 
 AC_CONFIG_FILES([Makefile])
