@@ -21,6 +21,7 @@
 
 #include <grub/types.h>
 #include <grub/partition.h>
+#include <grub/msdos_partition.h>
 
 struct grub_gpt_part_type
 {
@@ -50,6 +51,12 @@ typedef struct grub_gpt_part_type grub_gpt_part_type_t;
 	{ 0x85, 0xD2, 0xE1, 0xE9, 0x04, 0x34, 0xCF, 0xB3 }	\
   }
 
+#define GRUB_GPT_HEADER_MAGIC \
+  { 0x45, 0x46, 0x49, 0x20, 0x50, 0x41, 0x52, 0x54 }
+
+#define GRUB_GPT_HEADER_VERSION	\
+  grub_cpu_to_le32_compile_time (0x00010000U)
+
 struct grub_gpt_header
 {
   grub_uint8_t magic[8];
@@ -78,10 +85,63 @@ struct grub_gpt_partentry
   char name[72];
 } GRUB_PACKED;
 
+/* Basic GPT partmap module.  */
 grub_err_t
 grub_gpt_partition_map_iterate (grub_disk_t disk,
 				grub_partition_iterate_hook_t hook,
 				void *hook_data);
 
+/* Advanced GPT library.  */
+typedef enum grub_gpt_status
+  {
+    GRUB_GPT_PROTECTIVE_MBR         = 0x01,
+    GRUB_GPT_HYBRID_MBR             = 0x02,
+    GRUB_GPT_PRIMARY_HEADER_VALID   = 0x04,
+    GRUB_GPT_PRIMARY_ENTRIES_VALID  = 0x08,
+    GRUB_GPT_BACKUP_HEADER_VALID    = 0x10,
+    GRUB_GPT_BACKUP_ENTRIES_VALID   = 0x20,
+  } grub_gpt_status_t;
+
+#define GRUB_GPT_MBR_VALID (GRUB_GPT_PROTECTIVE_MBR|GRUB_GPT_HYBRID_MBR)
+
+/* UEFI requires the entries table to be at least 16384 bytes for a
+ * total of 128 entries given the standard 128 byte entry size.  */
+#define GRUB_GPT_DEFAULT_ENTRIES_LENGTH	128
+
+struct grub_gpt
+{
+  /* Bit field indicating which structures on disk are valid.  */
+  grub_gpt_status_t status;
+
+  /* Protective or hybrid MBR.  */
+  struct grub_msdos_partition_mbr mbr;
+
+  /* Each of the two GPT headers.  */
+  struct grub_gpt_header primary;
+  struct grub_gpt_header backup;
+
+  /* Only need one entries table, on disk both copies are identical.  */
+  struct grub_gpt_partentry *entries;
+
+  /* Logarithm of sector size, in case GPT and disk driver disagree.  */
+  unsigned int log_sector_size;
+};
+typedef struct grub_gpt *grub_gpt_t;
+
+/* Translate GPT sectors to GRUB's 512 byte block addresses.  */
+static inline grub_disk_addr_t
+grub_gpt_sector_to_addr (grub_gpt_t gpt, grub_uint64_t sector)
+{
+  return (sector << (gpt->log_sector_size - GRUB_DISK_SECTOR_BITS));
+}
+
+/* Allocates and fills new grub_gpt structure, free with grub_gpt_free.  */
+grub_gpt_t grub_gpt_read (grub_disk_t disk);
+
+void grub_gpt_free (grub_gpt_t gpt);
+
+grub_err_t grub_gpt_pmbr_check (struct grub_msdos_partition_mbr *mbr);
+grub_err_t grub_gpt_header_check (struct grub_gpt_header *gpt,
+				  unsigned int log_sector_size);
 
 #endif /* ! GRUB_GPT_PARTITION_HEADER */
