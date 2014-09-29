@@ -822,6 +822,11 @@ module = {
 };
 
 module = {
+  name = gpt;
+  common = lib/gpt.c;
+};
+
+module = {
   name = halt;
   nopc = commands/halt.c;
   i386_pc = commands/i386/pc/halt.c;
