@@ -1,3 +1,15 @@
+2014-10-14  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/loader/arm/linux.c: Use full initializer for initrd_ctx to
+	avoid fatal warnings with older gcc (probably before 4.7).
+	* grub-core/loader/arm64/linux.c: Likewise.
+	* grub-core/loader/i386/linux.c: Likewise.
+	* grub-core/loader/i386/pc/linux.c: Likewise.
+	* grub-core/loader/ia64/efi/linux.c: Likewise.
+	* grub-core/loader/mips/linux.c: Likewise.
+	* grub-core/loader/powerpc/ieee1275/linux.c: Likewise.
+	* grub-core/loader/sparc64/ieee1275/linux.c: Likewise.
+
 2014-09-25  Colin Watson  <cjwatson@ubuntu.com>
 
 	Fix in-tree --platform=none
