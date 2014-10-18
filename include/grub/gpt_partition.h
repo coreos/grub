@@ -64,8 +64,8 @@ struct grub_gpt_header
   grub_uint32_t headersize;
   grub_uint32_t crc32;
   grub_uint32_t unused1;
-  grub_uint64_t primary;
-  grub_uint64_t backup;
+  grub_uint64_t header_lba;
+  grub_uint64_t alternate_lba;
   grub_uint64_t start;
   grub_uint64_t end;
   grub_uint8_t guid[16];
