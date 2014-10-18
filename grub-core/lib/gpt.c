@@ -137,7 +137,7 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN)
     sector = disk->total_sectors - 1;
   else if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    sector = grub_le_to_cpu64 (gpt->primary.backup);
+    sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
   else
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "Unable to locate backup GPT");
