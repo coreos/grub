@@ -153,7 +153,7 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   return GRUB_ERR_NONE;
 }
 
-static struct grub_gpt_partentry *
+static grub_err_t
 grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
 		       struct grub_gpt_header *header)
 {
@@ -172,6 +172,10 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
       grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
       goto fail;
     }
+
+  /* Double check that the header was validated properly.  */
+  if (entries_size < GRUB_GPT_DEFAULT_ENTRIES_SIZE)
+    return grub_error (GRUB_ERR_BUG, "invalid GPT entries table size");
 
   entries = grub_malloc (entries_size);
   if (!entries)
@@ -197,19 +201,21 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
     }
 
   grub_free (crc32_context);
-  return entries;
+  grub_free (gpt->entries);
+  gpt->entries = entries;
+  gpt->entries_size = entries_size;
+  return GRUB_ERR_NONE;
 
 fail:
   grub_free (entries);
   grub_free (crc32_context);
-  return NULL;
+  return grub_errno;
 }
 
 grub_gpt_t
 grub_gpt_read (grub_disk_t disk)
 {
   grub_gpt_t gpt;
-  struct grub_gpt_partentry *backup_entries;
 
   gpt = grub_zalloc (sizeof (*gpt));
   if (!gpt)
@@ -241,36 +247,23 @@ grub_gpt_read (grub_disk_t disk)
   else
     goto fail;
 
-  /* Same error handling scheme for the entry tables.  */
-  gpt->entries = grub_gpt_read_entries (disk, gpt, &gpt->primary);
-  if (!gpt->entries)
-    {
-      grub_error_push ();
-      backup_entries = grub_gpt_read_entries (disk, gpt, &gpt->backup);
-      grub_error_pop ();
-    }
-  else
-    {
-      gpt->status |= GRUB_GPT_PRIMARY_ENTRIES_VALID;
-      backup_entries = grub_gpt_read_entries (disk, gpt, &gpt->backup);
-    }
+  /* Similarly, favor the value or error from the primary table.  */
+  if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID &&
+      !grub_gpt_read_entries (disk, gpt, &gpt->backup))
+    gpt->status |= GRUB_GPT_BACKUP_ENTRIES_VALID;
 
-  if (backup_entries)
-    {
-      gpt->status |= GRUB_GPT_BACKUP_ENTRIES_VALID;
-
-      if (gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID)
-	grub_free (backup_entries);
-      else
-	gpt->entries = backup_entries;
-    }
+  grub_errno = GRUB_ERR_NONE;
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID &&
+      !grub_gpt_read_entries (disk, gpt, &gpt->primary))
+    gpt->status |= GRUB_GPT_PRIMARY_ENTRIES_VALID;
 
   if (gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID ||
       gpt->status & GRUB_GPT_BACKUP_ENTRIES_VALID)
-    {
-      grub_errno = GRUB_ERR_NONE;
-      return gpt;
-    }
+    grub_errno = GRUB_ERR_NONE;
+  else
+    goto fail;
+
+  return gpt;
 
 fail:
   grub_gpt_free (gpt);

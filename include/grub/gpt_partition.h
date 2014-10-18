@@ -106,7 +106,9 @@ typedef enum grub_gpt_status
 
 /* UEFI requires the entries table to be at least 16384 bytes for a
  * total of 128 entries given the standard 128 byte entry size.  */
-#define GRUB_GPT_DEFAULT_ENTRIES_LENGTH	128
+#define GRUB_GPT_DEFAULT_ENTRIES_SIZE	16384
+#define GRUB_GPT_DEFAULT_ENTRIES_LENGTH	\
+  (GRUB_GPT_DEFAULT_ENTRIES_SIZE / sizeof (struct grub_gpt_partentry))
 
 struct grub_gpt
 {
@@ -122,6 +124,7 @@ struct grub_gpt
 
   /* Only need one entries table, on disk both copies are identical.  */
   struct grub_gpt_partentry *entries;
+  grub_size_t entries_size;
 
   /* Logarithm of sector size, in case GPT and disk driver disagree.  */
   unsigned int log_sector_size;
