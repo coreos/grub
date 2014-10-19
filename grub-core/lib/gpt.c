@@ -357,10 +357,46 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   if (grub_gpt_header_check (&gpt->backup, gpt->log_sector_size))
     return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
 
-  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
-		  GRUB_GPT_PRIMARY_ENTRIES_VALID |
-		  GRUB_GPT_BACKUP_HEADER_VALID |
-		  GRUB_GPT_BACKUP_ENTRIES_VALID);
+  gpt->status |= GRUB_GPT_BOTH_VALID;
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_gpt_write_table (grub_disk_t disk, grub_gpt_t gpt,
+		      struct grub_gpt_header *header)
+{
+  grub_disk_addr_t addr;
+
+  if (grub_le_to_cpu32 (header->headersize) != sizeof (*header))
+    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+		       "Header size is %u, must be %u",
+		       grub_le_to_cpu32 (header->headersize),
+		       sizeof (*header));
+
+  addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->header_lba));
+  if (grub_disk_write (disk, addr, 0, sizeof (*header), header))
+    return grub_errno;
+
+  addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->partitions));
+  if (grub_disk_write (disk, addr, 0, gpt->entries_size, gpt->entries))
+    return grub_errno;
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt)
+{
+  /* TODO: update/repair protective MBRs too.  */
+
+  if (!(gpt->status & GRUB_GPT_BOTH_VALID))
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "Invalid GPT data");
+
+  if (grub_gpt_write_table (disk, gpt, &gpt->primary))
+    return grub_errno;
+
+  if (grub_gpt_write_table (disk, gpt, &gpt->backup))
+    return grub_errno;
 
   return GRUB_ERR_NONE;
 }

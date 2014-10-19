@@ -103,6 +103,11 @@ typedef enum grub_gpt_status
   } grub_gpt_status_t;
 
 #define GRUB_GPT_MBR_VALID (GRUB_GPT_PROTECTIVE_MBR|GRUB_GPT_HYBRID_MBR)
+#define GRUB_GPT_PRIMARY_VALID \
+  (GRUB_GPT_PRIMARY_HEADER_VALID|GRUB_GPT_PRIMARY_ENTRIES_VALID)
+#define GRUB_GPT_BACKUP_VALID \
+  (GRUB_GPT_BACKUP_HEADER_VALID|GRUB_GPT_BACKUP_ENTRIES_VALID)
+#define GRUB_GPT_BOTH_VALID (GRUB_GPT_PRIMARY_VALID|GRUB_GPT_BACKUP_VALID)
 
 /* UEFI requires the entries table to be at least 16384 bytes for a
  * total of 128 entries given the standard 128 byte entry size.  */
@@ -143,6 +148,9 @@ grub_gpt_t grub_gpt_read (grub_disk_t disk);
 
 /* Sync up primary and backup headers, recompute checksums.  */
 grub_err_t grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt);
+
+/* Write headers and entry tables back to disk.  */
+grub_err_t grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt);
 
 void grub_gpt_free (grub_gpt_t gpt);
 

@@ -1150,6 +1150,12 @@ script = {
   common = tests/grub_cmd_tr.in;
 };
 
+script = {
+  testcase;
+  name = gptrepair_test;
+  common = tests/gptrepair_test.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
