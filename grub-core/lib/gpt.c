@@ -32,22 +32,17 @@ static grub_uint8_t grub_gpt_magic[] = GRUB_GPT_HEADER_MAGIC;
 
 
 static grub_err_t
-grub_gpt_header_crc32 (struct grub_gpt_header *gpt, grub_uint32_t *crc)
+grub_gpt_lecrc32 (void *data, grub_size_t len, grub_uint32_t *crc)
 {
   grub_uint8_t *crc32_context;
-  grub_uint32_t old;
 
   crc32_context = grub_zalloc (GRUB_MD_CRC32->contextsize);
   if (!crc32_context)
     return grub_errno;
 
-  /* crc32 must be computed with the field cleared.  */
-  old = gpt->crc32;
-  gpt->crc32 = 0;
   GRUB_MD_CRC32->init (crc32_context);
-  GRUB_MD_CRC32->write (crc32_context, gpt, sizeof (*gpt));
+  GRUB_MD_CRC32->write (crc32_context, data, len);
   GRUB_MD_CRC32->final (crc32_context);
-  gpt->crc32 = old;
 
   /* GRUB_MD_CRC32 always uses big endian, gpt is always little.  */
   *crc = grub_swap_bytes32 (*(grub_uint32_t *)
@@ -55,6 +50,25 @@ grub_gpt_header_crc32 (struct grub_gpt_header *gpt, grub_uint32_t *crc)
 
   grub_free (crc32_context);
 
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_gpt_header_lecrc32 (struct grub_gpt_header *header, grub_uint32_t *crc)
+{
+  grub_uint32_t old, new;
+  grub_err_t err;
+
+  /* crc32 must be computed with the field cleared.  */
+  old = header->crc32;
+  header->crc32 = 0;
+  err = grub_gpt_lecrc32 (header, sizeof (*header), &new);
+  header->crc32 = old;
+
+  if (err)
+    return err;
+
+  *crc = new;
   return GRUB_ERR_NONE;
 }
 
@@ -87,7 +101,7 @@ grub_gpt_header_check (struct grub_gpt_header *gpt,
   if (gpt->version != GRUB_GPT_HEADER_VERSION)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "unknown GPT version");
 
-  if (grub_gpt_header_crc32 (gpt, &crc))
+  if (grub_gpt_header_lecrc32 (gpt, &crc))
     return grub_errno;
 
   if (gpt->crc32 != crc)
@@ -158,7 +172,6 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
 		       struct grub_gpt_header *header)
 {
   struct grub_gpt_partentry *entries = NULL;
-  grub_uint8_t *crc32_context = NULL;
   grub_uint32_t count, size, crc;
   grub_disk_addr_t addr;
   grub_size_t entries_size;
@@ -185,22 +198,15 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
   if (grub_disk_read (disk, addr, 0, entries_size, entries))
     goto fail;
 
-  crc32_context = grub_zalloc (GRUB_MD_CRC32->contextsize);
-  if (!crc32_context)
+  if (grub_gpt_lecrc32 (entries, entries_size, &crc))
     goto fail;
 
-  GRUB_MD_CRC32->init (crc32_context);
-  GRUB_MD_CRC32->write (crc32_context, entries, entries_size);
-  GRUB_MD_CRC32->final (crc32_context);
-
-  crc = *(grub_uint32_t *) GRUB_MD_CRC32->read (crc32_context);
-  if (grub_swap_bytes32 (crc) != header->partentry_crc32)
+  if (crc != header->partentry_crc32)
     {
       grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT entry crc32");
       goto fail;
     }
 
-  grub_free (crc32_context);
   grub_free (gpt->entries);
   gpt->entries = entries;
   gpt->entries_size = entries_size;
@@ -208,7 +214,6 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
 
 fail:
   grub_free (entries);
-  grub_free (crc32_context);
   return grub_errno;
 }
 
