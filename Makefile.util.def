@@ -1161,6 +1161,12 @@ script = {
 
 script = {
   testcase;
+  name = gptrepair_test;
+  common = tests/gptrepair_test.in;
+};
+
+script = {
+  testcase;
   name = file_filter_test;
   common = tests/file_filter_test.in;
 };

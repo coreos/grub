@@ -822,6 +822,11 @@ module = {
 };
 
 module = {
+  name = gptrepair;
+  common = commands/gptrepair.c;
+};
+
+module = {
   name = gpt;
   common = lib/gpt.c;
 };
