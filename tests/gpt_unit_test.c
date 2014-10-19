@@ -24,6 +24,7 @@
 #include <grub/err.h>
 #include <grub/gpt_partition.h>
 #include <grub/msdos_partition.h>
+#include <grub/lib/hexdump.h>
 #include <grub/test.h>
 
 #include <errno.h>
@@ -442,6 +443,52 @@ read_fallback_test (void)
   close_disk (&data);
 }
 
+static void
+repair_test (void)
+{
+  struct test_data data;
+  grub_gpt_t gpt;
+
+  open_disk (&data);
+
+  /* Erase/Repair primary.  */
+  memset (&data.raw->primary_header, 0, sizeof (data.raw->primary_header));
+  sync_disk (&data);
+  gpt = read_disk (&data);
+  grub_gpt_repair (data.dev->disk, gpt);
+  grub_test_assert (grub_errno == GRUB_ERR_NONE,
+		    "repair failed: %s", grub_errmsg);
+  if (memcmp (&gpt->primary, &example_primary, sizeof (gpt->primary)))
+    {
+      printf ("Invalid restored primary header:\n");
+      hexdump (16, (char*)&gpt->primary, sizeof (gpt->primary));
+      printf ("Expected primary header:\n");
+      hexdump (16, (char*)&example_primary, sizeof (example_primary));
+      grub_test_assert (0, "repair did not restore primary header");
+    }
+  grub_gpt_free (gpt);
+  reset_disk (&data);
+
+  /* Erase/Repair backup.  */
+  memset (&data.raw->backup_header, 0, sizeof (data.raw->backup_header));
+  sync_disk (&data);
+  gpt = read_disk (&data);
+  grub_gpt_repair (data.dev->disk, gpt);
+  grub_test_assert (grub_errno == GRUB_ERR_NONE,
+		    "repair failed: %s", grub_errmsg);
+  if (memcmp (&gpt->backup, &example_backup, sizeof (gpt->backup)))
+    {
+      printf ("Invalid restored backup header:\n");
+      hexdump (16, (char*)&gpt->backup, sizeof (gpt->backup));
+      printf ("Expected backup header:\n");
+      hexdump (16, (char*)&example_backup, sizeof (example_backup));
+      grub_test_assert (0, "repair did not restore backup header");
+    }
+  grub_gpt_free (gpt);
+  reset_disk (&data);
+
+  close_disk (&data);
+}
 void
 grub_unit_test_init (void)
 {
@@ -453,6 +500,7 @@ grub_unit_test_init (void)
   grub_test_register ("gpt_read_valid_test", read_valid_test);
   grub_test_register ("gpt_read_invalid_test", read_invalid_entries_test);
   grub_test_register ("gpt_read_fallback_test", read_fallback_test);
+  grub_test_register ("gpt_repair_test", repair_test);
 }
 
 void
@@ -463,5 +511,6 @@ grub_unit_test_fini (void)
   grub_test_unregister ("gpt_read_valid_test");
   grub_test_unregister ("gpt_read_invalid_test");
   grub_test_unregister ("gpt_read_fallback_test");
+  grub_test_unregister ("gpt_repair_test");
   grub_fini_all ();
 }

@@ -141,6 +141,9 @@ grub_gpt_sector_to_addr (grub_gpt_t gpt, grub_uint64_t sector)
 /* Allocates and fills new grub_gpt structure, free with grub_gpt_free.  */
 grub_gpt_t grub_gpt_read (grub_disk_t disk);
 
+/* Sync up primary and backup headers, recompute checksums.  */
+grub_err_t grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt);
+
 void grub_gpt_free (grub_gpt_t gpt);
 
 grub_err_t grub_gpt_pmbr_check (struct grub_msdos_partition_mbr *mbr);
