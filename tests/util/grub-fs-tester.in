@@ -241,8 +241,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    CFILESN=1
 	    if test -f /usr/share/dict/american-english; then
 		CFILESSRC[0]="/usr/share/dict/american-english"
-	    else
+	    elif test -f /usr/share/dict/linux.words; then
 		CFILESSRC[0]="/usr/share/dict/linux.words"
+	    else
+		CFILESSRC[0]="/usr/share/dict/words"
 	    fi
 	    case x"$fs" in
 		    # FS LIMITATION: 8.3 names
