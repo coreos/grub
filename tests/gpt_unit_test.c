@@ -24,6 +24,7 @@
 #include <grub/err.h>
 #include <grub/gpt_partition.h>
 #include <grub/msdos_partition.h>
+#include <grub/lib/hexdump.h>
 #include <grub/test.h>
 
 #include <errno.h>
@@ -94,8 +95,8 @@ static const struct grub_gpt_header example_primary = {
   .version = GRUB_GPT_HEADER_VERSION,
   .headersize = sizeof (struct grub_gpt_header),
   .crc32 = grub_cpu_to_le32_compile_time (0x7cd8642c),
-  .primary = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
-  .backup = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
+  .header_lba = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
+  .alternate_lba = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
   .start = grub_cpu_to_le64_compile_time (DATA_START_SECTOR),
   .end = grub_cpu_to_le64_compile_time (DATA_END_SECTOR),
   .guid = {0xad, 0x31, 0xc1, 0x69, 0xd6, 0x67, 0xc6, 0x46,
@@ -112,8 +113,8 @@ static const struct grub_gpt_header example_backup = {
   .version = GRUB_GPT_HEADER_VERSION,
   .headersize = sizeof (struct grub_gpt_header),
   .crc32 = grub_cpu_to_le32_compile_time (0xcfaa4a27),
-  .primary = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
-  .backup = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
+  .header_lba = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
+  .alternate_lba = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
   .start = grub_cpu_to_le64_compile_time (DATA_START_SECTOR),
   .end = grub_cpu_to_le64_compile_time (DATA_END_SECTOR),
   .guid = {0xad, 0x31, 0xc1, 0x69, 0xd6, 0x67, 0xc6, 0x46,
@@ -442,6 +443,52 @@ read_fallback_test (void)
   close_disk (&data);
 }
 
+static void
+repair_test (void)
+{
+  struct test_data data;
+  grub_gpt_t gpt;
+
+  open_disk (&data);
+
+  /* Erase/Repair primary.  */
+  memset (&data.raw->primary_header, 0, sizeof (data.raw->primary_header));
+  sync_disk (&data);
+  gpt = read_disk (&data);
+  grub_gpt_repair (data.dev->disk, gpt);
+  grub_test_assert (grub_errno == GRUB_ERR_NONE,
+		    "repair failed: %s", grub_errmsg);
+  if (memcmp (&gpt->primary, &example_primary, sizeof (gpt->primary)))
+    {
+      printf ("Invalid restored primary header:\n");
+      hexdump (16, (char*)&gpt->primary, sizeof (gpt->primary));
+      printf ("Expected primary header:\n");
+      hexdump (16, (char*)&example_primary, sizeof (example_primary));
+      grub_test_assert (0, "repair did not restore primary header");
+    }
+  grub_gpt_free (gpt);
+  reset_disk (&data);
+
+  /* Erase/Repair backup.  */
+  memset (&data.raw->backup_header, 0, sizeof (data.raw->backup_header));
+  sync_disk (&data);
+  gpt = read_disk (&data);
+  grub_gpt_repair (data.dev->disk, gpt);
+  grub_test_assert (grub_errno == GRUB_ERR_NONE,
+		    "repair failed: %s", grub_errmsg);
+  if (memcmp (&gpt->backup, &example_backup, sizeof (gpt->backup)))
+    {
+      printf ("Invalid restored backup header:\n");
+      hexdump (16, (char*)&gpt->backup, sizeof (gpt->backup));
+      printf ("Expected backup header:\n");
+      hexdump (16, (char*)&example_backup, sizeof (example_backup));
+      grub_test_assert (0, "repair did not restore backup header");
+    }
+  grub_gpt_free (gpt);
+  reset_disk (&data);
+
+  close_disk (&data);
+}
 void
 grub_unit_test_init (void)
 {
@@ -453,6 +500,7 @@ grub_unit_test_init (void)
   grub_test_register ("gpt_read_valid_test", read_valid_test);
   grub_test_register ("gpt_read_invalid_test", read_invalid_entries_test);
   grub_test_register ("gpt_read_fallback_test", read_fallback_test);
+  grub_test_register ("gpt_repair_test", repair_test);
 }
 
 void
@@ -463,5 +511,6 @@ grub_unit_test_fini (void)
   grub_test_unregister ("gpt_read_valid_test");
   grub_test_unregister ("gpt_read_invalid_test");
   grub_test_unregister ("gpt_read_fallback_test");
+  grub_test_unregister ("gpt_repair_test");
   grub_fini_all ();
 }
