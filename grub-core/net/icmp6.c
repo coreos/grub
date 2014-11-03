@@ -205,7 +205,7 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 	if (ttl != 0xff)
 	  break;
 	nbh = (struct neighbour_solicit *) nb->data;
-	err = grub_netbuff_pull (nb, sizeof (struct router_adv));
+	err = grub_netbuff_pull (nb, sizeof (*nbh));
 	if (err)
 	  {
 	    grub_netbuff_free (nb);
