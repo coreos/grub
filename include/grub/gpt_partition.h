@@ -53,6 +53,10 @@ typedef struct grub_gpt_guid grub_gpt_part_type_t;
   GRUB_GPT_GUID_INIT (0x5808c8aa, 0x7e8f, 0x42e0, \
       0x85, 0xd2, 0xe1, 0xe9, 0x04, 0x34, 0xcf, 0xb3)
 
+#define GRUB_GPT_PARTITION_TYPE_USR_X86_64 \
+  GRUB_GPT_GUID_INIT (0x5dfbf5f4, 0x2848, 0x4bac, \
+      0xaa, 0x5e, 0x0d, 0x9a, 0x20, 0xb7, 0x45, 0xa6)
+
 #define GRUB_GPT_HEADER_MAGIC \
   { 0x45, 0x46, 0x49, 0x20, 0x50, 0x41, 0x52, 0x54 }
 
@@ -86,6 +90,51 @@ struct grub_gpt_partentry
   grub_uint64_t attrib;
   char name[72];
 } GRUB_PACKED;
+
+enum grub_gpt_part_attr_offset
+{
+  /* Standard partition attribute bits defined by UEFI.  */
+  GRUB_GPT_PART_ATTR_OFFSET_REQUIRED			= 0,
+  GRUB_GPT_PART_ATTR_OFFSET_NO_BLOCK_IO_PROTOCOL	= 1,
+  GRUB_GPT_PART_ATTR_OFFSET_LEGACY_BIOS_BOOTABLE	= 2,
+
+  /* De facto standard attribute bits defined by Microsoft and reused by
+   * http://www.freedesktop.org/wiki/Specifications/DiscoverablePartitionsSpec */
+  GRUB_GPT_PART_ATTR_OFFSET_READ_ONLY			= 60,
+  GRUB_GPT_PART_ATTR_OFFSET_NO_AUTO			= 63,
+
+  /* Partition attributes for priority based selection,
+   * Currently only valid for PARTITION_TYPE_USR_X86_64.
+   * TRIES_LEFT and PRIORITY are 4 bit wide fields.  */
+  GRUB_GPT_PART_ATTR_OFFSET_GPTPRIO_PRIORITY		= 48,
+  GRUB_GPT_PART_ATTR_OFFSET_GPTPRIO_TRIES_LEFT		= 52,
+  GRUB_GPT_PART_ATTR_OFFSET_GPTPRIO_SUCCESSFUL		= 56,
+};
+
+/* Helpers for reading/writing partition attributes.  */
+static inline grub_uint64_t
+grub_gpt_entry_attribute (struct grub_gpt_partentry *entry,
+			  enum grub_gpt_part_attr_offset offset,
+			  unsigned int bits)
+{
+  grub_uint64_t attrib = grub_le_to_cpu64 (entry->attrib);
+
+  return (attrib >> offset) & ((1ULL << bits) - 1);
+}
+
+static inline void
+grub_gpt_entry_set_attribute (struct grub_gpt_partentry *entry,
+			      grub_uint64_t value,
+			      enum grub_gpt_part_attr_offset offset,
+			      unsigned int bits)
+{
+  grub_uint64_t attrib, mask;
+
+  mask = (((1ULL << bits) - 1) << offset);
+  attrib = grub_le_to_cpu64 (entry->attrib) & ~mask;
+  attrib |= ((value << offset) & mask);
+  entry->attrib = grub_cpu_to_le64 (attrib);
+}
 
 /* Basic GPT partmap module.  */
 grub_err_t

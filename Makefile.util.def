@@ -1167,6 +1167,12 @@ script = {
 
 script = {
   testcase;
+  name = gptprio_test;
+  common = tests/gptprio_test.in;
+};
+
+script = {
+  testcase;
   name = file_filter_test;
   common = tests/file_filter_test.in;
 };

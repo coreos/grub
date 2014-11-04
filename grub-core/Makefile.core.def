@@ -827,6 +827,11 @@ module = {
 };
 
 module = {
+  name = gptprio;
+  common = commands/gptprio.c;
+};
+
+module = {
   name = gpt;
   common = lib/gpt.c;
 };
