@@ -1156,6 +1156,12 @@ script = {
   common = tests/gptrepair_test.in;
 };
 
+script = {
+  testcase;
+  name = gptprio_test;
+  common = tests/gptprio_test.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
