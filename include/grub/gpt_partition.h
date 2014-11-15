@@ -200,6 +200,9 @@ grub_gpt_t grub_gpt_read (grub_disk_t disk);
 /* Sync up primary and backup headers, recompute checksums.  */
 grub_err_t grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt);
 
+/* Recompute checksums, must be called after modifying GPT data.  */
+grub_err_t grub_gpt_update_checksums (grub_gpt_t gpt);
+
 /* Write headers and entry tables back to disk.  */
 grub_err_t grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt);
 
