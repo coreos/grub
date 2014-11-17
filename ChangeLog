@@ -1,3 +1,8 @@
+2014-01-07  Leif Lindholm <leif.lindholm@linaro.org>
+
+	* grub-core/kern/efi/init.c: check value of *path before
+	dereferencing.
+
 2014-11-03  Michael Chang  <mchang@suse.com>
 
 	* grub-core/net/icmp6.c (grub_net_recv_icmp6_packet): Fix size
