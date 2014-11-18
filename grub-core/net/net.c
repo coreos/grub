@@ -380,12 +380,14 @@ grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
 
   for (interval = 200; interval < 10000; interval *= 2)
     {
-      /* FIXME: send router solicitation.  */
       int done = 1;
       for (j = 0; j < ncards; j++)
 	{
 	  if (slaacs[j]->slaac_counter)
 	    continue;
+	  err = grub_net_icmp6_send_router_solicit (ifaces[j]);
+	  if (err)
+	    err = GRUB_ERR_NONE;
 	  done = 0;
 	}
       if (done)

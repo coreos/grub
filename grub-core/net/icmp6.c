@@ -72,6 +72,11 @@ struct neighbour_advertise
   grub_uint64_t target[2];
 } GRUB_PACKED;
 
+struct router_solicit
+{
+  grub_uint32_t reserved;
+} GRUB_PACKED;
+
 enum
   {
     FLAG_SLAAC = 0x40
@@ -81,6 +86,7 @@ enum
   {
     ICMP6_ECHO = 128,
     ICMP6_ECHO_REPLY = 129,
+    ICMP6_ROUTER_SOLICIT = 133,
     ICMP6_ROUTER_ADVERTISE = 134,
     ICMP6_NEIGHBOUR_SOLICIT = 135,
     ICMP6_NEIGHBOUR_ADVERTISE = 136,
@@ -529,6 +535,83 @@ grub_net_icmp6_send_request (struct grub_net_network_level_interface *inf,
 	break;
     }
 
+ fail:
+  grub_netbuff_free (nb);
+  return err;
+}
+
+grub_err_t
+grub_net_icmp6_send_router_solicit (struct grub_net_network_level_interface *inf)
+{
+  struct grub_net_buff *nb;
+  grub_err_t err = GRUB_ERR_NONE;
+  grub_net_network_level_address_t multicast;
+  grub_net_link_level_address_t ll_multicast;
+  struct option_header *ohdr;
+  struct router_solicit *sol;
+  struct icmp_header *icmphr;
+
+  multicast.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+  multicast.ipv6[0] = grub_cpu_to_be64 (0xff02ULL << 48);
+  multicast.ipv6[1] = grub_cpu_to_be64 (0x02ULL);
+
+  err = grub_net_link_layer_resolve (inf, &multicast, &ll_multicast);
+  if (err)
+    return err;
+
+  nb = grub_netbuff_alloc (sizeof (struct router_solicit)
+			   + sizeof (struct option_header)
+			   + 6
+			   + sizeof (struct icmp_header)
+			   + GRUB_NET_OUR_IPV6_HEADER_SIZE
+			   + GRUB_NET_MAX_LINK_HEADER_SIZE);
+  if (!nb)
+    return grub_errno;
+  err = grub_netbuff_reserve (nb,
+			      sizeof (struct router_solicit)
+			      + sizeof (struct option_header)
+			      + 6
+			      + sizeof (struct icmp_header)
+			      + GRUB_NET_OUR_IPV6_HEADER_SIZE
+			      + GRUB_NET_MAX_LINK_HEADER_SIZE);
+  if (err)
+    goto fail;
+
+  err = grub_netbuff_push (nb, 6);
+  if (err)
+    goto fail;
+
+  grub_memcpy (nb->data, inf->hwaddress.mac, 6);
+
+  err = grub_netbuff_push (nb, sizeof (*ohdr));
+  if (err)
+    goto fail;
+
+  ohdr = (struct option_header *) nb->data;
+  ohdr->type = OPTION_SOURCE_LINK_LAYER_ADDRESS;
+  ohdr->len = 1;
+
+  err = grub_netbuff_push (nb, sizeof (*sol));
+  if (err)
+    goto fail;
+
+  sol = (struct router_solicit *) nb->data;
+  sol->reserved = 0;
+
+  err = grub_netbuff_push (nb, sizeof (*icmphr));
+  if (err)
+    goto fail;
+
+  icmphr = (struct icmp_header *) nb->data;
+  icmphr->type = ICMP6_ROUTER_SOLICIT;
+  icmphr->code = 0;
+  icmphr->checksum = 0;
+  icmphr->checksum = grub_net_ip_transport_checksum (nb,
+						     GRUB_NET_IP_ICMPV6,
+						     &inf->address,
+						     &multicast);
+  err = grub_net_send_ip_packet (inf, &multicast, &ll_multicast, nb,
+				 GRUB_NET_IP_ICMPV6);
  fail:
   grub_netbuff_free (nb);
   return err;
