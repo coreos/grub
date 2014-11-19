@@ -60,6 +60,8 @@
 #define MULTIBOOT_TAG_TYPE_NETWORK           16
 #define MULTIBOOT_TAG_TYPE_EFI_MMAP          17
 #define MULTIBOOT_TAG_TYPE_EFI_BS            18
+#define MULTIBOOT_TAG_TYPE_EFI32_IH          19
+#define MULTIBOOT_TAG_TYPE_EFI64_IH          20
 
 #define MULTIBOOT_HEADER_TAG_END  0
 #define MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST  1
@@ -370,6 +372,20 @@ struct multiboot_tag_efi_mmap
   multiboot_uint32_t descr_vers;
   multiboot_uint8_t efi_mmap[0];
 }; 
+
+struct multiboot_tag_efi32_ih
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t pointer;
+};
+
+struct multiboot_tag_efi64_ih
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint64_t pointer;
+};
 
 #endif /* ! ASM_FILE */
 
