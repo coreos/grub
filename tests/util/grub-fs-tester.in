@@ -1065,6 +1065,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		:
 	    else
 		echo NLIST FAIL
+		echo "$LSROUT"
 		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -lA "$MNTPOINTRO"
 		exit 1
 	    fi
@@ -1082,6 +1083,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		:
 	    else
 		echo LONG LIST FAIL
+		echo "$LSROUT"
 		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
 		exit 1
 	    fi

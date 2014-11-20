@@ -1,3 +1,8 @@
+2014-11-20  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* tests/util/grub-fs-tester.in: Consistently print output
+	of grub ls if test fails.
+
 2014-11-07  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/kern/efi/init.c: check value of *path before
