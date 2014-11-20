@@ -1,4 +1,4 @@
-2014-01-07  Leif Lindholm <leif.lindholm@linaro.org>
+2014-11-07  Leif Lindholm <leif.lindholm@linaro.org>
 
 	* grub-core/kern/efi/init.c: check value of *path before
 	dereferencing.
