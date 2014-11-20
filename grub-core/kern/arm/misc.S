@@ -60,17 +60,17 @@ FUNCTION(__aeabi_lmul)
 
 	.macro division parent
 
-        stmfd   sp!, {lr}
-        sub     sp, sp, #12
+        sub     sp, sp, #8      @ Allocate naturally aligned 64-bit space
+        stmfd   sp!, {r3,lr}    @ Dummy r3 to maintain stack alignment
+        add     r3, sp, #8      @ Set r3 to address of 64-bit space
+        str     r3, [sp]        @ Stack parameter, pointer to 64-bit space
         mov     r2, r1
-        add     r1, sp, #4
-        str     r1, [sp, #0]
         mov     r1, #0
         mov     r3, #0
         bl      \parent
-	ldr     r1, [sp, #4]
-        add     sp, sp, #12
-        ldmfd   sp!, {lr}
+        ldr     r1, [sp, #8]    @ Extract remainder
+        ldmfd   sp!, {r3,lr}    @ Pop into an unused arg/scratch register
+        add     sp, sp, #8
         bx      lr
 	.endm
 

@@ -1,3 +1,9 @@
+2014-12-07  David Kozub  <zub.272@gmail.com>
+
+	* grub-core/kern/arm/misc.S: fix unaligned 64bit local variable
+	in __aeabi_uidivmod
+	Fixes Savannah bug #43632.
+
 2014-12-07  Peter Nelson <peterdn>
 
 	* grub-core/fs/ext2.c (grub_ext2_read_block): Support large sparse
