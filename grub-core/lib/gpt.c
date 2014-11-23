@@ -293,7 +293,6 @@ grub_err_t
 grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 {
   grub_uint64_t backup_header, backup_entries;
-  grub_uint32_t crc;
 
   if (disk->log_sector_size != gpt->log_sector_size)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
@@ -331,13 +330,32 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   gpt->backup.alternate_lba = gpt->primary.header_lba;
   gpt->backup.partitions = grub_cpu_to_le64 (backup_entries);
 
+  /* Recompute checksums.  */
+  if (grub_gpt_update_checksums (gpt))
+    return grub_errno;
+
+  /* Sanity check.  */
+  if (grub_gpt_header_check (&gpt->primary, gpt->log_sector_size))
+    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
+
+  if (grub_gpt_header_check (&gpt->backup, gpt->log_sector_size))
+    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
+
+  gpt->status |= GRUB_GPT_BOTH_VALID;
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_gpt_update_checksums (grub_gpt_t gpt)
+{
+  grub_uint32_t crc;
+
   /* Writing headers larger than our header structure are unsupported.  */
   gpt->primary.headersize =
     grub_cpu_to_le32_compile_time (sizeof (gpt->primary));
   gpt->backup.headersize =
     grub_cpu_to_le32_compile_time (sizeof (gpt->backup));
 
-  /* Recompute checksums.  */
   if (grub_gpt_lecrc32 (gpt->entries, gpt->entries_size, &crc))
     return grub_errno;
 
@@ -350,14 +368,6 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   if (grub_gpt_header_lecrc32 (&gpt->backup, &gpt->backup.crc32))
     return grub_errno;
 
-  /* Sanity check.  */
-  if (grub_gpt_header_check (&gpt->primary, gpt->log_sector_size))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
-
-  if (grub_gpt_header_check (&gpt->backup, gpt->log_sector_size))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
-
-  gpt->status |= GRUB_GPT_BOTH_VALID;
   return GRUB_ERR_NONE;
 }
 

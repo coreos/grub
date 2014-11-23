@@ -99,8 +99,8 @@ static const struct grub_gpt_header example_primary = {
   .alternate_lba = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
   .start = grub_cpu_to_le64_compile_time (DATA_START_SECTOR),
   .end = grub_cpu_to_le64_compile_time (DATA_END_SECTOR),
-  .guid = {0xad, 0x31, 0xc1, 0x69, 0xd6, 0x67, 0xc6, 0x46,
-	   0x93, 0xc4, 0x12, 0x4c, 0x75, 0x52, 0x56, 0xac},
+  .guid = GRUB_GPT_GUID_INIT(0x69c131ad, 0x67d6, 0x46c6,
+			     0x93, 0xc4, 0x12, 0x4c, 0x75, 0x52, 0x56, 0xac),
   .partitions = grub_cpu_to_le64_compile_time (PRIMARY_TABLE_SECTOR),
   .maxpart = grub_cpu_to_le32_compile_time (TABLE_ENTRIES),
   .partentry_size = grub_cpu_to_le32_compile_time (ENTRY_SIZE),
@@ -117,8 +117,8 @@ static const struct grub_gpt_header example_backup = {
   .alternate_lba = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
   .start = grub_cpu_to_le64_compile_time (DATA_START_SECTOR),
   .end = grub_cpu_to_le64_compile_time (DATA_END_SECTOR),
-  .guid = {0xad, 0x31, 0xc1, 0x69, 0xd6, 0x67, 0xc6, 0x46,
-	   0x93, 0xc4, 0x12, 0x4c, 0x75, 0x52, 0x56, 0xac},
+  .guid = GRUB_GPT_GUID_INIT(0x69c131ad, 0x67d6, 0x46c6,
+			     0x93, 0xc4, 0x12, 0x4c, 0x75, 0x52, 0x56, 0xac),
   .partitions = grub_cpu_to_le64_compile_time (BACKUP_TABLE_SECTOR),
   .maxpart = grub_cpu_to_le32_compile_time (TABLE_ENTRIES),
   .partentry_size = grub_cpu_to_le32_compile_time (ENTRY_SIZE),
@@ -326,13 +326,13 @@ header_test (void)
   grub_errno = GRUB_ERR_NONE;
 
   /* Twiddle the GUID to invalidate the CRC. */
-  primary.guid[0] = 0;
+  primary.guid.data1 = 0;
   grub_gpt_header_check (&primary, GRUB_DISK_SECTOR_BITS);
   grub_test_assert (grub_errno == GRUB_ERR_BAD_PART_TABLE,
 		    "unexpected error: %s", grub_errmsg);
   grub_errno = GRUB_ERR_NONE;
 
-  backup.guid[0] = 0;
+  backup.guid.data1 = 0;
   grub_gpt_header_check (&backup, GRUB_DISK_SECTOR_BITS);
   grub_test_assert (grub_errno == GRUB_ERR_BAD_PART_TABLE,
 		    "unexpected error: %s", grub_errmsg);
