@@ -33,6 +33,10 @@ struct grub_gpt_guid
 typedef struct grub_gpt_guid grub_gpt_guid_t;
 typedef struct grub_gpt_guid grub_gpt_part_type_t;
 
+/* Format the raw little-endian GUID as a newly allocated string.  */
+char * grub_gpt_guid_to_str (grub_gpt_guid_t *guid);
+
+
 #define GRUB_GPT_GUID_INIT(a, b, c, d1, d2, d3, d4, d5, d6, d7, d8)  \
   {					\
     grub_cpu_to_le32_compile_time (a),	\

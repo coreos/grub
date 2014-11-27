@@ -31,6 +31,19 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static grub_uint8_t grub_gpt_magic[] = GRUB_GPT_HEADER_MAGIC;
 
 
+char *
+grub_gpt_guid_to_str (grub_gpt_guid_t *guid)
+{
+  return grub_xasprintf ("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+			 grub_le_to_cpu32 (guid->data1),
+			 grub_le_to_cpu16 (guid->data2),
+			 grub_le_to_cpu16 (guid->data3),
+			 guid->data4[0], guid->data4[1],
+			 guid->data4[2], guid->data4[3],
+			 guid->data4[4], guid->data4[5],
+			 guid->data4[6], guid->data4[7]);
+}
+
 static grub_uint64_t
 grub_gpt_size_to_sectors (grub_gpt_t gpt, grub_size_t size)
 {
