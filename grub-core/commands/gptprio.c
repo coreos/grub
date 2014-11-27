@@ -141,20 +141,8 @@ grub_find_next (const char *disk_name,
   if (!*part_name)
     goto done;
 
-  *part_guid =
-    grub_xasprintf ("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-		    grub_le_to_cpu32 (part_found->guid.data1),
-		    grub_le_to_cpu16 (part_found->guid.data2),
-		    grub_le_to_cpu16 (part_found->guid.data3),
-		    part_found->guid.data4[0],
-		    part_found->guid.data4[1],
-		    part_found->guid.data4[2],
-		    part_found->guid.data4[3],
-		    part_found->guid.data4[4],
-		    part_found->guid.data4[5],
-		    part_found->guid.data4[6],
-		    part_found->guid.data4[7]);
-  if (!*part_name)
+  *part_guid = grub_gpt_guid_to_str (&part_found->guid);
+  if (!*part_guid)
     goto done;
 
   grub_errno = GRUB_ERR_NONE;
