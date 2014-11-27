@@ -92,7 +92,7 @@ struct grub_gpt_partentry
   grub_uint64_t start;
   grub_uint64_t end;
   grub_uint64_t attrib;
-  char name[72];
+  grub_uint16_t name[36];
 } GRUB_PACKED;
 
 enum grub_gpt_part_attr_offset
