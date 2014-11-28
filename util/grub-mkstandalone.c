@@ -236,7 +236,7 @@ add_tar_file (const char *from,
       set_tar_value (hd.size, optr - tcn, 12);
       set_tar_value (hd.mtime, mtime, 12);
       hd.typeflag = 'L';
-      memcpy (hd.magic, "ustar  ", 7);
+      memcpy (hd.magic, MAGIC, sizeof (hd.magic));
       memcpy (hd.uname, "grub", 4);
       memcpy (hd.gname, "grub", 4);
 
@@ -266,7 +266,7 @@ add_tar_file (const char *from,
   set_tar_value (hd.size, size, 12);
   set_tar_value (hd.mtime, mtime, 12);
   hd.typeflag = '0';
-  memcpy (hd.magic, "ustar  ", 7);
+  memcpy (hd.magic, MAGIC, sizeof (hd.magic));
   memcpy (hd.uname, "grub", 4);
   memcpy (hd.gname, "grub", 4);
 
