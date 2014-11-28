@@ -332,19 +332,29 @@ configure_ciphers (grub_disk_t disk, const char *check_uuid,
     {
       secondary_cipher = grub_crypto_cipher_open (ciph);
       if (!secondary_cipher)
-	return NULL;
+	{
+	  grub_crypto_cipher_close (cipher);
+	  return NULL;
+	}
+
     }
 
   if (grub_le_to_cpu16 (header.keylen) > 1024)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid keysize %d",
 		  grub_le_to_cpu16 (header.keylen));
+      grub_crypto_cipher_close (cipher);
+      grub_crypto_cipher_close (secondary_cipher);
       return NULL;
     }
 
   newdev = grub_zalloc (sizeof (struct grub_cryptodisk));
   if (!newdev)
-    return NULL;
+    {
+      grub_crypto_cipher_close (cipher);
+      grub_crypto_cipher_close (secondary_cipher);
+      return NULL;
+    }
   newdev->cipher = cipher;
   newdev->secondary_cipher = secondary_cipher;
   newdev->offset = 0;
