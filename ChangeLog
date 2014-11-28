@@ -1,5 +1,7 @@
 2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
 
+	* grub-core/disk/geli.c (configure_ciphers): Fix memory leaks
+	(Coverity CID 73813, 73710)
 	* grub-core/disk/luks.c (configure_ciphers): Fix memory leaks
 	and use after free (Coverity CID 73813, 73710, 73730)
 	* grub-core/disk/luks.c (luks_recover_key): Fix memory leak (Coverity
