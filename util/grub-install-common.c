@@ -902,7 +902,7 @@ grub_install_get_target (const char *src)
   char *fn;
   grub_util_fd_t f;
   char buf[2048];
-  size_t r;
+  ssize_t r;
   char *c, *pl, *p;
   size_t i;
   fn = grub_util_path_concat (2, src, "modinfo.sh");
