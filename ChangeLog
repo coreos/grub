@@ -1,5 +1,6 @@
 2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
 
+	* grub-core/io/lzopio.c (test_header): Fix double free (CID 73665)
 	* grub-core/disk/geli.c (configure_ciphers): Fix memory leaks
 	(Coverity CID 73813, 73710)
 	* grub-core/disk/luks.c (configure_ciphers): Fix memory leaks
