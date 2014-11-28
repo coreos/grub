@@ -30,6 +30,9 @@
 #include <grub/i18n.h>
 #include <grub/disk.h>
 #include <grub/partition.h>
+#if defined(DO_SEARCH_PART_UUID) || defined(DO_SEARCH_PART_LABEL)
+#include <grub/gpt_partition.h>
+#endif
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -89,6 +92,44 @@ iterate_device (const char *name, void *data)
 	  grub_file_close (file);
 	}
       grub_free (buf);
+    }
+#elif defined(DO_SEARCH_PART_UUID)
+    {
+      grub_device_t dev;
+      char *quid;
+
+      dev = grub_device_open (name);
+      if (dev)
+	{
+	  if (grub_gpt_part_uuid (dev, &quid) == GRUB_ERR_NONE)
+	    {
+	      if (grub_strcasecmp (quid, ctx->key) == 0)
+		    found = 1;
+
+	      grub_free (quid);
+	    }
+
+	  grub_device_close (dev);
+	}
+    }
+#elif defined(DO_SEARCH_PART_LABEL)
+    {
+      grub_device_t dev;
+      char *quid;
+
+      dev = grub_device_open (name);
+      if (dev)
+	{
+	  if (grub_gpt_part_label (dev, &quid) == GRUB_ERR_NONE)
+	    {
+	      if (grub_strcmp (quid, ctx->key) == 0)
+		    found = 1;
+
+	      grub_free (quid);
+	    }
+
+	  grub_device_close (dev);
+	}
     }
 #else
     {
@@ -313,6 +354,10 @@ static grub_command_t cmd;
 
 #ifdef DO_SEARCH_FILE
 GRUB_MOD_INIT(search_fs_file)
+#elif defined(DO_SEARCH_PART_UUID)
+GRUB_MOD_INIT(search_part_uuid)
+#elif defined(DO_SEARCH_PART_LABEL)
+GRUB_MOD_INIT(search_part_label)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_INIT(search_fs_uuid)
 #else
@@ -327,6 +372,10 @@ GRUB_MOD_INIT(search_label)
 
 #ifdef DO_SEARCH_FILE
 GRUB_MOD_FINI(search_fs_file)
+#elif defined(DO_SEARCH_PART_UUID)
+GRUB_MOD_FINI(search_part_uuid)
+#elif defined(DO_SEARCH_PART_LABEL)
+GRUB_MOD_FINI(search_part_label)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_FINI(search_fs_uuid)
 #else

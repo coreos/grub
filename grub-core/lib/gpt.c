@@ -18,7 +18,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/charset.h>
 #include <grub/crypto.h>
+#include <grub/device.h>
 #include <grub/disk.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
@@ -42,6 +44,68 @@ grub_gpt_guid_to_str (grub_gpt_guid_t *guid)
 			 guid->data4[2], guid->data4[3],
 			 guid->data4[4], guid->data4[5],
 			 guid->data4[6], guid->data4[7]);
+}
+
+static grub_err_t
+grub_gpt_device_partentry (grub_device_t device,
+			   struct grub_gpt_partentry *entry)
+{
+  grub_disk_t disk = device->disk;
+  grub_partition_t p;
+  grub_err_t err;
+
+  if (!disk || !disk->partition)
+    return grub_error (GRUB_ERR_BUG, "not a partition");
+
+  if (grub_strcmp (disk->partition->partmap->name, "gpt"))
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "not a GPT partition");
+
+  p = disk->partition;
+  disk->partition = p->parent;
+  err = grub_disk_read (disk, p->offset, p->index, sizeof (*entry), entry);
+  disk->partition = p;
+
+  return err;
+}
+
+grub_err_t
+grub_gpt_part_label (grub_device_t device, char **label)
+{
+  struct grub_gpt_partentry entry;
+  const grub_size_t name_len = ARRAY_SIZE (entry.name);
+  const grub_size_t label_len = name_len * GRUB_MAX_UTF8_PER_UTF16 + 1;
+  grub_size_t i;
+  grub_uint8_t *end;
+
+  if (grub_gpt_device_partentry (device, &entry))
+    return grub_errno;
+
+  *label = grub_malloc (label_len);
+  if (!*label)
+    return grub_errno;
+
+  for (i = 0; i < name_len; i++)
+    entry.name[i] = grub_le_to_cpu16 (entry.name[i]);
+
+  end = grub_utf16_to_utf8 ((grub_uint8_t *) *label, entry.name, name_len);
+  *end = '\0';
+
+  return GRUB_ERR_NONE;
+}
+
+grub_err_t
+grub_gpt_part_uuid (grub_device_t device, char **uuid)
+{
+  struct grub_gpt_partentry entry;
+
+  if (grub_gpt_device_partentry (device, &entry))
+    return grub_errno;
+
+  *uuid = grub_gpt_guid_to_str (&entry.guid);
+  if (!*uuid)
+    return grub_errno;
+
+  return GRUB_ERR_NONE;
 }
 
 static grub_uint64_t
