@@ -49,6 +49,10 @@ char * grub_gpt_guid_to_str (grub_gpt_guid_t *guid);
   GRUB_GPT_GUID_INIT (0x0, 0x0, 0x0,  \
       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
 
+#define GRUB_GPT_PARTITION_TYPE_EFI_SYSTEM \
+  GRUB_GPT_GUID_INIT (0xc12a7328, 0xf81f, 0x11d2, \
+      0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b)
+
 #define GRUB_GPT_PARTITION_TYPE_BIOS_BOOT \
   GRUB_GPT_GUID_INIT (0x21686148, 0x6449, 0x6e6f, \
       0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49)
@@ -215,5 +219,17 @@ void grub_gpt_free (grub_gpt_t gpt);
 grub_err_t grub_gpt_pmbr_check (struct grub_msdos_partition_mbr *mbr);
 grub_err_t grub_gpt_header_check (struct grub_gpt_header *gpt,
 				  unsigned int log_sector_size);
+
+
+/* Utilities for simple partition data lookups, usage is intended to
+ * be similar to fs->label and fs->uuid functions.  */
+
+/* Return the partition label of the device DEVICE in LABEL.
+ * The label is in a new buffer and should be freed by the caller.  */
+grub_err_t grub_gpt_part_label (grub_device_t device, char **label);
+
+/* Return the partition uuid of the device DEVICE in UUID.
+ * The label is in a new buffer and should be freed by the caller.  */
+grub_err_t grub_gpt_part_uuid (grub_device_t device, char **uuid);
 
 #endif /* ! GRUB_GPT_PARTITION_HEADER */
