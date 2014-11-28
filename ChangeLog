@@ -1,5 +1,9 @@
 2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
 
+	* grub-core/disk/luks.c (configure_ciphers): Fix memory leaks
+	and use after free (Coverity CID 73813, 73710, 73730)
+	* grub-core/disk/luks.c (luks_recover_key): Fix memory leak (Coverity
+	CID 73854)
 	* util/grub-install-common.c (grub_install_get_target): Check return
 	value of grub_util_fd_read (Coverity CID 73819).
 	* util/grub-mkstandalone.c (add_tar_file): Fix out of bound access
