@@ -911,6 +911,8 @@ grub_install_get_target (const char *src)
     grub_util_error (_("%s doesn't exist. Please specify --target or --directory"), 
 		     fn);
   r = grub_util_fd_read (f, buf, sizeof (buf) - 1);
+  if (r < 0)
+    grub_util_error (_("cannot read `%s': %s"), fn, strerror (errno));
   grub_util_fd_close (f);
   buf[r] = '\0';
   c = strstr (buf, "grub_modinfo_target_cpu=");

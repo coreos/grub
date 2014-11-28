@@ -1,5 +1,7 @@
 2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
 
+	* util/grub-install-common.c (grub_install_get_target): Check return
+	value of grub_util_fd_read (Coverity CID 73819).
 	* util/grub-mkstandalone.c (add_tar_file): Fix out of bound access
 	to hd.magic (Coverity CID 73587, 73888, bug 43690).
 
