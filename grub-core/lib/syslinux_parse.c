@@ -1351,7 +1351,6 @@ free_menu (struct syslinux_menu *menu)
   for (say = menu->say; say ; say = nsay)
     {
       nsay = say->next;
-      grub_free (say->msg);
       grub_free (say);
     }
 

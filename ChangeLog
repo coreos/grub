@@ -1,3 +1,8 @@
+2014-11-30  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/lib/syslinux_parse.c (free_menu): Do not free
+	inline array (CID 73610).
+
 2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* grub-core/io/lzopio.c (test_header): Fix double free (CID 73665)
