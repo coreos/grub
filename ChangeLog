@@ -1,5 +1,7 @@
 2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
 
+	* grub-core/loader/i386/xen_fileXX.c (grub_xen_get_infoXX): Fix
+	memory leak (CID 73645, 73782).
 	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Fix memory leak
 	(CID 73635).
 
