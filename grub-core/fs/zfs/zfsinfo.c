@@ -130,10 +130,12 @@ print_vdev_info (char *nvlist, int tab)
       grub_free (bootpath);
       grub_free (devid);
       grub_free (path);
+      grub_free (type);
       return GRUB_ERR_NONE;
     }
   char is_mirror=(grub_strcmp(type,VDEV_TYPE_MIRROR) == 0);
   char is_raidz=(grub_strcmp(type,VDEV_TYPE_RAIDZ) == 0);
+  grub_free (type);
 
   if (is_mirror || is_raidz)
     {

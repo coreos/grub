@@ -1,3 +1,8 @@
+2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Fix memory leak
+	(CID 73635).
+
 2014-11-30  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* grub-core/lib/syslinux_parse.c (free_menu): Do not free
