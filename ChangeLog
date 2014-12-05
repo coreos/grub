@@ -1,3 +1,7 @@
+2014-12-05  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* tests/util/grub-shell.in: Support --files also for netboot.
+
 2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* grub-core/loader/i386/xen_fileXX.c (grub_xen_get_infoXX): Fix
