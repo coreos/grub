@@ -13,6 +13,8 @@
 	* tests/file_filter/keys: Likewise.
 	* tests/file_filter/keys.pub: Likewise.
 	* tests/file_filter/test.cfg: Likewise.
+	* grub-core/commands/verify.c: Fix memory corruption doing
+	signature check for network files (closes 43601).
 
 2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
 

@@ -33,6 +33,13 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+struct grub_verified
+{
+  grub_file_t file;
+  void *buf;
+};
+typedef struct grub_verified *grub_verified_t;
+
 enum
   {
     OPTION_SKIP_SIG = 0
@@ -802,19 +809,39 @@ grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
 
 static int sec = 0;
 
+static void
+verified_free (grub_verified_t verified)
+{
+  if (verified)
+    {
+      grub_free (verified->buf);
+      grub_free (verified);
+    }
+}
+
 static grub_ssize_t
 verified_read (struct grub_file *file, char *buf, grub_size_t len)
 {
-  grub_memcpy (buf, (char *) file->data + file->offset, len);
+  grub_verified_t verified = file->data;
+
+  grub_memcpy (buf, (char *) verified->buf + file->offset, len);
   return len;
 }
 
 static grub_err_t
 verified_close (struct grub_file *file)
 {
-  grub_free (file->data);
+  grub_verified_t verified = file->data;
+
+  grub_file_close (verified->file);
+  verified_free (verified);
   file->data = 0;
-  return GRUB_ERR_NONE;
+
+  /* device and name are freed by parent */
+  file->device = 0;
+  file->name = 0;
+
+  return grub_errno;
 }
 
 struct grub_fs verified_fs =
@@ -832,6 +859,7 @@ grub_pubkey_open (grub_file_t io, const char *filename)
   grub_err_t err;
   grub_file_filter_t curfilt[GRUB_FILE_FILTER_MAX];
   grub_file_t ret;
+  grub_verified_t verified;
 
   if (!sec)
     return io;
@@ -857,7 +885,10 @@ grub_pubkey_open (grub_file_t io, const char *filename)
 
   ret = grub_malloc (sizeof (*ret));
   if (!ret)
-    return NULL;
+    {
+      grub_file_close (sig);
+      return NULL;
+    }
   *ret = *io;
 
   ret->fs = &verified_fs;
@@ -866,29 +897,46 @@ grub_pubkey_open (grub_file_t io, const char *filename)
     {
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		  "big file signature isn't implemented yet");
-      return NULL;
-    }
-  ret->data = grub_malloc (ret->size);
-  if (!ret->data)
-    {
+      grub_file_close (sig);
       grub_free (ret);
       return NULL;
     }
-  if (grub_file_read (io, ret->data, ret->size) != (grub_ssize_t) ret->size)
+  verified = grub_malloc (sizeof (*verified));
+  if (!verified)
+    {
+      grub_file_close (sig);
+      grub_free (ret);
+      return NULL;
+    }
+  verified->buf = grub_malloc (ret->size);
+  if (!verified->buf)
+    {
+      grub_file_close (sig);
+      grub_free (verified);
+      grub_free (ret);
+      return NULL;
+    }
+  if (grub_file_read (io, verified->buf, ret->size) != (grub_ssize_t) ret->size)
     {
       if (!grub_errno)
 	grub_error (GRUB_ERR_FILE_READ_ERROR, N_("premature end of file %s"),
 		    filename);
+      grub_file_close (sig);
+      verified_free (verified);
+      grub_free (ret);
       return NULL;
     }
 
-  err = grub_verify_signature_real (ret->data, ret->size, 0, sig, NULL);
+  err = grub_verify_signature_real (verified->buf, ret->size, 0, sig, NULL);
   grub_file_close (sig);
   if (err)
-    return NULL;
-  io->device = 0;
-  io->name = 0;
-  grub_file_close (io);
+    {
+      verified_free (verified);
+      grub_free (ret);
+      return NULL;
+    }
+  verified->file = io;
+  ret->data = verified;
   return ret;
 }
 
