@@ -1150,6 +1150,12 @@ script = {
   common = tests/grub_cmd_tr.in;
 };
 
+script = {
+  testcase;
+  name = file_filter_test;
+  common = tests/file_filter_test.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;

@@ -1,6 +1,18 @@
 2014-12-05  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* tests/util/grub-shell.in: Support --files also for netboot.
+	* tests/file_filter_test.in: New file with file filters tests.
+	* Makefile.util.def: Add file_filter_test.
+	* conf/Makefile.extra-dist: ... and here.
+	* tests/file_filter/file.gz: Test file for file_filter_test.
+	* tests/file_filter/file.gz.sig: Likewise.
+	* tests/file_filter/file.lzop: Likewise.
+	* tests/file_filter/file.lzop.sig: Likewise.
+	* tests/file_filter/file.xz: Likewise.
+	* tests/file_filter/file.xz.sig: Likewise.
+	* tests/file_filter/keys: Likewise.
+	* tests/file_filter/keys.pub: Likewise.
+	* tests/file_filter/test.cfg: Likewise.
 
 2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
 

@@ -110,3 +110,14 @@ EXTRA_DIST += tests/dfly-mbr-mbexample.mbr.img.gz
 EXTRA_DIST += tests/dfly-mbr-mbexample.dfly.img.gz
 
 EXTRA_DIST += coreboot.cfg
+
+EXTRA_DIST += tests/file_filter/file
+EXTRA_DIST += tests/file_filter/file.gz
+EXTRA_DIST += tests/file_filter/file.gz.sig
+EXTRA_DIST += tests/file_filter/file.lzop
+EXTRA_DIST += tests/file_filter/file.lzop.sig
+EXTRA_DIST += tests/file_filter/file.xz
+EXTRA_DIST += tests/file_filter/file.xz.sig
+EXTRA_DIST += tests/file_filter/keys
+EXTRA_DIST += tests/file_filter/keys.pub
+EXTRA_DIST += tests/file_filter/test.cfg
