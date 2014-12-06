@@ -33,6 +33,10 @@ struct grub_gpt_guid
 typedef struct grub_gpt_guid grub_gpt_guid_t;
 typedef struct grub_gpt_guid grub_gpt_part_type_t;
 
+/* Format the raw little-endian GUID as a newly allocated string.  */
+char * grub_gpt_guid_to_str (grub_gpt_guid_t *guid);
+
+
 #define GRUB_GPT_GUID_INIT(a, b, c, d1, d2, d3, d4, d5, d6, d7, d8)  \
   {					\
     grub_cpu_to_le32_compile_time (a),	\
@@ -44,6 +48,10 @@ typedef struct grub_gpt_guid grub_gpt_part_type_t;
 #define GRUB_GPT_PARTITION_TYPE_EMPTY \
   GRUB_GPT_GUID_INIT (0x0, 0x0, 0x0,  \
       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0)
+
+#define GRUB_GPT_PARTITION_TYPE_EFI_SYSTEM \
+  GRUB_GPT_GUID_INIT (0xc12a7328, 0xf81f, 0x11d2, \
+      0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b)
 
 #define GRUB_GPT_PARTITION_TYPE_BIOS_BOOT \
   GRUB_GPT_GUID_INIT (0x21686148, 0x6449, 0x6e6f, \
@@ -88,7 +96,7 @@ struct grub_gpt_partentry
   grub_uint64_t start;
   grub_uint64_t end;
   grub_uint64_t attrib;
-  char name[72];
+  grub_uint16_t name[36];
 } GRUB_PACKED;
 
 enum grub_gpt_part_attr_offset
@@ -211,5 +219,17 @@ void grub_gpt_free (grub_gpt_t gpt);
 grub_err_t grub_gpt_pmbr_check (struct grub_msdos_partition_mbr *mbr);
 grub_err_t grub_gpt_header_check (struct grub_gpt_header *gpt,
 				  unsigned int log_sector_size);
+
+
+/* Utilities for simple partition data lookups, usage is intended to
+ * be similar to fs->label and fs->uuid functions.  */
+
+/* Return the partition label of the device DEVICE in LABEL.
+ * The label is in a new buffer and should be freed by the caller.  */
+grub_err_t grub_gpt_part_label (grub_device_t device, char **label);
+
+/* Return the partition uuid of the device DEVICE in UUID.
+ * The label is in a new buffer and should be freed by the caller.  */
+grub_err_t grub_gpt_part_uuid (grub_device_t device, char **uuid);
 
 #endif /* ! GRUB_GPT_PARTITION_HEADER */
