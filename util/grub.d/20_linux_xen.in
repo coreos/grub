@@ -137,7 +137,8 @@ EOF
 EOF
 }
 
-linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
+linux_list=
+for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
     if grub_file_is_not_garbage "$i"; then
     	basename=$(basename $i)
 	version=$(echo $basename | sed -e "s,^[^0-9]*-,,g")
@@ -149,9 +150,9 @@ linux_list=`for i in /boot/vmlinu[xz]-* /vmlinu[xz]-* /boot/kernel-*; do
 		break
 	    fi
 	done
-        if (grep -qx "CONFIG_XEN_DOM0=y" "${config}" 2> /dev/null || grep -qx "CONFIG_XEN_PRIVILEGED_GUEST=y" "${config}" 2> /dev/null); then echo -n "$i " ; fi
+        if (grep -qx "CONFIG_XEN_DOM0=y" "${config}" 2> /dev/null || grep -qx "CONFIG_XEN_PRIVILEGED_GUEST=y" "${config}" 2> /dev/null); then linux_list="$linux_list $i" ; fi
     fi
-    done`
+done
 if [ "x${linux_list}" = "x" ] ; then
     exit 0
 fi
@@ -165,9 +166,10 @@ file_is_not_sym () {
     esac
 }
 
-xen_list=`for i in /boot/xen*; do
-        if grub_file_is_not_garbage "$i" && file_is_not_sym "$i" ; then echo -n "$i " ; fi
-      done`
+xen_list=
+for i in /boot/xen*; do
+    if grub_file_is_not_garbage "$i" && file_is_not_sym "$i" ; then xen_list="$xen_list $i" ; fi
+done
 prepare_boot_cache=
 boot_device_id=
 

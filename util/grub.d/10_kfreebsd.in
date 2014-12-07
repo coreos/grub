@@ -143,9 +143,12 @@ EOF
 EOF
 }
 
-list=`for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
-        if grub_file_is_not_garbage "$i" ; then echo -n "$i " ; fi
-      done`
+list=
+for i in /boot/kfreebsd-* /boot/kernel/kernel ; do
+  if grub_file_is_not_garbage "$i" ; then
+    list="$list $i"
+  fi
+done
 prepare_boot_cache=
 boot_device_id=
 title_correction_code=

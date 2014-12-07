@@ -322,9 +322,8 @@ EOF
 EOF
     ;;
     *)
-      echo -n "  "
       # TRANSLATORS: %s is replaced by OS name.
-      gettext_printf "%s is not yet supported by grub-mkconfig.\n" "${LONGNAME}" >&2
+      gettext_printf "%s is not yet supported by grub-mkconfig.\n" "  ${LONGNAME}" >&2
     ;;
   esac
 done

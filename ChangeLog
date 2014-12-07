@@ -1,3 +1,14 @@
+2014-12-07  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* util/grub-mkconfig_lib.in (version_test_gt): Remove redundant
+	non-portable '-n' echo option.
+	* util/grub.d/10_kfreebsd.in: Change how list is built to avoid
+	non-portable 'echo -n.
+	* util/grub.d/10_linux.in: Likewise (closes 43668).
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Print spaces directly to avoid
+	non-portable 'echo -n'.
+
 2014-12-07  Curtis Larsen <larsen@dixie.edu>
 
 	* grub-core/net/tcp.c (grub_net_recv_tcp_packet): Fix double
