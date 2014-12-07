@@ -918,7 +918,7 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	      do_ack = 1;
 	    }
 	  else
-	    grub_netbuff_free (nb);
+	    grub_netbuff_free (nb_top);
 	}
       if (do_ack)
 	ack (sock);
