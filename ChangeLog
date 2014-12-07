@@ -1,3 +1,8 @@
+2014-12-07  Peter Nelson <peterdn>
+
+	* grub-core/fs/ext2.c (grub_ext2_read_block): Support large sparse
+	chunks.
+
 2014-12-07  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* util/grub-mkconfig_lib.in (version_test_gt): Remove redundant

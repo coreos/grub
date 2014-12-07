@@ -484,6 +484,10 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
 indirect:
   do {
+    /* If the indirect block is zero, all child blocks are absent
+       (i.e. filled with zeros.) */
+    if (indir == 0)
+      return 0;
     if (grub_disk_read (data->disk,
 			((grub_disk_addr_t) grub_le_to_cpu32 (indir))
 			<< log2_blksz,
