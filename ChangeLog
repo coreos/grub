@@ -1,3 +1,8 @@
+2014-12-09  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/term/serial.c (grub_cmd_serial): Fix --rtscts
+	option processing.
+
 2014-12-07  David Kozub  <zub.272@gmail.com>
 
 	* grub-core/kern/arm/misc.S: fix unaligned 64bit local variable
