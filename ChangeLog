@@ -1,3 +1,7 @@
+2015-01-19  Kris Moore <kris@pcbsd.org>
+
+	* grub-core/disk/geli.c: Support GELI v6 and v7.
+
 2014-12-09  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* grub-core/term/serial.c (grub_cmd_serial): Fix --rtscts
