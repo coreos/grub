@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/term.h: Avoid returining 0-sized terminal
+	as it may lead to division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/zfs.c: Avoid divisions by zero.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
