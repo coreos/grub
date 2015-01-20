@@ -317,7 +317,7 @@ grub_jpeg_decode_sof (struct grub_jpeg_data *data)
 	{
 	  data->vs = ss & 0xF;	/* Vertical sampling.  */
 	  data->hs = ss >> 4;	/* Horizontal sampling.  */
-	  if ((data->vs > 2) || (data->hs > 2))
+	  if ((data->vs > 2) || (data->hs > 2) || (data->vs == 0) || (data->hs == 0))
 	    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
 			       "jpeg: sampling method not supported");
 	}
