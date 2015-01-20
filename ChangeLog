@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/haiku/getroot.c (grub_util_find_partition_start_os):
+	Avoid division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/generic/rtc_get_time_ms.c (grub_rtc_get_time_ms): Avoid
 	division by zero.
 
