@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/fshelp.c (grub_fshelp_read_file): Don't attempt to read
+	past the end of file.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Update len
 	synchronously with line.
 

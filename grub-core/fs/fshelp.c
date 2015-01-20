@@ -252,6 +252,13 @@ grub_fshelp_read_file (grub_disk_t disk, grub_fshelp_node_t node,
   grub_disk_addr_t i, blockcnt;
   int blocksize = 1 << (log2blocksize + GRUB_DISK_SECTOR_BITS);
 
+  if (pos > filesize)
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		  N_("attempt to read past the end of file"));
+      return -1;
+    }
+
   /* Adjust LEN so it we can't read past the end of the file.  */
   if (pos + len > filesize)
     len = filesize - pos;
