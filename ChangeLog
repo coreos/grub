@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/i386/tsc.c (calibrate_tsc): Ensure that
+	no division by 0 occurs.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* include/grub/misc.h (grub_div_roundup): Remove as it's unused.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>

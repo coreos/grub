@@ -122,7 +122,11 @@ calibrate_tsc (void)
   grub_pit_wait (0xffff);
   end_tsc = grub_get_tsc ();
 
-  grub_tsc_rate = grub_divmod64 ((55ULL << 32), end_tsc - tsc_boot_time, 0);
+  grub_tsc_rate = 0;
+  if (end_tsc > tsc_boot_time)
+    grub_tsc_rate = grub_divmod64 ((55ULL << 32), end_tsc - tsc_boot_time, 0);
+  if (grub_tsc_rate == 0)
+    grub_tsc_rate = 5368;/* 800 MHz */
 }
 #endif
 
