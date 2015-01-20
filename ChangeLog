@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Update len
+	synchronously with line.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Replace explicit sizeof divisions by ARRAY_SIZE.
 
 2015-01-19  Kris Moore <kris@pcbsd.org>
