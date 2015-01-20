@@ -76,7 +76,7 @@ AF_merge (const gcry_md_spec_t * hash, grub_uint8_t * src, grub_uint8_t * dst,
   if (bufblock == NULL)
     return GPG_ERR_OUT_OF_MEMORY;
 
-  if (hash->mdlen > GRUB_CRYPTO_MAX_MDLEN)
+  if (hash->mdlen > GRUB_CRYPTO_MAX_MDLEN || hash->mdlen == 0)
     return GPG_ERR_INV_ARG;
 
   grub_memset (bufblock, 0, blocksize);

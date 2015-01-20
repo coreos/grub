@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/AFSplitter.c (AF_merge): Check that mdlen is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/commands/i386/pc/play.c (grub_cmd_play): Avoid
 	division by zero.
 
