@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/lib/pbkdf2.c (grub_crypto_pbkdf2): Check that hash len is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/linux/blocklist.c (grub_install_get_blocklist): Check
 	blocksize validity.
 
