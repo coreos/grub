@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ieee1275/nand.c (grub_nand_open): Check block size
+	validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Do not
 	divide by zero.
 
