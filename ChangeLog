@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/minix.c: Additional filesystem
+	sanity checks.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ext2.c (grub_ext2_mount): Additional
 	checks for superblock validity.
 
