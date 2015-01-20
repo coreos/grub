@@ -604,7 +604,8 @@ grub_ufs_mount (grub_disk_t disk)
 	 endiannesses.  */
       if (data->sblock.magic == grub_cpu_to_ufs32_compile_time (GRUB_UFS_MAGIC)
 	  && data->sblock.bsize != 0
-	  && ((data->sblock.bsize & (data->sblock.bsize - 1)) == 0))
+	  && ((data->sblock.bsize & (data->sblock.bsize - 1)) == 0)
+	  && data->sblock.ino_per_group != 0)
 	{
 	  for (data->log2_blksz = 0; 
 	       (1U << data->log2_blksz) < grub_ufs_to_cpu32 (data->sblock.bsize);

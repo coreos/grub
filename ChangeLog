@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ufs.c (grub_ufs_mount): Check
+	that sblock.ino_per_group is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Reject NILFS2 superblocks with over 1GiB blocks.
 
 	* grub-core/fs/nilfs2.c (grub_nilfs2_valid_sb): Check that
