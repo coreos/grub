@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/ata.c (grub_ata_setaddress): Check that geometry
+	is sane when using CHS addressing.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/AFSplitter.c (AF_merge): Check that mdlen is not 0.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
