@@ -390,13 +390,6 @@ grub_abs (int x)
     return (unsigned int) x;
 }
 
-/* Rounded-up division */
-static inline unsigned int
-grub_div_roundup (unsigned int x, unsigned int y)
-{
-  return (x + y - 1) / y;
-}
-
 /* Reboot the machine.  */
 #if defined (GRUB_MACHINE_EMU) || defined (GRUB_MACHINE_QEMU_MIPS)
 void EXPORT_FUNC(grub_reboot) (void) __attribute__ ((noreturn));

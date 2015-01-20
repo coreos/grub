@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* include/grub/misc.h (grub_div_roundup): Remove as it's unused.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/term/gfxterm.c: Avoid division by zero.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
