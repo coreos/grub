@@ -1501,6 +1501,9 @@ read_device (grub_uint64_t offset, struct grub_zfs_device_desc *desc,
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET, 
 			     "raidz%d is not supported", desc->nparity);
 
+	if (desc->n_children <= desc->nparity || desc->n_children < 1)
+	  return grub_error(GRUB_ERR_BAD_FS, "too little devices for given parity");
+
 	orig_s = (((len + (1 << desc->ashift) - 1) >> desc->ashift)
 		  + (desc->n_children - desc->nparity) - 1);
 	s = orig_s;
@@ -2804,6 +2807,9 @@ dnode_get_path (struct subvolume *subvol, const char *path_in, dnode_end_t *dn,
 					  dnode_path->dn.endian)
 		       << SPA_MINBLOCKSHIFT);
 
+	      if (blksz == 0)
+		return grub_error(GRUB_ERR_BAD_FS, "0-sized block");
+
 	      sym_value = grub_malloc (sym_sz);
 	      if (!sym_value)
 		return grub_errno;
@@ -3797,6 +3803,12 @@ grub_zfs_read (grub_file_t file, char *buf, grub_size_t len)
 
   blksz = grub_zfs_to_cpu16 (data->dnode.dn.dn_datablkszsec, 
 			     data->dnode.endian) << SPA_MINBLOCKSHIFT;
+
+  if (blksz == 0)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "0-sized block");
+      return -1;
+    }
 
   /*
    * Entire Dnode is too big to fit into the space available.  We

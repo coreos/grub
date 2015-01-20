@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/zfs.c: Avoid divisions by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/btrfs.c: Avoid divisions by zero.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
