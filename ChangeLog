@@ -1,5 +1,12 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Avoid division by zero in serial.
+
+	* grub-core/term/serial.c (grub_cmd_serial): Ensure speed is not 0.
+	* grub-core/term/ns8250.c (serial_get_divisor): Exit if speed is 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/video/readers/jpeg.c: Avoid sivision by zero.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
