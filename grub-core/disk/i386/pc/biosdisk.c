@@ -419,6 +419,11 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 	    }
         }
 
+      if (data->sectors == 0)
+	data->sectors = 63;
+      if (data->heads == 0)
+	data->heads = 255;
+
       if (! total_sectors)
         total_sectors = data->cylinders * data->heads * data->sectors;
     }

@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/i386/pc/biosdisk.c: Check disk size sanity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ieee1275/nand.c (grub_nand_open): Check block size
 	validity.
 
