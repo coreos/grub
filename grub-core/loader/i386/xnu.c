@@ -126,7 +126,7 @@ guessfsb (void)
 {
   const grub_uint64_t sane_value = 100000000;
   grub_uint32_t manufacturer[3], max_cpuid, capabilities, msrlow;
-  grub_uint32_t a, b, d;
+  grub_uint32_t a, b, d, divisor;
 
   if (! grub_cpu_is_cpuid_supported ())
     return sane_value;
@@ -166,8 +166,10 @@ guessfsb (void)
   r = (2000ULL << 32) - v * grub_tsc_rate;
   v += r / grub_tsc_rate;
 
-  return grub_divmod64 (v, ((msrlow >> 7) & 0x3e) | ((msrlow >> 14) & 1),
-			 0);
+  divisor = ((msrlow >> 7) & 0x3e) | ((msrlow >> 14) & 1);
+  if (divisor == 0)
+    return sane_value;
+  return grub_divmod64 (v, divisor, 0);
 }
 
 struct property_descriptor

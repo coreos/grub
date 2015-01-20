@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/loader/i386/xnu.c (guessfsb): Avoid division by 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/i386/tsc.c (calibrate_tsc): Ensure that
 	no division by 0 occurs.
 
