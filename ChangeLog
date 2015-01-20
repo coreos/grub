@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/generic/rtc_get_time_ms.c (grub_rtc_get_time_ms): Avoid
+	division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/loader/i386/xnu.c (guessfsb): Avoid division by 0.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
