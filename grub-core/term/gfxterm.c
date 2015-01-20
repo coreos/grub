@@ -221,6 +221,8 @@ grub_virtual_screen_setup (unsigned int x, unsigned int y,
     calculate_normal_character_width (virtual_screen.font);
   virtual_screen.normal_char_height =
     grub_font_get_max_char_height (virtual_screen.font);
+  if (virtual_screen.normal_char_height == 0)
+    virtual_screen.normal_char_height = 16;
   virtual_screen.cursor_x = 0;
   virtual_screen.cursor_y = 0;
   virtual_screen.cursor_state = 1;

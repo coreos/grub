@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/term/gfxterm.c: Avoid division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	Avoid division by zero in serial.
 
 	* grub-core/term/serial.c (grub_cmd_serial): Ensure speed is not 0.
