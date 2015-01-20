@@ -577,7 +577,12 @@ grub_ext2_mount (grub_disk_t disk)
 
   /* Make sure this is an ext2 filesystem.  */
   if (data->sblock.magic != grub_cpu_to_le16_compile_time (EXT2_MAGIC)
-      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16
+      || data->sblock.inodes_per_group == 0
+      /* 20 already means 1GiB blocks. We don't want to deal with blocks overflowing int32. */
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) > 20
+      || EXT2_INODE_SIZE (data) == 0
+      || EXT2_BLOCK_SIZE (data) / EXT2_INODE_SIZE (data) == 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
       goto fail;

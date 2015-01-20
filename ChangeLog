@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/ext2.c (grub_ext2_mount): Additional
+	checks for superblock validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/ufs.c (grub_ufs_mount): Check
 	that sblock.ino_per_group is not 0.
 
