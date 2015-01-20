@@ -483,6 +483,96 @@ grub_diskfilter_read_node (const struct grub_diskfilter_node *node,
   return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown node '%s'", node->name);
 }
 
+
+static grub_err_t
+validate_segment (struct grub_diskfilter_segment *seg);
+
+static grub_err_t
+validate_lv (struct grub_diskfilter_lv *lv)
+{
+  unsigned int i;
+  if (!lv)
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown volume");
+
+  if (lv->vg->extent_size == 0)
+    return grub_error (GRUB_ERR_READ_ERROR, "invalid volume");
+
+  for (i = 0; i < lv->segment_count; i++)
+    {
+      grub_err_t err;
+      err = validate_segment (&lv->segments[1]);
+      if (err)
+	return err;
+    }
+  return GRUB_ERR_NONE;
+}
+
+
+static grub_err_t
+validate_node (const struct grub_diskfilter_node *node)
+{
+  /* Check whether we actually know the physical volume we want to
+     read from.  */
+  if (node->pv)
+    return GRUB_ERR_NONE;
+  if (node->lv)
+    return validate_lv (node->lv);
+  return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "unknown node '%s'", node->name);
+}
+
+static grub_err_t
+validate_segment (struct grub_diskfilter_segment *seg)
+{
+  grub_err_t err;
+
+  if (seg->stripe_size == 0 || seg->node_count == 0)
+    return grub_error(GRUB_ERR_BAD_FS, "invalid segment");
+
+  switch (seg->type)
+    {
+    case GRUB_DISKFILTER_RAID10:
+      {
+	grub_uint8_t near, far;
+	near = seg->layout & 0xFF;
+	far = (seg->layout >> 8) & 0xFF;
+	if ((seg->layout >> 16) == 0 && far == 0)
+	  return grub_error(GRUB_ERR_BAD_FS, "invalid segment");
+	if (near > seg->node_count)
+	  return grub_error(GRUB_ERR_BAD_FS, "invalid segment");
+	break;
+      }
+
+    case GRUB_DISKFILTER_STRIPED:
+    case GRUB_DISKFILTER_MIRROR:
+	break;
+
+    case GRUB_DISKFILTER_RAID4:
+    case GRUB_DISKFILTER_RAID5:
+      if (seg->node_count <= 1)
+	return grub_error(GRUB_ERR_BAD_FS, "invalid segment");
+      break;
+
+    case GRUB_DISKFILTER_RAID6:
+      if (seg->node_count <= 2)
+	return grub_error(GRUB_ERR_BAD_FS, "invalid segment");
+      break;
+
+    default:
+      return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
+			 "unsupported RAID level %d", seg->type);
+    }
+
+  unsigned i;
+  for (i = 0; i < seg->node_count; i++)
+    {
+      err = validate_node (&seg->nodes[i]);
+      if (err)
+	return err;
+    }
+  return GRUB_ERR_NONE;
+
+}
+
 static grub_err_t
 read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
 	      grub_size_t size, char *buf)
@@ -848,6 +938,32 @@ grub_diskfilter_vg_register (struct grub_diskfilter_vg *vg)
 
   for (lv = vg->lvs; lv; lv = lv->next)
     {
+      /* RAID 1 and single-disk RAID 0 don't use a chunksize but code assumes one so set
+	 one. */
+      for (i = 0; i < lv->segment_count; i++)
+	{
+	  if (lv->segments[i].type == 1)
+	    lv->segments[i].stripe_size = 64;
+	  if (lv->segments[i].type == GRUB_DISKFILTER_STRIPED
+	      && lv->segments[i].node_count == 1
+	      && lv->segments[i].stripe_size == 0)
+	    lv->segments[i].stripe_size = 64;
+	}
+    }
+
+  for (lv = vg->lvs; lv; lv = lv->next)
+    {
+      grub_err_t err;
+
+      /* RAID 1 doesn't use a chunksize but code assumes one so set
+	 one. */
+      for (i = 0; i < lv->segment_count; i++)
+	if (lv->segments[i].type == 1)
+	  lv->segments[i].stripe_size = 64;
+
+      err = validate_lv(lv);
+      if (err)
+	return err;
       lv->number = lv_num++;
 
       if (lv->fullname)
@@ -888,11 +1004,6 @@ grub_diskfilter_vg_register (struct grub_diskfilter_vg *vg)
 	      lv->fullname = tmp;
 	    }
 	}
-      /* RAID 1 doesn't use a chunksize but code assumes one so set
-	 one. */
-      for (i = 0; i < lv->segment_count; i++)
-	if (lv->segments[i].type == 1)
-	  lv->segments[i].stripe_size = 64;
       lv->vg = vg;
     }
   /* Add our new array to the list.  */
@@ -926,6 +1037,8 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 	n = layout & 0xFF;
 	if (n == 1)
 	  n = (layout >> 8) & 0xFF;
+	if (n == 0)
+	  return NULL;
 
 	totsize = grub_divmod64 (nmemb * disk_size, n, 0);
       }
