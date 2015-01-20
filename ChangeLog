@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/fs/hfs.c (grub_hfs_mount): Additional filesystem
+	sanity checks.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/minix.c: Additional filesystem
 	sanity checks.
 

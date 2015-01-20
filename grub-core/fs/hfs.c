@@ -330,6 +330,7 @@ grub_hfs_mount (grub_disk_t disk)
 
   /* Check if this is a HFS filesystem.  */
   if (grub_be_to_cpu16 (data->sblock.magic) != GRUB_HFS_MAGIC
+      || data->sblock.blksz == 0
       || (data->sblock.blksz & grub_cpu_to_be32_compile_time (0xc00001ff)))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an HFS filesystem");
@@ -366,6 +367,11 @@ grub_hfs_mount (grub_disk_t disk)
     goto fail;
   data->cat_root = grub_be_to_cpu32 (treehead.head.root_node);
   data->cat_size = grub_be_to_cpu16 (treehead.head.node_size);
+
+  if (data->cat_size == 0
+      || data->blksz < data->cat_size
+      || data->blksz < data->ext_size)
+    goto fail;
 
   /* Lookup the root directory node in the catalog tree using the
      volume name.  */
