@@ -741,10 +741,10 @@ grub_cpu_xnu_fill_devicetree (grub_uint64_t *fsbfreq_out)
 	*((grub_uint64_t *) curval->data) = (grub_addr_t) ptr;
 
       /* Create alias. */
-      for (j = 0; j < sizeof (table_aliases) / sizeof (table_aliases[0]); j++)
+      for (j = 0; j < ARRAY_SIZE(table_aliases); j++)
 	if (grub_memcmp (&table_aliases[j].guid, &guid, sizeof (guid)) == 0)
 	  break;
-      if (j != sizeof (table_aliases) / sizeof (table_aliases[0]))
+      if (j != ARRAY_SIZE(table_aliases))
 	{
 	  curval = grub_xnu_create_value (&(curkey->first_child), "alias");
 	  if (!curval)

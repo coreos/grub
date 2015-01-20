@@ -1,3 +1,7 @@
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace explicit sizeof divisions by ARRAY_SIZE.
+
 2015-01-19  Kris Moore <kris@pcbsd.org>
 
 	* grub-core/disk/geli.c: Support GELI v6 and v7.

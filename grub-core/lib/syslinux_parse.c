@@ -717,7 +717,7 @@ syslinux_parse_real (struct syslinux_menu *menu)
       for (ptr3 = ptr2;  grub_isspace (*ptr3) && *ptr3; ptr3++);
       for (ptr4 = ptr3; !grub_isspace (*ptr4) && *ptr4; ptr4++);
       for (ptr5 = ptr4;  grub_isspace (*ptr5) && *ptr5; ptr5++);
-      for (i = 0; i < sizeof (commands) / sizeof (commands[0]); i++)
+      for (i = 0; i < ARRAY_SIZE(commands); i++)
 	if (grub_strlen (commands[i].name1) == (grub_size_t) (ptr2 - ptr1)
 	    && grub_strncasecmp (commands[i].name1, ptr1, ptr2 - ptr1) == 0
 	    && (commands[i].name2 == NULL
@@ -726,7 +726,7 @@ syslinux_parse_real (struct syslinux_menu *menu)
 		    && grub_strncasecmp (commands[i].name2, ptr3, ptr4 - ptr3)
 		    == 0)))
 	  break;
-      if (i == sizeof (commands) / sizeof (commands[0]))
+      if (i == ARRAY_SIZE(commands))
 	{
 	  if (sizeof ("text") - 1 == ptr2 - ptr1
 	      && grub_strncasecmp ("text", ptr1, ptr2 - ptr1) == 0

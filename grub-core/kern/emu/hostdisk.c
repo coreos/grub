@@ -99,7 +99,7 @@ find_free_slot (void)
 {
   unsigned int i;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (map); i++)
     if (! map[i].drive)
       return i;
 
@@ -115,7 +115,7 @@ grub_util_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (map); i++)
     if (map[i].drive && hook (map[i].drive, hook_data))
       return 1;
 
@@ -581,7 +581,7 @@ grub_util_biosdisk_fini (void)
 {
   unsigned i;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE(map); i++)
     {
       if (map[i].drive)
 	free (map[i].drive);
