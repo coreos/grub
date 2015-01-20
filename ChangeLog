@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/commands/i386/pc/play.c (grub_cmd_play): Avoid
+	division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_maxpacket): Avoid
 	potentially returning 0.
 
