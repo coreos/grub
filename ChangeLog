@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/linux/blocklist.c (grub_install_get_blocklist): Check
+	blocksize validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/i386/pc/biosdisk.c: Check disk size sanity.
 
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>

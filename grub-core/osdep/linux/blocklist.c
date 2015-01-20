@@ -82,6 +82,8 @@ grub_install_get_blocklist (grub_device_t root_dev,
 			 strerror (errno));
       if (bsize & (GRUB_DISK_SECTOR_SIZE - 1))
 	grub_util_error ("%s", _("blocksize is not divisible by 512"));
+      if (!bsize)
+	grub_util_error ("%s", _("invalid zero blocksize"));
       mul = bsize >> GRUB_DISK_SECTOR_BITS;
       nblocks = (core_size + bsize - 1) / bsize;
       if (mul == 0 || nblocks == 0)
