@@ -1,5 +1,15 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_maxpacket): Avoid
+	potentially returning 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/minix.c (grub_minix_read_file): Avoid reading past
+	the end of file.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/fshelp.c (grub_fshelp_read_file): Don't attempt to read
 	past the end of file.
 

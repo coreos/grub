@@ -262,6 +262,13 @@ grub_minix_read_file (struct grub_minix_data *data,
   grub_uint32_t posblock;
   grub_uint32_t blockoff;
 
+  if (pos > GRUB_MINIX_INODE_SIZE (data))
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE,
+		  N_("attempt to read past the end of file"));
+      return -1;
+    }
+
   /* Adjust len so it we can't read past the end of the file.  */
   if (len + pos > GRUB_MINIX_INODE_SIZE (data))
     len = GRUB_MINIX_INODE_SIZE (data) - pos;

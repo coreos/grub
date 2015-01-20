@@ -31,7 +31,7 @@ grub_usb_bulk_maxpacket (grub_usb_device_t dev,
 			 struct grub_usb_desc_endp *endpoint)
 {
   /* Use the maximum packet size given in the endpoint descriptor.  */
-  if (dev->initialized && endpoint)
+  if (dev->initialized && endpoint && (unsigned int) endpoint->maxpacket)
     return endpoint->maxpacket;
 
   return 64;
