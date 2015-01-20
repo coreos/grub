@@ -129,6 +129,9 @@ grub_dmraid_nv_detect (grub_disk_t disk,
     case NV_LEVEL_0:
       level = 0;
       disk_size = sb.capacity / sb.array.total_volumes;
+      if (sb.array.total_volumes == 0)
+	/* Not RAID.  */
+	return NULL;
       break;
 
     case NV_LEVEL_1:
@@ -139,6 +142,9 @@ grub_dmraid_nv_detect (grub_disk_t disk,
     case NV_LEVEL_5:
       level = 5;
       disk_size = sb.capacity / (sb.array.total_volumes - 1);
+      if (sb.array.total_volumes == 0 || sb.array.total_volumes == 1)
+	/* Not RAID.  */
+	return NULL;
       break;
 
     default:

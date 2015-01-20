@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Do not
+	divide by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/fs/hfs.c (grub_hfs_mount): Additional filesystem
 	sanity checks.
 
