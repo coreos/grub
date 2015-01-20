@@ -1,5 +1,12 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Reject NILFS2 superblocks with over 1GiB blocks.
+
+	* grub-core/fs/nilfs2.c (grub_nilfs2_valid_sb): Check that
+	block size is <= 1GiB.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/disk/ata.c (grub_ata_setaddress): Check that geometry
 	is sane when using CHS addressing.
 

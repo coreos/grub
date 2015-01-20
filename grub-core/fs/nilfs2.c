@@ -724,6 +724,10 @@ grub_nilfs2_valid_sb (struct grub_nilfs2_super_block *sbp)
   if (grub_le_to_cpu32 (sbp->s_rev_level) != NILFS_SUPORT_REV)
     return 0;
 
+  /* 20 already means 1GiB blocks. We don't want to deal with blocks overflowing int32. */
+  if (grub_le_to_cpu32 (sbp->s_log_block_size) > 20)
+    return 0;
+
   return 1;
 }
 
