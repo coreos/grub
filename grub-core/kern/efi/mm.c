@@ -230,6 +230,7 @@ grub_efi_get_memory_map (grub_efi_uintn_t *memory_map_size,
   grub_efi_boot_services_t *b;
   grub_efi_uintn_t key;
   grub_efi_uint32_t version;
+  grub_efi_uintn_t size;
 
   if (grub_efi_is_finished)
     {
@@ -259,10 +260,14 @@ grub_efi_get_memory_map (grub_efi_uintn_t *memory_map_size,
     map_key = &key;
   if (! descriptor_version)
     descriptor_version = &version;
+  if (! descriptor_size)
+    descriptor_size = &size;
 
   b = grub_efi_system_table->boot_services;
   status = efi_call_5 (b->get_memory_map, memory_map_size, memory_map, map_key,
 			      descriptor_size, descriptor_version);
+  if (*descriptor_size == 0)
+    *descriptor_size = sizeof (grub_efi_memory_descriptor_t);
   if (status == GRUB_EFI_SUCCESS)
     return 1;
   else if (status == GRUB_EFI_BUFFER_TOO_SMALL)

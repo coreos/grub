@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/kern/efi/mm.c (grub_efi_get_memory_map): Never return a
+	descriptor_size==0 to avoid potential divisions by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/haiku/getroot.c (grub_util_find_partition_start_os):
 	Avoid division by zero.
 
