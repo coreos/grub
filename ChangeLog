@@ -1,5 +1,9 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	Remove potential division by 0 in gfxmenu.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/normal/menu_text.c (grub_menu_init_page): Avoid
 	returning 0 geometry to avoid divisions by 0.
 
