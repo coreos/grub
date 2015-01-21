@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/osdep/unix/cputime.c (grub_util_get_cpu_time_ms): Cache
+	sc_clk_tck and check it for sanity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/kern/efi/mm.c (grub_efi_get_memory_map): Never return a
 	descriptor_size==0 to avoid potential divisions by zero.
 
