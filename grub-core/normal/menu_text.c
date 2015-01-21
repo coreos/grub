@@ -369,6 +369,9 @@ grub_menu_init_page (int nested, int edit,
       geo->border = 0;
     }
 
+  if (geo->entry_width <= 0)
+    geo->entry_width = 1;
+
   if (geo->num_entries - msg_num_lines < 3
       && geo->timeout_lines == 2)
     {

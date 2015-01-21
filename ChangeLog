@@ -1,5 +1,10 @@
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
+	* grub-core/normal/menu_text.c (grub_menu_init_page): Avoid
+	returning 0 geometry to avoid divisions by 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
 	* grub-core/osdep/unix/cputime.c (grub_util_get_cpu_time_ms): Cache
 	sc_clk_tck and check it for sanity.
 
