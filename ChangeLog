@@ -1,3 +1,7 @@
+2015-01-22  Felix Janda <felix.janda@posteo.de>
+
+	Remove direct _llseek code and require long filesystem libc.
+
 2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
 
 	Remove potential division by 0 in gfxmenu.

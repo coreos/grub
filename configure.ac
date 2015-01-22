@@ -366,6 +366,14 @@ case "$host_os" in
    ;;
 esac
 
+case "$host_os" in
+  cygwin | windows* | mingw32* | aros*)
+     ;;
+  *)
+     AC_CHECK_SIZEOF(off_t)
+     test x"$ac_cv_sizeof_off_t" = x8 || AC_MSG_ERROR([Large file support is required]);;
+esac
+
 if test x$USE_NLS = xno; then
   HOST_CFLAGS="$HOST_CFLAGS -fno-builtin-gettext"
 fi

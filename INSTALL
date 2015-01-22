@@ -35,6 +35,7 @@ configuring the GRUB.
 * GNU binutils 2.9.1.0.23 or later
 * Flex 2.5.35 or later
 * Other standard GNU/Unix tools
+* a libc with large file support (e.g. glibc 2.1 or later)
 
 On GNU/Linux, you also need:
 
