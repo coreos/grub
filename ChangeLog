@@ -1,3 +1,8 @@
+2015-01-23  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/disk/xen/xendisk.c: Accept hdX as disk names on Xen to
+	allow legacy menu.lst processing.
+
 2015-01-22  Felix Janda <felix.janda@posteo.de>
 
 	Remove direct _llseek code and require long filesystem libc.

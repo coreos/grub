@@ -40,6 +40,7 @@ struct virtdisk
   grub_xen_evtchn_t evtchn;
   void *dma_page;
   grub_xen_grant_t dma_grant;
+  struct virtdisk *compat_next;
 };
 
 #define xen_wmb() mb()
@@ -47,6 +48,7 @@ struct virtdisk
 
 static struct virtdisk *virtdisks;
 static grub_size_t vdiskcnt;
+struct virtdisk *compat_head;
 
 static int
 grub_virtdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
@@ -66,20 +68,32 @@ grub_virtdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 static grub_err_t
 grub_virtdisk_open (const char *name, grub_disk_t disk)
 {
-  grub_size_t i;
+  int i;
   grub_uint32_t secsize;
   char fdir[200];
   char *buf;
+  int num = -1;
+  struct virtdisk *vd;
 
-  for (i = 0; i < vdiskcnt; i++)
-    if (grub_strcmp (name, virtdisks[i].fullname) == 0)
+  /* For compatibility with pv-grub legacy menu.lst accept hdX as disk name */
+  if (name[0] == 'h' && name[1] == 'd' && name[2])
+    {
+      num = grub_strtoul (name + 2, 0, 10);
+      if (grub_errno)
+	{
+	  grub_errno = 0;
+	  num = -1;
+	}
+    }
+  for (i = 0, vd = compat_head; vd; vd = vd->compat_next, i++)
+    if (i == num || grub_strcmp (name, vd->fullname) == 0)
       break;
-  if (i == vdiskcnt)
+  if (!vd)
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE, "not a virtdisk");
-  disk->data = &virtdisks[i];
-  disk->id = i;
+  disk->data = vd;
+  disk->id = vd - virtdisks;
 
-  grub_snprintf (fdir, sizeof (fdir), "%s/sectors", virtdisks[i].backend_dir);
+  grub_snprintf (fdir, sizeof (fdir), "%s/sectors", vd->backend_dir);
   buf = grub_xenstore_get_file (fdir, NULL);
   if (!buf)
     return grub_errno;
@@ -87,8 +101,7 @@ grub_virtdisk_open (const char *name, grub_disk_t disk)
   if (grub_errno)
     return grub_errno;
 
-  grub_snprintf (fdir, sizeof (fdir), "%s/sector-size",
-		 virtdisks[i].backend_dir);
+  grub_snprintf (fdir, sizeof (fdir), "%s/sector-size", vd->backend_dir);
   buf = grub_xenstore_get_file (fdir, NULL);
   if (!buf)
     return grub_errno;
@@ -264,6 +277,7 @@ fill (const char *dir, void *data)
   grub_err_t err;
   void *buf;
   struct evtchn_alloc_unbound alloc_unbound;
+  struct virtdisk **prev = &compat_head, *vd = compat_head;
 
   /* Shouldn't happen unles some hotplug happened.  */
   if (vdiskcnt >= *ctr)
@@ -373,6 +387,19 @@ fill (const char *dir, void *data)
   grub_snprintf (fdir, sizeof (fdir), "device/vbd/%s", dir);
 
   virtdisks[vdiskcnt].frontend_dir = grub_strdup (fdir);
+
+  /* For compatibility with pv-grub maintain linked list sorted by handle
+     value in increasing order. This allows mapping of (hdX) disk names
+     from legacy menu.lst */
+  while (vd)
+    {
+      if (vd->handle > virtdisks[vdiskcnt].handle)
+	break;
+      prev = &vd->compat_next;
+      vd = vd->compat_next;
+    }
+  virtdisks[vdiskcnt].compat_next = vd;
+  *prev = &virtdisks[vdiskcnt];
 
   vdiskcnt++;
   return 0;
