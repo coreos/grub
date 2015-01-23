@@ -1,3 +1,7 @@
+2015-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/file_filter/file: Really add missing file.
+
 2015-01-23  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* grub-core/disk/xen/xendisk.c: Accept hdX as disk names on Xen to
