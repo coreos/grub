@@ -80,7 +80,7 @@ grub_cmd_tr (grub_extcmd_context_t ctxt, int argc, char **args)
   } else if (argc > 3)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many parameters");
 
-  if (argc <= 0 && (!s1 || !s2 || !input))
+  if (!s1 || !s2 || !input)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "missing parameters");
 
   if (grub_strlen (s1) != grub_strlen (s2))
