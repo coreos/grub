@@ -476,8 +476,8 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 	   be at least 12 bytes and aligned on a 4-byte boundary.  */
 	for (header = buffer;
 	     ((char *) header <=
-	      (char *) buffer + len - (type == IS_MULTIBOOT2 ? 16 : 12))
-	     || (header = 0); header += step)
+	      (char *) buffer + len - (type == IS_MULTIBOOT2 ? 16 : 12));
+	     header += step)
 	  {
 	    if (header[0] == magic
 		&& !(grub_le_to_cpu32 (header[0])
@@ -485,11 +485,12 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 		     + grub_le_to_cpu32 (header[2])
 		     + (type == IS_MULTIBOOT2
 			? grub_le_to_cpu32 (header[3]) : 0)))
-	      break;
+	      {
+		ret = 1;
+		break;
+	      }
 	  }
 
-	if (header != 0)
-	  ret = 1;
 	grub_free (buffer);
 	break;
       }
