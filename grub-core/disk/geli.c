@@ -232,7 +232,10 @@ grub_util_get_geli_uuid (const char *dev)
 
   err = make_uuid ((void *) &hdr, uuid);
   if (err)
-    return NULL;
+    {
+      grub_free (uuid);
+      return NULL;
+    }
 
   return uuid;
 }
