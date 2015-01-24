@@ -372,11 +372,13 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	  break;
 	case GRUB_CRYPTODISK_MODE_ECB:
 	  if (do_encrypt)
-	    grub_crypto_ecb_encrypt (dev->cipher, data + i, data + i,
-				     (1U << dev->log_sector_size));
+	    err = grub_crypto_ecb_encrypt (dev->cipher, data + i, data + i,
+					   (1U << dev->log_sector_size));
 	  else
-	    grub_crypto_ecb_decrypt (dev->cipher, data + i, data + i,
-				     (1U << dev->log_sector_size));
+	    err = grub_crypto_ecb_decrypt (dev->cipher, data + i, data + i,
+					   (1U << dev->log_sector_size));
+	  if (err)
+	    return err;
 	  break;
 	default:
 	  return GPG_ERR_NOT_IMPLEMENTED;
