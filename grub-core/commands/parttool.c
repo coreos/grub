@@ -243,11 +243,19 @@ grub_cmd_parttool (grub_command_t cmd __attribute__ ((unused)),
   }
 
   if (argc == 1)
-    return show_help (dev);
+    {
+      err = show_help (dev);
+      grub_device_close (dev);
+      return err;
+    }
 
   for (i = 1; i < argc; i++)
     if (grub_strcmp (args[i], "help") == 0)
-      return show_help (dev);
+      {
+	err = show_help (dev);
+	grub_device_close (dev);
+	return err;
+      }
 
   parsed = (int *) grub_zalloc (argc * sizeof (int));
 
