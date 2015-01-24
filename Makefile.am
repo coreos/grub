@@ -447,6 +447,8 @@ ChangeLog: FORCE
 	if test -d $(top_srcdir)/.git; then \
 		$(gitlog_to_changelog) --srcdir=$(top_srcdir) --since=$(changelog_start_date) > '$@.tmp'; \
 		rm -f '$@'; mv '$@.tmp' '$@'; \
+	else \
+		touch $@; \
 	fi
 
 EXTRA_DIST += ChangeLog ChangeLog-2015
