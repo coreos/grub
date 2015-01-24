@@ -198,7 +198,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 		    | GRUB_PCI_COMMAND_MEM_ENABLED);
 
   hba = grub_pci_device_map_range (dev, bar & GRUB_PCI_ADDR_MEM_MASK,
-				   sizeof (hba));
+				   sizeof (*hba));
   grub_dprintf ("ahci", "dev: %x:%x.%x\n", dev.bus, dev.device, dev.function);
 
   grub_dprintf ("ahci", "tfd[0]: %x\n",
