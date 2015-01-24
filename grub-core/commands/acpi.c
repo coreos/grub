@@ -227,7 +227,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv2 to %p\n", target);
 	    v2inebda = target;
 	    target += v2->length;
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v2 = 0;
 	    break;
 	  }
@@ -246,7 +246,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv1 to %p\n", target);
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v1 = 0;
 	    break;
 	  }
