@@ -252,7 +252,6 @@ struct grub_zfs_data
 
   uberblock_t current_uberblock;
 
-  int mounted;
   grub_uint64_t guid;
 };
 
@@ -957,7 +956,7 @@ nvpair_value (const char *nvp,char **val,
 static grub_err_t
 check_pool_label (struct grub_zfs_data *data,
 		  struct grub_zfs_device_desc *diskdesc,
-		  int *inserted)
+		  int *inserted, int original)
 {
   grub_uint64_t pool_state, txg = 0;
   char *nvlist,*features;
@@ -1081,10 +1080,11 @@ check_pool_label (struct grub_zfs_data *data,
 
   grub_dprintf ("zfs", "check 11 passed\n");
 
-  if (data->mounted && data->guid != poolguid)
-    return grub_error (GRUB_ERR_BAD_FS, "another zpool");
-  else
+  if (original)
     data->guid = poolguid;
+
+  if (data->guid != poolguid)
+    return grub_error (GRUB_ERR_BAD_FS, "another zpool");
 
   {
     char *nv;
@@ -1186,7 +1186,7 @@ scan_disk (grub_device_t dev, struct grub_zfs_data *data,
 	}
       grub_dprintf ("zfs", "label ok %d\n", label);
 
-      err = check_pool_label (data, &desc, inserted);
+      err = check_pool_label (data, &desc, inserted, original);
       if (err || !*inserted)
 	{
 	  grub_errno = GRUB_ERR_NONE;
@@ -3611,8 +3611,6 @@ zfs_mount (grub_device_t dev)
   data->mos.endian = (grub_zfs_to_cpu64 (ub->ub_rootbp.blk_prop,
 					 ub_endian) >> 63) & 1;
   grub_free (osp);
-
-  data->mounted = 1;
 
   return data;
 }
