@@ -57,14 +57,20 @@ legacy_file (const char *filename)
 
   file = grub_file_open (filename);
   if (! file)
-    return grub_errno;
+    {
+      grub_free (suffix);
+      return grub_errno;
+    }
 
   menu = grub_env_get_menu ();
   if (! menu)
     {
       menu = grub_zalloc (sizeof (*menu));
       if (! menu)
-	return grub_errno;
+	{
+	  grub_free (suffix);
+	  return grub_errno;
+	}
 
       grub_env_set_menu (menu);
     }
@@ -77,6 +83,7 @@ legacy_file (const char *filename)
       if (!buf && grub_errno)
 	{
 	  grub_file_close (file);
+	  grub_free (suffix);
 	  return grub_errno;
 	}
 
@@ -173,6 +180,8 @@ legacy_file (const char *filename)
       if (!args)
 	{
 	  grub_file_close (file);
+	  grub_free (suffix);
+	  grub_free (entrysrc);
 	  return grub_errno;
 	}
       args[0] = entryname;
@@ -376,6 +385,8 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	      if (part && grub_strcmp (part->partmap->name, "msdos") == 0)
 		bsd_slice = part->number;
 	    }
+	  if (dev)
+	    grub_device_close (dev);
 	}
 	
 	/* k*BSD didn't really work well with grub-legacy.  */
