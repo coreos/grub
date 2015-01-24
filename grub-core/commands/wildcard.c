@@ -245,7 +245,10 @@ match_devices_iter (const char *name, void *data)
 
   t = grub_realloc (ctx->devs, sizeof (char*) * (ctx->ndev + 2));
   if (! t)
-    return 1;
+    {
+      grub_free (buffer);
+      return 1;
+    }
 
   ctx->devs = t;
   ctx->devs[ctx->ndev++] = buffer;
