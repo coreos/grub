@@ -183,7 +183,7 @@ grub_cmd_macbless (grub_command_t cmd, int argc, char **args)
 {
   char *device_name;
   char *path = 0;
-  grub_device_t dev;
+  grub_device_t dev = 0;
   grub_err_t err;
 
   if (argc != 1)
@@ -197,7 +197,7 @@ grub_cmd_macbless (grub_command_t cmd, int argc, char **args)
   else
     path = path + 1;
 
-  if (!path || *path == 0 || !device_name)
+  if (!path || *path == 0 || !dev)
     {
       if (dev)
 	grub_device_close (dev);
