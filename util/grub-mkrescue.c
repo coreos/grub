@@ -653,6 +653,9 @@ main (int argc, char *argv[])
       char *efiimgfat;
       grub_install_mkdir_p (efidir_efi_boot);
 
+      grub_install_push_module ("part_gpt");
+      grub_install_push_module ("part_msdos");
+
       imgname = grub_util_path_concat (2, efidir_efi_boot, "bootia64.efi");
       make_image_fwdisk_abs (GRUB_INSTALL_PLATFORM_IA64_EFI, "ia64-efi", imgname);
       free (imgname);
@@ -713,6 +716,8 @@ main (int argc, char *argv[])
       free (efiimgfat);
       free (efidir_efi);
       free (efidir);
+      grub_install_pop_module ();
+      grub_install_pop_module ();
     }
 
   grub_install_push_module ("part_apple");
