@@ -1065,7 +1065,7 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 	    array->lvs->segments->extent_count = totsize;
 	}
 
-      if (array->lvs->segments
+      if (array->lvs && array->lvs->segments
 	  && array->lvs->segments->raid_member_size > disk_size)
 	array->lvs->segments->raid_member_size = disk_size;
 
