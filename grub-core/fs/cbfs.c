@@ -144,7 +144,7 @@ static struct grub_archelp_data *
 grub_cbfs_mount (grub_disk_t disk)
 {
   struct cbfs_file hd;
-  struct grub_archelp_data *data;
+  struct grub_archelp_data *data = NULL;
   grub_uint32_t ptr;
   grub_off_t header_off;
   struct cbfs_header head;
@@ -196,6 +196,7 @@ grub_cbfs_mount (grub_disk_t disk)
   return data;
 
 fail:
+  grub_free (data);
   grub_error (GRUB_ERR_BAD_FS, "not a cbfs filesystem");
   return 0;
 }
