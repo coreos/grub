@@ -440,7 +440,7 @@ windowszip: windowsdir
 
 EXTRA_DIST += linguas.sh
 
-changelog_start_date = 2015-01-24
+changelog_start_date = 2015-01-23
 gitlog_to_changelog = $(top_srcdir)/build-aux/gitlog-to-changelog
 
 ChangeLog: FORCE
