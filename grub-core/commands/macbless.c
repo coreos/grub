@@ -106,7 +106,7 @@ grub_mac_bless_inode (grub_device_t dev, grub_uint32_t inode, int is_dir,
       ablk_size = grub_be_to_cpu32 (volheader.hfs.blksz);
       ablk_start = grub_be_to_cpu16 (volheader.hfs.first_block);
       embedded_offset = (ablk_start
-			 + extent_start
+			 + ((grub_uint64_t) extent_start)
 			 * (ablk_size >> GRUB_DISK_SECTOR_BITS));
 
       err =
