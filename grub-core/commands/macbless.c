@@ -203,7 +203,6 @@ grub_cmd_macbless (grub_command_t cmd, int argc, char **args)
 	grub_device_close (dev);
 
       grub_free (device_name);
-      grub_free (path);
 
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
     }
