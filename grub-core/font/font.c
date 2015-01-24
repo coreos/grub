@@ -777,6 +777,7 @@ grub_font_get_glyph_internal (grub_font_t font, grub_uint32_t code)
 	  if (grub_file_read (font->file, glyph->bitmap, len) != len)
 	    {
 	      remove_font (font);
+	      grub_free (glyph);
 	      return 0;
 	    }
 	}
