@@ -920,12 +920,16 @@ grub_ntfs_mount (grub_disk_t disk)
 
   if (bpb.clusters_per_mft > 0)
     data->mft_size = ((grub_disk_addr_t) bpb.clusters_per_mft) << data->log_spc;
+  else if (-bpb.clusters_per_mft < GRUB_NTFS_BLK_SHR || -bpb.clusters_per_mft >= 31)
+    goto fail;
   else
     data->mft_size = 1ULL << (-bpb.clusters_per_mft - GRUB_NTFS_BLK_SHR);
 
   if (bpb.clusters_per_index > 0)
     data->idx_size = (((grub_disk_addr_t) bpb.clusters_per_index)
 		      << data->log_spc);
+  else if (-bpb.clusters_per_index < GRUB_NTFS_BLK_SHR || -bpb.clusters_per_index >= 31)
+    goto fail;
   else
     data->idx_size = 1ULL << (-bpb.clusters_per_index - GRUB_NTFS_BLK_SHR);
 
