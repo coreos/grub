@@ -692,6 +692,7 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
       int i;
       struct grub_hfs_extent *dat;
       int blk;
+      grub_uint16_t reccnt;
 
       dat = (struct grub_hfs_extent *) (type == 0
 					? (&data->sblock.catalog_recs)
@@ -710,8 +711,12 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	  return grub_errno;
 	}
 
+      reccnt = grub_be_to_cpu16 (node->node.reccnt);
+      if (reccnt > (nodesize >> 1))
+	reccnt = (nodesize >> 1);
+
       /* Iterate over all records in this node.  */
-      for (i = 0; i < grub_be_to_cpu16 (node->node.reccnt); i++)
+      for (i = 0; i < reccnt; i++)
 	{
 	  int pos = (nodesize >> 1) - 1 - i;
  	  struct pointer
@@ -719,16 +724,19 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	    grub_uint8_t keylen;
 	    grub_uint8_t key;
 	  } GRUB_PACKED *pnt;
-	  pnt = (struct pointer *) (grub_be_to_cpu16 (node->offsets[pos])
-				    + node->rawnode);
+	  grub_uint16_t off = grub_be_to_cpu16 (node->offsets[pos]);
+	  if (off > nodesize - sizeof(*pnt))
+	    continue;
+	  pnt = (struct pointer *) (off + node->rawnode);
+	  if (nodesize < (grub_size_t) off + pnt->keylen + 1)
+	    continue;
 
 	  struct grub_hfs_record rec =
 	    {
 	      &pnt->key,
 	      pnt->keylen,
 	      &pnt->key + pnt->keylen +(pnt->keylen + 1) % 2,
-	      nodesize - grub_be_to_cpu16 (node->offsets[pos])
-	      - pnt->keylen - 1
+	      nodesize - off - pnt->keylen - 1
 	    };
 
 	  if (node_hook (&node->node, &rec, hook_arg))
