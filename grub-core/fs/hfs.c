@@ -1306,6 +1306,12 @@ grub_hfs_open (struct grub_file *file, const char *name)
 
   data = grub_hfs_mount (file->device->disk);
 
+  if (!data)
+    {
+      grub_dl_unref (my_mod);
+      return grub_errno;
+    }
+
   if (grub_hfs_find_dir (data, name, &frec, 0))
     {
       grub_free (data);
