@@ -54,7 +54,7 @@ grub_file_check_netbsdXX (grub_elf_t elf)
       char name[sizeof(".note.netbsd.ident")];
       grub_memset (name, 0, sizeof (name));
       if (grub_file_seek (elf->file, stroff + s->sh_name) == (grub_off_t) -1)
-	return grub_errno;
+	goto fail;
 
       if (grub_file_read (elf->file, name, sizeof (name)) != (grub_ssize_t) sizeof (name))
 	{
