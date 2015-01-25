@@ -618,7 +618,10 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 
 	  ustr = get_utf8 (np, ns);
 	  if (ustr == NULL)
-	    return 0;
+	    {
+	      grub_free (fdiro);
+	      return 0;
+	    }
           if (namespace)
             type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
