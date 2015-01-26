@@ -121,6 +121,24 @@ load_kernel (grub_file_t file, const char *filename,
   return grub_multiboot_load_elf (file, filename, buffer);
 }
 
+static struct multiboot_header *
+find_header (char *buffer, grub_ssize_t len)
+{
+  struct multiboot_header *header;
+
+  /* Look for the multiboot header in the buffer.  The header should
+     be at least 12 bytes and aligned on a 4-byte boundary.  */
+  for (header = (struct multiboot_header *) buffer;
+       ((char *) header <= buffer + len - 12);
+       header = (struct multiboot_header *) ((char *) header + MULTIBOOT_HEADER_ALIGN))
+    {
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
+	  && !(header->magic + header->flags + header->checksum))
+	return header;
+    }
+  return NULL;
+}
+
 grub_err_t
 grub_multiboot_load (grub_file_t file, const char *filename)
 {
@@ -143,16 +161,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       return grub_errno;
     }
 
-  /* Look for the multiboot header in the buffer.  The header should
-     be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct multiboot_header *) buffer;
-       ((char *) header <= buffer + len - 12) || (header = 0);
-       header = (struct multiboot_header *) ((char *) header + MULTIBOOT_HEADER_ALIGN))
-    {
-      if (header->magic == MULTIBOOT_HEADER_MAGIC
-	  && !(header->magic + header->flags + header->checksum))
-	break;
-    }
+  header = find_header (buffer, len);
 
   if (header == 0)
     {
