@@ -148,7 +148,7 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 
   while (1)
     {
-      grub_memset (entry, 0, sizeof (entry));
+      grub_memset (entry, 0, sizeof (*entry));
 
       cont = grub_get_mmap_entry (entry, cont);
 
