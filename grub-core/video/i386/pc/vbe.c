@@ -304,8 +304,7 @@ grub_vbe_bios_getset_dac_palette_width (int set, int *dac_mask_size)
   struct grub_bios_int_registers regs;
 
   regs.eax = 0x4f08;
-  regs.ebx = (*dac_mask_size & 0xff) >> 8;
-  regs.ebx = set ? 1 : 0;
+  regs.ebx = ((*dac_mask_size & 0xff) << 8) | (set ? 1 : 0);
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   grub_bios_interrupt (0x10, &regs);
   *dac_mask_size = (regs.ebx >> 8) & 0xff;
