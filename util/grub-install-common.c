@@ -238,7 +238,7 @@ grub_install_push_module (const char *val)
       if (modules.n_alloc < 16)
 	modules.n_alloc = 16;
       modules.entries = xrealloc (modules.entries,
-				  modules.n_alloc * sizeof (modules.entries));
+				  modules.n_alloc * sizeof (*modules.entries));
     }
   modules.entries[modules.n_entries++] = xstrdup (val);
   modules.entries[modules.n_entries] = NULL;
