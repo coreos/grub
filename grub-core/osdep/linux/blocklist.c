@@ -130,6 +130,7 @@ grub_install_get_blocklist (grub_device_t root_dev,
 		    & (GRUB_DISK_SECTOR_SIZE - 1),
 		    fie2->fm_extents[i].fe_length, hook_data);
 	}
+      free (fie2);
     }
   close (fd);
 }
