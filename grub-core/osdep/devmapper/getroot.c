@@ -160,7 +160,10 @@ grub_util_pull_devmapper (const char *os_dev)
   uuid = get_dm_uuid (os_dev);
 
   if (!grub_util_open_dm (os_dev, &tree, &node))
-    return;
+    {
+      grub_free (uuid);
+      return;
+    }
 
   while ((child = dm_tree_next_child (&handle, node, 0)))
     {
@@ -192,6 +195,7 @@ grub_util_pull_devmapper (const char *os_dev)
     }
   else
     dm_tree_free (tree);
+  grub_free (uuid);
 }
 
 char *
@@ -253,6 +257,7 @@ grub_util_get_devmapper_grub_dev (const char *os_dev)
       grub_free (uuid);
       return grub_dev;
     }
+  grub_free (uuid);
   return NULL;
 }
 
@@ -279,6 +284,7 @@ grub_util_get_vg_uuid (const char *os_dev)
     }
   optr--;
   *optr = '\0';
+  grub_free (uuid);
   return vgid;
 }
 
