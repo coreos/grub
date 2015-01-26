@@ -92,6 +92,8 @@ bless (const char *path, int x86)
   free (filebuf_via_grub);
   free (filebuf_via_sys);
   free (drive_name);
+  free (devices);
+  grub_device_close (dev);
 }
 
 static struct argp_option options[] = {
