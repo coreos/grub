@@ -130,7 +130,7 @@ read_config_file (const char *config)
   file = grub_bufio_open (rawfile, 0);
   if (! file)
     {
-      grub_file_close (file);
+      grub_file_close (rawfile);
       return 0;
     }
 
