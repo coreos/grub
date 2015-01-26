@@ -490,6 +490,7 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
 		  dir, prefix,
 		  outname, mkimage_target,
 		  compnames[compression], note ? "--note" : "", s);
+  free (s);
 
   tgt = grub_install_get_image_target (mkimage_target);
   if (!tgt)
