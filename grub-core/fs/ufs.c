@@ -465,7 +465,13 @@ grub_ufs_lookup_symlink (struct grub_ufs_data *data, int ino)
       && INODE_SIZE (data) <= sizeof (data->inode.symlink))
     grub_strcpy (symlink, (char *) data->inode.symlink);
   else
-    grub_ufs_read_file (data, 0, 0, 0, sz, symlink);
+    {
+      if (grub_ufs_read_file (data, 0, 0, 0, sz, symlink) < 0)
+	{
+	  grub_free(symlink);
+	  return grub_errno;
+	}
+    }
   symlink[sz] = '\0';
 
   /* The symlink is an absolute path, go back to the root inode.  */
