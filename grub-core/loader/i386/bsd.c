@@ -234,7 +234,8 @@ grub_bsd_add_meta_ptr (grub_uint32_t type, void **ptr, grub_uint32_t len)
     {
       struct bsd_tag *p;
       for (p = tags;
-	   p->type != (FREEBSD_MODINFO_METADATA | FREEBSD_MODINFOMD_KERNEND);
+	   p && p->type != (FREEBSD_MODINFO_METADATA
+			    | FREEBSD_MODINFOMD_KERNEND);
 	   p = p->next);
 
       if (p)
