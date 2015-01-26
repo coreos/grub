@@ -684,6 +684,7 @@ helptext (const char *line, grub_file_t file, struct syslinux_menu *menu)
     }
 
   grub_free (buf);
+  grub_free (help);
   return grub_errno;
 }
 
