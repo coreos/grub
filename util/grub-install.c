@@ -615,17 +615,14 @@ device_map_check_duplicates (const char *dev_map)
   char **d;
   size_t i;
 
-  d = xmalloc (alloced * sizeof (d[0]));
-
   if (dev_map[0] == '\0')
     return;
 
   fp = grub_util_fopen (dev_map, "r");
   if (! fp)
-    {
-      free (d);
-      return;
-    }
+    return;
+
+  d = xmalloc (alloced * sizeof (d[0]));
 
   while (fgets (buf, sizeof (buf), fp))
     {
