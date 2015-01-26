@@ -649,6 +649,8 @@ helptext (const char *line, grub_file_t file, struct syslinux_menu *menu)
   grub_size_t helplen, alloclen = 0;
 
   help = grub_strdup (line);
+  if (!help)
+    return grub_errno;
   helplen = grub_strlen (line);
   while ((grub_free (buf), buf = grub_file_getline (file)))
     {
