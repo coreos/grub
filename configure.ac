@@ -354,6 +354,9 @@ if test x"$target_cpu-$platform" = xsparc64-emu ; then
   HOST_CFLAGS="$HOST_CFLAGS -m64"
 fi
 
+CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64"
+HOST_CPPFLAGS="$HOST_CPPFLAGS -D_FILE_OFFSET_BITS=64"
+
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(long)
@@ -1477,7 +1480,7 @@ fi
 if test x"$grub_mount_excuse" = x ; then
   # Check for fuse headers.
   SAVED_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$CPPFLAGS -D_FILE_OFFSET_BITS=64 -DFUSE_USE_VERSION=26"
+  CPPFLAGS="$CPPFLAGS -DFUSE_USE_VERSION=26"
   AC_CHECK_HEADERS([fuse/fuse.h], [],
   	[grub_mount_excuse=["need FUSE headers"]])
   CPPFLAGS="$SAVED_CPPFLAGS"
