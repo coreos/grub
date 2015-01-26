@@ -774,6 +774,8 @@ grub_gfxmenu_view_load_theme (grub_gfxmenu_view_t view, const char *theme_path)
     view->canvas->component.ops->destroy (view->canvas);
 
   view->canvas = grub_gui_canvas_new ();
+  if (!view->canvas)
+    goto fail;
   ((grub_gui_component_t) view->canvas)
     ->ops->set_bounds ((grub_gui_component_t) view->canvas,
                        &view->screen);
