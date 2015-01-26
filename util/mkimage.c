@@ -1278,6 +1278,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       free (core_img);
       core_img = full_img;
       core_size = full_size;
+      free (decompress_img);
+      free (decompress_path);
     }
 
   switch (image_target->id)
@@ -1744,6 +1746,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       free (core_img);
       core_img = rom_img;
       core_size = rom_size;
+      free (boot_img);
+      free (boot_path);
     }
     break;
     case IMAGE_QEMU_MIPS_FLASH:
