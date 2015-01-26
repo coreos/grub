@@ -417,7 +417,10 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
 
     name = grub_util_get_ldm (disk, ctx.start);
     if (name)
-      return name;
+      {
+	grub_disk_close (disk);
+	return name;
+      }
 
     ctx.partname = NULL;
 
