@@ -621,7 +621,10 @@ grub_util_pull_lvm_by_command (const char *os_dev)
   free (vgname);
 
   if (!pid)
-    return;
+    {
+      free (vgid);
+      return;
+    }
 
   /* Parent.  Read vgs' output.  */
   vgs = fdopen (fd, "r");
@@ -653,6 +656,7 @@ out:
   close (fd);
   waitpid (pid, NULL, 0);
   free (buf);
+  free (vgid);
 }
 
 /* ZFS has similar problems to those of btrfs (see above).  */
