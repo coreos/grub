@@ -516,6 +516,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	      return 0;
 	    }
 	  grub_zfs_add_key (buf, real_size, 0);
+	  fclose (f);
 	}
       return 0;
 
