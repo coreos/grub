@@ -846,7 +846,12 @@ write_entry (struct output_buffer *outbuf,
 {
   grub_err_t err;
   if (curentry->comments)
-    print (outbuf, curentry->comments, grub_strlen (curentry->comments));
+    {
+      err = print (outbuf, curentry->comments,
+		   grub_strlen (curentry->comments));
+      if (err)
+	return err;
+    }
   {
     struct syslinux_say *say;
     for (say = curentry->say; say && say->next; say = say->next);
