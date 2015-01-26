@@ -284,6 +284,7 @@ add_tar_file (const char *from,
   grub_util_fd_close (in);
 
   write_pad (size);
+  free (tcn);
 }
 
 int
