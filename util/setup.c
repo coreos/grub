@@ -322,7 +322,10 @@ SETUP (const char *dir,
 	  continue;
 	try_dev = grub_device_open (drive);
 	if (! try_dev)
-	  continue;
+	  {
+	    free (drive);
+	    continue;
+	  }
 	if (!found && try_dev->disk->id == dest_dev->disk->id
 	    && try_dev->disk->dev->id == dest_dev->disk->dev->id)
 	  {
