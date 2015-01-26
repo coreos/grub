@@ -622,7 +622,10 @@ device_map_check_duplicates (const char *dev_map)
 
   fp = grub_util_fopen (dev_map, "r");
   if (! fp)
-    return;
+    {
+      free (d);
+      return;
+    }
 
   while (fgets (buf, sizeof (buf), fp))
     {
