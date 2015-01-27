@@ -122,6 +122,8 @@ find_obppath (const char *sysfs_path_orig)
       fd = open(path, O_RDONLY);
       if (fd < 0 || fstat (fd, &st) < 0)
 	{
+	  if (fd >= 0)
+	    close (fd);
 	  snprintf(path, path_size, "%s/devspec", sysfs_path);
 	  fd = open(path, O_RDONLY);
 	}
