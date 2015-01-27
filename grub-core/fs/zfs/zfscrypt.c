@@ -354,6 +354,7 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
       if (err)
 	{
 	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (cipher);
 	  continue;
 	}
 		    
@@ -362,6 +363,7 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
       if (err)
 	{
 	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (cipher);
 	  continue;
 	}
       
@@ -372,6 +374,7 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	{
 	  grub_dprintf ("zfs", "key loading failed\n");
 	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (cipher);
 	  continue;
 	}
 
@@ -381,12 +384,14 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	{
 	  grub_dprintf ("zfs", "key loading failed\n");
 	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (cipher);
 	  continue;
 	}
       ret = grub_crypto_cipher_open (GRUB_CIPHER_AES);
       if (!ret)
 	{
 	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (cipher);
 	  continue;
 	}
       err = grub_crypto_cipher_set_key (ret, decrypted, keylen);
@@ -394,8 +399,10 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
 	{
 	    grub_errno = GRUB_ERR_NONE;
 	    grub_crypto_cipher_close (ret);
+	    grub_crypto_cipher_close (cipher);
 	    continue;
 	  }
+      grub_crypto_cipher_close (cipher);
       return ret;
     }
   return NULL;
