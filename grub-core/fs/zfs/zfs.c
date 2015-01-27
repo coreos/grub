@@ -2835,6 +2835,8 @@ dnode_get_path (struct subvolume *subvol, const char *path_in, dnode_end_t *dn,
 	  if (!path_buf)
 	    {
 	      grub_free (oldpathbuf);
+	      if (free_symval)
+		grub_free (sym_value);
 	      return grub_errno;
 	    }
 	  grub_memcpy (path, sym_value, sym_sz);
