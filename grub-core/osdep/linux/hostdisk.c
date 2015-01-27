@@ -376,7 +376,8 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
 
     part_start = grub_partition_get_start (disk->partition);
 
-    strlcpy (dev, grub_util_biosdisk_get_osdev (disk), sizeof (dev));
+    strncpy (dev, grub_util_biosdisk_get_osdev (disk), sizeof (dev) - 1);
+    dev[sizeof(dev) - 1] = '\0';
     if (disk->partition
 	&& strncmp (dev, "/dev/", 5) == 0)
       {
@@ -439,7 +440,8 @@ grub_util_fd_open_device (const grub_disk_t disk, grub_disk_addr_t sector, int f
 	    if (*max == 0)
 	      *max = ~0ULL;
 	    is_partition = 0;
-	    strlcpy (dev, grub_util_biosdisk_get_osdev (disk), sizeof (dev));
+	    strncpy (dev, grub_util_biosdisk_get_osdev (disk), sizeof (dev) - 1);
+	    dev[sizeof(dev) - 1] = '\0';
 	    goto reopen;
 	  }
 	sector -= part_start;
