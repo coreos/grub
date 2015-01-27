@@ -723,7 +723,10 @@ list_nodes (void *record, void *hook_arg)
 
       /* If the name is obviously invalid, skip this node.  */
       if (catkey->name[i] == 0)
-	return 0;
+	{
+	  grub_free (filename);
+	  return 0;
+	}
     }
 
   *grub_utf16_to_utf8 ((grub_uint8_t *) filename, catkey->name,
@@ -745,7 +748,10 @@ list_nodes (void *record, void *hook_arg)
      callback function.  */
   node = grub_malloc (sizeof (*node));
   if (!node)
-    return 1;
+    {
+      grub_free (filename);
+      return 1;
+    }
   node->data = ctx->dir->data;
   node->compressed = 0;
   node->cbuf = 0;
