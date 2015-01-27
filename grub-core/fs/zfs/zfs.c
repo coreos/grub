@@ -285,7 +285,7 @@ static const char *spa_feature_names[] = {
 
 static int
 check_feature(const char *name, grub_uint64_t val, struct grub_zfs_dir_ctx *ctx);
-static int
+static grub_err_t
 check_mos_features(dnode_phys_t *mosmdn_phys,grub_zfs_endian_t endian,struct grub_zfs_data* data );
 
 static grub_err_t 
@@ -1975,7 +1975,7 @@ dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf,
 						dn->endian) 
 	    << SPA_MINBLOCKSHIFT;
 	  *buf = grub_malloc (size);
-	  if (*buf)
+	  if (!*buf)
 	    {
 	      err = grub_errno;
 	      break;
@@ -3979,7 +3979,12 @@ iterate_zap (const char *name, grub_uint64_t val, struct grub_zfs_dir_ctx *ctx)
   dnode_end_t dn;
   grub_memset (&info, 0, sizeof (info));
 
-  dnode_get (&(ctx->data->subvol.mdn), val, 0, &dn, ctx->data);
+  err = dnode_get (&(ctx->data->subvol.mdn), val, 0, &dn, ctx->data);
+  if (err)
+    {
+      grub_print_error ();
+      return 0;
+    }
 
   if (dn.dn.dn_bonustype == DMU_OT_SA)
     {
@@ -4200,11 +4205,11 @@ check_feature (const char *name, grub_uint64_t val,
  *	errnum: Failure.
  */
 	    	   
-static int
+static grub_err_t
 check_mos_features(dnode_phys_t *mosmdn_phys,grub_zfs_endian_t endian,struct grub_zfs_data* data )
 {
   grub_uint64_t objnum;
-  grub_uint8_t errnum = 0;
+  grub_err_t errnum = 0;
   dnode_end_t dn,mosmdn;
   mzap_phys_t* mzp;
   grub_zfs_endian_t endianzap;
