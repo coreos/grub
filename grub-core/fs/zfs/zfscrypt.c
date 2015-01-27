@@ -238,7 +238,7 @@ grub_gcm_decrypt (grub_crypto_cipher_handle_t cipher,
       grub_crypto_xor (out + 16 * i, in + 16 * i, mul, csize);
     }
   for (j = 0; j < 8; j++)
-    mac[15 - j] ^= ((psize * 8) >> (8 * j));
+    mac[15 - j] ^= ((((grub_uint64_t) psize) * 8) >> (8 * j));
   grub_gcm_mul (mac, h);
 
   if (mac_out)
