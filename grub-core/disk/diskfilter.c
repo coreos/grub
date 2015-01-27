@@ -71,10 +71,12 @@ is_lv_readable (struct grub_diskfilter_lv *lv, int easily)
 	case GRUB_DISKFILTER_RAID6:
 	  if (!easily)
 	    need--;
+	  /* Fallthrough.  */
 	case GRUB_DISKFILTER_RAID4:
 	case GRUB_DISKFILTER_RAID5:
 	  if (!easily)
 	    need--;
+	  /* Fallthrough.  */
 	case GRUB_DISKFILTER_STRIPED:
 	  break;
 
@@ -584,6 +586,7 @@ read_segment (struct grub_diskfilter_segment *seg, grub_disk_addr_t sector,
       if (seg->node_count == 1)
 	return grub_diskfilter_read_node (&seg->nodes[0],
 					  sector, size, buf);
+      /* Fallthrough.  */
     case GRUB_DISKFILTER_MIRROR:
     case GRUB_DISKFILTER_RAID10:
       {

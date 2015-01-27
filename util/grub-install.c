@@ -1809,7 +1809,7 @@ main (int argc, char *argv[])
 	  grub_install_copy_file (imgfile, dst, 1);
 	  free (dst);
 	}
-
+      /* Fallthrough.  */
     case GRUB_INSTALL_PLATFORM_X86_64_EFI:
       if (efidir_is_mac)
 	{

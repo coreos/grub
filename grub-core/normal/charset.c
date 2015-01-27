@@ -929,6 +929,7 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
 	  case GRUB_BIDI_TYPE_R:
 	  case GRUB_BIDI_TYPE_AL:
 	    bidi_needed = 1;
+	    /* Fallthrough.  */
 	  default:
 	    {
 	      if (join_state == JOIN_FORCE)

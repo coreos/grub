@@ -874,6 +874,7 @@ vbe2videoinfo (grub_uint32_t mode,
       /* CGA is basically 4-bit packed pixel.  */
     case GRUB_VBE_MEMORY_MODEL_CGA:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_CGA;
+      /* Fallthrough.  */
     case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
       break;
@@ -886,6 +887,7 @@ vbe2videoinfo (grub_uint32_t mode,
       /* Non chain 4 is a special case of planar.  */
     case GRUB_VBE_MEMORY_MODEL_NONCHAIN4_256:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_NONCHAIN4;
+      /* Fallthrough.  */
     case GRUB_VBE_MEMORY_MODEL_PLANAR:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_PLANAR
 	| GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
