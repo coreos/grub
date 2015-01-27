@@ -334,7 +334,7 @@ vendor_is_ATA(const char *path)
 }
 
 static void
-check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
+check_sas (const char *sysfs_path, int *tgt, unsigned long int *sas_address)
 {
   char *ed = strstr (sysfs_path, "end_device");
   char *p, *q, *path;
@@ -346,8 +346,10 @@ check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
     return;
 
   /* SAS devices are identified using disk@$PHY_ID */
-  p = strdup (sysfs_path);
+  p = xstrdup (sysfs_path);
   ed = strstr(p, "end_device");
+  if (!ed)
+    return;
 
   q = ed;
   while (*q && *q != '/')
