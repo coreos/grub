@@ -397,11 +397,11 @@ grub_zfs_load_key_real (const struct grub_zfs_key *key,
       err = grub_crypto_cipher_set_key (ret, decrypted, keylen);
       if (err)
 	{
-	    grub_errno = GRUB_ERR_NONE;
-	    grub_crypto_cipher_close (ret);
-	    grub_crypto_cipher_close (cipher);
-	    continue;
-	  }
+	  grub_errno = GRUB_ERR_NONE;
+	  grub_crypto_cipher_close (ret);
+	  grub_crypto_cipher_close (cipher);
+	  continue;
+	}
       grub_crypto_cipher_close (cipher);
       return ret;
     }
