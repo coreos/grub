@@ -69,8 +69,7 @@ grub_cpio_find_file (struct grub_archelp_data *data, char **name,
       return GRUB_ERR_NONE;
     }
 
-  if (mode)
-    *mode = modeval;
+  *mode = modeval;
 
   *name = grub_malloc (namesize + 1);
   if (*name == NULL)

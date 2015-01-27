@@ -74,8 +74,7 @@ grub_cbfs_find_file (struct grub_archelp_data *data, char **name,
       (void) mtime;
       offset = grub_be_to_cpu32 (hd.offset);
 
-      if (mode)
-	*mode = GRUB_ARCHELP_ATTR_FILE | GRUB_ARCHELP_ATTR_NOTIME;
+      *mode = GRUB_ARCHELP_ATTR_FILE | GRUB_ARCHELP_ATTR_NOTIME;
 
       namesize = offset;
       if (namesize >= sizeof (hd))
