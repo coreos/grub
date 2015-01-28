@@ -922,6 +922,8 @@ write_entry (struct output_buffer *outbuf,
 
 	    print_string ("\n");
 	  }
+	if (ptr && *ptr)
+	  grub_free (cmdline);
       }
       break;
     case KERNEL_CHAINLOADER:
