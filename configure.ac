@@ -678,7 +678,11 @@ fi
 # that floats are a good fit to run instead of what's written in the code.
 # Given that floating point unit is disabled (if present to begin with)
 # when GRUB is running which may result in various hard crashes.
-TARGET_CFLAGS="$TARGET_CFLAGS -msoft-float"
+if test "x$target_cpu" = xarm64; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd"
+else
+  TARGET_CFLAGS="$TARGET_CFLAGS -msoft-float"
+fi
 
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
