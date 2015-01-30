@@ -387,7 +387,7 @@ test_parse (char **args, int *argn, int argc)
       if (grub_strcmp (args[*argn], ")") == 0)
 	{
 	  (*argn)++;
-	  continue;
+	  return ctx.or || ctx.and;
 	}
       /* Recursively invoke if parenthesis. */
       if (grub_strcmp (args[*argn], "(") == 0)
