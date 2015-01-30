@@ -191,15 +191,18 @@ grub_net_send_ip4_packet (struct grub_net_network_level_interface *inf,
 			  grub_net_ip_protocol_t proto)
 {
   struct iphdr *iph;
+  grub_err_t err;
 
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV4_HEADER_SIZE == sizeof (*iph));
 
   if (nb->tail - nb->data + sizeof (struct iphdr) > inf->card->mtu)
     return send_fragmented (inf, target, nb, proto, *ll_target_addr);
 
-  grub_netbuff_push (nb, sizeof (*iph));
-  iph = (struct iphdr *) nb->data;
+  err = grub_netbuff_push (nb, sizeof (*iph));
+  if (err)
+    return err;
 
+  iph = (struct iphdr *) nb->data;
   iph->verhdrlen = ((4 << 4) | 5);
   iph->service = 0;
   iph->len = grub_cpu_to_be16 (nb->tail - nb->data);
@@ -602,15 +605,18 @@ grub_net_send_ip6_packet (struct grub_net_network_level_interface *inf,
 			  grub_net_ip_protocol_t proto)
 {
   struct ip6hdr *iph;
+  grub_err_t err;
 
   COMPILE_TIME_ASSERT (GRUB_NET_OUR_IPV6_HEADER_SIZE == sizeof (*iph));
 
   if (nb->tail - nb->data + sizeof (struct iphdr) > inf->card->mtu)
     return grub_error (GRUB_ERR_NET_PACKET_TOO_BIG, "packet too big");
 
-  grub_netbuff_push (nb, sizeof (*iph));
-  iph = (struct ip6hdr *) nb->data;
+  err = grub_netbuff_push (nb, sizeof (*iph));
+  if (err)
+    return err;
 
+  iph = (struct ip6hdr *) nb->data;
   iph->version_class_flow = grub_cpu_to_be32_compile_time ((6 << 28));
   iph->len = grub_cpu_to_be16 (nb->tail - nb->data - sizeof (*iph));
   iph->protocol = proto;
