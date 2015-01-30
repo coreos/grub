@@ -529,7 +529,7 @@ SETUP (const char *dir,
     bl.block = bl.first_block;
     while (bl.block->len)
       {
-	grub_memset (bl.block, 0, sizeof (bl.block));
+	grub_memset (bl.block, 0, sizeof (*bl.block));
       
 	bl.block--;
 
