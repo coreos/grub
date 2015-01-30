@@ -150,7 +150,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	    = (struct multiboot_header_tag_information_request *) tag;
 	  if (request_tag->flags & MULTIBOOT_HEADER_TAG_OPTIONAL)
 	    break;
-	  for (i = 0; i < (request_tag->size - sizeof (request_tag))
+	  for (i = 0; i < (request_tag->size - sizeof (*request_tag))
 		 / sizeof (request_tag->requests[0]); i++)
 	    switch (request_tag->requests[i])
 	      {
