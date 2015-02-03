@@ -205,6 +205,21 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	   */
 	case R_ARM_V4BX:
 	  break;
+	case R_ARM_THM_MOVW_ABS_NC:
+	case R_ARM_THM_MOVT_ABS:
+	  {
+	    grub_uint32_t offset;
+	    offset = grub_arm_thm_movw_movt_get_value((grub_uint16_t *) target);
+	    offset += sym_addr;
+
+	    if (ELF_R_TYPE (rel->r_info) == R_ARM_THM_MOVT_ABS)
+	      offset >>= 16;
+	    else
+	      offset &= 0xffff;
+
+	    grub_arm_thm_movw_movt_set_value((grub_uint16_t *) target, offset);
+	  }
+	  break;
 	case R_ARM_THM_JUMP19:
 	  {
 	    /* Thumb instructions can be 16-bit aligned */

@@ -25,6 +25,20 @@
 #include <grub/i18n.h>
 #include <grub/arm/reloc.h>
 
+static inline grub_uint32_t
+thumb_get_instruction_word(grub_uint16_t *target)
+{
+  /* Extract instruction word in alignment-safe manner */
+  return grub_le_to_cpu16 ((*target)) << 16 | grub_le_to_cpu16 (*(target + 1));
+}
+
+static inline void
+thumb_set_instruction_word(grub_uint16_t *target, grub_uint32_t insword)
+{
+  *target = grub_cpu_to_le16 (insword >> 16);
+  *(target + 1) = grub_cpu_to_le16 (insword & 0xffff);
+}
+
 /*
  * R_ARM_ABS32
  *
@@ -213,4 +227,29 @@ grub_arm_jump24_set_offset (grub_uint32_t *target,
   insword |= (offset >> 2) & 0x00ffffff;
 
   *target = grub_cpu_to_le32 (insword);
+}
+
+grub_uint16_t
+grub_arm_thm_movw_movt_get_value (grub_uint16_t *target)
+{
+  grub_uint32_t insword;
+
+  insword = thumb_get_instruction_word (target);
+
+  return ((insword & 0xf0000) >> 4) | ((insword & 0x04000000) >> 15) | \
+    ((insword & 0x7000) >> 4) | (insword & 0xff);
+}
+
+void
+grub_arm_thm_movw_movt_set_value (grub_uint16_t *target, grub_uint16_t value)
+{
+  grub_uint32_t insword;
+
+  insword = thumb_get_instruction_word (target);
+  insword &= 0xfbf08f00;
+
+  insword |= ((value & 0xf000) << 4) | ((value & 0x0800) << 15) | \
+    ((value & 0x0700) << 4) | (value & 0xff);
+
+  thumb_set_instruction_word (target, insword);
 }
