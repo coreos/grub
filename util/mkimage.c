@@ -937,8 +937,8 @@ grub_install_get_image_target (const char *arg)
 {
   unsigned i, j;
   for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-    for (j = 0; image_targets[i].names[j]
-	   && j < ARRAY_SIZE (image_targets[i].names); j++)
+    for (j = 0; j < ARRAY_SIZE (image_targets[i].names) &&
+		    image_targets[i].names[j]; j++)
       if (strcmp (arg, image_targets[i].names[j]) == 0)
 	return &image_targets[i];
   return NULL;
