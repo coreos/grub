@@ -426,7 +426,7 @@ grub_lvm_detect (grub_disk_t disk,
 #endif
 		  goto lvs_fail;
 		}
-	      lv->segments = grub_malloc (sizeof (*seg) * lv->segment_count);
+	      lv->segments = grub_zalloc (sizeof (*seg) * lv->segment_count);
 	      seg = lv->segments;
 
 	      for (i = 0; i < lv->segment_count; i++)
