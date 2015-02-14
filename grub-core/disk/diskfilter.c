@@ -1089,8 +1089,15 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
     goto fail;
   array->lvs->segment_count = 1;
   array->lvs->visible = 1;
-  array->lvs->name = array->name;
-  array->lvs->fullname = array->name;
+  if (array->name)
+    {
+      array->lvs->name = grub_strdup (array->name);
+      if (!array->lvs->name)
+	goto fail;
+      array->lvs->fullname = grub_strdup (array->name);
+      if (!array->lvs->fullname)
+	goto fail;
+    }
   array->lvs->vg = array;
 
   array->lvs->idname = grub_malloc (sizeof ("mduuid/") + 2 * uuidlen);
@@ -1141,7 +1148,18 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
   return array;
 
  fail:
-  grub_free (array->lvs);
+  if (array->lvs)
+    {
+      grub_free (array->lvs->name);
+      grub_free (array->lvs->fullname);
+      grub_free (array->lvs->idname);
+      if (array->lvs->segments)
+	{
+	  grub_free (array->lvs->segments->nodes);
+	  grub_free (array->lvs->segments);
+	}
+      grub_free (array->lvs);
+    }
   while (array->pvs)
     {
       pv = array->pvs->next;
@@ -1250,10 +1268,9 @@ free_array (void)
 	{
 	  unsigned i;
 	  vg->lvs = lv->next;
-	  if (lv->name != lv->fullname)
-	    grub_free (lv->fullname);
-	  if (lv->name != vg->name)
-	    grub_free (lv->name);
+	  grub_free (lv->fullname);
+	  grub_free (lv->name);
+	  grub_free (lv->idname);
 	  for (i = 0; i < lv->segment_count; i++)
 	    grub_free (lv->segments[i].nodes);
 	  grub_free (lv->segments);
