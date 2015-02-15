@@ -1031,7 +1031,10 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
 	if (n == 1)
 	  n = (layout >> 8) & 0xFF;
 	if (n == 0)
-	  return NULL;
+	  {
+	    grub_free (uuid);
+	    return NULL;
+	  }
 
 	totsize = grub_divmod64 (nmemb * disk_size, n, 0);
       }
@@ -1045,6 +1048,7 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
       break;
 
     default:
+      grub_free (uuid);
       return NULL;
     }
 
@@ -1067,7 +1071,10 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
     }
   array = grub_zalloc (sizeof (*array));
   if (!array)
-    return NULL;
+    {
+      grub_free (uuid);
+      return NULL;
+    }
   array->uuid = uuid;
   array->uuid_len = uuidlen;
   if (name)
@@ -1166,6 +1173,8 @@ grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
       grub_free (array->pvs);
       array->pvs = pv;
     }
+  grub_free (array->name);
+  grub_free (array->uuid);
   grub_free (array);
   return NULL;
 }
