@@ -869,7 +869,6 @@ write_entry (struct output_buffer *outbuf,
     case KERNEL_LINUX:
       {
 	char *ptr;
-	char *cmdline;
 	char *initrd = NULL;
 	for (ptr = curentry->append; ptr && *ptr; ptr++)
 	  if ((ptr == curentry->append || grub_isspace (ptr[-1]))
@@ -879,31 +878,19 @@ write_entry (struct output_buffer *outbuf,
 	if (ptr && *ptr)
 	  {
 	    char *ptr2;
-	    grub_size_t totlen = grub_strlen (curentry->append);
-	    initrd = ptr + sizeof ("initrd=") - 1;
-	    for (ptr2 = ptr; *ptr2 && !grub_isspace (*ptr2); ptr2++);
-	    if (*ptr2)
-	      {
-		*ptr2 = 0;
-		ptr2++;
-	      }
-	    cmdline = grub_malloc (totlen + 1 - (ptr2 - ptr));
-	    if (!cmdline)
+	    initrd = grub_strdup(ptr + sizeof ("initrd=") - 1);
+	    if (!initrd)
 	      return grub_errno;
-	    grub_memcpy (cmdline, curentry->append, ptr - curentry->append);
-	    grub_memcpy (cmdline + (ptr - curentry->append),
-			 ptr2, totlen - (ptr2 - curentry->append));
-	    *(cmdline + totlen - (ptr2 - ptr)) = 0;
+	    for (ptr2 = initrd; *ptr2 && !grub_isspace (*ptr2); ptr2++);
+	    *ptr2 = 0;
 	  }
-	else
-	  cmdline = curentry->append;
 	print_string (" if test x$grub_platform = xpc; then "
 		      "linux_suffix=16; else linux_suffix= ; fi\n");
 	print_string ("  linux$linux_suffix ");
 	print_file (outbuf, menu, curentry->kernel_file, NULL);
 	print_string (" ");
-	if (cmdline)
-	  print (outbuf, cmdline, grub_strlen (cmdline));
+	if (curentry->append)
+	  print (outbuf, curentry->append, grub_strlen (curentry->append));
 	print_string ("\n");
 	if (initrd || curentry->initrds)
 	  {
@@ -922,8 +909,7 @@ write_entry (struct output_buffer *outbuf,
 
 	    print_string ("\n");
 	  }
-	if (ptr && *ptr)
-	  grub_free (cmdline);
+	grub_free (initrd);
       }
       break;
     case KERNEL_CHAINLOADER:
