@@ -100,6 +100,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
 #define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* Extents used */
 #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_MMP		0x0100
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 
 /* The set of back-incompatible features this driver DOES support. Add (OR)
@@ -115,8 +116,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
  *                 journal because they will ignore the journal, but the next
  *                 ext3 driver to mount the volume will find the journal and
  *                 replay it, potentially corrupting the metadata written by
- *                 the ext2 drivers. Safe to ignore for this RO driver.  */
-#define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER )
+ *                 the ext2 drivers. Safe to ignore for this RO driver.
+ * mmp:            Not really back-incompatible - was added as such to
+ *                 avoid multiple read-write mounts. Safe to ignore for this
+ *                 RO driver.
+ */
+#define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER \
+				     | EXT4_FEATURE_INCOMPAT_MMP)
 
 
 #define EXT3_JOURNAL_MAGIC_NUMBER	0xc03b3998U
