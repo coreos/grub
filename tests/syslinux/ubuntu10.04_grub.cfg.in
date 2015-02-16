@@ -1,4 +1,4 @@
-  background_image '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux'/'splash.png'
+  background_image '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux'/'splash.png'
 # D-I config version 2.0
   # UNSUPPORTED command 'menu hshift 13'
   # UNSUPPORTED command 'menu width 49'
@@ -41,7 +41,7 @@ menuentry 'Test memory' --hotkey 'm' --id 'memtest' {
   linux$linux_suffix '/'/'/install/mt86plus' 
 }
 menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/gtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/gtk.cfg not found
   # UNSUPPORTED command 'menu begin advanced'
   # UNSUPPORTED command 'menu title Advanced options'
   # UNSUPPORTED command 'menu color title	* #FFFFFFFF *'
@@ -63,15 +63,15 @@ menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
 }
 menuentry 'Back..' --hotkey 'b' --id 'mainmenu' {
   # UNSUPPORTED command 'menu exit'
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/adgtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/adgtk.cfg not found
   # UNSUPPORTED command 'menu end'
   # UNSUPPORTED entry type 0
 true;
 }
 menuentry 'Help' --hotkey 'h' --id 'help' {
   # UNSUPPORTED command 'ui gfxboot bootlogo'
-#'/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux'/'prompt.cfg' (host)/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
-  background_image '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/'/'splash.png'
+#'@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux'/'prompt.cfg' (host)@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
+  background_image '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/'/'splash.png'
   # UNSUPPORTED command 'display f1.txt'
   # UNSUPPORTED command 'menu hshift 13'
   # UNSUPPORTED command 'menu width 49'
@@ -114,7 +114,7 @@ menuentry 'Test memory' --hotkey 'm' --id 'memtest' {
   linux$linux_suffix '/'/'/install/mt86plus' 
 }
 menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//gtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//gtk.cfg not found
   # UNSUPPORTED command 'menu begin advanced'
   # UNSUPPORTED command 'menu title Advanced options'
   # UNSUPPORTED command 'menu color title	* #FFFFFFFF *'
@@ -136,14 +136,14 @@ menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
 }
 menuentry 'Back..' --hotkey 'b' --id 'mainmenu' {
   # UNSUPPORTED command 'menu exit'
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//adgtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//adgtk.cfg not found
   # UNSUPPORTED command 'menu end'
   # UNSUPPORTED entry type 0
 true;
 }
 menuentry 'Help' --hotkey 'h' --id 'help' {
-#'/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/'/'prompt.cfg' (host)/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
-  syslinux_configfile -r '/'/'/' -c '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/'/'' '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/'/'prompt.cfg'
+#'@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/'/'prompt.cfg' (host)@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
+  syslinux_configfile -r '/'/'/' -c '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/'/'' '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/'/'prompt.cfg'
 }
 menuentry 'menu' --id 'menu' {
   # UNSUPPORTED command 'f1 f1.txt'
@@ -156,8 +156,8 @@ menuentry 'menu' --id 'menu' {
   # UNSUPPORTED command 'f8 f8.txt'
   # UNSUPPORTED command 'f9 f9.txt'
   # UNSUPPORTED command 'f0 f10.txt'
-#'/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/'/'isolinux.cfg' (host)/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/isolinux.cfg:
-  background_image '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//'/'splash.png'
+#'@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/'/'isolinux.cfg' (host)@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/isolinux.cfg:
+  background_image '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//'/'splash.png'
 # D-I config version 2.0
   # UNSUPPORTED command 'menu hshift 13'
   # UNSUPPORTED command 'menu width 49'
@@ -200,7 +200,7 @@ menuentry 'Test memory' --hotkey 'm' --id 'memtest' {
   linux$linux_suffix '/'/'/install/mt86plus' 
 }
 menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux///gtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux///gtk.cfg not found
   # UNSUPPORTED command 'menu begin advanced'
   # UNSUPPORTED command 'menu title Advanced options'
   # UNSUPPORTED command 'menu color title	* #FFFFFFFF *'
@@ -222,15 +222,15 @@ menuentry 'Boot from first hard disk' --hotkey 'b' --id 'hd' {
 }
 menuentry 'Back..' --hotkey 'b' --id 'mainmenu' {
   # UNSUPPORTED command 'menu exit'
-# File (host)//home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux///adgtk.cfg not found
+# File (host)/@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux///adgtk.cfg not found
   # UNSUPPORTED command 'menu end'
   # UNSUPPORTED entry type 0
 true;
 }
 menuentry 'Help' --hotkey 'h' --id 'help' {
   # UNSUPPORTED command 'ui gfxboot bootlogo'
-#'/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//'/'prompt.cfg' (host)/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
-  syslinux_configfile -r '/'/'/' -c '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//'/'' '/home/phcoder/grub2/git/tests/syslinux/ubuntu10.04/isolinux//'/'prompt.cfg'
+#'@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//'/'prompt.cfg' (host)@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux/prompt.cfg:
+  syslinux_configfile -r '/'/'/' -c '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//'/'' '@abs_top_srcdir@/tests/syslinux/ubuntu10.04/isolinux//'/'prompt.cfg'
 }
 }
 }

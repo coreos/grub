@@ -132,4 +132,4 @@ EXTRA_DIST += tests/syslinux/ubuntu10.04/isolinux/stdmenu.cfg
 EXTRA_DIST += tests/syslinux/ubuntu10.04/isolinux/dtmenu.cfg
 EXTRA_DIST += tests/syslinux/ubuntu10.04/isolinux/po4a.cfg
 EXTRA_DIST += tests/syslinux/ubuntu10.04/isolinux/rqtxt.cfg
-EXTRA_DIST += tests/syslinux/ubuntu10.04_grub.cfg
+EXTRA_DIST += tests/syslinux/ubuntu10.04_grub.cfg.in
