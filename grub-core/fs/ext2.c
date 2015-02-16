@@ -107,6 +107,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define EXT2_DRIVER_SUPPORTED_INCOMPAT ( EXT2_FEATURE_INCOMPAT_FILETYPE \
                                        | EXT4_FEATURE_INCOMPAT_EXTENTS  \
                                        | EXT4_FEATURE_INCOMPAT_FLEX_BG \
+                                       | EXT2_FEATURE_INCOMPAT_META_BG \
                                        | EXT4_FEATURE_INCOMPAT_64BIT)
 /* List of rationales for the ignored "incompatible" features:
  * needs_recovery: Not really back-incompatible - was added as such to forbid
@@ -331,16 +332,68 @@ static grub_dl_t my_mod;
 
 
 
+/* Check is a = b^x for some x.  */
+static inline int
+is_power_of (grub_uint64_t a, grub_uint32_t b)
+{
+  grub_uint64_t c;
+  /* Prevent overflow assuming b < 8.  */
+  if (a >= (1LL << 60))
+    return 0;
+  for (c = 1; c <= a; c *= b);
+  return (c == a);
+}
+
+
+static inline int
+group_has_super_block (struct grub_ext2_data *data, grub_uint64_t group)
+{
+  if (!(data->sblock.feature_ro_compat
+	& grub_cpu_to_le32_compile_time(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)))
+    return 1;
+  /* Algorithm looked up in Linux source.  */
+  if (group <= 1)
+    return 1;
+  /* Even number is never a power of odd number.  */
+  if (!(group & 1))
+    return 0;
+  return (is_power_of(group, 7) || is_power_of(group, 5) ||
+	  is_power_of(group, 3));
+}
+
 /* Read into BLKGRP the blockgroup descriptor of blockgroup GROUP of
    the mounted filesystem DATA.  */
 inline static grub_err_t
-grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
+grub_ext2_blockgroup (struct grub_ext2_data *data, grub_uint64_t group,
 		      struct grub_ext2_block_group *blkgrp)
 {
+  grub_uint64_t full_offset = (group << data->log_group_desc_size);
+  grub_uint64_t block, offset;
+  block = (full_offset >> LOG2_BLOCK_SIZE (data));
+  offset = (full_offset & ((1 << LOG2_BLOCK_SIZE (data)) - 1));
+  if ((data->sblock.feature_incompat
+       & grub_cpu_to_le32_compile_time (EXT2_FEATURE_INCOMPAT_META_BG))
+      && block >= grub_le_to_cpu32(data->sblock.first_meta_bg))
+    {
+      grub_uint64_t first_block_group;
+      /* Find the first block group for which a descriptor
+	 is stored in given block. */
+      first_block_group = (block << (LOG2_BLOCK_SIZE (data)
+				     - data->log_group_desc_size));
+
+      block = (first_block_group
+	       * grub_le_to_cpu32(data->sblock.blocks_per_group));
+
+      if (group_has_super_block (data, first_block_group))
+	block++;
+    }
+  else
+    /* Superblock.  */
+    block++;
   return grub_disk_read (data->disk,
-                         ((grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
-                          << LOG2_EXT2_BLOCK_SIZE (data)),
-			 group << data->log_group_desc_size,
+                         ((grub_le_to_cpu32 (data->sblock.first_data_block)
+			   + block)
+                          << LOG2_EXT2_BLOCK_SIZE (data)), offset,
 			 sizeof (struct grub_ext2_block_group), blkgrp);
 }
 

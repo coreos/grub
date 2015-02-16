@@ -281,7 +281,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    #FSLABEL="g;/_é莭莽😁кит u"
 		    ;;
 	    # FS LIMITATION: reiserfs, extN and jfs label is at most 16 UTF-8 characters
-		x"reiserfs_old" | x"reiserfs" | x"ext2" | xext2_old | x"ext3" | x"ext4" | x"lvm"* | x"mdraid"* | x"jfs" | x"jfs_caseins")
+		x"reiserfs_old" | x"reiserfs" | x"ext"* | x"lvm"* | x"mdraid"* | x"jfs" | x"jfs_caseins")
 		    FSLABEL="g;/éт 莭😁";;
             # FS LIMITATION: No underscore, space, semicolon, slash or international characters in UFS* in label. Limited to 32 UTF-8 characters
 		x"ufs1" | x"ufs1_sun" | x"ufs2")
@@ -745,6 +745,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		xext2_old)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext2" -r 0 -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
 		    MOUNTFS=ext2
+		    ;;
+		xext4_metabg)
+		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O meta_bg,^resize_inode -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    MOUNTFS=ext4
 		    ;;
 		xext*)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;

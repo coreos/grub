@@ -29,3 +29,4 @@ fi
 "@builddir@/grub-fs-tester" ext2
 "@builddir@/grub-fs-tester" ext3
 "@builddir@/grub-fs-tester" ext4
+"@builddir@/grub-fs-tester" ext4_metabg
