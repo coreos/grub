@@ -1430,6 +1430,13 @@ config_file (struct output_buffer *outbuf,
       print_string ("\n");
     }
 
+  if (menu.comments)
+    {
+      err = print (outbuf, menu.comments, grub_strlen (menu.comments));
+      if (err)
+	return err;
+    }
+
   if (menu.timeout == 0 && menu.entries && menu.def)
     {
       err = print_entry (outbuf, &menu, menu.def);
@@ -1446,12 +1453,6 @@ config_file (struct output_buffer *outbuf,
       if (err)
 	return err;
       print_string ("\n");
-      if (menu.comments)
-	{
-	  err = print (outbuf, menu.comments, grub_strlen (menu.comments));
-	  if (err)
-	    return err;
-	}
 
       if (menu.def)
 	{
