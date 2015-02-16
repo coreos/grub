@@ -1162,6 +1162,12 @@ script = {
   common = tests/grub_cmd_test.in;
 };
 
+script = {
+  testcase;
+  name = syslinux_test;
+  common = tests/syslinux_test.in;
+};
+
 program = {
   testcase;
   name = example_unit_test;
