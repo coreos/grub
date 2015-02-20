@@ -78,12 +78,9 @@ fi
 
 # Default HOST_CPPFLAGS
 HOST_CPPFLAGS="$HOST_CPPFLAGS -Wall -W"
-HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
 HOST_CPPFLAGS="$HOST_CPPFLAGS -DGRUB_UTIL=1"
 
 TARGET_CPPFLAGS="$TARGET_CPPFLAGS -Wall -W"
-TARGET_CPPFLAGS="$TARGET_CPPFLAGS -I\$(top_srcdir)/include"
-TARGET_CPPFLAGS="$TARGET_CPPFLAGS -I\$(top_builddir)/include"
 
 case "$target_cpu" in
   i[[3456]]86)	target_cpu=i386 ;;
@@ -1642,6 +1639,12 @@ fi
 
 TARGET_CPP="$TARGET_CC -E"
 TARGET_CCAS=$TARGET_CC
+
+# Includes which include make-time substitutions. They must come last
+# as to avoid executing top_builddir in shell.
+HOST_CPPFLAGS="$HOST_CPPFLAGS -I\$(top_builddir)/include"
+TARGET_CPPFLAGS="$TARGET_CPPFLAGS -I\$(top_srcdir)/include"
+TARGET_CPPFLAGS="$TARGET_CPPFLAGS -I\$(top_builddir)/include"
 
 GRUB_TARGET_CPU="${target_cpu}"
 GRUB_PLATFORM="${platform}"
