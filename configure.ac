@@ -552,7 +552,7 @@ int main (void);
 
 TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_w_extra_flags"
 
-AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang]
+AC_CACHE_CHECK([if compiling with clang], [grub_cv_cc_target_clang],
 [
 CFLAGS="$TARGET_CFLAGS"
 AC_COMPILE_IFELSE(
