@@ -89,7 +89,7 @@ LOCAL (codestart):
 	sti		/* we're safe again */
 
 	/* save the boot drive */
-	ADDR32	movb	%dl, LOCAL(boot_drive)
+	movb	%dl, LOCAL(boot_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13

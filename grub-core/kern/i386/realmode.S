@@ -137,7 +137,7 @@ real_to_prot:
 	/* load the GDT register */
 	xorw	%ax, %ax
 	movw	%ax, %ds
-	ADDR32 lgdtl	gdtdesc
+	lgdtl	gdtdesc
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
