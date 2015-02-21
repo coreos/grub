@@ -38,5 +38,5 @@ start:
 	/* This region is a junk. Do you say that this is wasteful?
 	   But I like that the memory layout of the body is consistent
 	   among different kernels rather than scamping just for 1.5KB. */
-	. = _start + 0x8200 - 0x7C00 - 0x200 - 1
+	.org  0x8200 - 0x7C00 - 0x200 - 1
 	.byte	0

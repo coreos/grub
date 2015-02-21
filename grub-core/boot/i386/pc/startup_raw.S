@@ -50,23 +50,23 @@ LOCAL (base):
 	 *  This is a special data area.
 	 */
 
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 LOCAL(compressed_size):
 	.long 0
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 LOCAL(uncompressed_size):
 	.long 0
 
-	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
+	.org GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
-	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH
+	.org GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH
 	.short	(LOCAL(reed_solomon_part) - _start)
 
 /*
  *  This is the area for all of the special variables.
  */
-	. = _start + GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
+	.org GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
 LOCAL(boot_dev):
 	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
