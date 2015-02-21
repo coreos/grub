@@ -735,6 +735,10 @@ __ctzsi2 (grub_uint32_t x)
 grub_uint32_t
 __aeabi_uidiv (grub_uint32_t a, grub_uint32_t b)
   __attribute__ ((alias ("__udivsi3")));
+void *__aeabi_memcpy (void *dest, const void *src, grub_size_t n)
+  __attribute__ ((alias ("grub_memcpy")));
+void *__aeabi_memset (void *s, int c, grub_size_t n)
+  __attribute__ ((alias ("grub_memset")));
 #endif
 
 #if defined (__ia64__)

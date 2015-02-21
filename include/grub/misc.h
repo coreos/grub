@@ -469,6 +469,11 @@ EXPORT_FUNC (__muldi3) (grub_uint64_t a, grub_uint64_t b);
 grub_uint64_t
 EXPORT_FUNC (__aeabi_lmul) (grub_uint64_t a, grub_uint64_t b);
 
+void *
+EXPORT_FUNC (__aeabi_memcpy) (void *dest, const void *src, grub_size_t n);
+void *
+EXPORT_FUNC(__aeabi_memset) (void *s, int c, grub_size_t n);
+
 #endif
 
 #if defined (__ia64__)
