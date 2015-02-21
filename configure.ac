@@ -682,11 +682,39 @@ fi
 # that floats are a good fit to run instead of what's written in the code.
 # Given that floating point unit is disabled (if present to begin with)
 # when GRUB is running which may result in various hard crashes.
-if test "x$target_cpu" = xarm64; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd"
-else
-  TARGET_CFLAGS="$TARGET_CFLAGS -msoft-float"
-  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -msoft-float"
+if test x"$platform" != xemu ; then
+  AC_CACHE_CHECK([for options to get soft-float], grub_cv_target_cc_soft_float, [
+    grub_cv_target_cc_soft_float=no
+    if test "x$target_cpu" = xarm64; then
+       CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd -Werror"
+       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		         [grub_cv_target_cc_soft_float="-march=armv8-a+nofp+nosimd"], [])
+    fi
+    for cand in "-Xclang -msoft-float -Xclang -no-implicit-float" \
+		"-Xclang -msoft-float" "-msoft-float"; do
+      if test x"$grub_cv_target_cc_soft_float" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		        [grub_cv_target_cc_soft_float="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_soft_float" = xno ; then
+    AC_MSG_ERROR([could not force soft-float])
+  fi
+
+  case x"$grub_cv_target_cc_soft_float" in
+    x"-Xclang"*)
+      # A trick so that clang doesn't see it on link stаge
+      TARGET_CPPFLAGS="$TARGET_CPPFLAGS $grub_cv_target_cc_soft_float"
+      ;;
+    *)
+      TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_soft_float"
+      ;;
+  esac
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
 fi
 
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
