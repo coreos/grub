@@ -562,14 +562,17 @@ AC_COMPILE_IFELSE(
 
 AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
 test_program=
-case "x$target_cpu" in
-     xmips | xmipsel)
+case "x$target_cpu-$platform" in
+     xmips-* | xmipsel-*)
         test_program=mips
 	;;
-     xi386 | xx86_64)
+     xi386-pc)
+       test_program=i386-pc
+	;;
+     xi386-* | xx86_64-*)
        test_program=i386
 	;;
-     xpowerpc | xsparc64 | xarm)
+     xpowerpc-* | xsparc64-* | xarm-*)
         test_program=$target_cpu
 	;;
 esac
