@@ -679,6 +679,7 @@ if test "x$target_cpu" = xarm64; then
   TARGET_CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd"
 else
   TARGET_CFLAGS="$TARGET_CFLAGS -msoft-float"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS -msoft-float"
 fi
 
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
