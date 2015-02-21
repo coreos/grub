@@ -179,14 +179,14 @@ start:
 	 * End of BIOS parameter block.
 	 */
 
-kernel_address:
+LOCAL(kernel_address):
 	.word	GRUB_BOOT_MACHINE_KERNEL_ADDR
 
 #ifndef HYBRID_BOOT
 	.org GRUB_BOOT_MACHINE_KERNEL_SECTOR
-kernel_sector:
+LOCAL(kernel_sector):
 	.long	1
-kernel_sector_high:
+LOCAL(kernel_sector_high):
 	.long	0
 #endif
 
@@ -275,7 +275,7 @@ real_start:
 	andw	$1, %cx
 	jz	LOCAL(chs_mode)
 
-lba_mode:
+LOCAL(lba_mode):
 	xorw	%ax, %ax
 	movw	%ax, 4(%si)
 
@@ -290,9 +290,9 @@ lba_mode:
 	movw	$0x0010, (%si)
 
 	/* the absolute address */
-	movl	kernel_sector, %ebx
+	movl	LOCAL(kernel_sector), %ebx
 	movl	%ebx, 8(%si)
-	movl	kernel_sector_high, %ebx
+	movl	LOCAL(kernel_sector_high), %ebx
 	movl	%ebx, 12(%si)
 
 	/* the segment of buffer address */
@@ -361,13 +361,13 @@ LOCAL(final_init):
 
 setup_sectors:
 	/* load logical sector start (top half) */
-	movl	kernel_sector_high, %eax
+	movl	LOCAL(kernel_sector_high), %eax
 
 	orl	%eax, %eax
 	jnz	LOCAL(geometry_error)
 
 	/* load logical sector start (bottom half) */
-	movl	kernel_sector, %eax
+	movl	LOCAL(kernel_sector), %eax
 
 	/* zero %edx */
 	xorl	%edx, %edx
@@ -452,7 +452,7 @@ LOCAL(copy_buffer):
 	popa
 
 	/* boot kernel */
-	jmp	*(kernel_address)
+	jmp	*(LOCAL(kernel_address))
 
 /* END OF MAIN LOOP */
 
@@ -512,9 +512,9 @@ LOCAL(message):
 
 #ifdef HYBRID_BOOT
 	.org 0x1b0
-kernel_sector:
+LOCAL(kernel_sector):
 	.long	1
-kernel_sector_high:
+LOCAL(kernel_sector_high):
 	.long	0
 #endif
 	.org GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC
