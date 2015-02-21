@@ -137,7 +137,22 @@ real_to_prot:
 	/* load the GDT register */
 	xorw	%ax, %ax
 	movw	%ax, %ds
+#ifdef GRUB_MACHINE_QEMU
+	/*
+	qemu is special: gdtdesc is in ROM.
+	%cs = 0xf000
+	_start + GRUB_BOOT_MACHINE_SIZE = 0x100000
+	So
+	_start + GRUB_BOOT_MACHINE_SIZE - 0x10000 points to the same point
+	as %cs.
+	gdtdesc - (_start + GRUB_BOOT_MACHINE_SIZE - 0x10000)
+	= gdtdesc - _start - GRUB_BOOT_MACHINE_SIZE + 0x10000
+	but the later can be computed by assembly.
+	*/
+	lgdtl	%cs:(gdtdesc - _start - GRUB_BOOT_MACHINE_SIZE + 0x10000)
+#else
 	lgdtl	gdtdesc
+#endif
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
@@ -178,6 +193,9 @@ protcseg:
 
 	/* return on the old (or initialized) stack! */
 	ret
+	/* prot_to_real assumes that this code is under 64K which is not
+	true for qemu.  */
+#ifndef GRUB_MACHINE_QEMU
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2009,2010 Free Software Foundation, Inc.
@@ -259,5 +277,5 @@ realcseg:
 
 	/* return on new stack! */
 	retl
-
+#endif
 	.code32
