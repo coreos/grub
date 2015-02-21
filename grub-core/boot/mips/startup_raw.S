@@ -150,18 +150,18 @@ digcont:
 1:
 	jr $ra
 	 nop
-busclockstr:	.asciiz "busclock="
-cpuclockstr:	.asciiz "cpuclock="
-memsizestr:	.asciiz "memsize="
-highmemsizestr:	.asciiz "highmemsize="
-machtype_yeeloong_str1:	.asciiz "machtype=8.9"
-machtype_yeeloong_str2:	.asciiz "machtype=lemote-yeeloong-"
-machtype_fuloong2f_str:	.asciiz "machtype=lemote-fuloong-2f"
-machtype_fuloong2e_str:	.asciiz "machtype=lemote-fuloong-2e"
-pmon_yeeloong_str:	.asciiz "PMON_VER=LM8"
-pmon_fuloong2f_str:	.asciiz "PMON_VER=LM6"
-pmon_yeeloong_verstr:	.asciiz "Version=LM8"
-pmon_fuloong2f_verstr:	.asciiz "Version=LM6"
+busclockstr:	.asciz "busclock="
+cpuclockstr:	.asciz "cpuclock="
+memsizestr:	.asciz "memsize="
+highmemsizestr:	.asciz "highmemsize="
+machtype_yeeloong_str1:	.asciz "machtype=8.9"
+machtype_yeeloong_str2:	.asciz "machtype=lemote-yeeloong-"
+machtype_fuloong2f_str:	.asciz "machtype=lemote-fuloong-2f"
+machtype_fuloong2e_str:	.asciz "machtype=lemote-fuloong-2e"
+pmon_yeeloong_str:	.asciz "PMON_VER=LM8"
+pmon_fuloong2f_str:	.asciz "PMON_VER=LM6"
+pmon_yeeloong_verstr:	.asciz "Version=LM8"
+pmon_fuloong2f_verstr:	.asciz "Version=LM6"
 	.p2align 2
 
 argdone:
