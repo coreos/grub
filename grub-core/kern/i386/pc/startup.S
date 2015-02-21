@@ -135,7 +135,7 @@ LOCAL(prot_to_real_addr):
 
 	.macro REAL_TO_PROT
 	movl	LOCAL(real_to_prot_addr), %eax
-	DATA32	call	*%ax
+	calll	*%eax
 	.endm
 
 /*

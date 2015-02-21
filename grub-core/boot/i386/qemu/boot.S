@@ -48,7 +48,7 @@ VARIABLE(grub_core_entry_addr)
 	/* Transition to protected mode.  We use pushl to force generation
 	   of a flat return address.  */
 	pushl	$1f
-	DATA32	jmp real_to_prot
+	jmpl	real_to_prot
 	.code32
 	/* Ensure A20 is enabled. We're in qemu, so control port A works
 	   and there is no need to wait since there is no real logic, it's

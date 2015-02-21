@@ -95,7 +95,7 @@ LOCAL (codestart):
 	int	$0x13
 
 	/* transition to protected mode */
-	DATA32	call real_to_prot
+	calll	real_to_prot
 
 	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
@@ -149,7 +149,7 @@ gate_a20_try_bios:
 	movw	$0x2401, %ax
 	int	$0x15
 
-	DATA32	call	real_to_prot
+	calll	real_to_prot
 	.code32
 
 	popl	%ebp
