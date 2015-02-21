@@ -175,9 +175,9 @@ corresponding platform are not needed for the platform in question.
   - For host
     1. --host= to autoconf name of host.
     2. CC= for gcc able to compile for host
-    3. CFLAGS= for C options for host.
-    4. CPPFLAGS= for C preprocessor options for host.
-    5. LDFLAGS= for linker options for host.
+    3. HOST_CFLAGS= for C options for host.
+    4. HOST_CPPFLAGS= for C preprocessor options for host.
+    5. HOST_LDFLAGS= for linker options for host.
     6. FREETYPE= for freetype-config for host (optional).
     7. Libdevmapper if any must be in standard linker folders (-ldevmapper) (optional).
     8. Libfuse if any must be in standard linker folders (-lfuse) (optional).
