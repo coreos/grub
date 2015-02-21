@@ -36,7 +36,7 @@ start:
 	bal cont
 	 nop
 
-	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+	.org GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_modules_size)
 	.long 0
 
