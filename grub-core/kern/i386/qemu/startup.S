@@ -73,5 +73,3 @@ codestart:
 1:	
 	hlt
 	jmp 1b
-
-#include "../realmode.S"

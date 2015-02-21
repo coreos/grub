@@ -61,8 +61,3 @@ multiboot_header:
 	/* checksum */
 	.long	-0x1BADB002 - MULTIBOOT_MEMORY_INFO
 
-/*
- *  prot_to_real and associated structures (but NOT real_to_prot, that is
- *  only needed for BIOS gates).
- */
-#include "../realmode.S"
