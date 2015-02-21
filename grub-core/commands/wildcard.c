@@ -293,7 +293,8 @@ struct match_files_ctx
 
 /* Helper for match_files.  */
 static int
-match_files_iter (const char *name, const struct grub_dirhook_info *info,
+match_files_iter (const char *name,
+		  const struct grub_dirhook_info *info __attribute__((unused)),
 		  void *data)
 {
   struct match_files_ctx *ctx = data;
