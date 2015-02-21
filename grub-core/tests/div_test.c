@@ -34,6 +34,8 @@ static void
 test32 (grub_uint32_t a, grub_uint32_t b)
 {
   grub_uint64_t q, r;
+  if (b == 0)
+    return;
   q = grub_divmod64 (a, b, &r);
   grub_test_assert (r < b, "remainder is larger than dividend: 0x%llx %% 0x%llx = 0x%llx",
 		    (long long) a, (long long) b, (long long) r);
