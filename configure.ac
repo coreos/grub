@@ -560,35 +560,39 @@ AC_COMPILE_IFELSE(
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
 
-# on x86 clang doesn't support .code16
-# on arm clang doesn't support .arch directive
-# on mips clang doesn't support privilegied instructions, doubleword store/load
-# and crashes with hand-written assembly
-if test "x$grub_cv_cc_target_clang" = xyes && ( test "x$target_cpu" = xi386 \
-   || test "x$target_cpu" = xx86_64 || test "x$target_cpu" = xarm \
-   || test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ); then
-   TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
+AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
+test_program=
+case "x$target_cpu" in
+     xmips | xmipsel)
+        test_program=mips
+	;;
+     xi386 | xx86_64)
+       test_program=i386
+	;;
+     xpowerpc | xsparc64 | xarm)
+        test_program=$target_cpu
+	;;
+esac
+if test x"$test_program" = x ; then
+  grub_cv_cc_target_asm_compile=
+else
+  found=no
+  for arg in "" "-no-integrated-as"; do
+    cmdline="$TARGET_CC -c -o /dev/null $TARGET_CCASFLAGS $arg $TARGET_CPPFLAGS $srcdir/asm-tests/$test_program.S"
+    echo "Running $cmdline" >&AS_MESSAGE_LOG_FD
+    if $cmdline >&AS_MESSAGE_LOG_FD 2>&AS_MESSAGE_LOG_FD; then
+      grub_cv_cc_target_asm_compile="$arg"
+      found=yes
+      break
+    fi
+  done
+  if test x"$found" = xno ; then
+    AC_MSG_ERROR([could not compile assembly])
+  fi
 fi
+])
 
-if test "x$grub_cv_cc_target_clang" = xyes && test "x$target_cpu" = xpowerpc; then
-AC_CACHE_CHECK([if clang can handle ame instruction], [grub_cv_cc_target_clang_ame]
-[
-CFLAGS="$TARGET_CFLAGS"
-AC_COMPILE_IFELSE(
-[AC_LANG_PROGRAM([], [[
-   unsigned int a = 0, b = 0;
-   asm volatile ("{ame|addme} %0,%1" : "=r" (a) : "r" (b));
-   if (a)
-     return 1;
-]])],
-[grub_cv_cc_target_clang_ame=yes], [grub_cv_cc_target_clang_ame=no])])
-   # clang <= 3.3 doesn't handle most of ppc assembly, not even inline assembly
-   # used by gcrypt
-   if test x$grub_cv_cc_target_clang_ame = xno ; then
-     TARGET_CCASFLAGS="$TARGET_CCASFLAGS -no-integrated-as"
-     TARGET_CFLAGS="$TARGET_CFLAGS -no-integrated-as"
-   fi
-fi
+TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_cc_target_asm_compile"
 
 if test "x$target_cpu" = xi386 && test "x$platform" != xemu; then
   TARGET_CFLAGS="$TARGET_CFLAGS -march=i386"
