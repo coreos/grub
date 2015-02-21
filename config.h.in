@@ -31,10 +31,6 @@
 #define HAVE_FONT_SOURCE @HAVE_FONT_SOURCE@
 /* Define if C symbols get an underscore after compilation. */
 #define HAVE_ASM_USCORE @HAVE_ASM_USCORE@
-/* Define it to \"addr32\" or \"addr32;\" to make GAS happy.  */
-#define ADDR32 @ADDR32@
-/* Define it to \"data32\" or \"data32;\" to make GAS happy. */
-#define DATA32 @DATA32@
 /* Define it to one of __bss_start, edata and _edata.  */
 #define BSS_START_SYMBOL @BSS_START_SYMBOL@
 /* Define it to either end or _end.  */

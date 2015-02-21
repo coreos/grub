@@ -9,8 +9,6 @@ grub_have_font_source=@HAVE_FONT_SOURCE@
 
 # Autodetected config
 grub_have_asm_uscore=@HAVE_ASM_USCORE@
-grub_i8086_addr32="@ADDR32@"
-grub_i8086_data32="@DATA32@"
 grub_bss_start_symbol="@BSS_START_SYMBOL@"
 grub_end_symbol="@END_SYMBOL@"
 
