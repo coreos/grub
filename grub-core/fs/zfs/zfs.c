@@ -2013,12 +2013,14 @@ dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf,
  */
 static grub_err_t
 mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
-	     int objsize, const char *name, grub_uint64_t * value,
+	     grub_uint16_t objsize, const char *name, grub_uint64_t * value,
 	     int case_insensitive)
 {
-  int i, chunks;
+  grub_uint16_t i, chunks;
   mzap_ent_phys_t *mzap_ent = zapobj->mz_chunk;
 
+  if (objsize < MZAP_ENT_LEN)
+    return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), name);
   chunks = objsize / MZAP_ENT_LEN - 1;
   for (i = 0; i < chunks; i++)
     {
@@ -2426,7 +2428,7 @@ zap_lookup (dnode_end_t * zap_dnode, const char *name, grub_uint64_t *val,
 	    struct grub_zfs_data *data, int case_insensitive)
 {
   grub_uint64_t block_type;
-  int size;
+  grub_uint16_t size;
   void *zapbuf;
   grub_err_t err;
   grub_zfs_endian_t endian;
