@@ -110,7 +110,7 @@ grub_linux_boot (void)
       int len = grub_strlen (linux_args) + 1;
       if (bp->len < len)
 	len = bp->len;
-      memcpy(bp->buf, linux_args, len);
+      grub_memcpy(bp->buf, linux_args, len);
       bp->buf[len-1] = '\0';
       bp->valid = 1;
     }
