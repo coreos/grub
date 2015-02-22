@@ -690,6 +690,11 @@ if test x"$platform" != xemu ; then
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		         [grub_cv_target_cc_soft_float="-march=armv8-a+nofp+nosimd"], [])
     fi
+    if test "x$target_cpu" = xia64; then
+       CFLAGS="$TARGET_CFLAGS -mno-inline-float-divide -mno-inline-sqrt -Werror"
+       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		         [grub_cv_target_cc_soft_float="-mno-inline-float-divide -mno-inline-sqrt"], [])
+    fi
     for cand in "-Xclang -msoft-float -Xclang -no-implicit-float" \
 		"-Xclang -msoft-float" "-msoft-float"; do
       if test x"$grub_cv_target_cc_soft_float" != xno ; then
