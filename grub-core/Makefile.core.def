@@ -159,6 +159,8 @@ kernel = {
   terminfoinkernel = commands/extcmd.c;
   terminfoinkernel = lib/arg.c;
 
+  softdiv = lib/division.c;
+
   i386 = kern/i386/dl.c;
   i386_xen = kern/i386/dl.c;
 
@@ -1967,6 +1969,12 @@ module = {
   enable = x86_64_efi;
   enable = emu;
   enable = xen;
+};
+
+module = {
+  name = div;
+  common = lib/division.c;
+  enable = no_softdiv;
 };
 
 module = {

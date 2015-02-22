@@ -58,15 +58,11 @@ FUNCTION(__aeabi_lmul)
         ldmfd   sp!, {r4, fp}
         bx      lr
 
-	.macro division parent
+	.macro division32 parent
 
         sub     sp, sp, #8      @ Allocate naturally aligned 64-bit space
         stmfd   sp!, {r3,lr}    @ Dummy r3 to maintain stack alignment
-        add     r3, sp, #8      @ Set r3 to address of 64-bit space
-        str     r3, [sp]        @ Stack parameter, pointer to 64-bit space
-        mov     r2, r1
-        mov     r1, #0
-        mov     r3, #0
+        add     r2, sp, #8      @ Set r2 to address of 64-bit space
         bl      \parent
         ldr     r1, [sp, #8]    @ Extract remainder
         ldmfd   sp!, {r3,lr}    @ Pop into an unused arg/scratch register
@@ -75,8 +71,9 @@ FUNCTION(__aeabi_lmul)
 	.endm
 
 FUNCTION(__aeabi_uidivmod)
-	division grub_divmod64
-
+	division32 grub_divmod32
+FUNCTION(__aeabi_idivmod)
+	division32 grub_divmod32s
 
 /*
  * Null divide-by-zero handler

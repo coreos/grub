@@ -594,10 +594,10 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   grub_uint64_t m = 0;
 
   /* ARM and IA64 don't have a fast 32-bit division.
-     Using that code would just make us use libgcc routines, calling
-     them twice (once for modulo and once for quotient.
+     Using that code would just make us use software division routines, calling
+     ourselves indirectly and hence getting infinite recursion.
   */
-#if !defined (__arm__) && !defined (__ia64__)
+#if !GRUB_DIVISION_IN_SOFTWARE
   /* Skip the slow computation if 32-bit arithmetic is possible.  */
   if (n < 0xffffffff && d < 0xffffffff)
     {
@@ -633,7 +633,7 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
 
 #if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
 
-#if defined (__arm__)
+#if GRUB_DIVISION_IN_SOFTWARE
 
 grub_uint32_t
 __udivsi3 (grub_uint32_t a, grub_uint32_t b)
@@ -641,11 +641,53 @@ __udivsi3 (grub_uint32_t a, grub_uint32_t b)
   return grub_divmod64 (a, b, 0);
 }
 
+grub_int32_t
+__divsi3 (grub_int32_t a, grub_int32_t b)
+{
+  return grub_divmod64s (a, b, 0);
+}
+
 grub_uint32_t
 __umodsi3 (grub_uint32_t a, grub_uint32_t b)
 {
   grub_uint64_t ret;
   grub_divmod64 (a, b, &ret);
+  return ret;
+}
+
+grub_int32_t
+__modsi3 (grub_int32_t a, grub_int32_t b)
+{
+  grub_int64_t ret;
+  grub_divmod64s (a, b, &ret);
+  return ret;
+}
+
+grub_uint64_t
+__udivdi3 (grub_uint64_t a, grub_uint64_t b)
+{
+  return grub_divmod64 (a, b, 0);
+}
+
+grub_uint64_t
+__umoddi3 (grub_uint64_t a, grub_uint64_t b)
+{
+  grub_uint64_t ret;
+  grub_divmod64 (a, b, &ret);
+  return ret;
+}
+
+grub_int64_t
+__divdi3 (grub_int64_t a, grub_int64_t b)
+{
+  return grub_divmod64s (a, b, 0);
+}
+
+grub_int64_t
+__moddi3 (grub_int64_t a, grub_int64_t b)
+{
+  grub_int64_t ret;
+  grub_divmod64s (a, b, &ret);
   return ret;
 }
 
@@ -735,28 +777,13 @@ __ctzsi2 (grub_uint32_t x)
 grub_uint32_t
 __aeabi_uidiv (grub_uint32_t a, grub_uint32_t b)
   __attribute__ ((alias ("__udivsi3")));
+grub_int32_t
+__aeabi_idiv (grub_int32_t a, grub_int32_t b)
+  __attribute__ ((alias ("__divsi3")));
 void *__aeabi_memcpy (void *dest, const void *src, grub_size_t n)
   __attribute__ ((alias ("grub_memcpy")));
 void *__aeabi_memset (void *s, int c, grub_size_t n)
   __attribute__ ((alias ("grub_memset")));
-#endif
-
-#if defined (__ia64__)
-
-grub_uint64_t
-__udivdi3 (grub_uint64_t a, grub_uint64_t b)
-{
-  return grub_divmod64 (a, b, 0);
-}
-
-grub_uint64_t
-__umoddi3 (grub_uint64_t a, grub_uint64_t b)
-{
-  grub_uint64_t ret;
-  grub_divmod64 (a, b, &ret);
-  return ret;
-}
-
 #endif
 
 #endif /* GRUB_UTIL */
