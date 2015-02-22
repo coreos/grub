@@ -1029,20 +1029,9 @@ if test "x$target_cpu" = xarm; then
   ])
   if test "x$grub_cv_cc_mthumb_interwork" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mthumb-interwork"
+  # Clang defaults to thumb interworking
   elif test "x$grub_cv_cc_target_clang" = xno ; then
     AC_MSG_ERROR([your compiler doesn't support -mthumb-interwork])
-  else
-    CFLAGS="$TARGET_CFLAGS"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
-#if defined (__thumb__) && !defined (__thumb2__)
-#error thumb without interworking
-#endif
-]])],
-		      [no_interwork_ok=yes],
-		      [no_interwork_ok=no])
-    if test x$no_interwork_ok = xno ; then
-       AC_MSG_ERROR([attempt to compile to thumb with no thumb interwork])
-    fi
   fi
 fi
 
