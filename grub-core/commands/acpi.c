@@ -131,6 +131,8 @@ grub_acpi_get_rsdpv1 (void)
   return grub_machine_acpi_get_rsdpv1 ();
 }
 
+#if defined (__i386__) || defined (__x86_64__)
+
 static inline int
 iszero (grub_uint8_t *reg, int size)
 {
@@ -141,7 +143,6 @@ iszero (grub_uint8_t *reg, int size)
   return 1;
 }
 
-#if defined (__i386__) || defined (__x86_64__)
 /* Context for grub_acpi_create_ebda.  */
 struct grub_acpi_create_ebda_ctx {
   int ebda_len;
