@@ -719,7 +719,16 @@ if test x"$platform" != xemu ; then
       TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_soft_float"
       ;;
   esac
-  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
+  case x"$grub_cv_target_cc_soft_float" in
+    x"-march=armv8-a+nofp+nosimd")
+      # +nosimd disables also the cache opcodes that we need in asm.
+      TARGET_CCASFLAGS="$TARGET_CCASFLAGS -march=armv8-a+nofp"
+      ;;
+    *)
+      TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
+      ;;
+  esac
+
 fi
 
 if test x"$target_cpu" = xsparc64 ; then
