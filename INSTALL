@@ -15,7 +15,7 @@ configuring the GRUB.
   Note: older versions may work but support is limited
 
   Experimental support for clang 3.3 or later (results in much bigger binaries)
-  for i386, x86_64, arm (except thumb), arm64, mips(el), powerpc
+  for i386, x86_64, arm (except thumb), arm64, mips(el), powerpc, sparc64
   Note: clang 3.2 or later works for i386 and x86_64 targets but results in
         much bigger binaries.
 	earlier versions not tested
@@ -29,7 +29,8 @@ configuring the GRUB.
 	fail.
   Note: clang 3.2 or later works for powerpc
 	earlier versions not tested
-  Note: clang doesn't support -mno-app-regs and so can't be used for sparc64
+  Note: clang 3.5 or later works for sparc64
+        earlier versions return "error: unable to interface with target machine"
   Note: clang has no support for ia64 and hence you can't compile GRUB
 	for ia64 with clang
 * GNU Make

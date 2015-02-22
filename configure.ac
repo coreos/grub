@@ -717,6 +717,55 @@ if test x"$platform" != xemu ; then
   TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
 fi
 
+if test x"$target_cpu" = xsparc64 ; then
+  AC_CACHE_CHECK([for options to reserve application registers], grub_cv_target_cc_mno_app_regs, [
+    grub_cv_target_cc_mno_app_regs=no
+    for cand in "-mllvm -sparc-reserve-app-registers" \
+		"-mno-app-regs"; do
+      if test x"$grub_cv_target_cc_mno_app_regs" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		        [grub_cv_target_cc_mno_app_regs="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_mno_app_regs" = xno ; then
+    AC_MSG_ERROR([could not reserve application registers])
+  fi
+  if test x"$grub_cv_target_cc_mno_app_regs" = x"-mllvm -sparc-reserve-app-registers" ; then
+    # A trick so that clang doesn't see it on link stаge
+    TARGET_CPPFLAGS="$TARGET_CPPFLAGS $grub_cv_target_cc_mno_app_regs"
+  else
+    TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_mno_app_regs"
+  fi
+
+  AC_CACHE_CHECK([for no-relax options], grub_cv_target_cc_mno_relax, [
+    grub_cv_target_cc_mno_relax=no
+    for cand in "-mno-relax" "-Wl,--no-relax"; do
+      if test x"$grub_cv_target_cc_mno_relax" != xno ; then
+        break
+      fi
+      LDFLAGS="$TARGET_LDFLAGS $cand -nostdlib -static"
+      CFLAGS="$TARGET_CFLAGS -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+	    asm (".globl start; start:");
+	    void __main (void);
+	    void __main (void) {}
+	    int main (void);
+	    ]], [[]])], [grub_cv_target_cc_mno_relax="$cand"], [])
+    done
+  ])
+  LDFLAGS="$TARGET_LDFLAGS"
+  CFLAGS="$TARGET_CFLAGS"
+
+  if test x"$grub_cv_target_cc_mno_relax" = xno ; then
+    AC_MSG_ERROR([could not find no-relax options])
+  fi
+  TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_mno_relax"
+fi
+
 # By default, GCC 4.4 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
 # these and they just use up vital space. Restore the old compiler
@@ -918,7 +967,7 @@ AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
 LDFLAGS="$TARGET_LDFLAGS"
 
-if test "$target_cpu" = x86_64 || test "$target_cpu-$platform" = sparc64-emu ; then
+if test "$target_cpu" = x86_64 || test "$target_cpu" = sparc64 ; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
     CFLAGS="$TARGET_CFLAGS -mcmodel=large"
@@ -928,7 +977,7 @@ if test "$target_cpu" = x86_64 || test "$target_cpu-$platform" = sparc64-emu ; t
   ])
   if test "x$grub_cv_cc_mcmodel" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
-  elif test "$target_cpu-$platform" = sparc64-emu; then
+  elif test "$target_cpu" = sparc64; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=medany"
   fi
 fi
