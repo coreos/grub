@@ -695,7 +695,8 @@ if test x"$platform" != xemu ; then
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		         [grub_cv_target_cc_soft_float="-mno-inline-float-divide -mno-inline-sqrt"], [])
     fi
-    for cand in "-Xclang -msoft-float -Xclang -no-implicit-float" \
+    for cand in "-msoft-float -Xclang -msoft-float -Xclang -no-implicit-float" \
+		"-Xclang -msoft-float -Xclang -no-implicit-float" \
 		"-Xclang -msoft-float" "-msoft-float"; do
       if test x"$grub_cv_target_cc_soft_float" != xno ; then
         break
@@ -711,7 +712,7 @@ if test x"$platform" != xemu ; then
   fi
 
   case x"$grub_cv_target_cc_soft_float" in
-    x"-Xclang"*)
+    x*"-Xclang"*)
       # A trick so that clang doesn't see it on link stаge
       TARGET_CPPFLAGS="$TARGET_CPPFLAGS $grub_cv_target_cc_soft_float"
       ;;

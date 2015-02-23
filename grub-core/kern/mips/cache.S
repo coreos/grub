@@ -1,8 +1,10 @@
 
 #include <grub/symbol.h>
+#include <grub/cpu/kernel.h>
 
 	.set noreorder
 	.set nomacro
+	mips_attributes
 
 FUNCTION (grub_arch_sync_caches)
 #include "cache_flush.S"
