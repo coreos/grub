@@ -78,9 +78,9 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	const Elf_Rel *rel, *max;
 
 	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
-	       max = rel + s->sh_size / s->sh_entsize;
-	     rel < max;
-	     rel++)
+	       max = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_size);
+	     rel + 1 <= max;
+	     rel = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_entsize))
 	  switch (ELF_R_TYPE (rel->r_info))
 	    {
 	    case R_ARM_CALL:
