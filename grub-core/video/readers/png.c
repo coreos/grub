@@ -227,7 +227,7 @@ grub_png_decode_image_palette (struct grub_png_data *data,
 {
   unsigned i = 0, j;
 
-  if (len == 0 || len % 3 != 0)
+  if (len == 0)
     return GRUB_ERR_NONE;
 
   for (i = 0; 3 * i < len && i < 256; i++)
@@ -851,15 +851,26 @@ grub_png_convert_image (struct grub_png_data *data)
       int mask = (1 << data->color_bits) - 1;
       unsigned j;
       if (data->is_gray)
-	for (i = 0; i < (1U << data->color_bits); i++)
-	  {
-	    grub_uint8_t col = (0xff * i) / ((1U << data->color_bits) - 1);
-	    palette[i][0] = col;
-	    palette[i][1] = col;
-	    palette[i][2] = col;
-	  }
+	{
+	  /* Generic formula is
+	     (0xff * i) / ((1U << data->color_bits) - 1)
+	     but for allowed bit depth of 1, 2 and for it's
+	     equivalent to
+	     (0xff / ((1U << data->color_bits) - 1)) * i
+	     Precompute the multipliers to avoid division.
+	  */
+
+	  const grub_uint8_t multipliers[5] = { 0xff, 0xff, 0x55, 0x24, 0x11 };
+	  for (i = 0; i < (1U << data->color_bits); i++)
+	    {
+	      grub_uint8_t col = multipliers[data->color_bits] * i;
+	      palette[i][0] = col;
+	      palette[i][1] = col;
+	      palette[i][2] = col;
+	    }
+	}
       else
-	grub_memcpy (palette, data->palette, 16 * 3);
+	grub_memcpy (palette, data->palette, 3 << data->color_bits);
       d1c = d1;
       d2c = d2;
       for (j = 0; j < data->image_height; j++, d1c += data->image_width * 3,
