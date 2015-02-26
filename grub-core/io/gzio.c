@@ -1161,6 +1161,19 @@ grub_gzio_open (grub_file_t io, const char *name __attribute__ ((unused)))
   return file;
 }
 
+static grub_uint8_t
+mod_31 (grub_uint16_t v)
+{
+  /* At most 2 iterations for any number that
+     we can get here.
+     In any case faster than real division.  */
+  while (v > 0x1f)
+    v = (v & 0x1f) + (v >> 5);
+  if (v == 0x1f)
+    return 0;
+  return v;
+}
+
 static int
 test_zlib_header (grub_gzio_t gzio)
 {
@@ -1178,7 +1191,10 @@ test_zlib_header (grub_gzio_t gzio)
       return 0;
     }
 
-  if ((cmf * 256U + flg) % 31U)
+  /* Usually it would be: (cmf * 256 + flg) % 31 != 0.  */
+  /* But 256 == 8 (31).  */
+  /* By multiplying by 4 and using 32 == 1 (31). We get our formula.  */
+  if (mod_31 (cmf + flg * 4) != 0)
     {
       grub_error (GRUB_ERR_BAD_COMPRESSED_DATA, N_("unsupported gzip format"));
       return 0;
