@@ -349,6 +349,7 @@ fi
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     pkgdatadir="@builddir@" "@builddir@/grub-mkrescue" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
 	--rom-directory="${rom_directory}" \
+	--locale-directory="@srcdir@/po" \
 	--themes-directory="@srcdir@/themes" \
 	$mkimage_extra_arg ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
