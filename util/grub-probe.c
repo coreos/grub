@@ -735,6 +735,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 	  ret = xasprintf ("%s\n%s %s %s", _("print TARGET"),
 			    _("available targets:"), t, def);
 	  free (t);
+	  free (def);
 	  return ret;
 	}
 
