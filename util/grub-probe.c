@@ -728,10 +728,12 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 
       case 't':
 	{
-	  char *ret, *t = get_targets_string ();
+	  char *ret, *t = get_targets_string (), *def;
 
-	  ret = xasprintf ("%s\n%s %s [default=%s]", _("print TARGET"),
-			    _("available targets:"), t, targets[print]);
+	  def = xasprintf (_("[default=%s]"), targets[print]);
+
+	  ret = xasprintf ("%s\n%s %s %s", _("print TARGET"),
+			    _("available targets:"), t, def);
 	  free (t);
 	  return ret;
 	}
