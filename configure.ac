@@ -1759,7 +1759,6 @@ AC_SUBST(BUILD_LIBM)
 
 AM_CONDITIONAL([COND_real_platform], [test x$platform != xnone])
 AM_CONDITIONAL([COND_emu], [test x$platform = xemu])
-AM_CONDITIONAL([COND_clang], [test x$grub_cv_cc_target_clang = xyes])
 AM_CONDITIONAL([COND_i386_pc], [test x$target_cpu = xi386 -a x$platform = xpc])
 AM_CONDITIONAL([COND_i386_efi], [test x$target_cpu = xi386 -a x$platform = xefi])
 AM_CONDITIONAL([COND_ia64_efi], [test x$target_cpu = xia64 -a x$platform = xefi])
