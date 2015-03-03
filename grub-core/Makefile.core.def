@@ -512,13 +512,6 @@ module = {
 };
 
 module = {
-  name = libusb;
-  emu = bus/usb/emu/usb.c;
-  enable = emu;
-  condition = COND_GRUB_EMU_USB;
-};
-
-module = {
   name = lsspd;
   mips_loongson = commands/mips/loongson/lsspd.c;
   enable = mips_loongson;
@@ -530,13 +523,6 @@ module = {
   common = bus/usb/usbtrans.c;
   common = bus/usb/usbhub.c;
   enable = usb;
-};
-
-module = {
-  name = emuusb;
-  common = bus/usb/usb.c;
-  enable = emu;
-  condition = COND_GRUB_EMU_USB;
 };
 
 module = {

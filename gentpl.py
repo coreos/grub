@@ -606,7 +606,7 @@ def foreach_enabled_platform(defn, closure):
 #    enable = emu;
 #    enable = i386;
 #    enable = mips_loongson;
-#    emu_condition = COND_GRUB_EMU_USB;
+#    emu_condition = COND_GRUB_EMU_SDL;
 #  };
 #
 def under_platform_specific_conditionals(defn, platform, closure):

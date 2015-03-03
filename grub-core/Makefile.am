@@ -250,9 +250,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 if COND_GRUB_EMU_SDL
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sdl.h
 endif
-if COND_GRUB_EMU_USB
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libusb.h
-endif
 if COND_GRUB_EMU_PCI
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libpciaccess.h
 endif

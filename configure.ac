@@ -1255,10 +1255,6 @@ else
 fi
 AC_SUBST([BOOT_TIME_STATS])
 
-AC_ARG_ENABLE([grub-emu-usb],
-	      [AS_HELP_STRING([--enable-grub-emu-usb],
-                             [build and install the `grub-emu' debugging utility with USB support (default=guessed)])])
-
 AC_ARG_ENABLE([grub-emu-sdl],
 	      [AS_HELP_STRING([--enable-grub-emu-sdl],
                              [build and install the `grub-emu' debugging utility with SDL support (default=guessed)])])
@@ -1268,34 +1264,6 @@ AC_ARG_ENABLE([grub-emu-pci],
                              [build and install the `grub-emu' debugging utility with PCI support (potentially dangerous) (default=no)])])
 
 if test "$platform" = emu; then
-
-if test x"$enable_grub_emu_usb" != xyes ; then
-   grub_emu_usb_excuse="not enabled"
-fi
-
-if test x"$enable_grub_emu_pci" = xyes ; then
-   grub_emu_usb_excuse="conflicts with PCI support"
-fi
-
-[if [ x"$grub_emu_usb_excuse" = x ]; then
-    # Check for libusb libraries.]
-AC_CHECK_LIB([usb], [usb_claim_interface], [LIBUSB="-lusb"],
-    [grub_emu_usb_excuse=["need libusb library"]])
-    AC_SUBST([LIBUSB])
-[fi]
-[if [ x"$grub_emu_usb_excuse" = x ]; then
-    # Check for headers.]
-    AC_CHECK_HEADERS([usb.h], [],
-      [grub_emu_usb_excuse=["need libusb headers"]])
-[fi]
-if test x"$enable_grub_emu_usb" = xyes && test x"$grub_emu_usb_excuse" != x ; then
-  AC_MSG_ERROR([USB support for grub-emu was explicitly requested but can't be compiled ($grub_emu_usb_excuse)])
-fi
-if test x"$grub_emu_usb_excuse" = x ; then
-enable_grub_emu_usb=yes
-else
-enable_grub_emu_usb=no
-fi
 
 if test x"$enable_grub_emu_sdl" = xno ; then
   grub_emu_sdl_excuse="explicitly disabled"
@@ -1326,10 +1294,6 @@ if test x"$enable_grub_emu_pci" != xyes ; then
    grub_emu_pci_excuse="not enabled"
 fi
 
-if test x"$enable_grub_emu_usb" = xyes ; then
-   grub_emu_pci_excuse="conflicts with USB support"
-fi
-
 [if [ x"$grub_emu_pci_excuse" = x ]; then
       # Check for libpci libraries.]
    AC_CHECK_LIB([pciaccess], [pci_system_init], [LIBPCIACCESS="-lpciaccess"],
@@ -1350,14 +1314,12 @@ enable_grub_emu_pci=no
 fi
 
 AC_SUBST([enable_grub_emu_sdl])
-AC_SUBST([enable_grub_emu_usb])
 AC_SUBST([enable_grub_emu_pci])
 
 else
 
 # Ignore --enable-emu-* if platform is not emu
 enable_grub_emu_sdl=no
-enable_grub_emu_usb=no
 enable_grub_emu_pci=no
 fi
 
@@ -1793,7 +1755,6 @@ AM_CONDITIONAL([COND_HOST_XNU], [test x$host_kernel = xxnu])
 AM_CONDITIONAL([COND_HOST_ILLUMOS], [test x$host_kernel = xillumos])
 
 AM_CONDITIONAL([COND_MAN_PAGES], [test x$cross_compiling = xno -a x$HELP2MAN != x])
-AM_CONDITIONAL([COND_GRUB_EMU_USB], [test x$enable_grub_emu_usb = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_SDL], [test x$enable_grub_emu_sdl = xyes])
 AM_CONDITIONAL([COND_GRUB_EMU_PCI], [test x$enable_grub_emu_pci = xyes])
 AM_CONDITIONAL([COND_GRUB_MKFONT], [test x$enable_grub_mkfont = xyes])
@@ -1871,11 +1832,6 @@ echo "*******************************************************"
 echo GRUB2 will be compiled with following components:
 echo Platform: "$target_cpu"-"$platform"
 if [ x"$platform" = xemu ]; then
-if [ x"$grub_emu_usb_excuse" = x ]; then
-echo USB support for grub-emu: Yes
-else
-echo USB support for grub-emu: No "($grub_emu_usb_excuse)"
-fi
 if [ x"$grub_emu_sdl_excuse" = x ]; then
 echo SDL support for grub-emu: Yes
 else
