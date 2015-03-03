@@ -42,21 +42,6 @@ strcasecmp (const char *s1, const char *s2)
   return grub_strcasecmp (s1, s2);
 }
 
-#ifdef GRUB_UTIL
-static inline void *
-memcpy (void *dest, const void *src, grub_size_t n)
-{
-  return grub_memcpy (dest, src, n);
-}
-
-static inline int
-memcmp (const void *s1, const void *s2, grub_size_t n)
-{
-  return grub_memcmp (s1, s2, n);
-}
-
-#endif
-
 static inline void
 bcopy (const void *src, void *dest, grub_size_t n)
 {
@@ -98,5 +83,10 @@ memchr (const void *s, int c, grub_size_t n)
 {
   return grub_memchr (s, c, n);
 }
+
+#define memcmp grub_memcmp
+#define memcpy grub_memcpy
+#define memmove grub_memmove
+#define memset grub_memset
 
 #endif

@@ -21,6 +21,8 @@
 
 #define __XEN_INTERFACE_VERSION__ 0x0003020a
 
+#define memset grub_memset
+
 #ifdef ASM_FILE
 #define __ASSEMBLY__
 #include <xen/xen.h>

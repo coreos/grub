@@ -1131,22 +1131,17 @@ fi
 
 # Set them to their new values for the tests below.
 CC="$TARGET_CC"
-if test "x$TARGET_APPLE_LINKER" = x1 ; then
+if test x"$platform" = xemu ; then
+CFLAGS="$TARGET_CFLAGS -Wno-error"
+elif test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -static -Wno-error"
 else
 CFLAGS="$TARGET_CFLAGS -nostdlib -Wno-error"
 fi
 CPPFLAGS="$TARGET_CPPFLAGS"
-if test x$target_cpu = xi386 || test x$target_cpu = xx86_64 || test "x$grub_cv_cc_target_clang" = xyes ; then
-TARGET_LIBGCC=
-else
-TARGET_LIBGCC=-lgcc
-fi
-
-LIBS="$TARGET_LIBGCC"
 
 grub_ASM_USCORE
-if test "x$TARGET_APPLE_LINKER" = x0 ; then
+if test "x$TARGET_APPLE_LINKER" = x0 && test x"$platform" != xemu; then
 if test x$grub_cv_asm_uscore = xyes; then
 DEFSYM="-Wl,--defsym,_abort=_main -Wl,--defsym,__main=_main"
 else
@@ -1156,7 +1151,9 @@ CFLAGS="$TARGET_CFLAGS -nostdlib $DEFSYM"
 fi
 
 # Check for libgcc symbols
-AC_CHECK_FUNCS(__bswapsi2 __bswapdi2 __ashldi3 __ashrdi3 __lshrdi3 __ucmpdi2 _restgpr_14_x)
+if test x"$platform" = xemu; then
+AC_CHECK_FUNCS(__udivsi3 __umodsi3 __divsi3 __modsi3 __divdi3 __moddi3 __udivdi3 __umoddi3 __ctzdi2 __ctzsi2 __aeabi_uidiv __aeabi_uidivmod __aeabi_idiv __aeabi_idivmod __aeabi_ulcmp __muldi3 __aeabi_lmul __aeabi_memcpy __aeabi_memset __aeabi_lasr __aeabi_llsl __aeabi_llsr _restgpr_14_x __ucmpdi2 __ashldi3 __ashrdi3 __lshrdi3 __bswapsi2 __bswapdi2 __bzero __register_frame_info __deregister_frame_info ___chkstk_ms __chkstk_ms)
+fi
 
 if test "x$TARGET_APPLE_LINKER" = x1 ; then
 CFLAGS="$TARGET_CFLAGS -nostdlib -static"
@@ -1717,12 +1714,6 @@ if test x"$enable_werror" != xno ; then
   HOST_CFLAGS="$HOST_CFLAGS -Werror"
 fi
 
-if test "x$grub_cv_cc_target_clang" = xno; then
-   TARGET_LDFLAGS_STATIC_LIBGCC="-static-libgcc"
-else
-   TARGET_LDFLAGS_STATIC_LIBGCC=
-fi
-
 TARGET_CPP="$TARGET_CC -E"
 TARGET_CCAS=$TARGET_CC
 
@@ -1739,8 +1730,6 @@ AC_SUBST(GRUB_TARGET_CPU)
 AC_SUBST(GRUB_PLATFORM)
 
 AC_SUBST(TARGET_OBJCONV)
-AC_SUBST(TARGET_LIBGCC)
-AC_SUBST(TARGET_LDFLAGS_STATIC_LIBGCC)
 AC_SUBST(TARGET_CPP)
 AC_SUBST(TARGET_CCAS)
 AC_SUBST(TARGET_OBJ2ELF)
