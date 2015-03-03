@@ -741,6 +741,7 @@ if test x"$target_cpu" = xsparc64 ; then
         break
       fi
       CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      CPPFLAGS="$TARGET_CPPFLAGS"
       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		        [grub_cv_target_cc_mno_app_regs="$cand"], [])
     done
