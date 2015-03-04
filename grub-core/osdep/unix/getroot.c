@@ -491,7 +491,7 @@ grub_guess_root_devices (const char *dir_in)
   char **os_dev = NULL;
   struct stat st;
   dev_t dev;
-  char *dir = canonicalize_file_name (dir_in);
+  char *dir = grub_canonicalize_file_name (dir_in);
 
   if (!dir)
     grub_util_error (_("failed to get canonical path of `%s'"), dir_in);
@@ -516,7 +516,7 @@ grub_guess_root_devices (const char *dir_in)
 	    *cur = tmp;
 	  else
 	    {
-	      *cur = canonicalize_file_name (tmp);
+	      *cur = grub_canonicalize_file_name (tmp);
 	      if (*cur == NULL)
 		grub_util_error (_("failed to get canonical path of `%s'"), tmp);
 	      free (tmp);

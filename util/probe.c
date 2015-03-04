@@ -73,7 +73,7 @@ grub_util_guess_bios_drive (const char *orig_path)
 {
   char *canon;
   char *ptr;
-  canon = canonicalize_file_name (orig_path);
+  canon = grub_canonicalize_file_name (orig_path);
   if (!canon)
     return NULL;
   ptr = strrchr (orig_path, '/');
@@ -102,7 +102,7 @@ grub_util_guess_efi_drive (const char *orig_path)
 {
   char *canon;
   char *ptr;
-  canon = canonicalize_file_name (orig_path);
+  canon = grub_canonicalize_file_name (orig_path);
   if (!canon)
     return NULL;
   ptr = strrchr (orig_path, '/');
@@ -131,7 +131,7 @@ grub_util_guess_baremetal_drive (const char *orig_path)
 {
   char *canon;
   char *ptr;
-  canon = canonicalize_file_name (orig_path);
+  canon = grub_canonicalize_file_name (orig_path);
   if (!canon)
     return NULL;
   ptr = strrchr (orig_path, '/');

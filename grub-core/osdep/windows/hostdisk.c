@@ -328,7 +328,7 @@ grub_util_fd_strerror (void)
 }
 
 char *
-canonicalize_file_name (const char *path)
+grub_canonicalize_file_name (const char *path)
 {
   char *ret;
   LPTSTR windows_path;

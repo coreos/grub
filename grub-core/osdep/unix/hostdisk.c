@@ -198,7 +198,7 @@ grub_util_fd_close (grub_util_fd_t fd)
 }
 
 char *
-canonicalize_file_name (const char *path)
+grub_canonicalize_file_name (const char *path)
 {
 #if defined (PATH_MAX)
   char *ret;

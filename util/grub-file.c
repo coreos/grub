@@ -77,7 +77,7 @@ main (int argc, char *argv[])
 	}
       if (had_file)
 	grub_util_error ("one argument expected");
-      argv2[i - 1] = canonicalize_file_name (argv[i]);
+      argv2[i - 1] = grub_canonicalize_file_name (argv[i]);
       if (!argv2[i - 1])
 	{
 	  grub_util_error (_("cannot open `%s': %s"), argv[i],

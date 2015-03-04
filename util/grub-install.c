@@ -967,7 +967,7 @@ main (int argc, char *argv[])
   {
     char * t = grub_util_path_concat (2, bootdir, GRUB_DIR_NAME);
     grub_install_mkdir_p (t);
-    grubdir = canonicalize_file_name (t);
+    grubdir = grub_canonicalize_file_name (t);
     if (!grubdir)
       grub_util_error (_("failed to get canonical path of `%s'"), t);
     free (t);
@@ -1299,7 +1299,7 @@ main (int argc, char *argv[])
   {
     char *t = grub_util_path_concat (2, grubdir,
 				   platname);
-    platdir = canonicalize_file_name (t);
+    platdir = grub_canonicalize_file_name (t);
     if (!platdir)
       grub_util_error (_("failed to get canonical path of `%s'"),
 		       t);

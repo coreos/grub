@@ -170,7 +170,7 @@ grub_util_host_init (int *argc __attribute__ ((unused)),
 #error "Unsupported TCHAR size"
 #endif
 
-  grub_util_base_directory = canonicalize_file_name ((*argv)[0]);
+  grub_util_base_directory = grub_canonicalize_file_name ((*argv)[0]);
   if (!grub_util_base_directory)
     grub_util_base_directory = xstrdup ((*argv)[0]);
   for (ptr = grub_util_base_directory + strlen (grub_util_base_directory) - 1;
