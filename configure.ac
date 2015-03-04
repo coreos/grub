@@ -1302,7 +1302,7 @@ fi
 [fi]
 [if [ x"$grub_emu_pci_excuse" = x ]; then
     # Check for headers.]
-    AC_CHECK_HEADERS([pci/pci.h], [],
+    AC_CHECK_HEADERS([pciaccess.h], [],
       [grub_emu_pci_excuse=["need libpciaccess headers"]])
 [fi]
 
