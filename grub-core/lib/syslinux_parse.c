@@ -945,6 +945,7 @@ write_entry (struct output_buffer *outbuf,
 	    break;
 	  }
 	print_string ("  # UNSUPPORTED localboot type ");
+	print_string ("\ntrue;\n");
 	if (print_num (outbuf, n))
 	  return grub_errno;
 	print_string ("\n");
