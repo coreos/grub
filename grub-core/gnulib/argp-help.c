@@ -1,5 +1,5 @@
 /* Hierarchical argument parsing help output
-   Copyright (C) 1995-2005, 2007, 2009-2013 Free Software Foundation, Inc.
+   Copyright (C) 1995-2005, 2007, 2009-2015 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Miles Bader <miles@gnu.ai.mit.edu>.
 
@@ -650,7 +650,7 @@ hol_find_entry (struct hol *hol, const char *name)
   return 0;
 }
 
-/* If an entry with the long option NAME occurs in HOL, set it's special
+/* If an entry with the long option NAME occurs in HOL, set its special
    sort position to GROUP.  */
 static void
 hol_set_group (struct hol *hol, const char *name, int group)
@@ -1507,11 +1507,15 @@ argp_doc (const struct argp *argp, const struct argp_state *state,
       if (vt)
         {
           if (post)
-            inp_text = vt + 1;
+            {
+              inp_text = vt + 1;
+              if (! *inp_text)
+                inp_text = 0;
+            }
           else
             {
               inp_text_len = vt - argp->doc;
-              inp_text = __strndup (argp->doc, inp_text_len);
+              inp_text = inp_text_len ? __strndup (argp->doc, inp_text_len) : 0;
             }
         }
       else
