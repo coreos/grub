@@ -336,6 +336,9 @@ grub_hfsplus_mount (grub_disk_t disk)
   data->case_sensitive = ((magic == GRUB_HFSPLUSX_MAGIC) &&
 			  (header.key_compare == GRUB_HFSPLUSX_BINARYCOMPARE));
 
+  if (data->catalog_tree.nodesize < 2)
+    goto fail;
+
   if (grub_hfsplus_read_file (&data->extoverflow_tree.file, 0, 0,
 			      sizeof (struct grub_hfsplus_btnode),
 			      sizeof (header), (char *) &header) <= 0)
@@ -349,6 +352,9 @@ grub_hfsplus_mount (grub_disk_t disk)
 
   data->extoverflow_tree.root = grub_be_to_cpu32 (header.root);
   data->extoverflow_tree.nodesize = grub_be_to_cpu16 (header.nodesize);
+
+  if (data->extoverflow_tree.nodesize < 2)
+    goto fail;
 
   if (grub_hfsplus_read_file (&data->attr_tree.file, 0, 0,
 			      sizeof (struct grub_hfsplus_btnode),
