@@ -993,6 +993,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			fi
 			sleep 1;
 		    done
+		    UMOUNT_TIME=$(date -u "+%Y-%m-%d %H:%M:%S")
 		    sleep 1
 		    vgchange -a n grub_test
 		    ;;
@@ -1004,6 +1005,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			fi
 			sleep 1;
 		    done
+		    UMOUNT_TIME=$(date -u "+%Y-%m-%d %H:%M:%S")
 		    sleep 1
 		    mdadm --stop /dev/md/"${fs}_$NDEVICES"
 		    ;;
@@ -1214,10 +1216,15 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    case x$fs in
 		xiso9660 | xziso9660 | xrockridge | xjoliet | xrockridge_joliet | xiso9660_1999 | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999)
 		    FSTIME="$(date -d "$(echo ${FSUUID} | awk -F - '{ print $1"-"$2"-"$3" "$4":"$5":"$6 ;}')" '+%Y-%m-%d %H:%M:%S')";;
+		xlvm*|xmdraid*)
+		    # With some abstractions like mdraid flushing to disk
+		    # may be delayed for a long time.
+		    FSTIME="$UMOUNT_TIME";;
 		*)
 		    FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGES[0]}"|awk '{print $6; }'|sed 's,_, ,g')";;
 	    esac
-		# With some abstractions like mdraid it may take up to 2 seconds for the data to reach the disks after it was flushed by FS in these tests.
+	    # With some abstractions like mdraid computing of UMOUNT_TIME
+	    # is not precise. Account for small difference here.
 	    FSTIMEM1="$(date -d "$FSTIME UTC -1 second" -u "+%Y-%m-%d %H:%M:%S")"
 	    FSTIMEM2="$(date -d "$FSTIME UTC -2 second" -u "+%Y-%m-%d %H:%M:%S")"
 
