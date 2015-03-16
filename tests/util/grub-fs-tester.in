@@ -729,9 +729,9 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    elif [ x$fs = xlvm_stripe ] ; then
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -i "$NDEVICES" -n testvol grub_test
 		    elif [ x$fs = xlvm_mirror1 ] ; then
-			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" -n testvol grub_test
+			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" --type mirror -n testvol grub_test
 		    elif [ x$fs = xlvm_mirrorall ] ; then
-			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL))" -n testvol grub_test
+			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL))" --type mirror -n testvol grub_test
 		    elif [ x$fs = xlvm_raid4 ] || [ x$fs = xlvm_raid5 ]; then
 			lvcreate -l "$(((NDEVICES-1) * 5*LVMBLKMUL))" -i "$((NDEVICES-1))" --type "${fs/lvm_/}" -n testvol grub_test
 		    elif [ x$fs = xlvm_raid6 ]; then
