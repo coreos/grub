@@ -577,13 +577,17 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (is_pvmove)
 			seg->node_count = 1;
 		    }
-		  else if (grub_memcmp (p, "raid", sizeof ("raid") - 1)
-			   == 0 && (p[sizeof ("raid") - 1] >= '4'
-				    && p[sizeof ("raid") - 1] <= '6')
+		  else if (grub_memcmp (p, "raid", sizeof ("raid") - 1) == 0
+			   && ((p[sizeof ("raid") - 1] >= '4'
+				&& p[sizeof ("raid") - 1] <= '6')
+			       || p[sizeof ("raid") - 1] == '1')
 			   && p[sizeof ("raidX") - 1] == '"')
 		    {
 		      switch (p[sizeof ("raid") - 1])
 			{
+			case '1':
+			  seg->type = GRUB_DISKFILTER_MIRROR;
+			  break;
 			case '4':
 			  seg->type = GRUB_DISKFILTER_RAID4;
 			  seg->layout = GRUB_RAID_LAYOUT_LEFT_ASYMMETRIC;
@@ -608,15 +612,17 @@ grub_lvm_detect (grub_disk_t disk,
 			  goto lvs_segment_fail;
 			}
 
-		      seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
-		      if (p == NULL)
+		      if (seg->type != GRUB_DISKFILTER_MIRROR)
 			{
+			  seg->stripe_size = grub_lvm_getvalue (&p, "stripe_size = ");
+			  if (p == NULL)
+			    {
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown stripe_size\n");
+			      grub_util_info ("unknown stripe_size\n");
 #endif
-			  goto lvs_segment_fail;
+			      goto lvs_segment_fail;
+			    }
 			}
-
 
 		      seg->nodes = grub_zalloc (sizeof (seg->nodes[0])
 						* seg->node_count);
@@ -625,7 +631,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown mirrors\n");
+			  grub_util_info ("unknown raids\n");
 #endif
 			  goto lvs_segment_fail2;
 			}
