@@ -102,7 +102,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		# OS LIMITATION: Linux oopses with >=32768K
 	    MAXBLKSIZE=$((16384*1024))
 	    ;;
-	x"lvm_raid4" | x"lvm_raid5" | x"lvm_raid6")
+	x"lvm_raid1"* | x"lvm_raid4" | x"lvm_raid5" | x"lvm_raid6")
 		# OS LIMITATION: Linux crashes with less than 16384
 	    MINBLKSIZE=16384
 		# Could go further but what's the point?
@@ -166,7 +166,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    x"zfs_raidz" | x"zfs_stripe" | x"zfs_mirror" | xbtrfs_raid0 \
 		| xbtrfs_raid1 | x"mdraid"*"_raid4" | x"mdraid"*"_raid5" \
 		| x"mdraid"*"_linear" \
-		| x"mdraid"*"_raid10" | xlvm_mirror1 | xlvm_mirrorall)
+		| x"mdraid"*"_raid10" | xlvm_raid1* | xlvm_mirror1 | xlvm_mirrorall)
 		MINDEVICES=2
 		MAXDEVICES=7
 		;;
@@ -199,7 +199,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 
 	    case x$fs in
   	    # RAID 1 has to work with even one device of the set.
-		xzfs_mirror | x"mdraid"*"_raid1" | xlvm_mirrorall)
+		xzfs_mirror | x"mdraid"*"_raid1" | xlvm_mirrorall | xlvm_raid1all)
 		    NEED_IMAGES_N=1;;
             # Degrade raidz by removing 3 devices
 		xzfs_raidz3)
@@ -210,7 +210,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    # Degrade raidz and btrfs RAID1 by removing one device
  		xbtrfs_raid1 | xbtrfs_raid10 | xzfs_raidz | x"mdraid"*"_raid4" \
 		    | x"mdraid"*"_raid5" | x"mdraid"*"_raid10" | xlvm_mirror1 \
-		    | x"lvm_raid4" | x"lvm_raid5")
+		    | x"lvm_raid1" | x"lvm_raid4" | x"lvm_raid5")
 		    NEED_IMAGES_N=$((NDEVICES-1));;
 		*)
 		    NEED_IMAGES_N=$NDEVICES;;
@@ -728,10 +728,15 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -n testvol grub_test
 		    elif [ x$fs = xlvm_stripe ] ; then
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -i "$NDEVICES" -n testvol grub_test
-		    elif [ x$fs = xlvm_mirror1 ] ; then
-			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" --type mirror -n testvol grub_test
+		    elif [ x$fs = xlvm_mirror1 ] || [ x$fs = xlvm_raid1 ] ; then
+			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" --type "${fs/lvm_/}" -n testvol grub_test
 		    elif [ x$fs = xlvm_mirrorall ] ; then
 			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL))" --type mirror -n testvol grub_test
+		    elif [ x$fs = xlvm_raid1all ] ; then
+			# Until version 2.02.103 LVM counts metadata segments
+			# twice when checking available space. Reduce segment
+			# count to work around it.
+			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL - 1))" --type raid1 -n testvol grub_test
 		    elif [ x$fs = xlvm_raid4 ] || [ x$fs = xlvm_raid5 ]; then
 			lvcreate -l "$(((NDEVICES-1) * 5*LVMBLKMUL))" -i "$((NDEVICES-1))" --type "${fs/lvm_/}" -n testvol grub_test
 		    elif [ x$fs = xlvm_raid6 ]; then
