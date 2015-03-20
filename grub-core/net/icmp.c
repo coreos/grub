@@ -85,22 +85,13 @@ grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 	struct icmp_header *icmphr;
 	if (icmph->code)
 	  break;
-	nb_reply = grub_netbuff_alloc (nb->tail - nb->data + 512);
+	nb_reply = grub_netbuff_make_pkt (nb->tail - nb->data + sizeof (*icmphr));
 	if (!nb_reply)
 	  {
 	    grub_netbuff_free (nb);
 	    return grub_errno;
 	  }
-	err = grub_netbuff_reserve (nb_reply, nb->tail - nb->data + 512);
-	if (err)
-	  goto ping_fail;
-	err = grub_netbuff_push (nb_reply, nb->tail - nb->data);
-	if (err)
-	  goto ping_fail;
-	grub_memcpy (nb_reply->data, nb->data, nb->tail - nb->data);
-	err = grub_netbuff_push (nb_reply, sizeof (*icmphr));
-	if (err)
-	  goto ping_fail;
+	grub_memcpy (nb_reply->data + sizeof (*icmphr), nb->data, nb->tail - nb->data);
 	icmphr = (struct icmp_header *) nb_reply->data;
 	icmphr->type = ICMP_ECHO_REPLY;
 	icmphr->code = 0;
@@ -110,7 +101,6 @@ grub_net_recv_icmp_packet (struct grub_net_buff *nb,
 	err = grub_net_send_ip_packet (inf, src, ll_src,
 				       nb_reply, GRUB_NET_IP_ICMP);
 
-      ping_fail:
 	grub_netbuff_free (nb);
 	grub_netbuff_free (nb_reply);
 	return err;

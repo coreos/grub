@@ -97,6 +97,26 @@ grub_netbuff_alloc (grub_size_t len)
   return nb;
 }
 
+struct grub_net_buff *
+grub_netbuff_make_pkt (grub_size_t len)
+{
+  struct grub_net_buff *nb;
+  grub_err_t err;
+  nb = grub_netbuff_alloc (len + 512);
+  if (!nb)
+    return NULL;
+  err = grub_netbuff_reserve (nb, len + 512);
+  if (err)
+    goto fail;
+  err = grub_netbuff_push (nb, len);
+  if (err)
+    goto fail;
+  return nb;
+ fail:
+  grub_netbuff_free (nb);
+  return NULL;
+}
+
 void
 grub_netbuff_free (struct grub_net_buff *nb)
 {
