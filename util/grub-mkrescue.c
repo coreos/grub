@@ -44,9 +44,6 @@ static char *label_color;
 static char *label_bgcolor;
 static char *product_name;
 static char *product_version;
-static int xorriso_tail_argc;
-static int xorriso_tail_arg_alloc;
-static char **xorriso_tail_argv;
 static char *output_image;
 static char *xorriso;
 static char *boot_grub;
@@ -215,16 +212,6 @@ argp_parser (int key, char *arg, struct argp_state *state)
       xorriso = xstrdup (arg);
       return 0;
 
-    case ARGP_KEY_ARG:
-      if (xorriso_tail_arg_alloc <= xorriso_tail_argc)
-	{
-	  xorriso_tail_arg_alloc = 2 * (4 + xorriso_tail_argc);
-	  xorriso_tail_argv = xrealloc (xorriso_tail_argv,
-				   sizeof (xorriso_tail_argv[0])
-				   * xorriso_tail_arg_alloc);
-	}
-      xorriso_tail_argv[xorriso_tail_argc++] = xstrdup (arg);
-      return 0;
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -374,12 +361,70 @@ make_image_fwdisk (enum grub_install_plat plat,
   free (out);
 }
 
+static int
+option_is_end (const struct argp_option *opt)
+{
+  return !opt->key && !opt->name && !opt->doc && !opt->group;
+}
+
+
+static int
+args_to_eat (const char *arg)
+{
+  int j;
+
+  if (arg[0] != '-')
+    return 0;
+
+  if (arg[1] == '-')
+    {
+      for (j = 0; !option_is_end(&options[j]); j++)
+	{
+	  size_t len = strlen (options[j].name);
+	  if (strncmp (arg + 2, options[j].name, len) == 0)
+	    {
+	      if (arg[2 + len] == '=')
+		return 1;
+	      if (arg[2 + len] == '\0' && options[j].arg)
+		return 2;
+	      if (arg[2 + len] == '\0')
+		return 1;
+	    }
+	}
+      if (strcmp (arg, "--help") == 0)
+	return 1;
+      if (strcmp (arg, "--usage") == 0)
+	return 1;
+      if (strcmp (arg, "--version") == 0)
+	return 1;
+      return 0;
+    }
+  if (arg[2] && arg[3])
+    return 0;
+  for (j = 0; !option_is_end(&options[j]); j++)
+    {
+      if (options[j].key > 0 && options[j].key < 128 && arg[1] == options[j].key)
+	{
+	  if (options[j].arg)
+	    return 2;
+	  return 1;
+	}
+      if (arg[1] == '?' || arg[1] == 'V')
+	return 1;
+    }
+  return 0;
+}
+
 int
 main (int argc, char *argv[])
 {
   char *romdir;
   char *sysarea_img = NULL;
   const char *pkgdatadir;
+  int argp_argc;
+  char **argp_argv;
+  int xorriso_tail_argc;
+  char **xorriso_tail_argv;
 
   grub_util_host_init (&argc, &argv);
   grub_util_disable_fd_syncs ();
@@ -391,7 +436,37 @@ main (int argc, char *argv[])
   xorriso = xstrdup ("xorriso");
   label_font = grub_util_path_concat (2, pkgdatadir, "unicode.pf2");
 
-  argp_parse (&argp, argc, argv, 0, 0, 0);
+  argp_argv = xmalloc (sizeof (argp_argv[0]) * argc);
+  xorriso_tail_argv = xmalloc (sizeof (argp_argv[0]) * argc);
+
+  xorriso_tail_argc = 0;
+  /* Program name */
+  argp_argv[0] = argv[0];
+  argp_argc = 1;
+
+  /* argp doesn't allow us to catch unknwon arguments,
+     so catch them before passing to argp
+   */
+  {
+    int i;
+    for (i = 1; i < argc; i++)
+      {
+	switch (args_to_eat (argv[i]))
+	  {
+	  case 2:
+	    argp_argv[argp_argc++] = argv[i++];
+	    /* Fallthrough  */
+	  case 1:
+	    argp_argv[argp_argc++] = argv[i];
+	    break;
+	  case 0:
+	    xorriso_tail_argv[xorriso_tail_argc++] = argv[i];
+	    break;
+	  }
+      }
+  }
+
+  argp_parse (&argp, argp_argc, argp_argv, 0, 0, 0);
 
   if (!output_image)
     grub_util_error ("%s", _("output file must be specified"));
