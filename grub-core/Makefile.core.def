@@ -83,8 +83,6 @@ kernel = {
   x86_64_xen_ldflags       = '$(TARGET_IMG_LDFLAGS)';
   x86_64_xen_ldflags       = '$(TARGET_IMG_BASE_LDOPT),0';
 
-  ldadd = '$(LDADD_KERNEL)';
-
   mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
