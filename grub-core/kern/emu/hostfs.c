@@ -19,11 +19,6 @@
 
 #include <config-util.h>
 
-/* Legacy feature macro.*/
-#define _BSD_SOURCE
-/* New feature macro that provides everything _BSD_SOURCE and
- *    _SVID_SOURCE provided and possibly more.  */
-#define _DEFAULT_SOURCE
 #include <grub/fs.h>
 #include <grub/file.h>
 #include <grub/disk.h>
