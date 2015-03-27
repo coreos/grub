@@ -613,7 +613,6 @@ program = {
   common = grub-core/disk/host.c;
 
   common = util/resolve.c;
-  enable = noemu;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
 
