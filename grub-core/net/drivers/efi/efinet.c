@@ -37,11 +37,12 @@ send_card_buffer (struct grub_net_card *dev,
   grub_efi_status_t st;
   grub_efi_simple_network_t *net = dev->efi_net;
   grub_uint64_t limit_time = grub_get_time_ms () + 4000;
+  void *txbuf;
 
   if (dev->txbusy)
     while (1)
       {
-	void *txbuf = NULL;
+	txbuf = NULL;
 	st = efi_call_3 (net->get_status, net, 0, &txbuf);
 	if (st != GRUB_EFI_SUCCESS)
 	  return grub_error (GRUB_ERR_IO,
@@ -74,7 +75,18 @@ send_card_buffer (struct grub_net_card *dev,
 		   dev->txbuf, NULL, NULL, NULL);
   if (st != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_IO, N_("couldn't send network packet"));
-  dev->txbusy = 1;
+
+  /*
+     The card may have sent out the packet immediately - set txbusy
+     to 0 in this case.
+     Cases were observed where checking txbuf at the next call
+     of send_card_buffer() is too late: 0 is returned in txbuf and
+     we run in the GRUB_ERR_TIMEOUT case above.
+     Perhaps a timeout in the FW has discarded the recycle buffer.
+   */
+  st = efi_call_3 (net->get_status, net, 0, &txbuf);
+  dev->txbusy = !(st == GRUB_EFI_SUCCESS && txbuf == dev->txbuf);
+
   return GRUB_ERR_NONE;
 }
 
