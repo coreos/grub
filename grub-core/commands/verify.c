@@ -454,7 +454,7 @@ grub_verify_signature_real (char *buf, grub_size_t size,
   grub_err_t err;
   grub_size_t i;
   gcry_mpi_t mpis[10];
-  grub_uint8_t type;
+  grub_uint8_t type = 0;
 
   err = read_packet_header (sig, &type, &len);
   if (err)

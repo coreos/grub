@@ -792,8 +792,8 @@ grub_hfsplus_iterate_dir (grub_fshelp_node_t dir,
   };
 
   struct grub_hfsplus_key_internal intern;
-  struct grub_hfsplus_btnode *node;
-  grub_disk_addr_t ptr;
+  struct grub_hfsplus_btnode *node = NULL;
+  grub_disk_addr_t ptr = 0;
 
   {
     struct grub_fshelp_node *fsnode;
@@ -976,8 +976,8 @@ grub_hfsplus_label (grub_device_t device, char **label)
   struct grub_hfsplus_catkey *catkey;
   int i, label_len;
   struct grub_hfsplus_key_internal intern;
-  struct grub_hfsplus_btnode *node;
-  grub_disk_addr_t ptr;
+  struct grub_hfsplus_btnode *node = NULL;
+  grub_disk_addr_t ptr = 0;
 
   *label = 0;
 

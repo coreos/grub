@@ -445,7 +445,7 @@ grub_cmdline_run (int nested, int force_auth)
 
   while (1)
     {
-      char *line;
+      char *line = NULL;
 
       if (grub_normal_exit_level)
 	break;
