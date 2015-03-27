@@ -552,8 +552,8 @@ grub_net_icmp6_send_router_solicit (struct grub_net_network_level_interface *inf
   struct icmp_header *icmphr;
 
   multicast.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
-  multicast.ipv6[0] = grub_cpu_to_be64 (0xff02ULL << 48);
-  multicast.ipv6[1] = grub_cpu_to_be64 (0x02ULL);
+  multicast.ipv6[0] = grub_cpu_to_be64_compile_time (0xff02ULL << 48);
+  multicast.ipv6[1] = grub_cpu_to_be64_compile_time (0x02ULL);
 
   err = grub_net_link_layer_resolve (inf, &multicast, &ll_multicast);
   if (err)

@@ -80,7 +80,7 @@ grub_net_arp_send_request (struct grub_net_network_level_interface *inf,
   arp_packet = (struct arppkt *) nb.data;
   arp_packet->hrd = grub_cpu_to_be16_compile_time (GRUB_NET_ARPHRD_ETHERNET);
   arp_packet->hln = 6;
-  arp_packet->pro = grub_cpu_to_be16 (GRUB_NET_ETHERTYPE_IP);
+  arp_packet->pro = grub_cpu_to_be16_compile_time (GRUB_NET_ETHERTYPE_IP);
   arp_packet->pln = 4;
   arp_packet->op = grub_cpu_to_be16_compile_time (ARP_REQUEST);
   /* Sender hardware address.  */
