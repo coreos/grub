@@ -145,7 +145,7 @@ prepare_grub_to_access_device ()
   done
 
   if [ x$GRUB_ENABLE_CRYPTODISK = xy ]; then
-      for uuid in "`"${grub_probe}" --device $@ --target=cryptodisk_uuid`"; do
+      for uuid in `"${grub_probe}" --device $@ --target=cryptodisk_uuid`; do
 	  echo "cryptomount -u $uuid"
       done
   fi
