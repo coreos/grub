@@ -50,7 +50,8 @@ grub_divmod64s (grub_int64_t n,
       q = -q;
     }
   /* Now: n = d * q + r  */
-  *ro = r;
+  if (ro)
+    *ro = r;
   return q;
 }
 
