@@ -5848,7 +5848,7 @@ Following variables must be defined:
 
 @multitable  @columnfractions .30 .65
 @item GRUB_PAYLOADS_DIR @tab directory containing the required kernels
-@item GRUB_CBFSTOOL @tab cbfstoll from Coreboot package (for coreboot platform only)
+@item GRUB_CBFSTOOL @tab cbfstool from Coreboot package (for coreboot platform only)
 @item GRUB_COREBOOT_ROM @tab empty Coreboot ROM
 @item GRUB_QEMU_OPTS @tab additional options to be supplied to QEMU
 @end multitable
