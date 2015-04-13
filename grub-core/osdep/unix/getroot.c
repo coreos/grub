@@ -57,6 +57,9 @@
 #endif
 
 #include <sys/types.h>
+#if defined(HAVE_SYS_MKDEV_H)
+#include <sys/mkdev.h>
+#endif
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 # include <grub/util/libzfs.h>
