@@ -280,7 +280,9 @@ grub_crypto_cipher_handle_t (*grub_zfs_load_key) (const struct grub_zfs_key *key
  */
 #define MAX_SUPPORTED_FEATURE_STRLEN 50
 static const char *spa_feature_names[] = {
-  "org.illumos:lz4_compress",NULL
+  "org.illumos:lz4_compress",
+  "com.delphix:hole_birth",
+  NULL
 };
 
 static int
@@ -1751,7 +1753,7 @@ zio_read_gang (blkptr_t * bp, grub_zfs_endian_t endian, dva_t * dva, void *buf,
 
   for (i = 0; i < SPA_GBH_NBLKPTRS; i++)
     {
-      if (zio_gb->zg_blkptr[i].blk_birth == 0)
+      if (BP_IS_HOLE(&zio_gb->zg_blkptr[i]))
 	continue;
 
       err = zio_read_data (&zio_gb->zg_blkptr[i], endian, buf, data);
