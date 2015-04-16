@@ -283,6 +283,8 @@ static const char *spa_feature_names[] = {
   "org.illumos:lz4_compress",
   "com.delphix:hole_birth",
   "com.delphix:embedded_data",
+  "com.delphix:extensible_dataset",
+  "org.open-zfs:large_blocks",
   NULL
 };
 
@@ -3080,7 +3082,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
 
   grub_dprintf ("zfs", "alive\n");
 
-  err = dnode_get (mosmdn, objnum, DMU_OT_DSL_DIR, mdn, data);
+  err = dnode_get (mosmdn, objnum, 0, mdn, data);
   if (err)
     return err;
 
@@ -3113,7 +3115,7 @@ get_filesystem_dnode (dnode_end_t * mosmdn, char *fsname,
       if (err)
 	return err;
 
-      err = dnode_get (mosmdn, objnum, DMU_OT_DSL_DIR, mdn, data);
+      err = dnode_get (mosmdn, objnum, 0, mdn, data);
       if (err)
 	return err;
 
@@ -3268,8 +3270,7 @@ dnode_get_fullpath (const char *fullpath, struct subvolume *subvol,
 
   grub_dprintf ("zfs", "endian = %d\n", subvol->mdn.endian);
 
-  err = dnode_get (&(data->mos), headobj, DMU_OT_DSL_DATASET, &subvol->mdn,
-		   data);
+  err = dnode_get (&(data->mos), headobj, 0, &subvol->mdn, data);
   if (err)
     {
       grub_free (fsname);
@@ -3665,8 +3666,11 @@ zfs_mount (grub_device_t dev)
   if (ub->ub_version >= SPA_VERSION_FEATURES &&
       check_mos_features(&((objset_phys_t *) osp)->os_meta_dnode,ub_endian,
 			 data) != 0)
-    return NULL;
-	
+    {
+      grub_error (GRUB_ERR_BAD_FS, "Unsupported features in pool");
+      return NULL;
+    }
+
   /* Got the MOS. Save it at the memory addr MOS. */
   grub_memmove (&(data->mos.dn), &((objset_phys_t *) osp)->os_meta_dnode,
 		DNODE_SIZE);
@@ -3963,7 +3967,7 @@ fill_fs_info (struct grub_dirhook_info *info,
     {
       headobj = grub_zfs_to_cpu64 (((dsl_dir_phys_t *) DN_BONUS (&mdn.dn))->dd_head_dataset_obj, mdn.endian);
 
-      err = dnode_get (&(data->mos), headobj, DMU_OT_DSL_DATASET, &mdn, data);
+      err = dnode_get (&(data->mos), headobj, 0, &mdn, data);
       if (err)
 	{
 	  grub_dprintf ("zfs", "failed here\n");
