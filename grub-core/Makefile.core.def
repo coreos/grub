@@ -817,6 +817,13 @@ module = {
 };
 
 module = {
+  name = getenv;
+  common = commands/efi/getenv.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
+};
+
+module = {
   name = gptsync;
   common = commands/gptsync.c;
 };
