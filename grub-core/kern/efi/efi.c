@@ -259,6 +259,34 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
   return NULL;
 }
 
+grub_efi_boolean_t
+grub_efi_secure_boot (void)
+{
+  grub_efi_guid_t efi_var_guid = GRUB_EFI_GLOBAL_VARIABLE_GUID;
+  grub_size_t datasize;
+  char *secure_boot = NULL;
+  char *setup_mode = NULL;
+  grub_efi_boolean_t ret = 0;
+
+  secure_boot = grub_efi_get_variable("SecureBoot", &efi_var_guid, &datasize);
+
+  if (datasize != 1 || !secure_boot)
+    goto out;
+
+  setup_mode = grub_efi_get_variable("SetupMode", &efi_var_guid, &datasize);
+
+  if (datasize != 1 || !setup_mode)
+    goto out;
+
+  if (*secure_boot && !*setup_mode)
+    ret = 1;
+
+ out:
+  grub_free (secure_boot);
+  grub_free (setup_mode);
+  return ret;
+}
+
 #pragma GCC diagnostic ignored "-Wcast-align"
 
 /* Search the mods section from the PE32/PE32+ image. This code uses

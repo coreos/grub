@@ -72,6 +72,7 @@ EXPORT_FUNC (grub_efi_set_variable) (const char *var,
 				     const grub_efi_guid_t *guid,
 				     void *data,
 				     grub_size_t datasize);
+grub_efi_boolean_t EXPORT_FUNC (grub_efi_secure_boot) (void);
 int
 EXPORT_FUNC (grub_efi_compare_device_paths) (const grub_efi_device_path_t *dp1,
 					     const grub_efi_device_path_t *dp2);
