@@ -409,7 +409,7 @@ args_to_eat (const char *arg)
 	    return 2;
 	  return 1;
 	}
-      if (arg[1] == '?' || arg[1] == 'V')
+      if (arg[1] == '?')
 	return 1;
     }
   return 0;
