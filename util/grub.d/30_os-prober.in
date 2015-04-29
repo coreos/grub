@@ -24,7 +24,7 @@ datarootdir="@datarootdir@"
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
-. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
+. "$pkgdatadir/grub-mkconfig_lib"
 
 if [ "x${GRUB_DISABLE_OS_PROBER}" = "xtrue" ]; then
   exit 0

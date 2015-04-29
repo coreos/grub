@@ -33,6 +33,9 @@ datadir="@datadir@"
 if [ "x$pkgdatadir" = x ]; then
     pkgdatadir="${datadir}/@PACKAGE@"
 fi
+# export it for scripts
+export pkgdatadir
+
 grub_cfg=""
 grub_mkconfig_dir="${sysconfdir}"/grub.d
 

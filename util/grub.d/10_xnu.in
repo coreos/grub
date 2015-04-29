@@ -24,7 +24,7 @@ datarootdir="@datarootdir@"
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
-. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
+. "$pkgdatadir/grub-mkconfig_lib"
 
 osx_entry() {
     if [ x$2 = x32 ]; then
