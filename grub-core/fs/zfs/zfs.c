@@ -1887,14 +1887,12 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
 		       "compression algorithm %s not supported\n", decomp_table[comp].name);
 
   if (comp != ZIO_COMPRESS_OFF)
-    {
-      /* It's not really necessary to align to 16, just for safety.  */
-      compbuf = grub_malloc (ALIGN_UP (psize, 16));
-      if (! compbuf)
-	return grub_errno;
-    }
+    /* It's not really necessary to align to 16, just for safety.  */
+    compbuf = grub_malloc (ALIGN_UP (psize, 16));
   else
     compbuf = *buf = grub_malloc (lsize);
+  if (! compbuf)
+    return grub_errno;
 
   grub_dprintf ("zfs", "endian = %d\n", endian);
   if (BP_IS_EMBEDDED(bp))
@@ -1902,7 +1900,9 @@ zio_read (blkptr_t *bp, grub_zfs_endian_t endian, void **buf,
   else
     {
       err = zio_read_data (bp, endian, compbuf, data);
-      grub_memset (compbuf, 0, ALIGN_UP (psize, 16) - psize);
+      /* FIXME is it really necessary? */
+      if (comp != ZIO_COMPRESS_OFF)
+	grub_memset (compbuf + psize, 0, ALIGN_UP (psize, 16) - psize);
     }
   if (err)
     {
