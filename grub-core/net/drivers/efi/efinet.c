@@ -282,7 +282,7 @@ GRUB_MOD_FINI(efinet)
 	grub_net_card_unregister (card);
 	grub_free (card->txbuf);
 	grub_free (card->rcvbuf);
-	grub_free (card->name);
+	grub_free ((char *)card->name);
 	grub_free (card);
       }
 }
