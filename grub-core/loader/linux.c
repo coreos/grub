@@ -161,6 +161,9 @@ grub_initrd_init (int argc, char *argv[],
   for (i = 0; i < argc; i++)
     {
       const char *fname = argv[i];
+
+      initrd_ctx->size = ALIGN_UP (initrd_ctx->size, 4);
+
       if (grub_memcmp (argv[i], "newc:", 5) == 0)
 	{
 	  const char *ptr, *eptr;
@@ -205,7 +208,7 @@ grub_initrd_init (int argc, char *argv[],
       initrd_ctx->nfiles++;
       initrd_ctx->components[i].size
 	= grub_file_size (initrd_ctx->components[i].file);
-      initrd_ctx->size += ALIGN_UP (initrd_ctx->components[i].size, 4);
+      initrd_ctx->size += initrd_ctx->components[i].size;
     }
 
   if (newc)
@@ -248,10 +251,12 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
   int i;
   int newc = 0;
   struct dir *root = 0;
+  grub_ssize_t cursize = 0;
 
   for (i = 0; i < initrd_ctx->nfiles; i++)
     {
-      grub_ssize_t cursize;
+      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
+      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
 
       if (initrd_ctx->components[i].newc_name)
 	{
@@ -283,8 +288,6 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
 	  return grub_errno;
 	}
       ptr += cursize;
-      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
-      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
     }
   if (newc)
     ptr = make_header (ptr, "TRAILER!!!", sizeof ("TRAILER!!!") - 1, 0, 0);
