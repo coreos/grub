@@ -174,6 +174,29 @@ grub_efinet_findcards (void)
     {
       grub_efi_simple_network_t *net;
       struct grub_net_card *card;
+      grub_efi_device_path_t *dp, *parent = NULL, *child = NULL;
+
+      /* EDK2 UEFI PXE driver creates IPv4 and IPv6 messaging devices as
+	 children of main MAC messaging device. We only need one device with
+	 bound SNP per physical card, otherwise they compete with each other
+	 when polling for incoming packets.
+       */
+      dp = grub_efi_get_device_path (*handle);
+      if (!dp)
+	continue;
+      for (; ! GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp); dp = GRUB_EFI_NEXT_DEVICE_PATH (dp))
+	{
+	  parent = child;
+	  child = dp;
+	}
+      if (child
+	  && GRUB_EFI_DEVICE_PATH_TYPE (child) == GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	  && (GRUB_EFI_DEVICE_PATH_SUBTYPE (child) == GRUB_EFI_IPV4_DEVICE_PATH_SUBTYPE
+	      || GRUB_EFI_DEVICE_PATH_SUBTYPE (child) == GRUB_EFI_IPV6_DEVICE_PATH_SUBTYPE)
+	  && parent
+	  && GRUB_EFI_DEVICE_PATH_TYPE (parent) == GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (parent) == GRUB_EFI_MAC_ADDRESS_DEVICE_PATH_SUBTYPE)
+	continue;
 
       net = grub_efi_open_protocol (*handle, &net_io_guid,
 				    GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
@@ -251,7 +274,33 @@ grub_efi_net_config_real (grub_efi_handle_t hnd, char **device,
     if (! cdp)
       continue;
     if (grub_efi_compare_device_paths (dp, cdp) != 0)
-      continue;
+      {
+	grub_efi_device_path_t *ldp, *dup_dp, *dup_ldp;
+	int match;
+
+	/* EDK2 UEFI PXE driver creates pseudo devices with type IPv4/IPv6
+	   as children of Ethernet card and binds PXE and Load File protocols
+	   to it. Loaded Image Device Path protocol will point to these pseudo
+	   devices. We skip them when enumerating cards, so here we need to
+	   find matching MAC device.
+         */
+	ldp = grub_efi_find_last_device_path (dp);
+	if (GRUB_EFI_DEVICE_PATH_TYPE (ldp) != GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	    || (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) != GRUB_EFI_IPV4_DEVICE_PATH_SUBTYPE
+		&& GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) != GRUB_EFI_IPV6_DEVICE_PATH_SUBTYPE))
+	  continue;
+	dup_dp = grub_efi_duplicate_device_path (dp);
+	if (!dup_dp)
+	  continue;
+	dup_ldp = grub_efi_find_last_device_path (dup_dp);
+	dup_ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
+	dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
+	dup_ldp->length = sizeof (*dup_ldp);
+	match = grub_efi_compare_device_paths (dup_dp, cdp) == 0;
+	grub_free (dup_dp);
+	if (!match)
+	  continue;
+      }
     pxe = grub_efi_open_protocol (hnd, &pxe_io_guid,
 				  GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
     if (! pxe)
