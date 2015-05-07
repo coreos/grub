@@ -205,8 +205,7 @@ grub_initrd_init (int argc, char *argv[],
       initrd_ctx->nfiles++;
       initrd_ctx->components[i].size
 	= grub_file_size (initrd_ctx->components[i].file);
-      if (argc != 1)
-	initrd_ctx->size += ALIGN_UP (initrd_ctx->components[i].size, 4);
+      initrd_ctx->size += ALIGN_UP (initrd_ctx->components[i].size, 4);
     }
 
   if (newc)
