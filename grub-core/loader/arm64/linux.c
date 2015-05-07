@@ -33,12 +33,6 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#define GRUB_EFI_PAGE_SHIFT	12
-#define BYTES_TO_PAGES(bytes)   (((bytes) + 0xfff) >> GRUB_EFI_PAGE_SHIFT)
-#define GRUB_EFI_PE_MAGIC	0x5A4D
-
-static grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
-
 static grub_dl_t my_mod;
 static int loaded;
 
@@ -58,6 +52,7 @@ static void *
 get_firmware_fdt (void)
 {
   grub_efi_configuration_table_t *tables;
+  grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
   void *firmware_fdt = NULL;
   unsigned int i;
 
@@ -75,8 +70,8 @@ get_firmware_fdt (void)
   return firmware_fdt;
 }
 
-static void
-get_fdt (void)
+void *
+grub_linux_get_fdt (void)
 {
   void *raw_fdt;
   grub_size_t size;
@@ -99,7 +94,7 @@ get_fdt (void)
   grub_dprintf ("linux", "allocating %ld bytes for fdt\n", size);
   fdt = grub_efi_allocate_pages (0, BYTES_TO_PAGES (size));
   if (!fdt)
-    return;
+    return NULL;
 
   if (raw_fdt)
     {
@@ -110,10 +105,11 @@ get_fdt (void)
     {
       grub_fdt_create_empty_tree (fdt, size);
     }
+  return fdt;
 }
 
-static grub_err_t
-check_kernel (struct grub_arm64_linux_kernel_header *lh)
+grub_err_t
+grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
 {
   if (lh->magic != GRUB_ARM64_LINUX_MAGIC)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
@@ -131,14 +127,14 @@ check_kernel (struct grub_arm64_linux_kernel_header *lh)
 }
 
 static grub_err_t
-finalize_params (void)
+finalize_params_linux (void)
 {
   grub_efi_boot_services_t *b;
+  grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
   grub_efi_status_t status;
   int node, retval;
 
-  get_fdt ();
-  if (!fdt)
+  if (!grub_linux_get_fdt ())
     goto failure;
 
   node = grub_fdt_find_subnode (fdt, 0, "chosen");
@@ -240,20 +236,15 @@ out:
   return grub_errno;
 }
 
-static grub_err_t
-grub_linux_boot (void)
+grub_err_t
+grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size, char *args)
 {
   grub_efi_memory_mapped_device_path_t *mempath;
   grub_efi_handle_t image_handle;
   grub_efi_boot_services_t *b;
   grub_efi_status_t status;
-  grub_err_t retval;
   grub_efi_loaded_image_t *loaded_image;
   int len;
-
-  retval = finalize_params();
-  if (retval != GRUB_ERR_NONE)
-    return retval;
 
   mempath = grub_malloc (2 * sizeof (grub_efi_memory_mapped_device_path_t));
   if (!mempath)
@@ -263,8 +254,8 @@ grub_linux_boot (void)
   mempath[0].header.subtype = GRUB_EFI_MEMORY_MAPPED_DEVICE_PATH_SUBTYPE;
   mempath[0].header.length = grub_cpu_to_le16_compile_time (sizeof (*mempath));
   mempath[0].memory_type = GRUB_EFI_LOADER_DATA;
-  mempath[0].start_address = (grub_addr_t) kernel_addr;
-  mempath[0].end_address = (grub_addr_t) kernel_addr + kernel_size;
+  mempath[0].start_address = addr;
+  mempath[0].end_address = addr + size;
 
   mempath[1].header.type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   mempath[1].header.subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
@@ -273,16 +264,16 @@ grub_linux_boot (void)
   b = grub_efi_system_table->boot_services;
   status = b->load_image (0, grub_efi_image_handle,
 			  (grub_efi_device_path_t *) mempath,
-                          kernel_addr, kernel_size, &image_handle);
+			  (void *) addr, size, &image_handle);
   if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_BAD_OS, "cannot load image");
 
-  grub_dprintf ("linux", "linux command line: '%s'\n", linux_args);
+  grub_dprintf ("linux", "linux command line: '%s'\n", args);
 
   /* Convert command line to UCS-2 */
   loaded_image = grub_efi_get_loaded_image (image_handle);
   loaded_image->load_options_size = len =
-    (grub_strlen (linux_args) + 1) * sizeof (grub_efi_char16_t);
+    (grub_strlen (args) + 1) * sizeof (grub_efi_char16_t);
   loaded_image->load_options =
     grub_efi_allocate_pages (0,
 			     BYTES_TO_PAGES (loaded_image->load_options_size));
@@ -291,9 +282,9 @@ grub_linux_boot (void)
 
   loaded_image->load_options_size =
     2 * grub_utf8_to_utf16 (loaded_image->load_options, len,
-			    (grub_uint8_t *) linux_args, len, NULL);
+			    (grub_uint8_t *) args, len, NULL);
 
-  grub_dprintf("linux", "starting image %p\n", image_handle);
+  grub_dprintf ("linux", "starting image %p\n", image_handle);
   status = b->start_image (image_handle, 0, NULL);
 
   /* When successful, not reached */
@@ -302,6 +293,16 @@ grub_linux_boot (void)
 		       BYTES_TO_PAGES (loaded_image->load_options_size));
 
   return grub_errno;
+}
+
+static grub_err_t
+grub_linux_boot (void)
+{
+  if (finalize_params_linux () != GRUB_ERR_NONE)
+    return grub_errno;
+
+  return (grub_arm64_uefi_boot_image((grub_addr_t)kernel_addr,
+                                     kernel_size, linux_args));
 }
 
 static grub_err_t
@@ -400,7 +401,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, &lh, sizeof (lh)) < (long) sizeof (lh))
     return grub_errno;
 
-  if (check_kernel (&lh) != GRUB_ERR_NONE)
+  if (grub_arm64_uefi_check_image (&lh) != GRUB_ERR_NONE)
     goto fail;
 
   grub_loader_unset();
