@@ -43,47 +43,6 @@ static struct grub_efidisk_data *fd_devices;
 static struct grub_efidisk_data *hd_devices;
 static struct grub_efidisk_data *cd_devices;
 
-/* Duplicate a device path.  */
-static grub_efi_device_path_t *
-duplicate_device_path (const grub_efi_device_path_t *dp)
-{
-  grub_efi_device_path_t *p;
-  grub_size_t total_size = 0;
-
-  for (p = (grub_efi_device_path_t *) dp;
-       ;
-       p = GRUB_EFI_NEXT_DEVICE_PATH (p))
-    {
-      total_size += GRUB_EFI_DEVICE_PATH_LENGTH (p);
-      if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (p))
-	break;
-    }
-
-  p = grub_malloc (total_size);
-  if (! p)
-    return 0;
-
-  grub_memcpy (p, dp, total_size);
-  return p;
-}
-
-/* Return the device path node right before the end node.  */
-static grub_efi_device_path_t *
-find_last_device_path (const grub_efi_device_path_t *dp)
-{
-  grub_efi_device_path_t *next, *p;
-
-  if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp))
-    return 0;
-
-  for (p = (grub_efi_device_path_t *) dp, next = GRUB_EFI_NEXT_DEVICE_PATH (p);
-       ! GRUB_EFI_END_ENTIRE_DEVICE_PATH (next);
-       p = next, next = GRUB_EFI_NEXT_DEVICE_PATH (next))
-    ;
-
-  return p;
-}
-
 static struct grub_efidisk_data *
 make_devices (void)
 {
@@ -110,7 +69,7 @@ make_devices (void)
       if (! dp)
 	continue;
 
-      ldp = find_last_device_path (dp);
+      ldp = grub_efi_find_last_device_path (dp);
       if (! ldp)
 	/* This is empty. Why?  */
 	continue;
@@ -150,11 +109,11 @@ find_parent_device (struct grub_efidisk_data *devices,
   grub_efi_device_path_t *dp, *ldp;
   struct grub_efidisk_data *parent;
 
-  dp = duplicate_device_path (d->device_path);
+  dp = grub_efi_duplicate_device_path (d->device_path);
   if (! dp)
     return 0;
 
-  ldp = find_last_device_path (dp);
+  ldp = grub_efi_find_last_device_path (dp);
   ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
   ldp->length = sizeof (*ldp);
@@ -180,11 +139,11 @@ is_child (struct grub_efidisk_data *child,
   grub_efi_device_path_t *dp, *ldp;
   int ret;
 
-  dp = duplicate_device_path (child->device_path);
+  dp = grub_efi_duplicate_device_path (child->device_path);
   if (! dp)
     return 0;
 
-  ldp = find_last_device_path (dp);
+  ldp = grub_efi_find_last_device_path (dp);
   ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
   ldp->length = sizeof (*ldp);
@@ -207,8 +166,8 @@ add_device (struct grub_efidisk_data **devices, struct grub_efidisk_data *d)
     {
       int ret;
 
-      ret = grub_efi_compare_device_paths (find_last_device_path ((*p)->device_path),
-					   find_last_device_path (d->device_path));
+      ret = grub_efi_compare_device_paths (grub_efi_find_last_device_path ((*p)->device_path),
+					   grub_efi_find_last_device_path (d->device_path));
       if (ret == 0)
 	ret = grub_efi_compare_device_paths ((*p)->device_path,
 					     d->device_path);
@@ -795,7 +754,7 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
   if (! dp)
     return 0;
 
-  ldp = find_last_device_path (dp);
+  ldp = grub_efi_find_last_device_path (dp);
   if (! ldp)
     return 0;
 
@@ -810,14 +769,14 @@ grub_efidisk_get_device_name (grub_efi_handle_t *handle)
 
       /* It is necessary to duplicate the device path so that GRUB
 	 can overwrite it.  */
-      dup_dp = duplicate_device_path (dp);
+      dup_dp = grub_efi_duplicate_device_path (dp);
       if (! dup_dp)
 	return 0;
 
       while (1)
 	{
 	  grub_efi_device_path_t *dup_ldp;
-	  dup_ldp = find_last_device_path (dup_dp);
+	  dup_ldp = grub_efi_find_last_device_path (dup_dp);
 	  if (!(GRUB_EFI_DEVICE_PATH_TYPE (dup_ldp) == GRUB_EFI_MEDIA_DEVICE_PATH_TYPE
 		&& (GRUB_EFI_DEVICE_PATH_SUBTYPE (dup_ldp) == GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE
 		    || GRUB_EFI_DEVICE_PATH_SUBTYPE (dup_ldp) == GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE)))

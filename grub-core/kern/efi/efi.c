@@ -394,6 +394,47 @@ grub_efi_get_device_path (grub_efi_handle_t handle)
 				 GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 }
 
+/* Return the device path node right before the end node.  */
+grub_efi_device_path_t *
+grub_efi_find_last_device_path (const grub_efi_device_path_t *dp)
+{
+  grub_efi_device_path_t *next, *p;
+
+  if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp))
+    return 0;
+
+  for (p = (grub_efi_device_path_t *) dp, next = GRUB_EFI_NEXT_DEVICE_PATH (p);
+       ! GRUB_EFI_END_ENTIRE_DEVICE_PATH (next);
+       p = next, next = GRUB_EFI_NEXT_DEVICE_PATH (next))
+    ;
+
+  return p;
+}
+
+/* Duplicate a device path.  */
+grub_efi_device_path_t *
+grub_efi_duplicate_device_path (const grub_efi_device_path_t *dp)
+{
+  grub_efi_device_path_t *p;
+  grub_size_t total_size = 0;
+
+  for (p = (grub_efi_device_path_t *) dp;
+       ;
+       p = GRUB_EFI_NEXT_DEVICE_PATH (p))
+    {
+      total_size += GRUB_EFI_DEVICE_PATH_LENGTH (p);
+      if (GRUB_EFI_END_ENTIRE_DEVICE_PATH (p))
+	break;
+    }
+
+  p = grub_malloc (total_size);
+  if (! p)
+    return 0;
+
+  grub_memcpy (p, dp, total_size);
+  return p;
+}
+
 static void
 dump_vendor_path (const char *type, grub_efi_vendor_device_path_t *vendor)
 {
