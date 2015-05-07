@@ -5,6 +5,7 @@ EXTRA_DIST += gentpl.py
 EXTRA_DIST += Makefile.util.def
 EXTRA_DIST += Makefile.utilgcry.def
 
+EXTRA_DIST += asm-tests
 EXTRA_DIST += unicode
 
 EXTRA_DIST += util/import_gcry.py
