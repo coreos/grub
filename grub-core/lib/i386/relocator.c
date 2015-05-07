@@ -64,7 +64,6 @@ extern grub_uint64_t grub_relocator64_rbx;
 extern grub_uint64_t grub_relocator64_rcx;
 extern grub_uint64_t grub_relocator64_rdx;
 extern grub_uint64_t grub_relocator64_rip;
-extern grub_uint64_t grub_relocator64_rip_addr;
 extern grub_uint64_t grub_relocator64_rsp;
 extern grub_uint64_t grub_relocator64_rsi;
 extern grub_addr_t grub_relocator64_cr3;
