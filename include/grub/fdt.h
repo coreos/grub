@@ -117,4 +117,16 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
   grub_fdt_set_prop ((fdt), (nodeoffset), (name), &_val, 8);   \
 })
 
+/* Setup "reg" property for
+ * #address-cells = <0x2>
+ * #size-cells = <0x2>
+ */
+#define grub_fdt_set_reg64(fdt, nodeoffset, addr, size)        \
+({ \
+  grub_uint64_t reg_64[2]; \
+  reg_64[0] = grub_cpu_to_be64(addr); \
+  reg_64[1] = grub_cpu_to_be64(size); \
+  grub_fdt_set_prop ((fdt), (nodeoffset), "reg", reg_64, 16);  \
+})
+
 #endif	/* ! GRUB_FDT_HEADER */
