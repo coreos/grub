@@ -452,7 +452,7 @@ main (int argc, char *argv[])
     for (i = 1; i < argc; i++)
       {
 	if (strcmp (argv[i], "-output") == 0) {
-	  argp_argv[argp_argc++] = "--output";
+	  argp_argv[argp_argc++] = (char *) "--output";
 	  i++;
 	  argp_argv[argp_argc++] = argv[i];
 	  continue;
