@@ -180,8 +180,10 @@ grub_acpi_create_ebda (void)
   struct grub_acpi_rsdp_v20 *v2;
 
   ebda = (grub_uint8_t *) (grub_addr_t) ((*((grub_uint16_t *)0x40e)) << 4);
+  grub_dprintf ("acpi", "EBDA @%p\n", ebda);
   if (ebda)
     ebda_kb_len = *(grub_uint16_t *) ebda;
+  grub_dprintf ("acpi", "EBDA length 0x%x\n", ebda_kb_len);
   if (ebda_kb_len > 16)
     ebda_kb_len = 0;
   ctx.ebda_len = (ebda_kb_len + 1) << 10;
@@ -494,6 +496,8 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 
   if (! rsdp)
     rsdp = grub_machine_acpi_get_rsdpv1 ();
+
+  grub_dprintf ("acpi", "RSDP @%p\n", rsdp);
 
   if (rsdp)
     {

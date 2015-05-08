@@ -29,14 +29,15 @@ grub_machine_acpi_get_rsdpv1 (void)
   grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");
   ebda = (grub_uint8_t *) ((* ((grub_uint16_t *) 0x40e)) << 4);
   ebda_len = * (grub_uint16_t *) ebda;
-  if (! ebda_len)
-    return 0;
+  if (! ebda_len) /* FIXME do we really need this check? */
+    goto scan_bios;
   for (ptr = ebda; ptr < ebda + 0x400; ptr += 16)
     if (grub_memcmp (ptr, GRUB_RSDP_SIGNATURE, GRUB_RSDP_SIGNATURE_SIZE) == 0
 	&& grub_byte_checksum (ptr, sizeof (struct grub_acpi_rsdp_v10)) == 0
 	&& ((struct grub_acpi_rsdp_v10 *) ptr)->revision == 0)
       return (struct grub_acpi_rsdp_v10 *) ptr;
 
+scan_bios:
   grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");
   for (ptr = (grub_uint8_t *) 0xe0000; ptr < (grub_uint8_t *) 0x100000;
        ptr += 16)
@@ -56,8 +57,8 @@ grub_machine_acpi_get_rsdpv2 (void)
   grub_dprintf ("acpi", "Looking for RSDP. Scanning EBDA\n");
   ebda = (grub_uint8_t *) ((* ((grub_uint16_t *) 0x40e)) << 4);
   ebda_len = * (grub_uint16_t *) ebda;
-  if (! ebda_len)
-    return 0;
+  if (! ebda_len) /* FIXME do we really need this check? */
+    goto scan_bios;
   for (ptr = ebda; ptr < ebda + 0x400; ptr += 16)
     if (grub_memcmp (ptr, GRUB_RSDP_SIGNATURE, GRUB_RSDP_SIGNATURE_SIZE) == 0
 	&& grub_byte_checksum (ptr, sizeof (struct grub_acpi_rsdp_v10)) == 0
@@ -67,6 +68,7 @@ grub_machine_acpi_get_rsdpv2 (void)
 	== 0)
       return (struct grub_acpi_rsdp_v20 *) ptr;
 
+scan_bios:
   grub_dprintf ("acpi", "Looking for RSDP. Scanning BIOS\n");
   for (ptr = (grub_uint8_t *) 0xe0000; ptr < (grub_uint8_t *) 0x100000;
        ptr += 16)
