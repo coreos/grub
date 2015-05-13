@@ -279,7 +279,7 @@ write_reloc_section (FILE* fp, const char *name, char *image,
 	      break;
 #endif
 	    default:
-	      grub_util_error ("unknown pe relocation type %d\n", pe_rel->type);
+	      grub_util_error ("unknown pe relocation type %d", pe_rel->type);
 	    }
 
           if (type ==
