@@ -2071,10 +2071,10 @@ dmu_read (dnode_end_t * dn, grub_uint64_t blkid, void **buf,
  */
 static grub_err_t
 mzap_lookup (mzap_phys_t * zapobj, grub_zfs_endian_t endian,
-	     grub_uint16_t objsize, const char *name, grub_uint64_t * value,
+	     grub_uint32_t objsize, const char *name, grub_uint64_t * value,
 	     int case_insensitive)
 {
-  grub_uint16_t i, chunks;
+  grub_uint32_t i, chunks;
   mzap_ent_phys_t *mzap_ent = zapobj->mz_chunk;
 
   if (objsize < MZAP_ENT_LEN)
@@ -2486,7 +2486,7 @@ zap_lookup (dnode_end_t * zap_dnode, const char *name, grub_uint64_t *val,
 	    struct grub_zfs_data *data, int case_insensitive)
 {
   grub_uint64_t block_type;
-  grub_uint16_t size;
+  grub_uint32_t size;
   void *zapbuf;
   grub_err_t err;
   grub_zfs_endian_t endian;
@@ -2494,7 +2494,7 @@ zap_lookup (dnode_end_t * zap_dnode, const char *name, grub_uint64_t *val,
   grub_dprintf ("zfs", "looking for '%s'\n", name);
 
   /* Read in the first block of the zap object data. */
-  size = grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec, 
+  size = (grub_uint32_t) grub_zfs_to_cpu16 (zap_dnode->dn.dn_datablkszsec,
 			    zap_dnode->endian) << SPA_MINBLOCKSHIFT;
   err = dmu_read (zap_dnode, 0, &zapbuf, &endian, data);
   if (err)
