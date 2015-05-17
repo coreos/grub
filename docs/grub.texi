@@ -5162,8 +5162,10 @@ by @var{shortname} which can be used to remove it (@pxref{net_del_route}).
 Perform configuration of @var{card} using DHCP protocol. If no card name
 is specified, try to configure all existing cards. If configuration was
 successful, interface with name @var{card}@samp{:dhcp} and configured
-address is added to @var{card}. If server provided gateway information in
-DHCP ACK packet, it is added as route entry with the name @var{card}@samp{:dhcp:gw}. Additionally the following DHCP options are recognized and processed:
+address is added to @var{card}.
+@comment If server provided gateway information in
+@comment DHCP ACK packet, it is added as route entry with the name @var{card}@samp{:dhcp:gw}.
+Additionally the following DHCP options are recognized and processed:
 
 @table @samp
 @item 1 (Subnet Mask)
