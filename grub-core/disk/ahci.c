@@ -565,14 +565,14 @@ grub_ahci_pciinit (grub_pci_device_t dev,
   while (grub_get_time_ms () < endtime)
     {
       for (i = 0; i < nports; i++)
-	if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].task_file_data & 0x88))
+	if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].task_file_data & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ)))
 	  break;
       if (i == nports)
 	break;
     }
 
   for (i = 0; i < nports; i++)
-    if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].task_file_data & 0x88))
+    if (adevs[i] && (adevs[i]->hba->ports[adevs[i]->port].task_file_data & (GRUB_ATA_STATUS_BUSY | GRUB_ATA_STATUS_DRQ)))
       {
 	grub_dprintf ("ahci", "port %d is busy\n", i);
 	failed_adevs[i] = adevs[i];
