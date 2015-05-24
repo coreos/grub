@@ -1002,7 +1002,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   if (parms->write)
     grub_memcpy ((char *) grub_dma_get_virt (bufc), parms->buffer, parms->size);
 
-  grub_dprintf ("ahci", "AHCI command schedulded\n");
+  grub_dprintf ("ahci", "AHCI command scheduled\n");
   grub_dprintf ("ahci", "AHCI tfd = %x\n",
 		dev->hba->ports[dev->port].task_file_data);
   grub_dprintf ("ahci", "AHCI inten = %x\n",
