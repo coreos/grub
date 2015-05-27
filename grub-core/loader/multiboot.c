@@ -333,6 +333,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     return grub_errno;
 
 #ifndef GRUB_USE_MULTIBOOT2
+  lowest_addr = 0x100000;
   if (grub_multiboot_quirks & GRUB_MULTIBOOT_QUIRK_MODULES_AFTER_KERNEL)
     lowest_addr = ALIGN_UP (highest_load + 1048576, 4096);
 #endif
