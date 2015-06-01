@@ -255,6 +255,24 @@ grub_xfs_inode_offset (struct grub_xfs_data *data,
 	  data->sblock.log2_inode);
 }
 
+static inline grub_size_t
+grub_xfs_inode_size(struct grub_xfs_data *data)
+{
+  return 1 << data->sblock.log2_inode;
+}
+
+/*
+ * Returns size occupied by XFS inode stored in memory - we store struct
+ * grub_fshelp_node there but on disk inode size may be actually larger than
+ * struct grub_xfs_inode so we need to account for that so that we can read
+ * from disk directly into in-memory structure.
+ */
+static inline grub_size_t
+grub_xfs_fshelp_size(struct grub_xfs_data *data)
+{
+  return sizeof (struct grub_fshelp_node) - sizeof (struct grub_xfs_inode)
+	       + grub_xfs_inode_size(data);
+}
 
 static grub_err_t
 grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
@@ -264,8 +282,8 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
   int offset = grub_xfs_inode_offset (data, ino);
 
   /* Read the inode.  */
-  if (grub_disk_read (data->disk, block, offset,
-		      1 << data->sblock.log2_inode, inode))
+  if (grub_disk_read (data->disk, block, offset, grub_xfs_inode_size(data),
+		      inode))
     return grub_errno;
 
   if (grub_strncmp ((char *) inode->magic, "IN", 2))
@@ -297,7 +315,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       if (node->inode.fork_offset)
 	recoffset = (node->inode.fork_offset - 1) / 2;
       else
-	recoffset = ((1 << node->data->sblock.log2_inode)
+	recoffset = (grub_xfs_inode_size(node->data)
 		     - ((char *) &node->inode.data.btree.keys
 			- (char *) &node->inode))
 	  / (2 * sizeof (grub_uint64_t));
@@ -456,9 +474,7 @@ static int iterate_dir_call_hook (grub_uint64_t ino, const char *filename,
   struct grub_fshelp_node *fdiro;
   grub_err_t err;
 
-  fdiro = grub_malloc (sizeof (struct grub_fshelp_node)
-		       - sizeof (struct grub_xfs_inode)
-		       + (1 << ctx->diro->data->sblock.log2_inode) + 1);
+  fdiro = grub_malloc (grub_xfs_fshelp_size(ctx->diro->data) + 1);
   if (!fdiro)
     {
       grub_print_error ();
@@ -682,7 +698,7 @@ grub_xfs_mount (grub_disk_t disk)
   data = grub_realloc (data,
 		       sizeof (struct grub_xfs_data)
 		       - sizeof (struct grub_xfs_inode)
-		       + (1 << data->sblock.log2_inode) + 1);
+		       + grub_xfs_inode_size(data) + 1);
 
   if (! data)
     goto fail;
@@ -797,10 +813,7 @@ grub_xfs_open (struct grub_file *file, const char *name)
 
   if (fdiro != &data->diropen)
     {
-      grub_memcpy (&data->diropen, fdiro,
-		   sizeof (struct grub_fshelp_node)
-		   - sizeof (struct grub_xfs_inode)
-		   + (1 << data->sblock.log2_inode));
+      grub_memcpy (&data->diropen, fdiro, grub_xfs_fshelp_size(data));
       grub_free (fdiro);
     }
 
