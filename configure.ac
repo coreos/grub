@@ -686,9 +686,9 @@ if test x"$platform" != xemu ; then
   AC_CACHE_CHECK([for options to get soft-float], grub_cv_target_cc_soft_float, [
     grub_cv_target_cc_soft_float=no
     if test "x$target_cpu" = xarm64; then
-       CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd -Werror"
+       CFLAGS="$TARGET_CFLAGS -mgeneral-regs-only -Werror"
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		         [grub_cv_target_cc_soft_float="-march=armv8-a+nofp+nosimd"], [])
+		         [grub_cv_target_cc_soft_float="-mgeneral-regs-only"], [])
     fi
     if test "x$target_cpu" = xia64; then
        CFLAGS="$TARGET_CFLAGS -mno-inline-float-divide -mno-inline-sqrt -Werror"
@@ -720,15 +720,7 @@ if test x"$platform" != xemu ; then
       TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_soft_float"
       ;;
   esac
-  case x"$grub_cv_target_cc_soft_float" in
-    x"-march=armv8-a+nofp+nosimd")
-      # +nosimd disables also the cache opcodes that we need in asm.
-      TARGET_CCASFLAGS="$TARGET_CCASFLAGS -march=armv8-a+nofp"
-      ;;
-    *)
-      TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
-      ;;
-  esac
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
 
 fi
 
