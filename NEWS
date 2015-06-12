@@ -17,6 +17,7 @@ New in 2.02:
     files.
   * ZFS features support.
   * ZFS LZ4 support.
+  * XFS V5 format support.
 
 * New/improved terminal and video support:
   * Monochrome text (matching `hercules' in GRUB Legacy).
