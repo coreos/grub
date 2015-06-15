@@ -17,6 +17,9 @@ endif
 if COND_arm64
   CFLAGS_PLATFORM += -mcmodel=large
 endif
+if COND_powerpc_ieee1275
+  CFLAGS_PLATFORM += -mcpu=powerpc
+endif
 
 #FIXME: discover and check XEN headers
 CPPFLAGS_XEN = -I/usr/include
