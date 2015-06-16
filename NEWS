@@ -146,6 +146,9 @@ New in 2.02:
     Python 2.6.
   * modinfo.sh contains build information now.
   * Added many new tests to improve robustness.
+  * Target is built without libgcc now. Necessary builtins are reimplemented
+    directly. This removes requirement for target-specific runtime on build
+    system.
 
 * Revision control moved to git.
 
