@@ -168,6 +168,29 @@ open_card (struct grub_net_card *dev)
 	return grub_error (GRUB_ERR_NET_NO_CARD, "%s: net initialize failed",
 			   dev->name);
 
+      /* Enable hardware receive filters if driver declares support for it.
+	 We need unicast and broadcast and additionaly all nodes and
+	 solicited multicast for IPv6. Solicited multicast is per-IPv6
+	 address and we currently do not have API to do it so simply
+	 try to enable receive of all multicast packets or evertyhing in
+	 the worst case (i386 PXE driver always enables promiscuous too).
+
+	 This does trust firmware to do what it claims to do.
+       */
+      if (net->mode->receive_filter_mask)
+	{
+	  grub_uint32_t filters = GRUB_EFI_SIMPLE_NETWORK_RECEIVE_UNICAST   |
+				  GRUB_EFI_SIMPLE_NETWORK_RECEIVE_BROADCAST |
+				  GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS_MULTICAST;
+
+	  filters &= net->mode->receive_filter_mask;
+	  if (!(filters & GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS_MULTICAST))
+	    filters |= (net->mode->receive_filter_mask &
+			GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS);
+
+	  efi_call_6 (net->receive_filters, net, filters, 0, 0, 0, NULL);
+	}
+
       efi_call_4 (grub_efi_system_table->boot_services->close_protocol,
 		  dev->efi_net, &net_io_guid,
 		  grub_efi_image_handle, dev->efi_handle);
@@ -181,6 +204,8 @@ open_card (struct grub_net_card *dev)
 static void
 close_card (struct grub_net_card *dev)
 {
+  efi_call_1 (dev->efi_net->shutdown, dev->efi_net);
+  efi_call_1 (dev->efi_net->stop, dev->efi_net);
   efi_call_4 (grub_efi_system_table->boot_services->close_protocol,
 	      dev->efi_net, &net_io_guid,
 	      grub_efi_image_handle, dev->efi_handle);
