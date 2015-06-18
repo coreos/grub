@@ -829,7 +829,9 @@ grub_fat_iterate_dir_next (grub_disk_t disk, struct grub_fat_data *data,
 	      i--;
 	    }
 
-	  *filep++ = '.';
+	  /* XXX should we check that dir position is 0 or 1? */
+	  if (i > 2 || filep[0] != '.' || (i == 2 && filep[1] != '.'))
+	    *filep++ = '.';
 
 	  for (i = 8; i < 11 && ctxt->dir.name[i]; i++)
 	    *filep++ = grub_tolower (ctxt->dir.name[i]);
@@ -871,9 +873,31 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
       return 0;
     }
 
-  /* Extract a directory name.  */
-  while (*path == '/')
-    path++;
+  do
+    {
+      /* Extract a directory name.  */
+      while (*path == '/')
+	path++;
+
+      /* Emulate special "." and ".." entries in root directory */
+      if (data->file_cluster == data->root_cluster)
+	{
+	  if (*path != '.')
+	    break;
+	  if (!path[1] || path[1] == '/')
+	    {
+	      path++;
+	      continue;
+	    }
+	  if (path[1] == '.' && (!path[2] || path[2] == '/'))
+	    {
+	      path += 2;
+	      continue;
+	    }
+	}
+      break;
+    }
+  while (1);
 
   dirp = grub_strchr (path, '/');
   if (dirp)
@@ -935,6 +959,9 @@ grub_fat_find_dir (grub_disk_t disk, struct grub_fat_data *data,
 	  data->file_size = grub_le_to_cpu32 (ctxt.dir.file_size);
 	  data->file_cluster = ((grub_le_to_cpu16 (ctxt.dir.first_cluster_high) << 16)
 				| grub_le_to_cpu16 (ctxt.dir.first_cluster_low));
+	  /* If directory points to root, starting cluster is 0 */
+	  if (!data->file_cluster)
+	    data->file_cluster = data->root_cluster;
 #endif
 	  data->cur_cluster_num = ~0U;
 
