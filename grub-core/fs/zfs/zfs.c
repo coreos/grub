@@ -3668,6 +3668,8 @@ zfs_mount (grub_device_t dev)
 			 data) != 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "Unsupported features in pool");
+      grub_free (osp);
+      zfs_unmount (data);
       return NULL;
     }
 
