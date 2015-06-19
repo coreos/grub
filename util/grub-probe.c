@@ -429,7 +429,7 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_HINT_STR)
 	{
 	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-	  const char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
+	  char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
 	  char *biosname, *bare, *efi;
 	  const char *map;
 
@@ -443,6 +443,7 @@ probe (const char *path, char **device_names, char delim)
 	      grub_util_fprint_full_disk_name (stdout, tmp, dev);
 	      printf ("' ");
 	      free (tmp);
+	      free (ofpath);
 	    }
 
 	  biosname = grub_util_guess_bios_drive (*curdev);
