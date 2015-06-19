@@ -772,7 +772,7 @@ print_escaped (struct output_buffer *outbuf,
   if (err)
     return err;
   outbuf->buf[outbuf->ptr++] = '\'';
-  for (ptr = from; *ptr; ptr++)
+  for (ptr = from; *ptr && ptr < to; ptr++)
     {
       if (*ptr == '\'')
 	{
