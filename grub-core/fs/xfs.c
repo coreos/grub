@@ -361,7 +361,7 @@ grub_xfs_inode_offset (struct grub_xfs_data *data,
 static inline grub_size_t
 grub_xfs_inode_size(struct grub_xfs_data *data)
 {
-  return 1 << data->sblock.log2_inode;
+  return (grub_size_t)1 << data->sblock.log2_inode;
 }
 
 /*
