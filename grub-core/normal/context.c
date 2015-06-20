@@ -64,7 +64,10 @@ grub_env_new_context (int export_all)
     return grub_errno;
   menu = grub_zalloc (sizeof (*menu));
   if (! menu)
-    return grub_errno;
+    {
+      grub_free (context);
+      return grub_errno;
+    }
 
   context->prev = grub_current_context;
   grub_current_context = context;
