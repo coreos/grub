@@ -175,7 +175,10 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
       var = "root";
     }
   else
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("one argument expected"));
+      goto out;
+    }
 
   if (state[SEARCH_LABEL].set)
     grub_search_label (id, var, state[SEARCH_NO_FLOPPY].set, 
@@ -187,8 +190,10 @@ grub_cmd_search (grub_extcmd_context_t ctxt, int argc, char **args)
     grub_search_fs_file (id, var, state[SEARCH_NO_FLOPPY].set, 
 			 hints, nhints);
   else
-    return grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
+    grub_error (GRUB_ERR_INVALID_COMMAND, "unspecified search type");
 
+out:
+  grub_free (hints);
   return grub_errno;
 }
 
