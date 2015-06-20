@@ -104,7 +104,10 @@ grub_cmd_password (grub_command_t cmd __attribute__ ((unused)),
 
   pass->c = grub_strtoul (ptr, &ptr, 0);
   if (grub_errno)
-    return grub_errno;
+    {
+      grub_free (pass);
+      return grub_errno;
+    }
   if (*ptr != '.')
     {
       grub_free (pass);
