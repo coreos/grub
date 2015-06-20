@@ -563,7 +563,10 @@ SUFFIX(grub_openbsd_find_ramdisk) (grub_file_t file,
     
     err = read_headers (file, filename, &e, &shdr);
     if (err)
-      return err;
+      {
+	grub_free (shdr);
+	return err;
+      }
 
     for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
 						  + e.e_shnum * e.e_shentsize);
@@ -616,7 +619,11 @@ SUFFIX(grub_openbsd_find_ramdisk) (grub_file_t file,
       }
 
     if (grub_file_seek (file, stroff) == (grub_off_t) -1)
-      return grub_errno;
+      {
+	grub_free (syms);
+	grub_free (strs);
+	return grub_errno;
+      }
     if (grub_file_read (file, strs, strsize) != (grub_ssize_t) strsize)
       {
 	grub_free (syms);
