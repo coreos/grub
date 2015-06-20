@@ -615,9 +615,10 @@ grub_scsi_open (const char *name, grub_disk_t disk)
 
       if (scsi->blocksize & (scsi->blocksize - 1) || !scsi->blocksize)
 	{
+	  grub_error (GRUB_ERR_IO, "invalid sector size %d",
+		      scsi->blocksize);
 	  grub_free (scsi);
-	  return grub_error (GRUB_ERR_IO, "invalid sector size %d",
-			     scsi->blocksize);
+	  return grub_errno;
 	}
       for (disk->log_sector_size = 0;
 	   (1U << disk->log_sector_size) < scsi->blocksize;
