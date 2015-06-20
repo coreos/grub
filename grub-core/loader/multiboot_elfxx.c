@@ -169,7 +169,10 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
 	return grub_errno;
       
       if (grub_file_seek (file, ehdr->e_shoff) == (grub_off_t) -1)
-	return grub_errno;
+	{
+	  grub_free (shdr);
+	  return grub_errno;
+	}
 
       if (grub_file_read (file, shdr, ehdr->e_shnum * ehdr->e_shentsize)
               != (grub_ssize_t) ehdr->e_shnum * ehdr->e_shentsize)
