@@ -351,6 +351,7 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
   loaded_image->device_handle = dev_handle;
 
   grub_file_close (file);
+  file = NULL;
 
   if (argc > 1)
     {
