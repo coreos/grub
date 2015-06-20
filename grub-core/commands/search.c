@@ -210,10 +210,10 @@ try (struct search_ctx *ctx)
       /* Cache entry was outdated. Remove it.  */
       if (!ctx->count)
 	{
+	  *prev = cache_ent->next;
 	  grub_free (cache_ent->key);
 	  grub_free (cache_ent->value);
 	  grub_free (cache_ent);
-	  *prev = cache_ent->next;
 	}
     }
 
