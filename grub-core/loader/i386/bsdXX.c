@@ -292,13 +292,13 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
 
   err = read_headers (file, filename, &e, &shdr);
   if (err)
-    return err;
+    goto out;
 
   err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
 			   FREEBSD_MODINFOMD_ELFHDR, &e,
 			   sizeof (e));
   if (err)
-    return err;
+    goto out;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -307,7 +307,10 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
 	break;
   if (s >= (Elf_Shdr *) ((char *) shdr
 			+ e.e_shnum * e.e_shentsize))
-    return grub_error (GRUB_ERR_BAD_OS, N_("no symbol table"));
+    {
+      err = grub_error (GRUB_ERR_BAD_OS, N_("no symbol table"));
+      goto out;
+    }
   symoff = s->sh_offset;
   symsize = s->sh_size;
   symentsize = s->sh_entsize;
@@ -325,7 +328,7 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 					   symtarget, chunk_size);
     if (err)
-      return err;
+      goto out;
     sym_chunk = get_virtual_current_address (ch);
   }
 
@@ -337,28 +340,38 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
   curload += sizeof (grub_freebsd_addr_t);
 
   if (grub_file_seek (file, symoff) == (grub_off_t) -1)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto out;
+    }
   sym = (Elf_Sym *) curload;
   if (grub_file_read (file, curload, symsize) != (grub_ssize_t) symsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-			   filename);
-      return grub_errno;
+	err = grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			  filename);
+      else
+	err = grub_errno;
+      goto out;
     }
   curload += symsize;
 
   *((grub_freebsd_addr_t *) curload) = strsize;
   curload += sizeof (grub_freebsd_addr_t);
   if (grub_file_seek (file, stroff) == (grub_off_t) -1)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto out;
+    }
   str = (char *) curload;
   if (grub_file_read (file, curload, strsize) != (grub_ssize_t) strsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-			   filename);
-      return grub_errno;
+	err = grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			  filename);
+      else
+	err = grub_errno;
+      goto out;
     }
 
   for (i = 0;
@@ -378,18 +391,20 @@ SUFFIX (grub_freebsd_load_elf_meta) (struct grub_relocator *relocator,
 			       FREEBSD_MODINFOMD_DYNAMIC, &dynamic,
 			       sizeof (dynamic));
       if (err)
-	return err;
+	goto out;
     }
 
   err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
 			   FREEBSD_MODINFOMD_SSYM, &symstart,
 			   sizeof (symstart));
   if (err)
-    return err;
+    goto out;
 
   err = grub_bsd_add_meta (FREEBSD_MODINFO_METADATA |
 			   FREEBSD_MODINFOMD_ESYM, &symend,
 			   sizeof (symend));
+out:
+  grub_free (shdr);
   if (err)
     return err;
 
