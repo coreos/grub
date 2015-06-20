@@ -389,6 +389,7 @@ grub_cmdline_get (const char *prompt_translated)
     if (!unicode_msg)
       {
 	grub_free (buf);
+	grub_free (cl_terms);
 	return 0;
       }
     msg_len = grub_utf8_to_ucs4 (unicode_msg, msg_len - 1,
