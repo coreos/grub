@@ -417,7 +417,10 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 
   err = read_headers (file, filename, &e, &shdr);
   if (err)
-    return err;
+    {
+      grub_free (shdr);
+      return grub_errno;
+    }
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) (shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -426,7 +429,10 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 	break;
   if (s >= (Elf_Shdr *) ((char *) shdr
 			+ e.e_shnum * e.e_shentsize))
-    return GRUB_ERR_NONE;
+    {
+      grub_free (shdr);
+      return GRUB_ERR_NONE;
+    }
   symsize = s->sh_size;
   symsh = s;
   s = (Elf_Shdr *) (shdr + e.e_shentsize * s->sh_link);
@@ -443,7 +449,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 					   symtarget, chunk_size);
     if (err)
-      return err;
+      goto out;
     sym_chunk = get_virtual_current_address (ch);
   }
 
@@ -482,29 +488,41 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
     }
 
   if (grub_file_seek (file, symsh->sh_offset) == (grub_off_t) -1)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto out;
+    }
   if (grub_file_read (file, curload, symsize) != (grub_ssize_t) symsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-			   filename);
-      return grub_errno;
+	err = grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			  filename);
+      else
+	err = grub_errno;
+      goto out;
     }
   curload += ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t));
 
   if (grub_file_seek (file, strsh->sh_offset) == (grub_off_t) -1)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto out;
+    }
   if (grub_file_read (file, curload, strsize) != (grub_ssize_t) strsize)
     {
       if (! grub_errno)
-	return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-			   filename);
-      return grub_errno;
+	err = grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+			  filename);
+      else
+	err = grub_errno;
+      goto out;
     }
 
   err = grub_bsd_add_meta (NETBSD_BTINFO_SYMTAB, 
 			   &symtab,
 			   sizeof (symtab));
+out:
+  grub_free (shdr);
   if (err)
     return err;
 
