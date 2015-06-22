@@ -316,9 +316,9 @@ get_btrfs_fs_prefix (const char *mount_path)
 
 	  tree_id = sargs.buf[2];
 	  br = (struct grub_btrfs_root_backref *) (sargs.buf + 4);
-	  inode_id = br->inode_id;
+	  inode_id = grub_le_to_cpu64 (br->inode_id);
 	  name = br->name;
-	  namelen = br->n;
+	  namelen = grub_le_to_cpu16 (br->n);
 	}
       else
 	{
@@ -345,7 +345,7 @@ get_btrfs_fs_prefix (const char *mount_path)
 
 	  ir = (struct grub_btrfs_inode_ref *) (sargs.buf + 4);
 	  name = ir->name;
-	  namelen = ir->n;
+	  namelen = grub_le_to_cpu16 (ir->n);
 	}
       old = ret;
       ret = xmalloc (namelen + (old ? strlen (old) : 0) + 2);
