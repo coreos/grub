@@ -84,11 +84,11 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
   grub_size_t chunk_size = 0;
   void *chunk_src;
 
+  curload = module = ALIGN_PAGE (*kern_end);
+
   err = read_headers (file, argv[0], &e, &shdr);
   if (err)
-    return err;
-
-  curload = module = ALIGN_PAGE (*kern_end);
+    goto out;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -109,7 +109,7 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 					   module, chunk_size);
     if (err)
-      return err;
+      goto out;
     chunk_src = get_virtual_current_address (ch);
   }
 
@@ -135,7 +135,7 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
 	  err = load (file, argv[0], (grub_uint8_t *) chunk_src + curload - *kern_end,
 		      s->sh_offset, s->sh_size);
 	  if (err)
-	    return err;
+	    goto out;
 	  break;
 	case SHT_NOBITS:
 	  grub_memset ((grub_uint8_t *) chunk_src + curload - *kern_end, 0,
@@ -159,6 +159,8 @@ SUFFIX (grub_freebsd_load_elfmodule_obj) (struct grub_relocator *relocator,
 			     | FREEBSD_MODINFOMD_SHDR,
 			     shdr, e.e_shnum * e.e_shentsize);
 
+out:
+  grub_free (shdr);
   return err;
 }
 
@@ -177,11 +179,11 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
   grub_size_t chunk_size = 0;
   void *chunk_src;
 
+  curload = module = ALIGN_PAGE (*kern_end);
+
   err = read_headers (file, argv[0], &e, &shdr);
   if (err)
-    return err;
-
-  curload = module = ALIGN_PAGE (*kern_end);
+    goto out;
 
   for (s = (Elf_Shdr *) shdr; s < (Elf_Shdr *) ((char *) shdr
 						+ e.e_shnum * e.e_shentsize);
@@ -207,7 +209,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
     err = grub_relocator_alloc_chunk_addr (relocator, &ch,
 					   module, chunk_size);
     if (err)
-      return err;
+      goto out;
 
     chunk_src = get_virtual_current_address (ch);
   }
@@ -235,7 +237,7 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 		      + s->sh_addr - *kern_end,
 		      s->sh_offset, s->sh_size);
 	  if (err)
-	    return err;
+	    goto out;
 	  break;
 	case SHT_NOBITS:
 	  grub_memset ((grub_uint8_t *) chunk_src + module
@@ -265,6 +267,10 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
   grub_freebsd_add_meta_module (argv[0], FREEBSD_MODTYPE_ELF_MODULE,
 				argc - 1, argv + 1, module,
 				curload - module);
+out:
+  grub_free (shdr);
+  if (err)
+    return err;
   return SUFFIX (grub_freebsd_load_elf_meta) (relocator, file, argv[0], kern_end);
 }
 
