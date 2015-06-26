@@ -350,9 +350,6 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
     }
   loaded_image->device_handle = dev_handle;
 
-  grub_file_close (file);
-  file = NULL;
-
   if (argc > 1)
     {
       int i, len;
@@ -381,6 +378,9 @@ grub_cmd_chainloader (grub_command_t cmd __attribute__ ((unused)),
       loaded_image->load_options = cmdline;
       loaded_image->load_options_size = len;
     }
+
+  grub_file_close (file);
+  grub_device_close (dev);
 
   grub_loader_set (grub_chainloader_boot, grub_chainloader_unload, 0);
   return 0;
