@@ -32,6 +32,7 @@
 #include <grub/env.h>
 #include <grub/cache.h>
 #include <grub/i18n.h>
+#include <grub/tpm.h>
 
 /* Platforms where modules are in a readonly area of memory.  */
 #if defined(GRUB_MACHINE_QEMU)
@@ -728,6 +729,8 @@ grub_dl_load_file (const char *filename)
      Some disk backends do not handle gracefully multiple concurrent
      opens of the same device.  */
   grub_file_close (file);
+
+  grub_tpm_measure(core, size, GRUB_TPM_PCR, filename);
 
   mod = grub_dl_load_core (core, size);
   grub_free (core);
