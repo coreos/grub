@@ -26,6 +26,7 @@
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
 #include <grub/efi/efi.h>
+#include <grub/tpm.h>
 
 #include "../verity-hash.h"
 
@@ -168,6 +169,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
                         argv[i]);
           goto fail;
         }
+      grub_tpm_measure (ptr, cursize, GRUB_INITRD_PCR, "UEFI Linux initrd");
       ptr += cursize;
       grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
       ptr += ALIGN_UP_OVERHEAD (cursize, 4);
@@ -222,6 +224,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       grub_error (GRUB_ERR_FILE_READ_ERROR, N_("Can't read kernel %s"), argv[0]);
       goto fail;
     }
+
+  grub_tpm_measure (kernel, filelen, GRUB_KERNEL_PCR, "UEFI Linux kernel");
 
   if (! grub_linuxefi_secure_validate (kernel, filelen))
     {
