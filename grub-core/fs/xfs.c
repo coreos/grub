@@ -136,7 +136,13 @@ struct grub_xfs_dir2_entry
   grub_uint8_t len;
 } GRUB_PACKED;
 
-typedef grub_uint32_t grub_xfs_extent[4];
+struct grub_xfs_extent
+{
+  /* This should be a bitfield but bietfields are unportable, so just have
+     a raw array and functions extracting useful info from it.
+   */
+  grub_uint32_t raw[4];
+} GRUB_PACKED;
 
 struct grub_xfs_btree_node
 {
@@ -147,20 +153,20 @@ struct grub_xfs_btree_node
   grub_uint64_t right;
   /* In V5 here follow crc, uuid, etc. */
   /* Then follow keys and block pointers */
-}  GRUB_PACKED;
+} GRUB_PACKED;
 
 struct grub_xfs_btree_root
 {
   grub_uint16_t level;
   grub_uint16_t numrecs;
   grub_uint64_t keys[1];
-}  GRUB_PACKED;
+} GRUB_PACKED;
 
 struct grub_xfs_time
 {
   grub_uint32_t sec;
   grub_uint32_t nanosec;
-}  GRUB_PACKED;
+} GRUB_PACKED;
 
 struct grub_xfs_inode
 {
@@ -313,25 +319,25 @@ GRUB_XFS_FSB_TO_BLOCK (struct grub_xfs_data *data, grub_disk_addr_t fsb)
 }
 
 static inline grub_uint64_t
-GRUB_XFS_EXTENT_OFFSET (grub_xfs_extent *exts, int ex)
+GRUB_XFS_EXTENT_OFFSET (struct grub_xfs_extent *exts, int ex)
 {
-  return ((grub_be_to_cpu32 (exts[ex][0]) & ~(1 << 31)) << 23
-	  | grub_be_to_cpu32 (exts[ex][1]) >> 9);
+  return ((grub_be_to_cpu32 (exts[ex].raw[0]) & ~(1 << 31)) << 23
+	  | grub_be_to_cpu32 (exts[ex].raw[1]) >> 9);
 }
 
 static inline grub_uint64_t
-GRUB_XFS_EXTENT_BLOCK (grub_xfs_extent *exts, int ex)
+GRUB_XFS_EXTENT_BLOCK (struct grub_xfs_extent *exts, int ex)
 {
-  return ((grub_uint64_t) (grub_be_to_cpu32 (exts[ex][1])
+  return ((grub_uint64_t) (grub_be_to_cpu32 (exts[ex].raw[1])
 			   & (0x1ff)) << 43
-	  | (grub_uint64_t) grub_be_to_cpu32 (exts[ex][2]) << 11
-	  | grub_be_to_cpu32 (exts[ex][3]) >> 21);
+	  | (grub_uint64_t) grub_be_to_cpu32 (exts[ex].raw[2]) << 11
+	  | grub_be_to_cpu32 (exts[ex].raw[3]) >> 21);
 }
 
 static inline grub_uint64_t
-GRUB_XFS_EXTENT_SIZE (grub_xfs_extent *exts, int ex)
+GRUB_XFS_EXTENT_SIZE (struct grub_xfs_extent *exts, int ex)
 {
-  return (grub_be_to_cpu32 (exts[ex][3]) & ((1 << 21) - 1));
+  return (grub_be_to_cpu32 (exts[ex].raw[3]) & ((1 << 21) - 1));
 }
 
 
@@ -377,7 +383,10 @@ grub_xfs_fshelp_size(struct grub_xfs_data *data)
 	       + grub_xfs_inode_size(data);
 }
 
-static void *
+/* This should return void * but XFS code is error-prone with alignment, so
+   return char to retain cast-align.
+ */
+static char *
 grub_xfs_inode_data(struct grub_xfs_inode *inode)
 {
 	if (inode->version <= 2)
@@ -388,20 +397,20 @@ grub_xfs_inode_data(struct grub_xfs_inode *inode)
 static struct grub_xfs_dir_entry *
 grub_xfs_inline_de(struct grub_xfs_dir_header *head)
 {
-	/*
-	 * With small inode numbers the header is 4 bytes smaller because of
-	 * smaller parent pointer
-	 */
-	return (void *)(((char *)head) + sizeof(struct grub_xfs_dir_header) -
-		(head->largeino ? 0 : sizeof(grub_uint32_t)));
+  /*
+    With small inode numbers the header is 4 bytes smaller because of
+    smaller parent pointer
+  */
+  return (struct grub_xfs_dir_entry *)
+    (((char *) head) + sizeof(struct grub_xfs_dir_header) -
+     (head->largeino ? 0 : sizeof(grub_uint32_t)));
 }
 
 static grub_uint8_t *
 grub_xfs_inline_de_inopos(struct grub_xfs_data *data,
 			  struct grub_xfs_dir_entry *de)
 {
-	return ((grub_uint8_t *)(de + 1)) + de->len - 1 +
-		 (data->hasftype ? 1 : 0);
+  return ((grub_uint8_t *)(de + 1)) + de->len - 1 + (data->hasftype ? 1 : 0);
 }
 
 static struct grub_xfs_dir_entry *
@@ -445,14 +454,17 @@ grub_xfs_next_de(struct grub_xfs_data *data, struct grub_xfs_dir2_entry *de)
   return (struct grub_xfs_dir2_entry *)(((char *)de) + ALIGN_UP(size, 8));
 }
 
-static grub_uint64_t *
+/* This should return void * but XFS code is error-prone with alignment, so
+   return char to retain cast-align.
+ */
+static char *
 grub_xfs_btree_keys(struct grub_xfs_data *data,
 		    struct grub_xfs_btree_node *leaf)
 {
-  grub_uint64_t *keys = (grub_uint64_t *)(leaf + 1);
+  char *keys = (char *)(leaf + 1);
 
   if (data->hascrc)
-    keys += 6;	/* skip crc, uuid, ... */
+    keys += 48;	/* skip crc, uuid, ... */
   return keys;
 }
 
@@ -476,28 +488,34 @@ grub_xfs_read_inode (struct grub_xfs_data *data, grub_uint64_t ino,
   return 0;
 }
 
+static grub_uint64_t
+get_fsb (const void *keys, int idx)
+{
+  const char *p = (const char *) keys + sizeof(grub_uint64_t) * idx;
+  return grub_be_to_cpu64 (grub_get_unaligned64 (p));
+}
 
 static grub_disk_addr_t
 grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 {
   struct grub_xfs_btree_node *leaf = 0;
   int ex, nrec;
-  grub_xfs_extent *exts;
+  struct grub_xfs_extent *exts;
   grub_uint64_t ret = 0;
 
   if (node->inode.format == XFS_INODE_FORMAT_BTREE)
     {
       struct grub_xfs_btree_root *root;
-      const grub_uint64_t *keys;
+      const char *keys;
       int recoffset;
 
       leaf = grub_malloc (node->data->bsize);
       if (leaf == 0)
         return 0;
 
-      root = grub_xfs_inode_data(&node->inode);
+      root = (struct grub_xfs_btree_root *) grub_xfs_inode_data(&node->inode);
       nrec = grub_be_to_cpu16 (root->numrecs);
-      keys = &root->keys[0];
+      keys = (char *) &root->keys[0];
       if (node->inode.fork_offset)
 	recoffset = (node->inode.fork_offset - 1) / 2;
       else
@@ -510,7 +528,7 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
           for (i = 0; i < nrec; i++)
             {
-              if (fileblock < grub_be_to_cpu64 (keys[i]))
+              if (fileblock < get_fsb(keys, i))
                 break;
             }
 
@@ -520,8 +538,9 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
               grub_free (leaf);
               return 0;
             }
+
           if (grub_disk_read (node->data->disk,
-                              GRUB_XFS_FSB_TO_BLOCK (node->data, grub_be_to_cpu64 (keys[i - 1 + recoffset])) << (node->data->sblock.log2_bsize - GRUB_DISK_SECTOR_BITS),
+                              GRUB_XFS_FSB_TO_BLOCK (node->data, get_fsb (keys, i - 1 + recoffset)) << (node->data->sblock.log2_bsize - GRUB_DISK_SECTOR_BITS),
                               0, node->data->bsize, leaf))
             return 0;
 
@@ -542,12 +561,12 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 		       / (2 * sizeof (grub_uint64_t)));
 	}
       while (leaf->level);
-      exts = (grub_xfs_extent *) keys;
+      exts = (struct grub_xfs_extent *) keys;
     }
   else if (node->inode.format == XFS_INODE_FORMAT_EXT)
     {
       nrec = grub_be_to_cpu32 (node->inode.nextents);
-      exts = grub_xfs_inode_data(&node->inode);
+      exts = (struct grub_xfs_extent *) grub_xfs_inode_data(&node->inode);
     }
   else
     {
@@ -700,7 +719,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
     {
     case XFS_INODE_FORMAT_INO:
       {
-	struct grub_xfs_dir_header *head = grub_xfs_inode_data(&diro->inode);
+	struct grub_xfs_dir_header *head = (struct grub_xfs_dir_header *) grub_xfs_inode_data(&diro->inode);
 	struct grub_xfs_dir_entry *de = grub_xfs_inline_de(head);
 	int smallino = !head->largeino;
 	int i;
