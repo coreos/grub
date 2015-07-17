@@ -390,7 +390,7 @@ static grub_size_t
 grub_multiboot_get_mbi_size (void)
 {
 #ifdef GRUB_MACHINE_EFI
-  if (!efi_mmap_size)
+  if (!keep_bs && !efi_mmap_size)
     find_efi_mmap_size ();    
 #endif
   return 2 * sizeof (grub_uint32_t) + sizeof (struct multiboot_tag)
@@ -755,12 +755,13 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       }
   }
 
-  {
-    struct multiboot_tag_mmap *tag = (struct multiboot_tag_mmap *) ptrorig;
-    grub_fill_multiboot_mmap (tag);
-    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
-      / sizeof (grub_properly_aligned_t);
-  }
+  if (!keep_bs)
+    {
+      struct multiboot_tag_mmap *tag = (struct multiboot_tag_mmap *) ptrorig;
+      grub_fill_multiboot_mmap (tag);
+      ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
+	/ sizeof (grub_properly_aligned_t);
+    }
 
   {
     struct multiboot_tag_elf_sections *tag
@@ -776,18 +777,19 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
       / sizeof (grub_properly_aligned_t);
   }
 
-  {
-    struct multiboot_tag_basic_meminfo *tag
-      = (struct multiboot_tag_basic_meminfo *) ptrorig;
-    tag->type = MULTIBOOT_TAG_TYPE_BASIC_MEMINFO;
-    tag->size = sizeof (struct multiboot_tag_basic_meminfo); 
+  if (!keep_bs)
+    {
+      struct multiboot_tag_basic_meminfo *tag
+	= (struct multiboot_tag_basic_meminfo *) ptrorig;
+      tag->type = MULTIBOOT_TAG_TYPE_BASIC_MEMINFO;
+      tag->size = sizeof (struct multiboot_tag_basic_meminfo);
 
-    /* Convert from bytes to kilobytes.  */
-    tag->mem_lower = grub_mmap_get_lower () / 1024;
-    tag->mem_upper = grub_mmap_get_upper () / 1024;
-    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
-       / sizeof (grub_properly_aligned_t);
-  }
+      /* Convert from bytes to kilobytes.  */
+      tag->mem_lower = grub_mmap_get_lower () / 1024;
+      tag->mem_upper = grub_mmap_get_upper () / 1024;
+      ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
+	/ sizeof (grub_properly_aligned_t);
+    }
 
   {
     struct grub_net_network_level_interface *net;
@@ -886,27 +888,24 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
     grub_efi_uintn_t efi_desc_size;
     grub_efi_uint32_t efi_desc_version;
 
-    tag->type = MULTIBOOT_TAG_TYPE_EFI_MMAP;
-    tag->size = sizeof (*tag) + efi_mmap_size;
-
     if (!keep_bs)
-      err = grub_efi_finish_boot_services (&efi_mmap_size, tag->efi_mmap, NULL,
-					   &efi_desc_size, &efi_desc_version);
-    else
       {
-	if (grub_efi_get_memory_map (&efi_mmap_size, (void *) tag->efi_mmap,
-				     NULL,
-				     &efi_desc_size, &efi_desc_version) <= 0)
-	  err = grub_error (GRUB_ERR_IO, "couldn't retrieve memory map");
-      }
-    if (err)
-      return err;
-    tag->descr_size = efi_desc_size;
-    tag->descr_vers = efi_desc_version;
-    tag->size = sizeof (*tag) + efi_mmap_size;
+	tag->type = MULTIBOOT_TAG_TYPE_EFI_MMAP;
+	tag->size = sizeof (*tag) + efi_mmap_size;
 
-    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
-      / sizeof (grub_properly_aligned_t);
+	err = grub_efi_finish_boot_services (&efi_mmap_size, tag->efi_mmap, NULL,
+					     &efi_desc_size, &efi_desc_version);
+
+	if (err)
+	  return err;
+
+	tag->descr_size = efi_desc_size;
+	tag->descr_vers = efi_desc_version;
+	tag->size = sizeof (*tag) + efi_mmap_size;
+
+	ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
+	  / sizeof (grub_properly_aligned_t);
+      }
   }
 
   if (keep_bs)
