@@ -91,10 +91,28 @@ grub_multiboot_set_console (int console_type, int accepted_consoles,
 			    int console_required);
 grub_err_t
 grub_multiboot_load (grub_file_t file, const char *filename);
+
+struct mbi_load_data
+{
+  grub_file_t file;
+  const char *filename;
+  void *buffer;
+  unsigned int mbi_ver;
+  int relocatable;
+  grub_uint32_t min_addr;
+  grub_uint32_t max_addr;
+  grub_size_t align;
+  grub_uint32_t preference;
+  grub_uint32_t link_base_addr;
+  grub_uint32_t load_base_addr;
+  int avoid_efi_boot_services;
+};
+typedef struct mbi_load_data mbi_load_data_t;
+
 /* Load ELF32 or ELF64.  */
 grub_err_t
-grub_multiboot_load_elf (grub_file_t file, const char *filename,
-			 void *buffer);
+grub_multiboot_load_elf (mbi_load_data_t *mld);
+
 extern grub_size_t grub_multiboot_pure_size;
 extern grub_size_t grub_multiboot_alloc_mbi;
 extern grub_uint32_t grub_multiboot_payload_eip;

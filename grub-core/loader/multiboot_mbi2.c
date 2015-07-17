@@ -68,6 +68,7 @@ static grub_size_t elf_sec_num, elf_sec_entsize;
 static unsigned elf_sec_shstrndx;
 static void *elf_sections;
 static int keep_bs = 0;
+static grub_uint32_t load_base_addr;
 
 void
 grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
@@ -101,36 +102,40 @@ find_header (grub_properly_aligned_t *buffer, grub_ssize_t len)
 grub_err_t
 grub_multiboot_load (grub_file_t file, const char *filename)
 {
-  grub_properly_aligned_t *buffer;
   grub_ssize_t len;
   struct multiboot_header *header;
   grub_err_t err;
   struct multiboot_header_tag *tag;
   struct multiboot_header_tag_address *addr_tag = NULL;
+  struct multiboot_header_tag_relocatable *rel_tag;
   int entry_specified = 0, efi_entry_specified = 0;
   grub_addr_t entry = 0, efi_entry = 0;
   grub_uint32_t console_required = 0;
   struct multiboot_header_tag_framebuffer *fbtag = NULL;
   int accepted_consoles = GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
+  mbi_load_data_t mld;
 
-  buffer = grub_malloc (MULTIBOOT_SEARCH);
-  if (!buffer)
+  mld.mbi_ver = 2;
+  mld.relocatable = 0;
+
+  mld.buffer = grub_malloc (MULTIBOOT_SEARCH);
+  if (!mld.buffer)
     return grub_errno;
 
-  len = grub_file_read (file, buffer, MULTIBOOT_SEARCH);
+  len = grub_file_read (file, mld.buffer, MULTIBOOT_SEARCH);
   if (len < 32)
     {
-      grub_free (buffer);
+      grub_free (mld.buffer);
       return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"), filename);
     }
 
   COMPILE_TIME_ASSERT (MULTIBOOT_HEADER_ALIGN % 4 == 0);
 
-  header = find_header (buffer, len);
+  header = find_header (mld.buffer, len);
 
   if (header == 0)
     {
-      grub_free (buffer);
+      grub_free (mld.buffer);
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "no multiboot header found");
     }
 
@@ -174,10 +179,11 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	      case MULTIBOOT_TAG_TYPE_EFI_BS:
 	      case MULTIBOOT_TAG_TYPE_EFI32_IH:
 	      case MULTIBOOT_TAG_TYPE_EFI64_IH:
+	      case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
 		break;
 
 	      default:
-		grub_free (buffer);
+		grub_free (mld.buffer);
 		return grub_error (GRUB_ERR_UNKNOWN_OS,
 				   "unsupported information tag: 0x%x",
 				   request_tag->requests[i]);
@@ -215,6 +221,27 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	accepted_consoles |= GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER;
 	break;
 
+      case MULTIBOOT_HEADER_TAG_RELOCATABLE:
+	mld.relocatable = 1;
+	rel_tag = (struct multiboot_header_tag_relocatable *) tag;
+	mld.min_addr = rel_tag->min_addr;
+	mld.max_addr = rel_tag->max_addr;
+	mld.align = rel_tag->align;
+	switch (rel_tag->preference)
+	  {
+	  case MULTIBOOT_LOAD_PREFERENCE_LOW:
+	    mld.preference = GRUB_RELOCATOR_PREFERENCE_LOW;
+	    break;
+
+	  case MULTIBOOT_LOAD_PREFERENCE_HIGH:
+	    mld.preference = GRUB_RELOCATOR_PREFERENCE_HIGH;
+	    break;
+
+	  default:
+	    mld.preference = GRUB_RELOCATOR_PREFERENCE_NONE;
+	  }
+	break;
+
 	/* GRUB always page-aligns modules.  */
       case MULTIBOOT_HEADER_TAG_MODULE_ALIGN:
 	break;
@@ -228,7 +255,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       default:
 	if (! (tag->flags & MULTIBOOT_HEADER_TAG_OPTIONAL))
 	  {
-	    grub_free (buffer);
+	    grub_free (mld.buffer);
 	    return grub_error (GRUB_ERR_UNKNOWN_OS,
 			       "unsupported tag: 0x%x", tag->type);
 	  }
@@ -237,7 +264,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 
   if (addr_tag && !entry_specified && !(keep_bs && efi_entry_specified))
     {
-      grub_free (buffer);
+      grub_free (mld.buffer);
       return grub_error (GRUB_ERR_UNKNOWN_OS,
 			 "load address tag without entry address tag");
     }
@@ -246,8 +273,8 @@ grub_multiboot_load (grub_file_t file, const char *filename)
     {
       grub_uint64_t load_addr = (addr_tag->load_addr + 1)
 	? addr_tag->load_addr : (addr_tag->header_addr
-				 - ((char *) header - (char *) buffer));
-      int offset = ((char *) header - (char *) buffer -
+				 - ((char *) header - (char *) mld.buffer));
+      int offset = ((char *) header - (char *) mld.buffer -
 	   (addr_tag->header_addr - load_addr));
       int load_size = ((addr_tag->load_end_addr == 0) ? file->size - offset :
 		       addr_tag->load_end_addr - addr_tag->load_addr);
@@ -260,27 +287,50 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       else
 	code_size = load_size;
 
-      err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, 
-					     &ch, load_addr,
-					     code_size);
+      if (mld.relocatable)
+	{
+	  if (code_size > mld.max_addr || mld.min_addr > mld.max_addr - code_size)
+	    {
+	      grub_free (mld.buffer);
+	      return grub_error (GRUB_ERR_BAD_OS, "invalid min/max address and/or load size");
+	    }
+
+	  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+						  mld.min_addr, mld.max_addr - code_size,
+						  code_size, mld.align ? mld.align : 1,
+						  mld.preference, keep_bs);
+	}
+      else
+	err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator,
+					       &ch, load_addr, code_size);
       if (err)
 	{
 	  grub_dprintf ("multiboot_loader", "Error loading aout kludge\n");
-	  grub_free (buffer);
+	  grub_free (mld.buffer);
 	  return err;
 	}
+      mld.link_base_addr = load_addr;
+      mld.load_base_addr = get_physical_target_address (ch);
       source = get_virtual_current_address (ch);
+
+      grub_dprintf ("multiboot_loader", "link_base_addr=0x%x, load_base_addr=0x%x, "
+		    "load_size=0x%lx, relocatable=%d\n", mld.link_base_addr,
+		    mld.load_base_addr, (long) code_size, mld.relocatable);
+
+      if (mld.relocatable)
+	grub_dprintf ("multiboot_loader", "align=0x%lx, preference=0x%x, avoid_efi_boot_services=%d\n",
+		      (long) mld.align, mld.preference, keep_bs);
 
       if ((grub_file_seek (file, offset)) == (grub_off_t) -1)
 	{
-	  grub_free (buffer);
+	  grub_free (mld.buffer);
 	  return grub_errno;
 	}
 
       grub_file_read (file, source, load_size);
       if (grub_errno)
 	{
-	  grub_free (buffer);
+	  grub_free (mld.buffer);
 	  return grub_errno;
 	}
 
@@ -290,18 +340,40 @@ grub_multiboot_load (grub_file_t file, const char *filename)
     }
   else
     {
-      err = grub_multiboot_load_elf (file, filename, buffer);
+      mld.file = file;
+      mld.filename = filename;
+      mld.avoid_efi_boot_services = keep_bs;
+      err = grub_multiboot_load_elf (&mld);
       if (err)
 	{
-	  grub_free (buffer);
+	  grub_free (mld.buffer);
 	  return err;
 	}
     }
+
+  load_base_addr = mld.load_base_addr;
 
   if (keep_bs && efi_entry_specified)
     grub_multiboot_payload_eip = efi_entry;
   else if (entry_specified)
     grub_multiboot_payload_eip = entry;
+
+  if (mld.relocatable)
+    {
+      /*
+       * Both branches are mathematically equivalent. However, it looks
+       * that real life (C?) is more complicated. I am trying to avoid
+       * wrap around here if mld.load_base_addr < mld.link_base_addr.
+       * If you look at C operator precedence then everything should work.
+       * However, I am not 100% sure that a given compiler will not
+       * optimize/break this stuff. So, maybe we should use signed
+       * 64-bit int here.
+       */
+      if (mld.load_base_addr >= mld.link_base_addr)
+	grub_multiboot_payload_eip += mld.load_base_addr - mld.link_base_addr;
+      else
+	grub_multiboot_payload_eip -= mld.link_base_addr - mld.load_base_addr;
+    }
 
   if (fbtag)
     err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
@@ -411,6 +483,7 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
 		+ sizeof (struct grub_acpi_rsdp_v10), MULTIBOOT_TAG_ALIGN)
+    + ALIGN_UP (sizeof (struct multiboot_tag_load_base_addr), MULTIBOOT_TAG_ALIGN)
     + acpiv2_size ()
     + net_size ()
 #ifdef GRUB_MACHINE_EFI
@@ -692,6 +765,15 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   COMPILE_TIME_ASSERT (MULTIBOOT_TAG_ALIGN
 		       % sizeof (grub_properly_aligned_t) == 0);
   ptrorig += (2 * sizeof (grub_uint32_t)) / sizeof (grub_properly_aligned_t);
+
+  {
+    struct multiboot_tag_load_base_addr *tag = (struct multiboot_tag_load_base_addr *) ptrorig;
+    tag->type = MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR;
+    tag->size = sizeof (struct multiboot_tag_load_base_addr);
+    tag->load_base_addr = load_base_addr;
+    ptrorig += ALIGN_UP (tag->size, MULTIBOOT_TAG_ALIGN)
+       / sizeof (grub_properly_aligned_t);
+  }
 
   {
     struct multiboot_tag_string *tag = (struct multiboot_tag_string *) ptrorig;
