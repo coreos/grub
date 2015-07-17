@@ -107,8 +107,8 @@ grub_multiboot_load (grub_file_t file, const char *filename)
   grub_err_t err;
   struct multiboot_header_tag *tag;
   struct multiboot_header_tag_address *addr_tag = NULL;
-  int entry_specified = 0;
-  grub_addr_t entry = 0;
+  int entry_specified = 0, efi_entry_specified = 0;
+  grub_addr_t entry = 0, efi_entry = 0;
   grub_uint32_t console_required = 0;
   struct multiboot_header_tag_framebuffer *fbtag = NULL;
   int accepted_consoles = GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
@@ -192,6 +192,13 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	entry = ((struct multiboot_header_tag_entry_address *) tag)->entry_addr;
 	break;
 
+      case MULTIBOOT_HEADER_TAG_ENTRY_ADDRESS_EFI64:
+#if defined (GRUB_MACHINE_EFI) && defined (__x86_64__)
+	efi_entry_specified = 1;
+	efi_entry = ((struct multiboot_header_tag_entry_address *) tag)->entry_addr;
+#endif
+	break;
+
       case MULTIBOOT_HEADER_TAG_CONSOLE_FLAGS:
 	if (!(((struct multiboot_header_tag_console_flags *) tag)->console_flags
 	    & MULTIBOOT_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED))
@@ -211,7 +218,9 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	break;
 
       case MULTIBOOT_HEADER_TAG_EFI_BS:
+#ifdef GRUB_MACHINE_EFI
 	keep_bs = 1;
+#endif
 	break;
 
       default:
@@ -224,7 +233,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	break;
       }
 
-  if (addr_tag && !entry_specified)
+  if (addr_tag && !entry_specified && !(keep_bs && efi_entry_specified))
     {
       grub_free (buffer);
       return grub_error (GRUB_ERR_UNKNOWN_OS,
@@ -287,7 +296,9 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	}
     }
 
-  if (entry_specified)
+  if (keep_bs && efi_entry_specified)
+    grub_multiboot_payload_eip = efi_entry;
+  else if (entry_specified)
     grub_multiboot_payload_eip = entry;
 
   if (fbtag)

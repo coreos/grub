@@ -1531,6 +1531,7 @@ module = {
   i386_xen = lib/i386/xen/relocator.S;
   x86_64_xen = lib/x86_64/xen/relocator.S;
   xen = lib/i386/relocator_common_c.c;
+  x86_64_efi = lib/x86_64/efi/relocator.c;
 
   extra_dist = lib/i386/relocator_common.S;
   extra_dist = kern/powerpc/cache_flush.S;

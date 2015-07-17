@@ -118,6 +118,48 @@ grub_multiboot_set_video_mode (void)
   return err;
 }
 
+#ifdef GRUB_MACHINE_EFI
+#ifdef __x86_64__
+#define grub_relocator_efi_boot		grub_relocator64_efi_boot
+#define grub_relocator_efi_state	grub_relocator64_efi_state
+#endif
+#endif
+
+#ifdef grub_relocator_efi_boot
+static void
+efi_boot (struct grub_relocator *rel,
+	  grub_uint32_t target)
+{
+  struct grub_relocator_efi_state state_efi = MULTIBOOT_EFI_INITIAL_STATE;
+
+  state_efi.MULTIBOOT_EFI_ENTRY_REGISTER = grub_multiboot_payload_eip;
+  state_efi.MULTIBOOT_EFI_MBI_REGISTER = target;
+
+  grub_relocator_efi_boot (rel, state_efi);
+}
+#else
+#define grub_efi_is_finished	1
+static void
+efi_boot (struct grub_relocator *rel __attribute__ ((unused)),
+	  grub_uint32_t target __attribute__ ((unused)))
+{
+}
+#endif
+
+#if defined (__i386__) || defined (__x86_64__)
+static void
+normal_boot (struct grub_relocator *rel, struct grub_relocator32_state state)
+{
+  grub_relocator32_boot (rel, state, 0);
+}
+#else
+static void
+normal_boot (struct grub_relocator *rel, struct grub_relocator32_state state)
+{
+  grub_relocator32_boot (rel, state);
+}
+#endif
+
 static grub_err_t
 grub_multiboot_boot (void)
 {
@@ -131,11 +173,10 @@ grub_multiboot_boot (void)
   if (err)
     return err;
 
-#if defined (__i386__) || defined (__x86_64__)
-  grub_relocator32_boot (grub_multiboot_relocator, state, 0);
-#else
-  grub_relocator32_boot (grub_multiboot_relocator, state);
-#endif
+  if (grub_efi_is_finished)
+    normal_boot (grub_multiboot_relocator, state);
+  else
+    efi_boot (grub_multiboot_relocator, state.MULTIBOOT_MBI_REGISTER);
 
   /* Not reached.  */
   return GRUB_ERR_NONE;

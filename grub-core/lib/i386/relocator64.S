@@ -73,6 +73,14 @@ VARIABLE(grub_relocator64_rsp)
 
 	movq	%rax, %rsp
 
+	/*
+	 * Here is grub_relocator64_efi_start() entry point.
+	 * Following code is shared between grub_relocator64_efi_start()
+	 * and grub_relocator64_start().
+	 *
+	 * Think twice before changing anything below!!!
+	 */
+VARIABLE(grub_relocator64_efi_start)
 	/* mov imm64, %rax */
 	.byte 	0x48
 	.byte	0xb8
@@ -119,6 +127,9 @@ VARIABLE(grub_relocator64_rdx)
 LOCAL(jump_addr):
 VARIABLE(grub_relocator64_rip)
 	.quad	0
+
+	/* Here grub_relocator64_efi_start() ends. Ufff... */
+VARIABLE(grub_relocator64_efi_end)
 
 #ifndef __x86_64__
 	.p2align	4
