@@ -213,6 +213,7 @@ grub_initrd_init (int argc, char *argv[],
 
   if (newc)
     {
+      initrd_ctx->size = ALIGN_UP (initrd_ctx->size, 4);
       initrd_ctx->size += ALIGN_UP (sizeof (struct newc_head)
 				    + sizeof ("TRAILER!!!") - 1, 4);
       free_dir (root);
@@ -290,7 +291,11 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
       ptr += cursize;
     }
   if (newc)
-    ptr = make_header (ptr, "TRAILER!!!", sizeof ("TRAILER!!!") - 1, 0, 0);
+    {
+      grub_memset (ptr, 0, ALIGN_UP_OVERHEAD (cursize, 4));
+      ptr += ALIGN_UP_OVERHEAD (cursize, 4);
+      ptr = make_header (ptr, "TRAILER!!!", sizeof ("TRAILER!!!") - 1, 0, 0);
+    }
   free_dir (root);
   root = 0;
   return GRUB_ERR_NONE;
