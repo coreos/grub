@@ -116,6 +116,7 @@ if test "x$with_platform" = x; then
     x86_64-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
+    powerpc64le-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
     mipsel-*) platform=loongson ;;
     mips-*) platform=arc ;;
@@ -138,6 +139,7 @@ case "$target_cpu"-"$platform" in
   x86_64-none) ;;
   x86_64-*) target_cpu=i386 ;;
   powerpc64-ieee1275) target_cpu=powerpc ;;
+  powerpc64le-ieee1275) target_cpu=powerpc ;;
 esac
 
 # Check if the platform is supported, make final adjustments.
@@ -559,6 +561,41 @@ AC_COMPILE_IFELSE(
 #endif
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
+
+if test x$target_cpu = xpowerpc; then
+  AC_CACHE_CHECK([for options to get big-endian compilation], grub_cv_target_cc_big_endian, [
+    grub_cv_target_cc_big_endian=no
+    for cand in "-target powerpc -Wl,-EB" "-target powerpc" \
+		"-target powerpc-linux-gnu -Wl,-EB" "-target powerpc-linux-gnu" \
+		"-mbig-endian"; do
+      if test x"$grub_cv_target_cc_big_endian" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__ORDER_BIG_ENDIAN__ != __BYTE_ORDER__)
+#error still little endian
+#endif
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_big_endian="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_big_endian" = xno ; then
+    AC_MSG_ERROR([could not force big-endian])
+  fi
+
+  skip_linkflags="$(echo "$grub_cv_target_cc_big_endian"|sed 's@-Wl,-EB@@')"
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $skip_linkflags"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_big_endian"
+fi
 
 AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
 test_program=
