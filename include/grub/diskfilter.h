@@ -172,7 +172,7 @@ grub_diskfilter_unregister (grub_diskfilter_t diskfilter)
 
 struct grub_diskfilter_vg *
 grub_diskfilter_make_raid (grub_size_t uuidlen, char *uuid, int nmemb,
-			   char *name, grub_uint64_t disk_size,
+			   const char *name, grub_uint64_t disk_size,
 			   grub_uint64_t stripe_size,
 			   int layout, int level);
 
