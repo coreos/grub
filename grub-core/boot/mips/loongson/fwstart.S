@@ -547,7 +547,7 @@ gpio_dump:
 #endif
 gpio_dump_end:	
 
-	.p2align
+	.p2align 3
 
 write_dumpreg:	
 	ld $t2, 0($t6)
