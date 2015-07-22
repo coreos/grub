@@ -344,7 +344,7 @@ printhex:
 	 nop
 	srl  $t1, $a0, 28
 	addiu $t1, $t1, -10
-	blt  $t1, $zero, 2f
+	bltz  $t1, 2f
 	 sll  $a0, $a0, 4
 	addiu $t1, $t1, 'A'-10-'0' 
 2:	addiu $t1, $t1, '0'+10
