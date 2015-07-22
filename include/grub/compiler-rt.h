@@ -88,7 +88,14 @@ EXPORT_FUNC (__aeabi_lmul) (grub_uint64_t a, grub_uint64_t b);
 void *
 EXPORT_FUNC (__aeabi_memcpy) (void *dest, const void *src, grub_size_t n);
 void *
+EXPORT_FUNC (__aeabi_memcpy4) (void *dest, const void *src, grub_size_t n);
+void *
+EXPORT_FUNC (__aeabi_memcpy8) (void *dest, const void *src, grub_size_t n);
+void *
 EXPORT_FUNC(__aeabi_memset) (void *s, int c, grub_size_t n);
+void EXPORT_FUNC(__aeabi_memclr) (void *s, grub_size_t n);
+void EXPORT_FUNC(__aeabi_memclr4) (void *s, grub_size_t n);
+void EXPORT_FUNC(__aeabi_memclr8) (void *s, grub_size_t n);
 
 grub_uint64_t
 EXPORT_FUNC (__aeabi_lasr) (grub_uint64_t u, int b);
