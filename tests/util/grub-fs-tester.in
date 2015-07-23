@@ -40,6 +40,10 @@ case x"$fs" in
 	MINLOGSECSIZE=9
   	    # OS LIMITATION: GNU/Linux doesn't accept > 4096
 	MAXLOGSECSIZE=12;;
+    xxfs_crc)
+	MINLOGSECSIZE=9
+  	    # OS LIMITATION: GNU/Linux doesn't accept > 1024
+	MAXLOGSECSIZE=10;;
     xzfs*)
 	    # OS LIMITATION: zfs-fuse hangs when creating zpool with sectors <=256B.
 	MINLOGSECSIZE=9
@@ -142,6 +146,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    MINBLKSIZE=$SECSIZE
 		# OS Limitation: GNU/Linux doesn't accept > 4096
 	    MAXBLKSIZE=4096;;
+	xxfs_crc)
+	    # OS Limitation: GNU/Linux doesn't accept != 1024
+	    MINBLKSIZE=1024
+	    MAXBLKSIZE=1024;;
 	xudf)
 	    MINBLKSIZE=1024
 	    MAXBLKSIZE=4096;;
@@ -287,7 +295,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		x"ufs1" | x"ufs1_sun" | x"ufs2")
 		    FSLABEL="grubtest""ieurrucnenreeiurueurewf";;
 	    # FS LIMITATION: XFS label is at most 12 UTF-8 characters
-		x"xfs")
+		x"xfs"|x"xfs_crc")
 		    FSLABEL="géт 😁к";;
             # FS LIMITATION: FAT labels limited to 11 characters, no  international characters or lowercase
 		x"vfat"* | xmsdos*)
@@ -465,7 +473,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    case x"$fs" in
 	    # FIXME: Not sure about BtrFS, NTFS, JFS, AFS, UDF and SFS. Check it.
 	# FS LIMITATION: as far as I know those FS don't store their last modification date.
-		x"jfs_caseins" | x"jfs" | x"xfs"| x"btrfs"* | x"reiserfs_old" | x"reiserfs" \
+		x"jfs_caseins" | x"jfs" | x"xfs" | x"xfs_crc" | x"btrfs"* | x"reiserfs_old" | x"reiserfs" \
 		    | x"bfs" | x"afs" \
 		    | x"tarfs" | x"cpio_"* | x"minix" | x"minix2" \
 		    | x"minix3" | x"ntfs"* | x"udf" | x"sfs"*)
@@ -758,7 +766,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		xext*)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
 		xxfs)
-		    "mkfs.xfs" -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		    "mkfs.xfs" -m crc=0 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		xxfs_crc)
+		    MOUNTFS="xfs"
+		    "mkfs.xfs" -m crc=1 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
 		*)
 		    echo "Add appropriate mkfs command here"
 		    exit 1
