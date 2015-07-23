@@ -206,6 +206,7 @@ grub_efi_set_variable(const char *var, const grub_efi_guid_t *guid,
 			| GRUB_EFI_VARIABLE_BOOTSERVICE_ACCESS
 			| GRUB_EFI_VARIABLE_RUNTIME_ACCESS),
 		       datasize, data);
+  grub_free (var16);
   if (status == GRUB_EFI_SUCCESS)
     return GRUB_ERR_NONE;
 
@@ -237,8 +238,11 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
 
   status = efi_call_5 (r->get_variable, var16, guid, NULL, &datasize, NULL);
 
-  if (!datasize)
-    return NULL;
+  if (status != GRUB_EFI_SUCCESS || !datasize)
+    {
+      grub_free (var16);
+      return NULL;
+    }
 
   data = grub_malloc (datasize);
   if (!data)
