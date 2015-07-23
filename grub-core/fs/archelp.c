@@ -34,12 +34,12 @@ canonicalize (char *name)
 	iptr++;
       if (iptr[0] == '.' && (iptr[1] == '/' || iptr[1] == 0))
 	{
-	  iptr += 2;
+	  iptr++;
 	  continue;
 	}
       if (iptr[0] == '.' && iptr[1] == '.' && (iptr[2] == '/' || iptr[2] == 0))
 	{
-	  iptr += 3;
+	  iptr += 2;
 	  if (optr == name)
 	    continue;
 	  for (optr -= 2; optr >= name && *optr != '/'; optr--);
