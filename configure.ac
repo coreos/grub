@@ -1181,7 +1181,7 @@ fi
 
 # Check for libgcc symbols
 if test x"$platform" = xemu; then
-AC_CHECK_FUNCS(__udivsi3 __umodsi3 __divsi3 __modsi3 __divdi3 __moddi3 __udivdi3 __umoddi3 __ctzdi2 __ctzsi2 __aeabi_uidiv __aeabi_uidivmod __aeabi_idiv __aeabi_idivmod __aeabi_ulcmp __muldi3 __aeabi_lmul __aeabi_memcpy __aeabi_memset __aeabi_lasr __aeabi_llsl __aeabi_llsr _restgpr_14_x __ucmpdi2 __ashldi3 __ashrdi3 __lshrdi3 __bswapsi2 __bswapdi2 __bzero __register_frame_info __deregister_frame_info ___chkstk_ms __chkstk_ms)
+AC_CHECK_FUNCS(__udivsi3 __umodsi3 __divsi3 __modsi3 __divdi3 __moddi3 __udivdi3 __umoddi3 __ctzdi2 __ctzsi2 __aeabi_uidiv __aeabi_uidivmod __aeabi_idiv __aeabi_idivmod __aeabi_ulcmp __muldi3 __aeabi_lmul __aeabi_memcpy __aeabi_memcpy4 __aeabi_memcpy8 __aeabi_memclr __aeabi_memclr4 __aeabi_memclr8 __aeabi_memset __aeabi_lasr __aeabi_llsl __aeabi_llsr _restgpr_14_x __ucmpdi2 __ashldi3 __ashrdi3 __lshrdi3 __bswapsi2 __bswapdi2 __bzero __register_frame_info __deregister_frame_info ___chkstk_ms __chkstk_ms)
 fi
 
 if test "x$TARGET_APPLE_LINKER" = x1 ; then

@@ -115,9 +115,34 @@ void *
 EXPORT_FUNC (__aeabi_memcpy) (void *dest, const void *src, grub_size_t n);
 #endif
 
+#ifdef HAVE___AEABI_MEMCPY4
+void *
+EXPORT_FUNC (__aeabi_memcpy4) (void *dest, const void *src, grub_size_t n);
+#endif
+
+#ifdef HAVE___AEABI_MEMCPY8
+void *
+EXPORT_FUNC (__aeabi_memcpy8) (void *dest, const void *src, grub_size_t n);
+#endif
+
 #ifdef HAVE___AEABI_MEMSET
 void *
 EXPORT_FUNC(__aeabi_memset) (void *s, int c, grub_size_t n);
+#endif
+
+#ifdef HAVE___AEABI_MEMCLR
+void *
+EXPORT_FUNC(__aeabi_memclr) (void *s, grub_size_t n);
+#endif
+
+#ifdef HAVE___AEABI_MEMCLR4
+void *
+EXPORT_FUNC(__aeabi_memclr4) (void *s, grub_size_t n);
+#endif
+
+#ifdef HAVE___AEABI_MEMCLR8
+void *
+EXPORT_FUNC(__aeabi_memclr8) (void *s, grub_size_t n);
 #endif
 
 #ifdef HAVE___AEABI_LASR
