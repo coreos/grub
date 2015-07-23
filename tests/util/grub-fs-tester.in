@@ -1149,18 +1149,19 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 
 	    case x"$fs" in
 		x"zfs"*)
-		    LSROUT=$(run_grubfstest ls -- -la "($GRUBDEVICE)/grub fs@/..");;
+		    ;;
 		*)
-		    LSROUT=$(run_grubfstest ls -- -la "($GRUBDEVICE)/..");;
+		    LSROUT=$(run_grubfstest ls -- -la "($GRUBDEVICE)/..");
+		    if echo "$LSROUT" | grep -F " $BASEFILE" | grep "$BLOCKCNT" > /dev/null; then
+			:
+		    else
+			echo DOTDOT IN ROOTDIR FAIL
+			echo "$LSROUT"
+			TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+			exit 1
+		    fi
+		    ;;
 	    esac
-	    if echo "$LSROUT" | grep -F " $BASEFILE" | grep "$BLOCKCNT" > /dev/null; then
-		:
-	    else
-		echo DOTDOT IN ROOTDIR FAIL
-		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
-		exit 1
-	    fi
 
 	    case x"$fs" in
 		x"zfs"*)
