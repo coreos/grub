@@ -604,13 +604,13 @@ grub_xfs_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
    POS.  Return the amount of read bytes in READ.  */
 static grub_ssize_t
 grub_xfs_read_file (grub_fshelp_node_t node,
-		     grub_disk_read_hook_t read_hook, void *read_hook_data,
-		     grub_off_t pos, grub_size_t len, char *buf)
+		    grub_disk_read_hook_t read_hook, void *read_hook_data,
+		    grub_off_t pos, grub_size_t len, char *buf, grub_uint32_t header_size)
 {
   return grub_fshelp_read_file (node->data->disk, node,
 				read_hook, read_hook_data,
 				pos, len, buf, grub_xfs_read_block,
-				grub_be_to_cpu64 (node->inode.size),
+				grub_be_to_cpu64 (node->inode.size) + header_size,
 				node->data->sblock.log2_bsize
 				- GRUB_DISK_SECTOR_BITS, 0);
 }
@@ -619,7 +619,13 @@ grub_xfs_read_file (grub_fshelp_node_t node,
 static char *
 grub_xfs_read_symlink (grub_fshelp_node_t node)
 {
-  int size = grub_be_to_cpu64 (node->inode.size);
+  grub_ssize_t size = grub_be_to_cpu64 (node->inode.size);
+
+  if (size < 0)
+    {
+      grub_error (GRUB_ERR_BAD_FS, "invalid symlink");
+      return 0;
+    }
 
   switch (node->inode.format)
     {
@@ -630,12 +636,17 @@ grub_xfs_read_symlink (grub_fshelp_node_t node)
       {
 	char *symlink;
 	grub_ssize_t numread;
+	int off = 0;
+
+	if (node->data->hascrc)
+	  off = 56;
 
 	symlink = grub_malloc (size + 1);
 	if (!symlink)
 	  return 0;
 
-	numread = grub_xfs_read_file (node, 0, 0, 0, size, symlink);
+	node->inode.size = grub_be_to_cpu64 (size + off);
+	numread = grub_xfs_read_file (node, 0, 0, off, size, symlink, off);
 	if (numread != size)
 	  {
 	    grub_free (symlink);
@@ -802,7 +813,7 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 
 	    numread = grub_xfs_read_file (dir, 0, 0,
 					  blk << dirblk_log2,
-					  dirblk_size, dirblock);
+					  dirblk_size, dirblock, 0);
 	    if (numread != dirblk_size)
 	      return 0;
 
@@ -1034,7 +1045,7 @@ grub_xfs_read (grub_file_t file, char *buf, grub_size_t len)
 
   return grub_xfs_read_file (&data->diropen,
 			     file->read_hook, file->read_hook_data,
-			     file->offset, len, buf);
+			     file->offset, len, buf, 0);
 }
 
 
