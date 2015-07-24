@@ -238,7 +238,7 @@ grub_efi_get_variable (const char *var, const grub_efi_guid_t *guid,
 
   status = efi_call_5 (r->get_variable, var16, guid, NULL, &datasize, NULL);
 
-  if (status != GRUB_EFI_SUCCESS || !datasize)
+  if (status != GRUB_EFI_BUFFER_TOO_SMALL || !datasize)
     {
       grub_free (var16);
       return NULL;
