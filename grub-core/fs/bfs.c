@@ -29,6 +29,7 @@
 #include <grub/dl.h>
 #include <grub/types.h>
 #include <grub/i18n.h>
+#include <grub/fshelp.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -561,10 +562,10 @@ iterate_in_b_tree (grub_disk_t disk,
 }
 
 static int
-bfs_strcmp (const char *a, const char *b, grub_size_t alen, grub_size_t blen)
+bfs_strcmp (const char *a, const char *b, grub_size_t alen)
 {
   char ac, bc;
-  while (blen && alen)
+  while (*b && alen)
     {
       if (*a != *b)
 	break;
@@ -572,11 +573,10 @@ bfs_strcmp (const char *a, const char *b, grub_size_t alen, grub_size_t blen)
       a++;
       b++;
       alen--;
-      blen--;
     }
 
   ac = alen ? *a : 0;
-  bc = blen ? *b : 0;
+  bc = *b;
 
 #ifdef MODE_AFS
   return (int) (grub_int8_t) ac - (int) (grub_int8_t) bc;
@@ -589,7 +589,6 @@ static grub_err_t
 find_in_b_tree (grub_disk_t disk,
 		const struct grub_bfs_superblock *sb,
 		const struct grub_bfs_inode *ino, const char *name,
-		grub_size_t name_len,
 		grub_uint64_t * res)
 {
   struct grub_bfs_btree_header head;
@@ -637,7 +636,7 @@ find_in_b_tree (grub_disk_t disk,
 	  end = grub_bfs_to_cpu16 (keylen_idx[(i | (1 << j))]);
 	  if (grub_bfs_to_cpu_treehead (node->total_key_len) <= end)
 	    end = grub_bfs_to_cpu_treehead (node->total_key_len);
-	  cmp = bfs_strcmp (key_data + start, name, end - start, name_len);
+	  cmp = bfs_strcmp (key_data + start, name, end - start);
 	  if (cmp == 0 && level == 0)
 	    {
 	      *res = grub_bfs_to_cpu64 (key_values[i | (1 << j)].val);
@@ -658,7 +657,7 @@ find_in_b_tree (grub_disk_t disk,
 	  end = grub_bfs_to_cpu16 (keylen_idx[0]);
 	  if (grub_bfs_to_cpu_treehead (node->total_key_len) <= end)
 	    end = grub_bfs_to_cpu_treehead (node->total_key_len);
-	  cmp = bfs_strcmp (key_data, name, end, name_len);
+	  cmp = bfs_strcmp (key_data, name, end);
 	  if (cmp == 0 && level == 0)
 	    {
 	      *res = grub_bfs_to_cpu64 (key_values[0].val);
@@ -707,127 +706,119 @@ find_in_b_tree (grub_disk_t disk,
     }
 }
 
+struct grub_fshelp_node
+{
+  grub_disk_t disk;
+  const struct grub_bfs_superblock *sb;
+  struct grub_bfs_inode ino;
+};
+
 static grub_err_t
-hop_level (grub_disk_t disk,
-	   const struct grub_bfs_superblock *sb,
-	   struct grub_bfs_inode *ino, const char *name,
-	   const char *name_end)
+lookup_file (grub_fshelp_node_t dir,
+	     const char *name,
+	     grub_fshelp_node_t *foundnode,
+	     enum grub_fshelp_filetype *foundtype)
 {
   grub_err_t err;
+  struct grub_bfs_inode *new_ino;
   grub_uint64_t res = 0;
 
-  if (((grub_bfs_to_cpu32 (ino->mode) & ATTR_TYPE) != ATTR_DIR))
-    return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
-
-  err = find_in_b_tree (disk, sb, ino, name, name_end - name, &res);
+  err = find_in_b_tree (dir->disk, dir->sb, &dir->ino, name, &res);
   if (err)
     return err;
 
-  return grub_disk_read (disk, res
-			 << (grub_bfs_to_cpu32 (sb->log2_bsize)
-			     - GRUB_DISK_SECTOR_BITS), 0,
-			 sizeof (*ino), (char *) ino);
+  *foundnode = grub_malloc (sizeof (struct grub_fshelp_node));
+  if (!*foundnode)
+    return grub_errno;
+
+  (*foundnode)->disk = dir->disk;
+  (*foundnode)->sb = dir->sb;
+  new_ino = &(*foundnode)->ino;
+
+  if (grub_disk_read (dir->disk, res
+		      << (grub_bfs_to_cpu32 (dir->sb->log2_bsize)
+			  - GRUB_DISK_SECTOR_BITS), 0,
+		      sizeof (*new_ino), (char *) new_ino))
+    {
+      grub_free (*foundnode);
+      return grub_errno;
+    }
+  switch (grub_bfs_to_cpu32 (new_ino->mode) & ATTR_TYPE)
+    {
+    default:
+    case ATTR_REG:
+      *foundtype = GRUB_FSHELP_REG;
+      break;
+    case ATTR_DIR:
+      *foundtype = GRUB_FSHELP_DIR;
+      break;
+    case ATTR_LNK:
+      *foundtype = GRUB_FSHELP_SYMLINK;
+      break;
+    }
+  return GRUB_ERR_NONE;
+}
+
+static char *
+read_symlink (grub_fshelp_node_t node)
+{
+  char *alloc = NULL;
+  grub_err_t err;
+
+#ifndef MODE_AFS
+  if (!(grub_bfs_to_cpu32 (node->ino.flags) & LONG_SYMLINK))
+    {
+      alloc = grub_malloc (sizeof (node->ino.inplace_link) + 1);
+      if (!alloc)
+	{
+	  return NULL;
+	}
+      grub_memcpy (alloc, node->ino.inplace_link,
+		   sizeof (node->ino.inplace_link));
+      alloc[sizeof (node->ino.inplace_link)] = 0;
+    }
+  else
+#endif
+    {
+      grub_size_t symsize = grub_bfs_to_cpu64 (node->ino.size);
+      alloc = grub_malloc (symsize + 1);
+      if (!alloc)
+	return NULL;
+      err = read_bfs_file (node->disk, node->sb, &node->ino, 0, alloc, symsize, 0, 0);
+      if (err)
+	{
+	  grub_free (alloc);
+	  return NULL;
+	}
+      alloc[symsize] = 0;
+    }
+
+  return alloc;
 }
 
 static grub_err_t
 find_file (const char *path, grub_disk_t disk,
-	   const struct grub_bfs_superblock *sb, struct grub_bfs_inode *ino)
+	   const struct grub_bfs_superblock *sb, struct grub_bfs_inode *ino,
+	   enum grub_fshelp_filetype exptype)
 {
-  const char *ptr, *next = path;
-  char *alloc = NULL;
-  char *wptr;
   grub_err_t err;
-  struct grub_bfs_inode old_ino;
-  unsigned symlinks_max = 32;
+  struct grub_fshelp_node root = {
+    .disk = disk,
+    .sb = sb,
+  };
+  struct grub_fshelp_node *found;
 
-  err = read_extent (disk, sb, &sb->root_dir, 0, 0, ino,
-		     sizeof (*ino));
+  err = read_extent (disk, sb, &sb->root_dir, 0, 0, &root.ino,
+		     sizeof (root.ino));
   if (err)
     return err;
+  err = grub_fshelp_find_file_lookup (path, &root, &found, lookup_file, read_symlink, exptype);
+  if (!err)
+    grub_memcpy (ino, &found->ino, sizeof (*ino));
 
-  while (1)
-    {
-      ptr = next;
-      while (*ptr == '/')
-	ptr++;
-      if (*ptr == 0)
-	{
-	  grub_free (alloc);
-	  return GRUB_ERR_NONE;
-	}
-      for (next = ptr; *next && *next != '/'; next++);
-      grub_memcpy (&old_ino, ino, sizeof (old_ino));
-      err = hop_level (disk, sb, ino, ptr, next);
-      if (err)
-	return err;
-
-      if (((grub_bfs_to_cpu32 (ino->mode) & ATTR_TYPE) == ATTR_LNK))
-	{
-	  char *old_alloc = alloc;
-	  if (--symlinks_max == 0)
-	    {
-	      grub_free (alloc);
-	      return grub_error (GRUB_ERR_SYMLINK_LOOP,
-				 N_("too deep nesting of symlinks"));
-	    }
-
-#ifndef MODE_AFS
-	  if (grub_bfs_to_cpu32 (ino->flags) & LONG_SYMLINK)
-#endif
-	    {
-	      grub_size_t symsize = grub_bfs_to_cpu64 (ino->size);
-	      alloc = grub_malloc (grub_strlen (next)
-				   + symsize + 1);
-	      if (!alloc)
-		{
-		  grub_free (alloc);
-		  return grub_errno;
-		}
-	      grub_free (old_alloc);
-	      err = read_bfs_file (disk, sb, ino, 0, alloc, symsize, 0, 0);
-	      if (err)
-		{
-		  grub_free (alloc);
-		  return err;
-		}
-	      alloc[symsize] = 0;
-	    }
-#ifndef MODE_AFS
-	  else
-	    {
-	      alloc = grub_malloc (grub_strlen (next)
-				   + sizeof (ino->inplace_link) + 1);
-	      if (!alloc)
-		{
-		  grub_free (alloc);
-		  return grub_errno;
-		}
-	      grub_free (old_alloc);
-	      grub_memcpy (alloc, ino->inplace_link,
-			   sizeof (ino->inplace_link));
-	      alloc[sizeof (ino->inplace_link)] = 0;
-	    }
-#endif
-	  if (alloc[0] == '/')
-	    {
-	      err = read_extent (disk, sb, &sb->root_dir, 0, 0, ino,
-				 sizeof (*ino));
-	      if (err)
-		{
-		  grub_free (alloc);
-		  return err;
-		}
-	    }
-	  else
-	    grub_memcpy (ino, &old_ino, sizeof (old_ino));
-	  wptr = alloc + grub_strlen (alloc);
-	  if (next)
-	    wptr = grub_stpcpy (wptr, next);
-	  *wptr = 0;
-	  next = alloc;
-	  continue;
-	}
-    }
+  if (&root != found)
+    grub_free (found);
+  return err;
 }
 
 static grub_err_t
@@ -909,11 +900,9 @@ grub_bfs_dir (grub_device_t device, const char *path,
 
   {
     struct grub_bfs_inode ino;
-    err = find_file (path, device->disk, &ctx.sb, &ino);
+    err = find_file (path, device->disk, &ctx.sb, &ino, GRUB_FSHELP_DIR);
     if (err)
       return err;
-    if (((grub_bfs_to_cpu32 (ino.mode) & ATTR_TYPE) != ATTR_DIR))
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
     iterate_in_b_tree (device->disk, &ctx.sb, &ino, grub_bfs_dir_iter,
 		       &ctx);
   }
@@ -934,11 +923,9 @@ grub_bfs_open (struct grub_file *file, const char *name)
   {
     struct grub_bfs_inode ino;
     struct grub_bfs_data *data;
-    err = find_file (name, file->device->disk, &sb, &ino);
+    err = find_file (name, file->device->disk, &sb, &ino, GRUB_FSHELP_REG);
     if (err)
       return err;
-    if (((grub_bfs_to_cpu32 (ino.mode) & ATTR_TYPE) != ATTR_REG))
-      return grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a regular file"));
 
     data = grub_zalloc (sizeof (struct grub_bfs_data));
     if (!data)
@@ -1034,7 +1021,7 @@ read_bfs_attr (grub_disk_t disk,
       if (err)
 	return -1;
 
-      err = find_in_b_tree (disk, sb, ino, name, grub_strlen (name), &res);
+      err = find_in_b_tree (disk, sb, ino, name, &res);
       if (err)
 	return -1;
       grub_disk_read (disk, res
