@@ -249,9 +249,10 @@ grub_archelp_open (struct grub_archelp_data *data,
   while (1)
     {
       grub_uint32_t mode;
+      grub_int32_t mtime;
       int restart;
       
-      if (arcops->find_file (data, &fn, NULL, &mode))
+      if (arcops->find_file (data, &fn, &mtime, &mode))
 	goto fail;
 
       if (mode == GRUB_ARCHELP_ATTR_END)
