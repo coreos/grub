@@ -195,7 +195,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
   grub_pci_write_word (addr, grub_pci_read_word (addr)
-		    | GRUB_PCI_COMMAND_MEM_ENABLED);
+		    | GRUB_PCI_COMMAND_MEM_ENABLED | GRUB_PCI_COMMAND_BUS_MASTER);
 
   hba = grub_pci_device_map_range (dev, bar & GRUB_PCI_ADDR_MEM_MASK,
 				   sizeof (*hba));
