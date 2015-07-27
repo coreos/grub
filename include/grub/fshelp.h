@@ -62,6 +62,17 @@ EXPORT_FUNC(grub_fshelp_find_file) (const char *path,
 				    enum grub_fshelp_filetype expect);
 
 
+grub_err_t
+EXPORT_FUNC(grub_fshelp_find_file_lookup) (const char *path,
+					   grub_fshelp_node_t rootnode,
+					   grub_fshelp_node_t *foundnode,
+					   grub_err_t (*lookup_file) (grub_fshelp_node_t dir,
+								      const char *name,
+								      grub_fshelp_node_t *foundnode,
+								      enum grub_fshelp_filetype *foundtype),
+					   char *(*read_symlink) (grub_fshelp_node_t node),
+					   enum grub_fshelp_filetype expect);
+
 /* Read LEN bytes from the file NODE on disk DISK into the buffer BUF,
    beginning with the block POS.  READ_HOOK should be set before
    reading a block from the file.  GET_BLOCK is used to translate file
