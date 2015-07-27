@@ -834,6 +834,20 @@ def data(defn, platform):
     var_add("dist_" + installdir(defn) + "_DATA", platform_sources(defn, platform))
     gvar_add("dist_noinst_DATA", extra_dist(defn))
 
+def transform_data(defn, platform):
+    name = defn['name']
+
+    var_add(installdir(defn) + "_DATA", name)
+
+    rule(name, "$(top_builddir)/config.status " + platform_sources(defn, platform) + platform_dependencies(defn, platform), """
+(for x in """ + platform_sources(defn, platform) + """; do cat $(srcdir)/"$$x"; done) | $(top_builddir)/config.status --file=$@:-
+chmod a+x """ + name + """
+""")
+
+    gvar_add("CLEANFILES", name)
+    gvar_add("EXTRA_DIST", extra_dist(defn))
+    gvar_add("dist_noinst_DATA", platform_sources(defn, platform))
+
 def script(defn, platform):
     name = defn['name']
 
@@ -881,6 +895,7 @@ rules("library", library)
 rules("program", program)
 rules("script", script)
 rules("data", data)
+rules("transform_data", transform_data)
 
 write_output(section='decl')
 write_output()

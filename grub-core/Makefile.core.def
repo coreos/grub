@@ -1,43 +1,43 @@
 AutoGen definitions Makefile.tpl;
 
-script = {
+transform_data = {
   installdir = noinst;
   name = gensyminfo.sh;
   common = gensyminfo.sh.in;
 };
 
-script = {
+transform_data = {
   installdir = noinst;
   name = genmod.sh;
   common = genmod.sh.in;
 };
 
-script = {
+transform_data = {
   installdir = noinst;
   name = modinfo.sh;
   common = modinfo.sh.in;
 };
 
-script = {
+transform_data = {
   installdir = platform;
   name = gmodule.pl;
   common = gmodule.pl.in;
 };
 
-script = {
+transform_data = {
   installdir = platform;
   name = gdb_grub;
   common = gdb_grub.in;
 };
 
-script = {
+transform_data = {
   installdir = platform;
   name = grub.chrp;
   common = boot/powerpc/grub.chrp.in;
   enable = powerpc_ieee1275;
 };
 
-script = {
+transform_data = {
   installdir = platform;
   name = bootinfo.txt;
   common = boot/powerpc/bootinfo.txt.in;
