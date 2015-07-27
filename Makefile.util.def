@@ -48,6 +48,7 @@ library = {
   common = grub-core/partmap/gpt.c;
   common = grub-core/partmap/msdos.c;
   common = grub-core/fs/proc.c;
+  common = grub-core/fs/archelp.c;
 };
 
 library = {
@@ -91,7 +92,6 @@ library = {
   common = grub-core/fs/bfs.c;
   common = grub-core/fs/btrfs.c;
   common = grub-core/fs/cbfs.c;
-  common = grub-core/fs/archelp.c;
   common = grub-core/fs/cpio.c;
   common = grub-core/fs/cpio_be.c;
   common = grub-core/fs/odc.c;
