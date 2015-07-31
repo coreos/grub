@@ -218,8 +218,7 @@ grub_pxe_recv (struct grub_net_card *dev __attribute__ ((unused)))
     return NULL;
   /* Reserve 2 bytes so that 2 + 14/18 bytes of ethernet header is divisible
      by 4. So that IP header is aligned on 4 bytes. */
-  grub_netbuff_reserve (buf, 2);
-  if (!buf)
+  if (grub_netbuff_reserve (buf, 2))
     {
       grub_netbuff_free (buf);
       return NULL;

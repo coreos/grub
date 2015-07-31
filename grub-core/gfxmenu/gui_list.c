@@ -131,6 +131,9 @@ get_num_shown_items (list_impl_t self)
   int max_top_pad = grub_max (item_top_pad, sel_top_pad);
   int max_bottom_pad = grub_max (item_bottom_pad, sel_bottom_pad);
 
+  if (item_height + item_vspace <= 0)
+    return 1;
+
   return (self->bounds.height + item_vspace - 2 * boxpad
           - max_top_pad - max_bottom_pad
           - box_top_pad - box_bottom_pad) / (item_height + item_vspace);

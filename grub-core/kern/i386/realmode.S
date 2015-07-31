@@ -54,7 +54,7 @@ protstack:
 	.endm
 
 	.macro REAL_TO_PROT
-	DATA32	call	real_to_prot
+	calll	real_to_prot
 	.endm
 
 /*
@@ -137,7 +137,22 @@ real_to_prot:
 	/* load the GDT register */
 	xorw	%ax, %ax
 	movw	%ax, %ds
-	DATA32	ADDR32	lgdt	gdtdesc
+#ifdef GRUB_MACHINE_QEMU
+	/*
+	qemu is special: gdtdesc is in ROM.
+	%cs = 0xf000
+	_start + GRUB_BOOT_MACHINE_SIZE = 0x100000
+	So
+	_start + GRUB_BOOT_MACHINE_SIZE - 0x10000 points to the same point
+	as %cs.
+	gdtdesc - (_start + GRUB_BOOT_MACHINE_SIZE - 0x10000)
+	= gdtdesc - _start - GRUB_BOOT_MACHINE_SIZE + 0x10000
+	but the later can be computed by assembly.
+	*/
+	lgdtl	%cs:(gdtdesc - _start - GRUB_BOOT_MACHINE_SIZE + 0x10000)
+#else
+	lgdtl	gdtdesc
+#endif
 
 	/* turn on protected mode */
 	movl	%cr0, %eax
@@ -145,7 +160,7 @@ real_to_prot:
 	movl	%eax, %cr0
 
 	/* jump to relocation, flush prefetch queue, and reload %cs */
-	DATA32	ljmp	$GRUB_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
+	ljmpl	$GRUB_MEMORY_MACHINE_PROT_MODE_CSEG, $protcseg
 
 	.code32
 protcseg:
@@ -178,6 +193,9 @@ protcseg:
 
 	/* return on the old (or initialized) stack! */
 	ret
+	/* prot_to_real assumes that this code is under 64K which is not
+	true for qemu.  */
+#ifndef GRUB_MACHINE_QEMU
 /*
  *  GRUB  --  GRand Unified Bootloader
  *  Copyright (C) 1999,2000,2001,2002,2003,2005,2006,2007,2009,2010 Free Software Foundation, Inc.
@@ -237,7 +255,7 @@ tmpcseg:
 	movl	%eax, %cr0
 
 	/* flush prefetch queue, reload %cs */
-	DATA32	ljmp	$0, $realcseg
+	ljmpl	$0, $realcseg
 
 realcseg:
 	/* we are in real mode now
@@ -258,6 +276,6 @@ realcseg:
 #endif
 
 	/* return on new stack! */
-	DATA32	ret
-
+	retl
+#endif
 	.code32

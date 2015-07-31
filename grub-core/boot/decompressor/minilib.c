@@ -21,7 +21,7 @@
 #include <grub/decompressor.h>
 
 void *
-memset (void *s, int c, grub_size_t len)
+grub_memset (void *s, int c, grub_size_t len)
 {
   grub_uint8_t *ptr;
   for (ptr = s; len; ptr++, len--)
@@ -67,15 +67,6 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 
   return 0;
 }
-
-int memcmp (const void *s1, const void *s2, grub_size_t n)
-  __attribute__ ((alias ("grub_memcmp")));
-
-void *memmove (void *dest, const void *src, grub_size_t n)
-  __attribute__ ((alias ("grub_memmove")));
-
-void *memcpy (void *dest, const void *src, grub_size_t n)
-  __attribute__ ((alias ("grub_memmove")));
 
 void *grub_decompressor_scratch;
 

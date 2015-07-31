@@ -63,6 +63,16 @@ grub_raid6_init_table (void)
     }
 }
 
+static unsigned
+mod_255 (unsigned x)
+{
+  while (x > 0xff)
+    x = (x >> 8) + (x & 0xff);
+  if (x == 0xff)
+    return 0;
+  return x;
+}
+
 static grub_err_t
 grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
                     char *buf, grub_disk_addr_t sector, grub_size_t size)
@@ -162,11 +172,11 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
 
       grub_crypto_xor (qbuf, qbuf, buf, size);
 
-      c = ((255 ^ bad1)
-	   + (255 ^ powx_inv[(powx[bad2 + (bad1 ^ 255)] ^ 1)])) % 255;
+      c = mod_255((255 ^ bad1)
+		  + (255 ^ powx_inv[(powx[bad2 + (bad1 ^ 255)] ^ 1)]));
       grub_raid_block_mulx (c, qbuf, size);
 
-      c = ((unsigned) bad2 + c) % 255;
+      c = mod_255((unsigned) bad2 + c);
       grub_raid_block_mulx (c, pbuf, size);
 
       grub_crypto_xor (pbuf, pbuf, qbuf, size);

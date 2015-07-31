@@ -47,7 +47,7 @@ static int
 parse_color_name (grub_uint8_t *ret, char *name)
 {
   grub_uint8_t i;
-  for (i = 0; i < sizeof (color_list) / sizeof (*color_list); i++)
+  for (i = 0; i < ARRAY_SIZE(color_list); i++)
     if (! grub_strcmp (name, color_list[i]))
       {
         *ret = i;

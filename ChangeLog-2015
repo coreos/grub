@@ -1,3 +1,259 @@
+2015-01-23  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* tests/file_filter/file: Really add missing file.
+
+2015-01-23  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/disk/xen/xendisk.c: Accept hdX as disk names on Xen to
+	allow legacy menu.lst processing.
+
+2015-01-22  Felix Janda <felix.janda@posteo.de>
+
+	Remove direct _llseek code and require long filesystem libc.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Remove potential division by 0 in gfxmenu.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/normal/menu_text.c (grub_menu_init_page): Avoid
+	returning 0 geometry to avoid divisions by 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/unix/cputime.c (grub_util_get_cpu_time_ms): Cache
+	sc_clk_tck and check it for sanity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/efi/mm.c (grub_efi_get_memory_map): Never return a
+	descriptor_size==0 to avoid potential divisions by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/haiku/getroot.c (grub_util_find_partition_start_os):
+	Avoid division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/generic/rtc_get_time_ms.c (grub_rtc_get_time_ms): Avoid
+	division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/loader/i386/xnu.c (guessfsb): Avoid division by 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/kern/i386/tsc.c (calibrate_tsc): Ensure that
+	no division by 0 occurs.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/misc.h (grub_div_roundup): Remove as it's unused.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/term/gfxterm.c: Avoid division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Avoid division by zero in serial.
+
+	* grub-core/term/serial.c (grub_cmd_serial): Ensure speed is not 0.
+	* grub-core/term/ns8250.c (serial_get_divisor): Exit if speed is 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/video/readers/jpeg.c: Avoid sivision by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/diskfilter.c: Validate volumes to avoid division
+	by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* include/grub/term.h: Avoid returining 0-sized terminal
+	as it may lead to division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/zfs.c: Avoid divisions by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/btrfs.c: Avoid divisions by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/lib/pbkdf2.c (grub_crypto_pbkdf2): Check that hash len is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/osdep/linux/blocklist.c (grub_install_get_blocklist): Check
+	blocksize validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/i386/pc/biosdisk.c: Check disk size sanity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ieee1275/nand.c (grub_nand_open): Check block size
+	validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/dmraid_nvidia.c (grub_dmraid_nv_detect): Do not
+	divide by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/hfs.c (grub_hfs_mount): Additional filesystem
+	sanity checks.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/minix.c: Additional filesystem
+	sanity checks.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ext2.c (grub_ext2_mount): Additional
+	checks for superblock validity.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/ufs.c (grub_ufs_mount): Check
+	that sblock.ino_per_group is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Reject NILFS2 superblocks with over 1GiB blocks.
+
+	* grub-core/fs/nilfs2.c (grub_nilfs2_valid_sb): Check that
+	block size is <= 1GiB.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/ata.c (grub_ata_setaddress): Check that geometry
+	is sane when using CHS addressing.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/disk/AFSplitter.c (AF_merge): Check that mdlen is not 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/commands/i386/pc/play.c (grub_cmd_play): Avoid
+	division by zero.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/bus/usb/usbtrans.c (grub_usb_bulk_maxpacket): Avoid
+	potentially returning 0.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/minix.c (grub_minix_read_file): Avoid reading past
+	the end of file.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/fs/fshelp.c (grub_fshelp_read_file): Don't attempt to read
+	past the end of file.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	* grub-core/script/lexer.c (grub_script_lexer_yywrap): Update len
+	synchronously with line.
+
+2015-01-20  Vladimir Serbinenko  <phcoder@gmail.com>
+
+	Replace explicit sizeof divisions by ARRAY_SIZE.
+
+2015-01-19  Kris Moore <kris@pcbsd.org>
+
+	* grub-core/disk/geli.c: Support GELI v6 and v7.
+
+2014-12-09  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/term/serial.c (grub_cmd_serial): Fix --rtscts
+	option processing.
+
+2014-12-07  David Kozub  <zub.272@gmail.com>
+
+	* grub-core/kern/arm/misc.S: fix unaligned 64bit local variable
+	in __aeabi_uidivmod
+	Fixes Savannah bug #43632.
+
+2014-12-07  Peter Nelson <peterdn>
+
+	* grub-core/fs/ext2.c (grub_ext2_read_block): Support large sparse
+	chunks.
+
+2014-12-07  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* util/grub-mkconfig_lib.in (version_test_gt): Remove redundant
+	non-portable '-n' echo option.
+	* util/grub.d/10_kfreebsd.in: Change how list is built to avoid
+	non-portable 'echo -n.
+	* util/grub.d/10_linux.in: Likewise (closes 43668).
+	* util/grub.d/20_linux_xen.in: Likewise.
+	* util/grub.d/30_os-prober.in: Print spaces directly to avoid
+	non-portable 'echo -n'.
+
+2014-12-07  Curtis Larsen <larsen@dixie.edu>
+
+	* grub-core/net/tcp.c (grub_net_recv_tcp_packet): Fix double
+	free when multiple empty segments were received (closes 42765).
+
+2014-12-05  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* tests/util/grub-shell.in: Support --files also for netboot.
+	* tests/file_filter_test.in: New file with file filters tests.
+	* Makefile.util.def: Add file_filter_test.
+	* conf/Makefile.extra-dist: ... and here.
+	* tests/file_filter/file.gz: Test file for file_filter_test.
+	* tests/file_filter/file.gz.sig: Likewise.
+	* tests/file_filter/file.lzop: Likewise.
+	* tests/file_filter/file.lzop.sig: Likewise.
+	* tests/file_filter/file.xz: Likewise.
+	* tests/file_filter/file.xz.sig: Likewise.
+	* tests/file_filter/keys: Likewise.
+	* tests/file_filter/keys.pub: Likewise.
+	* tests/file_filter/test.cfg: Likewise.
+	* grub-core/commands/verify.c: Fix memory corruption doing
+	signature check for network files (closes 43601).
+
+2014-12-01  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/loader/i386/xen_fileXX.c (grub_xen_get_infoXX): Fix
+	memory leak (CID 73645, 73782).
+	* grub-core/fs/zfs/zfsinfo.c (print_vdev_info): Fix memory leak
+	(CID 73635).
+
+2014-11-30  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/lib/syslinux_parse.c (free_menu): Do not free
+	inline array (CID 73610).
+
+2014-11-28  Andrei Borzenkov  <arvidjaar@gmail.com>
+
+	* grub-core/io/lzopio.c (test_header): Fix double free (CID 73665)
+	* grub-core/disk/geli.c (configure_ciphers): Fix memory leaks
+	(Coverity CID 73813, 73710)
+	* grub-core/disk/luks.c (configure_ciphers): Fix memory leaks
+	and use after free (Coverity CID 73813, 73710, 73730)
+	* grub-core/disk/luks.c (luks_recover_key): Fix memory leak (Coverity
+	CID 73854)
+	* util/grub-install-common.c (grub_install_get_target): Check return
+	value of grub_util_fd_read (Coverity CID 73819).
+	* util/grub-mkstandalone.c (add_tar_file): Fix out of bound access
+	to hd.magic (Coverity CID 73587, 73888, bug 43690).
+
 2014-11-20  Andrei Borzenkov  <arvidjaar@gmail.com>
 
 	* tests/util/grub-fs-tester.in: Consistently print output

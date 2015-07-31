@@ -106,8 +106,10 @@ grub_gfxmenu_icon_manager_set_theme_path (grub_gfxmenu_icon_manager_t mgr,
                                           const char *path)
 {
   /* Clear the cache if the theme path has changed.  */
-  if (((mgr->theme_path == 0) != (path == 0))
-      || (grub_strcmp (mgr->theme_path, path) != 0))
+  if (mgr->theme_path == 0 && path == 0)
+    return;
+  if (mgr->theme_path == 0 || path == 0
+      || grub_strcmp (mgr->theme_path, path) != 0)
     grub_gfxmenu_icon_manager_clear_cache (mgr);
 
   grub_free (mgr->theme_path);

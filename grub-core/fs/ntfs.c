@@ -618,7 +618,10 @@ list_file (struct grub_ntfs_file *diro, grub_uint8_t *pos,
 
 	  ustr = get_utf8 (np, ns);
 	  if (ustr == NULL)
-	    return 0;
+	    {
+	      grub_free (fdiro);
+	      return 0;
+	    }
           if (namespace)
             type |= GRUB_FSHELP_CASE_INSENSITIVE;
 
@@ -917,12 +920,16 @@ grub_ntfs_mount (grub_disk_t disk)
 
   if (bpb.clusters_per_mft > 0)
     data->mft_size = ((grub_disk_addr_t) bpb.clusters_per_mft) << data->log_spc;
+  else if (-bpb.clusters_per_mft < GRUB_NTFS_BLK_SHR || -bpb.clusters_per_mft >= 31)
+    goto fail;
   else
     data->mft_size = 1ULL << (-bpb.clusters_per_mft - GRUB_NTFS_BLK_SHR);
 
   if (bpb.clusters_per_index > 0)
     data->idx_size = (((grub_disk_addr_t) bpb.clusters_per_index)
 		      << data->log_spc);
+  else if (-bpb.clusters_per_index < GRUB_NTFS_BLK_SHR || -bpb.clusters_per_index >= 31)
+    goto fail;
   else
     data->idx_size = 1ULL << (-bpb.clusters_per_index - GRUB_NTFS_BLK_SHR);
 

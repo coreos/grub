@@ -100,6 +100,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define EXT2_FEATURE_INCOMPAT_META_BG		0x0010
 #define EXT4_FEATURE_INCOMPAT_EXTENTS		0x0040 /* Extents used */
 #define EXT4_FEATURE_INCOMPAT_64BIT		0x0080
+#define EXT4_FEATURE_INCOMPAT_MMP		0x0100
 #define EXT4_FEATURE_INCOMPAT_FLEX_BG		0x0200
 
 /* The set of back-incompatible features this driver DOES support. Add (OR)
@@ -107,6 +108,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #define EXT2_DRIVER_SUPPORTED_INCOMPAT ( EXT2_FEATURE_INCOMPAT_FILETYPE \
                                        | EXT4_FEATURE_INCOMPAT_EXTENTS  \
                                        | EXT4_FEATURE_INCOMPAT_FLEX_BG \
+                                       | EXT2_FEATURE_INCOMPAT_META_BG \
                                        | EXT4_FEATURE_INCOMPAT_64BIT)
 /* List of rationales for the ignored "incompatible" features:
  * needs_recovery: Not really back-incompatible - was added as such to forbid
@@ -114,8 +116,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
  *                 journal because they will ignore the journal, but the next
  *                 ext3 driver to mount the volume will find the journal and
  *                 replay it, potentially corrupting the metadata written by
- *                 the ext2 drivers. Safe to ignore for this RO driver.  */
-#define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER )
+ *                 the ext2 drivers. Safe to ignore for this RO driver.
+ * mmp:            Not really back-incompatible - was added as such to
+ *                 avoid multiple read-write mounts. Safe to ignore for this
+ *                 RO driver.
+ */
+#define EXT2_DRIVER_IGNORED_INCOMPAT ( EXT3_FEATURE_INCOMPAT_RECOVER \
+				     | EXT4_FEATURE_INCOMPAT_MMP)
 
 
 #define EXT3_JOURNAL_MAGIC_NUMBER	0xc03b3998U
@@ -331,16 +338,68 @@ static grub_dl_t my_mod;
 
 
 
+/* Check is a = b^x for some x.  */
+static inline int
+is_power_of (grub_uint64_t a, grub_uint32_t b)
+{
+  grub_uint64_t c;
+  /* Prevent overflow assuming b < 8.  */
+  if (a >= (1LL << 60))
+    return 0;
+  for (c = 1; c <= a; c *= b);
+  return (c == a);
+}
+
+
+static inline int
+group_has_super_block (struct grub_ext2_data *data, grub_uint64_t group)
+{
+  if (!(data->sblock.feature_ro_compat
+	& grub_cpu_to_le32_compile_time(EXT2_FEATURE_RO_COMPAT_SPARSE_SUPER)))
+    return 1;
+  /* Algorithm looked up in Linux source.  */
+  if (group <= 1)
+    return 1;
+  /* Even number is never a power of odd number.  */
+  if (!(group & 1))
+    return 0;
+  return (is_power_of(group, 7) || is_power_of(group, 5) ||
+	  is_power_of(group, 3));
+}
+
 /* Read into BLKGRP the blockgroup descriptor of blockgroup GROUP of
    the mounted filesystem DATA.  */
 inline static grub_err_t
-grub_ext2_blockgroup (struct grub_ext2_data *data, int group,
+grub_ext2_blockgroup (struct grub_ext2_data *data, grub_uint64_t group,
 		      struct grub_ext2_block_group *blkgrp)
 {
+  grub_uint64_t full_offset = (group << data->log_group_desc_size);
+  grub_uint64_t block, offset;
+  block = (full_offset >> LOG2_BLOCK_SIZE (data));
+  offset = (full_offset & ((1 << LOG2_BLOCK_SIZE (data)) - 1));
+  if ((data->sblock.feature_incompat
+       & grub_cpu_to_le32_compile_time (EXT2_FEATURE_INCOMPAT_META_BG))
+      && block >= grub_le_to_cpu32(data->sblock.first_meta_bg))
+    {
+      grub_uint64_t first_block_group;
+      /* Find the first block group for which a descriptor
+	 is stored in given block. */
+      first_block_group = (block << (LOG2_BLOCK_SIZE (data)
+				     - data->log_group_desc_size));
+
+      block = (first_block_group
+	       * grub_le_to_cpu32(data->sblock.blocks_per_group));
+
+      if (group_has_super_block (data, first_block_group))
+	block++;
+    }
+  else
+    /* Superblock.  */
+    block++;
   return grub_disk_read (data->disk,
-                         ((grub_le_to_cpu32 (data->sblock.first_data_block) + 1)
-                          << LOG2_EXT2_BLOCK_SIZE (data)),
-			 group << data->log_group_desc_size,
+                         ((grub_le_to_cpu32 (data->sblock.first_data_block)
+			   + block)
+                          << LOG2_EXT2_BLOCK_SIZE (data)), offset,
 			 sizeof (struct grub_ext2_block_group), blkgrp);
 }
 
@@ -484,6 +543,10 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
 
 indirect:
   do {
+    /* If the indirect block is zero, all child blocks are absent
+       (i.e. filled with zeros.) */
+    if (indir == 0)
+      return 0;
     if (grub_disk_read (data->disk,
 			((grub_disk_addr_t) grub_le_to_cpu32 (indir))
 			<< log2_blksz,
@@ -573,7 +636,12 @@ grub_ext2_mount (grub_disk_t disk)
 
   /* Make sure this is an ext2 filesystem.  */
   if (data->sblock.magic != grub_cpu_to_le16_compile_time (EXT2_MAGIC)
-      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16)
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) >= 16
+      || data->sblock.inodes_per_group == 0
+      /* 20 already means 1GiB blocks. We don't want to deal with blocks overflowing int32. */
+      || grub_le_to_cpu32 (data->sblock.log2_block_size) > 20
+      || EXT2_INODE_SIZE (data) == 0
+      || EXT2_BLOCK_SIZE (data) / EXT2_INODE_SIZE (data) == 0)
     {
       grub_error (GRUB_ERR_BAD_FS, "not an ext2 filesystem");
       goto fail;

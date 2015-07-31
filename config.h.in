@@ -7,10 +7,19 @@
 #endif
 
 #define GCRYPT_NO_DEPRECATED 1
+#define HAVE_MEMMOVE 1
 
 /* Define to 1 to enable disk cache statistics.  */
 #define DISK_CACHE_STATS @DISK_CACHE_STATS@
 #define BOOT_TIME_STATS @BOOT_TIME_STATS@
+
+/* We don't need those.  */
+#define MINILZO_CFG_SKIP_LZO_PTR 1
+#define MINILZO_CFG_SKIP_LZO_UTIL 1
+#define MINILZO_CFG_SKIP_LZO_STRING 1
+#define MINILZO_CFG_SKIP_LZO_INIT 1
+#define MINILZO_CFG_SKIP_LZO1X_1_COMPRESS 1
+#define MINILZO_CFG_SKIP_LZO1X_DECOMPRESS 1
 
 #if defined (GRUB_BUILD)
 #undef ENABLE_NLS
@@ -31,10 +40,6 @@
 #define HAVE_FONT_SOURCE @HAVE_FONT_SOURCE@
 /* Define if C symbols get an underscore after compilation. */
 #define HAVE_ASM_USCORE @HAVE_ASM_USCORE@
-/* Define it to \"addr32\" or \"addr32;\" to make GAS happy.  */
-#define ADDR32 @ADDR32@
-/* Define it to \"data32\" or \"data32;\" to make GAS happy. */
-#define DATA32 @DATA32@
 /* Define it to one of __bss_start, edata and _edata.  */
 #define BSS_START_SYMBOL @BSS_START_SYMBOL@
 /* Define it to either end or _end.  */

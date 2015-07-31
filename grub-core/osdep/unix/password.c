@@ -53,7 +53,10 @@ grub_password_get (char buf[], unsigned buf_size)
     tty_changed = 0;
   grub_memset (buf, 0, buf_size);
   if (!fgets (buf, buf_size, stdin))
-    return 0;
+    {
+      fclose (in);
+      return 0;
+    }
   ptr = buf + strlen (buf) - 1;
   while (buf <= ptr && (*ptr == '\n' || *ptr == '\r'))
     *ptr-- = 0;
@@ -63,6 +66,8 @@ grub_password_get (char buf[], unsigned buf_size)
 
   grub_xputs ("\n");
   grub_refresh ();
+
+  fclose (in);
 
   return 1;
 }

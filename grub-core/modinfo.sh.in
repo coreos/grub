@@ -9,8 +9,6 @@ grub_have_font_source=@HAVE_FONT_SOURCE@
 
 # Autodetected config
 grub_have_asm_uscore=@HAVE_ASM_USCORE@
-grub_i8086_addr32="@ADDR32@"
-grub_i8086_data32="@DATA32@"
 grub_bss_start_symbol="@BSS_START_SYMBOL@"
 grub_end_symbol="@END_SYMBOL@"
 
@@ -21,11 +19,17 @@ grub_target_cflags='@TARGET_CFLAGS@'
 grub_target_cppflags='@TARGET_CPPFLAGS@'
 grub_target_ccasflags='@TARGET_CCASFLAGS@'
 grub_target_ldflags='@TARGET_LDFLAGS@'
+grub_cflags='@CFLAGS@'
+grub_cppflags='@CPPFLAGS@'
+grub_ccasflags='@CCASFLAGS@'
+grub_ldflags='@LDFLAGS@'
 grub_target_strip='@TARGET_STRIP@'
 grub_target_nm='@TARGET_NM@'
 grub_target_ranlib='@TARGET_RANLIB@'
 grub_target_objconf='@TARGET_OBJCONV@'
 grub_target_obj2elf='@TARGET_OBJ2ELF@'
+grub_target_img_base_ldopt='@TARGET_IMG_BASE_LDOPT@'
+grub_target_img_ldflags='@TARGET_IMG_BASE_LDFLAGS@'
 
 # Version
 grub_version="@VERSION@"

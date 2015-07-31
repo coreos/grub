@@ -330,6 +330,7 @@ grub_hfs_mount (grub_disk_t disk)
 
   /* Check if this is a HFS filesystem.  */
   if (grub_be_to_cpu16 (data->sblock.magic) != GRUB_HFS_MAGIC
+      || data->sblock.blksz == 0
       || (data->sblock.blksz & grub_cpu_to_be32_compile_time (0xc00001ff)))
     {
       grub_error (GRUB_ERR_BAD_FS, "not an HFS filesystem");
@@ -366,6 +367,11 @@ grub_hfs_mount (grub_disk_t disk)
     goto fail;
   data->cat_root = grub_be_to_cpu32 (treehead.head.root_node);
   data->cat_size = grub_be_to_cpu16 (treehead.head.node_size);
+
+  if (data->cat_size == 0
+      || data->blksz < data->cat_size
+      || data->blksz < data->ext_size)
+    goto fail;
 
   /* Lookup the root directory node in the catalog tree using the
      volume name.  */
@@ -686,6 +692,7 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
       int i;
       struct grub_hfs_extent *dat;
       int blk;
+      grub_uint16_t reccnt;
 
       dat = (struct grub_hfs_extent *) (type == 0
 					? (&data->sblock.catalog_recs)
@@ -704,8 +711,12 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	  return grub_errno;
 	}
 
+      reccnt = grub_be_to_cpu16 (node->node.reccnt);
+      if (reccnt > (nodesize >> 1))
+	reccnt = (nodesize >> 1);
+
       /* Iterate over all records in this node.  */
-      for (i = 0; i < grub_be_to_cpu16 (node->node.reccnt); i++)
+      for (i = 0; i < reccnt; i++)
 	{
 	  int pos = (nodesize >> 1) - 1 - i;
  	  struct pointer
@@ -713,16 +724,19 @@ grub_hfs_iterate_records (struct grub_hfs_data *data, int type, int idx,
 	    grub_uint8_t keylen;
 	    grub_uint8_t key;
 	  } GRUB_PACKED *pnt;
-	  pnt = (struct pointer *) (grub_be_to_cpu16 (node->offsets[pos])
-				    + node->rawnode);
+	  grub_uint16_t off = grub_be_to_cpu16 (node->offsets[pos]);
+	  if (off > nodesize - sizeof(*pnt))
+	    continue;
+	  pnt = (struct pointer *) (off + node->rawnode);
+	  if (nodesize < (grub_size_t) off + pnt->keylen + 1)
+	    continue;
 
 	  struct grub_hfs_record rec =
 	    {
 	      &pnt->key,
 	      pnt->keylen,
 	      &pnt->key + pnt->keylen +(pnt->keylen + 1) % 2,
-	      nodesize - grub_be_to_cpu16 (node->offsets[pos])
-	      - pnt->keylen - 1
+	      nodesize - off - pnt->keylen - 1
 	    };
 
 	  if (node_hook (&node->node, &rec, hook_arg))
@@ -1299,6 +1313,12 @@ grub_hfs_open (struct grub_file *file, const char *name)
   grub_dl_ref (my_mod);
 
   data = grub_hfs_mount (file->device->disk);
+
+  if (!data)
+    {
+      grub_dl_unref (my_mod);
+      return grub_errno;
+    }
 
   if (grub_hfs_find_dir (data, name, &frec, 0))
     {

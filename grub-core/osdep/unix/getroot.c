@@ -57,6 +57,9 @@
 #endif
 
 #include <sys/types.h>
+#if defined(HAVE_SYS_MKDEV_H)
+#include <sys/mkdev.h>
+#endif
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)
 # include <grub/util/libzfs.h>
@@ -491,7 +494,7 @@ grub_guess_root_devices (const char *dir_in)
   char **os_dev = NULL;
   struct stat st;
   dev_t dev;
-  char *dir = canonicalize_file_name (dir_in);
+  char *dir = grub_canonicalize_file_name (dir_in);
 
   if (!dir)
     grub_util_error (_("failed to get canonical path of `%s'"), dir_in);
@@ -516,7 +519,7 @@ grub_guess_root_devices (const char *dir_in)
 	    *cur = tmp;
 	  else
 	    {
-	      *cur = canonicalize_file_name (tmp);
+	      *cur = grub_canonicalize_file_name (tmp);
 	      if (*cur == NULL)
 		grub_util_error (_("failed to get canonical path of `%s'"), tmp);
 	      free (tmp);
@@ -621,7 +624,10 @@ grub_util_pull_lvm_by_command (const char *os_dev)
   free (vgname);
 
   if (!pid)
-    return;
+    {
+      free (vgid);
+      return;
+    }
 
   /* Parent.  Read vgs' output.  */
   vgs = fdopen (fd, "r");
@@ -653,6 +659,7 @@ out:
   close (fd);
   waitpid (pid, NULL, 0);
   free (buf);
+  free (vgid);
 }
 
 /* ZFS has similar problems to those of btrfs (see above).  */

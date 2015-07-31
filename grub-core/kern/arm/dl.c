@@ -78,9 +78,9 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	const Elf_Rel *rel, *max;
 
 	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
-	       max = rel + s->sh_size / s->sh_entsize;
-	     rel < max;
-	     rel++)
+	       max = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_size);
+	     rel + 1 <= max;
+	     rel = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_entsize))
 	  switch (ELF_R_TYPE (rel->r_info))
 	    {
 	    case R_ARM_CALL:
@@ -204,6 +204,21 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	     at least armv5, keep bx as-is.
 	   */
 	case R_ARM_V4BX:
+	  break;
+	case R_ARM_THM_MOVW_ABS_NC:
+	case R_ARM_THM_MOVT_ABS:
+	  {
+	    grub_uint32_t offset;
+	    offset = grub_arm_thm_movw_movt_get_value((grub_uint16_t *) target);
+	    offset += sym_addr;
+
+	    if (ELF_R_TYPE (rel->r_info) == R_ARM_THM_MOVT_ABS)
+	      offset >>= 16;
+	    else
+	      offset &= 0xffff;
+
+	    grub_arm_thm_movw_movt_set_value((grub_uint16_t *) target, offset);
+	  }
 	  break;
 	case R_ARM_THM_JUMP19:
 	  {

@@ -21,6 +21,7 @@
 #include <grub/offsets.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/cpu/kernel.h>
 #include <grub/offsets.h>
 
 #define BASE_ADDR 8	
@@ -28,6 +29,7 @@
 	.globl __start, _start, start
 	.set noreorder
 	.set nomacro
+	mips_attributes
 __start:
 _start:
 start:		
@@ -36,7 +38,7 @@ start:
 	bal cont
 	 nop
 
-	. = _start + GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
+	.org GRUB_KERNEL_MACHINE_TOTAL_MODULE_SIZE
 VARIABLE(grub_total_modules_size)
 	.long 0
 

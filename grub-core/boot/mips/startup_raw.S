@@ -21,6 +21,7 @@
 #include <grub/offsets.h>
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
+#include <grub/cpu/kernel.h>
 #include <grub/offsets.h>
 
 #define BASE_ADDR 8
@@ -32,6 +33,7 @@
 	.globl __start, _start, start
 	.set noreorder
 	.set nomacro
+	mips_attributes
 __start:
 _start:
 start:		
@@ -39,13 +41,13 @@ start:
 	bal codestart
 	 nop
 base:	
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 compressed_size:
 	.long 0
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 uncompressed_size:
 	.long 0
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR
+	.org GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_ADDR
 uncompressed_addr:
 	.long 0
 codestart:
@@ -150,18 +152,18 @@ digcont:
 1:
 	jr $ra
 	 nop
-busclockstr:	.asciiz "busclock="
-cpuclockstr:	.asciiz "cpuclock="
-memsizestr:	.asciiz "memsize="
-highmemsizestr:	.asciiz "highmemsize="
-machtype_yeeloong_str1:	.asciiz "machtype=8.9"
-machtype_yeeloong_str2:	.asciiz "machtype=lemote-yeeloong-"
-machtype_fuloong2f_str:	.asciiz "machtype=lemote-fuloong-2f"
-machtype_fuloong2e_str:	.asciiz "machtype=lemote-fuloong-2e"
-pmon_yeeloong_str:	.asciiz "PMON_VER=LM8"
-pmon_fuloong2f_str:	.asciiz "PMON_VER=LM6"
-pmon_yeeloong_verstr:	.asciiz "Version=LM8"
-pmon_fuloong2f_verstr:	.asciiz "Version=LM6"
+busclockstr:	.asciz "busclock="
+cpuclockstr:	.asciz "cpuclock="
+memsizestr:	.asciz "memsize="
+highmemsizestr:	.asciz "highmemsize="
+machtype_yeeloong_str1:	.asciz "machtype=8.9"
+machtype_yeeloong_str2:	.asciz "machtype=lemote-yeeloong-"
+machtype_fuloong2f_str:	.asciz "machtype=lemote-fuloong-2f"
+machtype_fuloong2e_str:	.asciz "machtype=lemote-fuloong-2e"
+pmon_yeeloong_str:	.asciz "PMON_VER=LM8"
+pmon_fuloong2f_str:	.asciz "PMON_VER=LM6"
+pmon_yeeloong_verstr:	.asciz "Version=LM8"
+pmon_fuloong2f_verstr:	.asciz "Version=LM6"
 	.p2align 2
 
 argdone:

@@ -986,6 +986,7 @@ grub_udf_read_symlink (grub_fshelp_node_t node)
 	case 1:
 	  if (ptr[1])
 	    goto fail;
+	  /* Fallthrough.  */
 	case 2:
 	  /* in 4 bytes. out: 1 byte.  */
 	  optr = out;

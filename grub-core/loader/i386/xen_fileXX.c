@@ -311,14 +311,19 @@ grub_xen_get_infoXX (grub_elf_t elf, struct grub_xen_file_info *xi)
     return grub_errno;
 
   if (grub_file_seek (elf->file, elf->ehdr.ehdrXX.e_shoff) == (grub_off_t) -1)
-    return grub_errno;
+    {
+      err = grub_errno;
+      goto cleanup;
+    }
 
   if (grub_file_read (elf->file, s0, shsize) != (grub_ssize_t) shsize)
     {
       if (grub_errno)
-	return grub_errno;
-      return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+	err = grub_errno;
+      else
+	err = grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 			 elf->file->name);
+      goto cleanup;
     }
 
   s = (Elf_Shdr *) ((char *) s0 + elf->ehdr.ehdrXX.e_shstrndx * shentsize);
@@ -330,18 +335,29 @@ grub_xen_get_infoXX (grub_elf_t elf, struct grub_xen_file_info *xi)
       char name[sizeof("__xen_guest")];
       grub_memset (name, 0, sizeof (name));
       if (grub_file_seek (elf->file, stroff + s->sh_name) == (grub_off_t) -1)
-	return grub_errno;
+	{
+	  err = grub_errno;
+	  goto cleanup;
+	}
 
       if (grub_file_read (elf->file, name, sizeof (name)) != (grub_ssize_t) sizeof (name))
 	{
 	  if (grub_errno)
-	    return grub_errno;
+	    {
+	      err = grub_errno;
+	      goto cleanup;
+	    }
 	  continue;
 	}
       if (grub_memcmp (name, "__xen_guest",
 		       sizeof("__xen_guest")) != 0)
 	continue;
-      return parse_xen_guest (elf, xi, s->sh_offset, s->sh_size);
+      err = parse_xen_guest (elf, xi, s->sh_offset, s->sh_size);
+      goto cleanup;
     }
-  return grub_error (GRUB_ERR_BAD_OS, "no XEN note found");
+  err = grub_error (GRUB_ERR_BAD_OS, "no XEN note found");
+
+cleanup:
+  grub_free (s0);
+  return err;
 }

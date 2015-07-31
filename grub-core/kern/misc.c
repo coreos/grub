@@ -95,25 +95,6 @@ grub_memmove (void *dest, const void *src, grub_size_t n)
   return dest;
 }
 
-#ifndef __APPLE__
-void *memmove (void *dest, const void *src, grub_size_t n)
-  __attribute__ ((alias ("grub_memmove")));
-/* GCC emits references to memcpy() for struct copies etc.  */
-void *memcpy (void *dest, const void *src, grub_size_t n)
-  __attribute__ ((alias ("grub_memmove")));
-#else
-void * GRUB_BUILTIN_ATTR
-memcpy (void *dest, const void *src, grub_size_t n)
-{
-	return grub_memmove (dest, src, n);
-}
-void * GRUB_BUILTIN_ATTR
-memmove (void *dest, const void *src, grub_size_t n)
-{
-	return grub_memmove (dest, src, n);
-}
-#endif
-
 char *
 grub_strcpy (char *dest, const char *src)
 {
@@ -253,16 +234,6 @@ grub_memcmp (const void *s1, const void *s2, grub_size_t n)
 
   return 0;
 }
-#ifndef __APPLE__
-int memcmp (const void *s1, const void *s2, grub_size_t n)
-  __attribute__ ((alias ("grub_memcmp")));
-#else
-int GRUB_BUILTIN_ATTR
-memcmp (const void *s1, const void *s2, grub_size_t n)
-{
-  return grub_memcmp (s1, s2, n);
-}
-#endif
 
 int
 grub_strcmp (const char *s1, const char *s2)
@@ -532,26 +503,6 @@ grub_memset (void *s, int c, grub_size_t len)
 
   return s;
 }
-#ifndef __APPLE__
-void *memset (void *s, int c, grub_size_t n)
-  __attribute__ ((alias ("grub_memset")));
-#else
-void * GRUB_BUILTIN_ATTR
-memset (void *s, int c, grub_size_t n)
-{
-  return grub_memset (s, c, n);
-}
-
-#endif
-
-#if !defined(GRUB_UTIL) && defined(__APPLE__)
-void GRUB_BUILTIN_ATTR
-__bzero (void *s, grub_size_t n)
-{
-  grub_memset (s, 0, n);
-}
-
-#endif
 
 grub_size_t
 grub_strlen (const char *s)
@@ -594,10 +545,10 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
   grub_uint64_t m = 0;
 
   /* ARM and IA64 don't have a fast 32-bit division.
-     Using that code would just make us use libgcc routines, calling
-     them twice (once for modulo and once for quotient.
+     Using that code would just make us use software division routines, calling
+     ourselves indirectly and hence getting infinite recursion.
   */
-#if !defined (__arm__) && !defined (__ia64__)
+#if !GRUB_DIVISION_IN_SOFTWARE
   /* Skip the slow computation if 32-bit arithmetic is possible.  */
   if (n < 0xffffffff && d < 0xffffffff)
     {
@@ -630,132 +581,6 @@ grub_divmod64 (grub_uint64_t n, grub_uint64_t d, grub_uint64_t *r)
 
   return q;
 }
-
-#if !defined (GRUB_UTIL) && !defined (GRUB_MACHINE_EMU)
-
-#if defined (__arm__)
-
-grub_uint32_t
-__udivsi3 (grub_uint32_t a, grub_uint32_t b)
-{
-  return grub_divmod64 (a, b, 0);
-}
-
-grub_uint32_t
-__umodsi3 (grub_uint32_t a, grub_uint32_t b)
-{
-  grub_uint64_t ret;
-  grub_divmod64 (a, b, &ret);
-  return ret;
-}
-
-#endif
-
-#ifdef NEED_CTZDI2
-
-unsigned
-__ctzdi2 (grub_uint64_t x)
-{
-  unsigned ret = 0;
-  if (!x)
-    return 64;
-  if (!(x & 0xffffffff))
-    {
-      x >>= 32;
-      ret |= 32;
-    }
-  if (!(x & 0xffff))
-    {
-      x >>= 16;
-      ret |= 16;
-    }
-  if (!(x & 0xff))
-    {
-      x >>= 8;
-      ret |= 8;
-    }
-  if (!(x & 0xf))
-    {
-      x >>= 4;
-      ret |= 4;
-    }
-  if (!(x & 0x3))
-    {
-      x >>= 2;
-      ret |= 2;
-    }
-  if (!(x & 0x1))
-    {
-      x >>= 1;
-      ret |= 1;
-    }
-  return ret;
-}
-#endif
-
-#ifdef NEED_CTZSI2
-unsigned
-__ctzsi2 (grub_uint32_t x)
-{
-  unsigned ret = 0;
-  if (!x)
-    return 32;
-
-  if (!(x & 0xffff))
-    {
-      x >>= 16;
-      ret |= 16;
-    }
-  if (!(x & 0xff))
-    {
-      x >>= 8;
-      ret |= 8;
-    }
-  if (!(x & 0xf))
-    {
-      x >>= 4;
-      ret |= 4;
-    }
-  if (!(x & 0x3))
-    {
-      x >>= 2;
-      ret |= 2;
-    }
-  if (!(x & 0x1))
-    {
-      x >>= 1;
-      ret |= 1;
-    }
-  return ret;
-}
-
-#endif
-
-#ifdef __arm__
-grub_uint32_t
-__aeabi_uidiv (grub_uint32_t a, grub_uint32_t b)
-  __attribute__ ((alias ("__udivsi3")));
-#endif
-
-#if defined (__ia64__)
-
-grub_uint64_t
-__udivdi3 (grub_uint64_t a, grub_uint64_t b)
-{
-  return grub_divmod64 (a, b, 0);
-}
-
-grub_uint64_t
-__umoddi3 (grub_uint64_t a, grub_uint64_t b)
-{
-  grub_uint64_t ret;
-  grub_divmod64 (a, b, &ret);
-  return ret;
-}
-
-#endif
-
-#endif /* GRUB_UTIL */
 
 /* Convert a long long value to a string. This function avoids 64-bit
    modular arithmetic or divisions.  */
@@ -1265,15 +1090,6 @@ grub_abort (void)
   grub_exit ();
 }
 
-#if defined (__clang__) && !defined (GRUB_UTIL)
-/* clang emits references to abort().  */
-void __attribute__ ((noreturn))
-abort (void)
-{
-  grub_abort ();
-}
-#endif
-
 void
 grub_fatal (const char *fmt, ...)
 {
@@ -1285,23 +1101,6 @@ grub_fatal (const char *fmt, ...)
 
   grub_abort ();
 }
-
-#if (defined (__MINGW32__) || defined (__CYGWIN__)) && !defined(GRUB_UTIL)
-void __register_frame_info (void)
-{
-}
-
-void __deregister_frame_info (void)
-{
-}
-void ___chkstk_ms (void)
-{
-}
-
-void __chkstk_ms (void)
-{
-}
-#endif
 
 #if BOOT_TIME_STATS
 

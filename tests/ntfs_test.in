@@ -15,5 +15,10 @@ if ! which mkfs.ntfs >/dev/null 2>&1; then
    exit 77
 fi
 
+if ! which setfattr >/dev/null 2>&1; then
+   echo "setfattr not installed; cannot test ntfs."
+   exit 77
+fi
+
 "@builddir@/grub-fs-tester" ntfs
 "@builddir@/grub-fs-tester" ntfscomp

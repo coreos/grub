@@ -61,7 +61,7 @@
 static ULONG *bounce;
 
 char *
-canonicalize_file_name (const char *path)
+grub_canonicalize_file_name (const char *path)
 {
   char *ret;
   BPTR lck;

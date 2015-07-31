@@ -61,8 +61,15 @@ grub_cpio_find_file (struct grub_archelp_data *data, char **name,
   modeval = read_number (hd.mode, ARRAY_SIZE (hd.mode));
   namesize = read_number (hd.namesize, ARRAY_SIZE (hd.namesize));
 
-  if (mode)
-    *mode = modeval;
+  /* Don't allow negative numbers.  */
+  if (namesize >= 0x80000000)
+    {
+      /* Probably a corruption, don't attempt to recover.  */
+      *mode = GRUB_ARCHELP_ATTR_END;
+      return GRUB_ERR_NONE;
+    }
+
+  *mode = modeval;
 
   *name = grub_malloc (namesize + 1);
   if (*name == NULL)

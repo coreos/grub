@@ -164,6 +164,7 @@ grub_script_lexer_yywrap (struct grub_parser_param *parserstate,
     {
       grub_free (line);
       line = grub_strdup ("\n");
+      len = 1;
     }
   else if (len && line[len - 1] != '\n')
     {

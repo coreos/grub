@@ -184,9 +184,10 @@ grub_normal_print_device_info (const char *name)
 		     /* TRANSLATORS: Replace dot with appropriate decimal separator for
 			your language.  */
 		     (grub_disk_get_size (dev->disk) & 1) ? _(".5") : "");
-
-      grub_device_close (dev);
     }
+
+  if (dev)
+    grub_device_close (dev);
 
   grub_xputs ("\n");
   return grub_errno;

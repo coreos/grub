@@ -24,7 +24,7 @@ datarootdir="@datarootdir@"
 export TEXTDOMAIN=@PACKAGE@
 export TEXTDOMAINDIR="@localedir@"
 
-. "@datadir@/@PACKAGE@/grub-mkconfig_lib"
+. "$pkgdatadir/grub-mkconfig_lib"
 
 case "`uname 2>/dev/null`" in
   CYGWIN*)  ;;

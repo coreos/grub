@@ -131,6 +131,8 @@ grub_acpi_get_rsdpv1 (void)
   return grub_machine_acpi_get_rsdpv1 ();
 }
 
+#if defined (__i386__) || defined (__x86_64__)
+
 static inline int
 iszero (grub_uint8_t *reg, int size)
 {
@@ -141,7 +143,6 @@ iszero (grub_uint8_t *reg, int size)
   return 1;
 }
 
-#if defined (__i386__) || defined (__x86_64__)
 /* Context for grub_acpi_create_ebda.  */
 struct grub_acpi_create_ebda_ctx {
   int ebda_len;
@@ -227,7 +228,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv2 to %p\n", target);
 	    v2inebda = target;
 	    target += v2->length;
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v2 = 0;
 	    break;
 	  }
@@ -246,7 +247,7 @@ grub_acpi_create_ebda (void)
 	    grub_dprintf ("acpi", "Copying rsdpv1 to %p\n", target);
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v1 = 0;
 	    break;
 	  }
@@ -265,7 +266,7 @@ grub_acpi_create_ebda (void)
 	    grub_memcpy (target, v2, v2->length);
 	    v2inebda = target;
 	    target += v2->length;
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v2 = 0;
 	    break;
 	  }
@@ -282,7 +283,7 @@ grub_acpi_create_ebda (void)
 	    grub_memcpy (target, v1, sizeof (struct grub_acpi_rsdp_v10));
 	    v1inebda = target;
 	    target += sizeof (struct grub_acpi_rsdp_v10);
-	    target = (grub_uint8_t *) ((((grub_addr_t) target - 1) | 0xf) + 1);
+	    target = (grub_uint8_t *) ALIGN_UP((grub_addr_t) target, 16);
 	    v1 = 0;
 	    break;
 	  }

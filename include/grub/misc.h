@@ -71,31 +71,12 @@ grub_memcpy (void *dest, const void *src, grub_size_t n)
   return grub_memmove (dest, src, n);
 }
 
-#if defined (__APPLE__) && defined(__i386__) && !defined (GRUB_UTIL)
-#define GRUB_BUILTIN_ATTR  __attribute__ ((regparm(0)))
-#else
-#define GRUB_BUILTIN_ATTR
-#endif
-
 #if defined(__x86_64__) && !defined (GRUB_UTIL)
 #if defined (__MINGW32__) || defined (__CYGWIN__) || defined (__MINGW64__)
 #define GRUB_ASM_ATTR __attribute__ ((sysv_abi))
 #else
 #define GRUB_ASM_ATTR
 #endif
-#endif
-
-/* Prototypes for aliases.  */
-#ifndef GRUB_UTIL
-int GRUB_BUILTIN_ATTR EXPORT_FUNC(memcmp) (const void *s1, const void *s2, grub_size_t n);
-void *GRUB_BUILTIN_ATTR EXPORT_FUNC(memmove) (void *dest, const void *src, grub_size_t n);
-void *GRUB_BUILTIN_ATTR EXPORT_FUNC(memcpy) (void *dest, const void *src, grub_size_t n);
-void *GRUB_BUILTIN_ATTR EXPORT_FUNC(memset) (void *s, int c, grub_size_t n);
-
-#ifdef __APPLE__
-void GRUB_BUILTIN_ATTR EXPORT_FUNC (__bzero) (void *s, grub_size_t n);
-#endif
-
 #endif
 
 int EXPORT_FUNC(grub_memcmp) (const void *s1, const void *s2, grub_size_t n);
@@ -358,12 +339,36 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint64_t d,
 					  grub_uint64_t *r);
 
-#if (defined (__MINGW32__) || defined (__CYGWIN__)) && !defined(GRUB_UTIL)
-void EXPORT_FUNC (__register_frame_info) (void);
-void EXPORT_FUNC (__deregister_frame_info) (void);
-void EXPORT_FUNC (___chkstk_ms) (void);
-void EXPORT_FUNC (__chkstk_ms) (void);
+/* Must match softdiv group in gentpl.py.  */
+#if !defined(GRUB_MACHINE_EMU) && (defined(__arm__) || defined(__ia64__))
+#define GRUB_DIVISION_IN_SOFTWARE 1
+#else
+#define GRUB_DIVISION_IN_SOFTWARE 0
 #endif
+
+/* Some division functions need to be in kernel if compiler generates calls
+   to them. Otherwise we still need them for consistent tests but they go
+   into a separate module.  */
+#if GRUB_DIVISION_IN_SOFTWARE
+#define EXPORT_FUNC_IF_SOFTDIV EXPORT_FUNC
+#else
+#define EXPORT_FUNC_IF_SOFTDIV(x) x
+#endif
+
+grub_int64_t
+EXPORT_FUNC_IF_SOFTDIV(grub_divmod64s) (grub_int64_t n,
+					grub_int64_t d,
+					grub_int64_t *r);
+
+grub_uint32_t
+EXPORT_FUNC_IF_SOFTDIV (grub_divmod32) (grub_uint32_t n,
+					grub_uint32_t d,
+					grub_uint32_t *r);
+
+grub_int32_t
+EXPORT_FUNC_IF_SOFTDIV (grub_divmod32s) (grub_int32_t n,
+					 grub_int32_t d,
+					 grub_int32_t *r);
 
 /* Inline functions.  */
 
@@ -388,13 +393,6 @@ grub_abs (int x)
     return (unsigned int) (-x);
   else
     return (unsigned int) x;
-}
-
-/* Rounded-up division */
-static inline unsigned int
-grub_div_roundup (unsigned int x, unsigned int y)
-{
-  return (x + y - 1) / y;
 }
 
 /* Reboot the machine.  */
@@ -439,57 +437,6 @@ grub_error_load (const struct grub_error_saved *save)
   grub_memcpy (grub_errmsg, save->errmsg, sizeof (grub_errmsg));
   grub_errno = save->grub_errno;
 }
-
-#ifndef GRUB_UTIL
-
-#if defined (__arm__)
-
-grub_uint32_t
-EXPORT_FUNC (__udivsi3) (grub_uint32_t a, grub_uint32_t b);
-
-grub_uint32_t
-EXPORT_FUNC (__umodsi3) (grub_uint32_t a, grub_uint32_t b);
-
-#endif
-
-#if defined (__sparc__) || defined (__powerpc__)
-unsigned
-EXPORT_FUNC (__ctzdi2) (grub_uint64_t x);
-#define NEED_CTZDI2 1
-#endif
-
-#if defined (__mips__) || defined (__arm__)
-unsigned
-EXPORT_FUNC (__ctzsi2) (grub_uint32_t x);
-#define NEED_CTZSI2 1
-#endif
-
-#ifdef __arm__
-grub_uint32_t
-EXPORT_FUNC (__aeabi_uidiv) (grub_uint32_t a, grub_uint32_t b);
-grub_uint32_t
-EXPORT_FUNC (__aeabi_uidivmod) (grub_uint32_t a, grub_uint32_t b);
-
-/* Needed for allowing modules to be compiled as thumb.  */
-grub_uint64_t
-EXPORT_FUNC (__muldi3) (grub_uint64_t a, grub_uint64_t b);
-grub_uint64_t
-EXPORT_FUNC (__aeabi_lmul) (grub_uint64_t a, grub_uint64_t b);
-
-#endif
-
-#if defined (__ia64__)
-
-grub_uint64_t
-EXPORT_FUNC (__udivdi3) (grub_uint64_t a, grub_uint64_t b);
-
-grub_uint64_t
-EXPORT_FUNC (__umoddi3) (grub_uint64_t a, grub_uint64_t b);
-
-#endif
-
-#endif /* GRUB_UTIL */
-
 
 #if BOOT_TIME_STATS
 struct grub_boot_time

@@ -361,35 +361,46 @@ scale_nn (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
   unsigned dh = dst->mode_info.height;
   unsigned sw = src->mode_info.width;
   unsigned sh = src->mode_info.height;
-  unsigned dstride = dst->mode_info.pitch;
-  unsigned sstride = src->mode_info.pitch;
+  int dstride = dst->mode_info.pitch;
+  int sstride = src->mode_info.pitch;
   /* bytes_per_pixel is the same for both src and dst. */
-  unsigned bytes_per_pixel = dst->mode_info.bytes_per_pixel;
+  int bytes_per_pixel = dst->mode_info.bytes_per_pixel;
+  unsigned dy, sy, ystep, yfrac, yover;
+  unsigned sx, xstep, xfrac, xover;
+  grub_uint8_t *dptr, *dline_end, *sline;
 
-  unsigned dy;
-  for (dy = 0; dy < dh; dy++)
+  xstep = sw / dw;
+  xover = sw % dw;
+  ystep = sh / dh;
+  yover = sh % dh;
+
+  for (dy = 0, sy = 0, yfrac = 0; dy < dh; dy++, sy += ystep, yfrac += yover)
     {
-      unsigned dx;
-      for (dx = 0; dx < dw; dx++)
+      if (yfrac >= dh)
+	{
+	  yfrac -= dh;
+	  sy++;
+	}
+      dptr = ddata + dy * dstride;
+      dline_end = dptr + dw * bytes_per_pixel;
+      sline = sdata + sy * sstride;
+      for (sx = 0, xfrac = 0; dptr < dline_end; sx += xstep, xfrac += xover, dptr += bytes_per_pixel)
         {
-          grub_uint8_t *dptr;
           grub_uint8_t *sptr;
-          unsigned sx;
-          unsigned sy;
-          unsigned comp;
+          int comp;
 
-          /* Compute the source coordinate that the destination coordinate
-             maps to.  Note: sx/sw = dx/dw  =>  sx = sw*dx/dw. */
-          sx = sw * dx / dw;
-          sy = sh * dy / dh;
+	  if (xfrac >= dw)
+	    {
+	      xfrac -= dw;
+	      sx++;
+	    }
 
           /* Get the address of the pixels in src and dst. */
-          dptr = ddata + dy * dstride + dx * bytes_per_pixel;
-          sptr = sdata + sy * sstride + sx * bytes_per_pixel;
+	  sptr = sline + sx * bytes_per_pixel;
 
-          /* Copy the pixel color value. */
-          for (comp = 0; comp < bytes_per_pixel; comp++)
-            dptr[comp] = sptr[comp];
+	  /* Copy the pixel color value. */
+	  for (comp = 0; comp < bytes_per_pixel; comp++)
+	    dptr[comp] = sptr[comp];
         }
     }
   return GRUB_ERR_NONE;
@@ -422,27 +433,40 @@ scale_bilinear (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
   int sstride = src->mode_info.pitch;
   /* bytes_per_pixel is the same for both src and dst. */
   int bytes_per_pixel = dst->mode_info.bytes_per_pixel;
+  unsigned dy, syf, sy, ystep, yfrac, yover;
+  unsigned sxf, sx, xstep, xfrac, xover;
+  grub_uint8_t *dptr, *dline_end, *sline;
 
-  unsigned dy;
-  for (dy = 0; dy < dh; dy++)
+  xstep = (sw << 8) / dw;
+  xover = (sw << 8) % dw;
+  ystep = (sh << 8) / dh;
+  yover = (sh << 8) % dh;
+
+  for (dy = 0, syf = 0, yfrac = 0; dy < dh; dy++, syf += ystep, yfrac += yover)
     {
-      unsigned dx;
-      for (dx = 0; dx < dw; dx++)
+      if (yfrac >= dh)
+	{
+	  yfrac -= dh;
+	  syf++;
+	}
+      sy = syf >> 8;
+      dptr = ddata + dy * dstride;
+      dline_end = dptr + dw * bytes_per_pixel;
+      sline = sdata + sy * sstride;
+      for (sxf = 0, xfrac = 0; dptr < dline_end; sxf += xstep, xfrac += xover, dptr += bytes_per_pixel)
         {
-          grub_uint8_t *dptr;
           grub_uint8_t *sptr;
-          unsigned sx;
-          unsigned sy;
           int comp;
 
-          /* Compute the source coordinate that the destination coordinate
-             maps to.  Note: sx/sw = dx/dw  =>  sx = sw*dx/dw. */
-          sx = sw * dx / dw;
-          sy = sh * dy / dh;
+	  if (xfrac >= dw)
+	    {
+	      xfrac -= dw;
+	      sxf++;
+	    }
 
           /* Get the address of the pixels in src and dst. */
-          dptr = ddata + dy * dstride + dx * bytes_per_pixel;
-          sptr = sdata + sy * sstride + sx * bytes_per_pixel;
+	  sx = sxf >> 8;
+	  sptr = sline + sx * bytes_per_pixel;
 
           /* If we have enough space to do so, use bilinear interpolation.
              Otherwise, fall back to nearest neighbor for this pixel. */
@@ -453,27 +477,27 @@ scale_bilinear (struct grub_video_bitmap *dst, struct grub_video_bitmap *src)
               /* Fixed-point .8 numbers representing the fraction of the
                  distance in the x (u) and y (v) direction within the
                  box of 4 pixels in the source. */
-              int u = (256 * sw * dx / dw) - (sx * 256);
-              int v = (256 * sh * dy / dh) - (sy * 256);
+              unsigned u = sxf & 0xff;
+              unsigned v = syf & 0xff;
 
               for (comp = 0; comp < bytes_per_pixel; comp++)
                 {
                   /* Get the component's values for the
                      four source corner pixels. */
-                  int f00 = sptr[comp];
-                  int f10 = sptr[comp + bytes_per_pixel];
-                  int f01 = sptr[comp + sstride];
-                  int f11 = sptr[comp + sstride + bytes_per_pixel];
+                  unsigned f00 = sptr[comp];
+                  unsigned f10 = sptr[comp + bytes_per_pixel];
+                  unsigned f01 = sptr[comp + sstride];
+                  unsigned f11 = sptr[comp + sstride + bytes_per_pixel];
 
                   /* Count coeffecients. */
-                  int c00 = (256 - u) * (256 - v);
-                  int c10 = u * (256 - v);
-                  int c01 = (256 - u) * v;
-                  int c11 = u * v;
+                  unsigned c00 = (256 - u) * (256 - v);
+                  unsigned c10 = u * (256 - v);
+                  unsigned c01 = (256 - u) * v;
+                  unsigned c11 = u * v;
 
                   /* Interpolate. */
-                  int fxy = c00 * f00 + c01 * f01 + c10 * f10 + c11 * f11;
-                  fxy = fxy / (256 * 256);
+                  unsigned fxy = c00 * f00 + c01 * f01 + c10 * f10 + c11 * f11;
+                  fxy = fxy >> 16;
 
                   dptr[comp] = fxy;
                 }

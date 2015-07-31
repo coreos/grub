@@ -157,7 +157,7 @@ grub_util_render_label (const char *label_font,
   ieee1275_palette[cptr].a = 0xff;
 
   char * t;
-  t = canonicalize_file_name (label_font);
+  t = grub_canonicalize_file_name (label_font);
   if (!t)
     {
       grub_util_error (_("cannot open `%s': %s"), label_font,

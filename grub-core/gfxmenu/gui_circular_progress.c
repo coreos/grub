@@ -138,51 +138,53 @@ circprog_paint (void *vself, const grub_video_rect_t *region)
                           (height - center_height) / 2, 0, 0,
                           center_width, center_height);
 
-  int radius = grub_min (height, width) / 2 - grub_max (tick_height, tick_width) / 2 - 1;
-  unsigned nticks;
-  unsigned tick_begin;
-  unsigned tick_end;
-  if (self->end <= self->start
-      || self->value <= self->start)
-    nticks = 0;
-  else
-    nticks = ((unsigned) (self->num_ticks
-			  * (self->value - self->start)))
-      / ((unsigned) (self->end - self->start));
-  /* Do ticks appear or disappear as the value approached the end?  */
-  if (self->ticks_disappear)
+  if (self->num_ticks)
     {
-      tick_begin = nticks;
-      tick_end = self->num_ticks;
+      int radius = grub_min (height, width) / 2 - grub_max (tick_height, tick_width) / 2 - 1;
+      unsigned nticks;
+      unsigned tick_begin;
+      unsigned tick_end;
+      if (self->end <= self->start
+	  || self->value <= self->start)
+	nticks = 0;
+      else
+	nticks = ((unsigned) (self->num_ticks
+			      * (self->value - self->start)))
+	  / ((unsigned) (self->end - self->start));
+      /* Do ticks appear or disappear as the value approached the end?  */
+      if (self->ticks_disappear)
+	{
+	  tick_begin = nticks;
+	  tick_end = self->num_ticks;
+	}
+      else
+	{
+	  tick_begin = 0;
+	  tick_end = nticks;
+	}
+
+      unsigned i;
+      for (i = tick_begin; i < tick_end; i++)
+	{
+	  int x;
+	  int y;
+	  int angle;
+
+	  /* Calculate the location of the tick.  */
+	  angle = self->start_angle
+	    + i * GRUB_TRIG_ANGLE_MAX / self->num_ticks;
+	  x = width / 2 + (grub_cos (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
+	  y = height / 2 + (grub_sin (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
+
+	  /* Adjust (x,y) so the tick is centered.  */
+	  x -= tick_width / 2;
+	  y -= tick_height / 2;
+
+	  /* Draw the tick.  */
+	  grub_video_blit_bitmap (self->tick_bitmap, GRUB_VIDEO_BLIT_BLEND,
+				  x, y, 0, 0, tick_width, tick_height);
+	}
     }
-  else
-    {
-      tick_begin = 0;
-      tick_end = nticks;
-    }
-
-  unsigned i;
-  for (i = tick_begin; i < tick_end; i++)
-    {
-       int x;
-       int y;
-       int angle;
-
-       /* Calculate the location of the tick.  */
-       angle = self->start_angle
-	 + i * GRUB_TRIG_ANGLE_MAX / self->num_ticks;
-       x = width / 2 + (grub_cos (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
-       y = height / 2 + (grub_sin (angle) * radius / GRUB_TRIG_FRACTION_SCALE);
-
-       /* Adjust (x,y) so the tick is centered.  */
-       x -= tick_width / 2;
-       y -= tick_height / 2;
-
-       /* Draw the tick.  */
-       grub_video_blit_bitmap (self->tick_bitmap, GRUB_VIDEO_BLIT_BLEND,
-                               x, y, 0, 0, tick_width, tick_height);
-    }
-
   grub_gui_restore_viewport (&vpsave);
 }
 

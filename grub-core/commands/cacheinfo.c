@@ -23,6 +23,8 @@
 #include <grub/i18n.h>
 #include <grub/disk.h>
 
+GRUB_MOD_LICENSE ("GPLv3+");
+
 static grub_err_t
 grub_rescue_cmd_info (struct grub_command *cmd __attribute__ ((unused)),
     int argc __attribute__ ((unused)),

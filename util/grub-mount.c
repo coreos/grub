@@ -516,6 +516,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
 	      return 0;
 	    }
 	  grub_zfs_add_key (buf, real_size, 0);
+	  fclose (f);
 	}
       return 0;
 
@@ -546,7 +547,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
     }
 
   images = xrealloc (images, (num_disks + 1) * sizeof (images[0]));
-  images[num_disks] = canonicalize_file_name (arg);
+  images[num_disks] = grub_canonicalize_file_name (arg);
   num_disks++;
 
   return 0;

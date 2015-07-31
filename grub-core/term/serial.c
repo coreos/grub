@@ -220,8 +220,12 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 
   config = port->config;
 
-  if (state[OPTION_SPEED].set)
+  if (state[OPTION_SPEED].set) {
     config.speed = grub_strtoul (state[OPTION_SPEED].arg, 0, 0);
+    if (config.speed == 0)
+      return grub_error (GRUB_ERR_BAD_ARGUMENT,
+			 N_("unsupported serial port parity"));
+  }
 
   if (state[OPTION_WORD].set)
     config.word_len = grub_strtoul (state[OPTION_WORD].arg, 0, 0);
@@ -241,9 +245,9 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
 
   if (state[OPTION_RTSCTS].set)
     {
-      if (grub_strcmp (state[OPTION_PARITY].arg, "on") == 0)
+      if (grub_strcmp (state[OPTION_RTSCTS].arg, "on") == 0)
 	config.rtscts = 1;
-      if (grub_strcmp (state[OPTION_PARITY].arg, "off") == 0)
+      else if (grub_strcmp (state[OPTION_RTSCTS].arg, "off") == 0)
 	config.rtscts = 0;
       else
 	return grub_error (GRUB_ERR_BAD_ARGUMENT,
@@ -274,6 +278,9 @@ grub_cmd_serial (grub_extcmd_context_t ctxt, int argc, char **args)
       if (ptr && (*ptr == 'k' || *ptr == 'K'))
 	config.base_clock *= 1000;
     }
+
+  if (config.speed == 0)
+    config.speed = 9600;
 
   /* Initialize with new settings.  */
   err = port->driver->configure (port, &config);

@@ -362,7 +362,7 @@ LOCAL(message):
 	.word 0
 	.word 0
 
-	. = _start + 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
+	.org 0x200 - GRUB_BOOT_MACHINE_LIST_SIZE
 LOCAL(firstlist):	/* this label has to be before the first list entry!!! */
         /* fill the first data listing with the default */
 blocklist_default_start:

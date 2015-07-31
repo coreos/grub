@@ -106,7 +106,7 @@ grub_mac_bless_inode (grub_device_t dev, grub_uint32_t inode, int is_dir,
       ablk_size = grub_be_to_cpu32 (volheader.hfs.blksz);
       ablk_start = grub_be_to_cpu16 (volheader.hfs.first_block);
       embedded_offset = (ablk_start
-			 + extent_start
+			 + ((grub_uint64_t) extent_start)
 			 * (ablk_size >> GRUB_DISK_SECTOR_BITS));
 
       err =
@@ -183,7 +183,7 @@ grub_cmd_macbless (grub_command_t cmd, int argc, char **args)
 {
   char *device_name;
   char *path = 0;
-  grub_device_t dev;
+  grub_device_t dev = 0;
   grub_err_t err;
 
   if (argc != 1)
@@ -197,13 +197,12 @@ grub_cmd_macbless (grub_command_t cmd, int argc, char **args)
   else
     path = path + 1;
 
-  if (!path || *path == 0 || !device_name)
+  if (!path || *path == 0 || !dev)
     {
       if (dev)
 	grub_device_close (dev);
 
       grub_free (device_name);
-      grub_free (path);
 
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "invalid argument");
     }

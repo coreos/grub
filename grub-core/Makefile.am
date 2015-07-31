@@ -76,6 +76,11 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i18n.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/list.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/misc.h
+if COND_emu
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/compiler-rt-emu.h
+else
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/compiler-rt.h
+endif
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/parser.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/partition.h
@@ -83,9 +88,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/term.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/time.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/mm_private.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/net.h
-if !COND_clang
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libgcc.h
-endif
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/memory.h
 
 if COND_i386_pc
@@ -247,9 +249,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/emu/hostfile.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
 if COND_GRUB_EMU_SDL
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/sdl.h
-endif
-if COND_GRUB_EMU_USB
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libusb.h
 endif
 if COND_GRUB_EMU_PCI
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/libpciaccess.h

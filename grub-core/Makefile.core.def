@@ -83,8 +83,6 @@ kernel = {
   x86_64_xen_ldflags       = '$(TARGET_IMG_LDFLAGS)';
   x86_64_xen_ldflags       = '$(TARGET_IMG_BASE_LDOPT),0';
 
-  ldadd = '$(LDADD_KERNEL)';
-
   mips_loongson_ldflags    = '-Wl,-Ttext,0x80200000';
   powerpc_ieee1275_ldflags = '-Wl,-Ttext,0x200000';
   sparc64_ieee1275_ldflags = '-Wl,-Ttext,0x4400';
@@ -132,6 +130,7 @@ kernel = {
   common = kern/rescue_reader.c;
   common = kern/term.c;
 
+  noemu = kern/compiler-rt.c;
   noemu = kern/mm.c;
   noemu = kern/time.c;
   noemu = kern/generic/millisleep.c;
@@ -158,6 +157,8 @@ kernel = {
   terminfoinkernel = term/tparm.c;
   terminfoinkernel = commands/extcmd.c;
   terminfoinkernel = lib/arg.c;
+
+  softdiv = lib/division.c;
 
   i386 = kern/i386/dl.c;
   i386_xen = kern/i386/dl.c;
@@ -252,6 +253,7 @@ kernel = {
 
   powerpc_ieee1275 = kern/powerpc/cache.S;
   powerpc_ieee1275 = kern/powerpc/dl.c;
+  powerpc_ieee1275 = kern/powerpc/compiler-rt.S;
 
   sparc64_ieee1275 = kern/sparc64/cache.S;
   sparc64_ieee1275 = kern/sparc64/dl.c;
@@ -263,7 +265,7 @@ kernel = {
   arm = kern/arm/cache_armv7.S;
   extra_dist = kern/arm/cache.S;
   arm = kern/arm/cache.c;
-  arm = kern/arm/misc.S;
+  arm = kern/arm/compiler-rt.S;
 
   arm64 = kern/arm64/cache.c;
   arm64 = kern/arm64/cache_flush.S;
@@ -441,13 +443,13 @@ image = {
   common = lib/xzembed/xz_dec_bcj.c;
   common = lib/xzembed/xz_dec_lzma2.c;
   common = lib/xzembed/xz_dec_stream.c;
+  common = kern/compiler-rt.c;
 
   cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/xzembed -DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_ldflags = '$(TARGET_LDFLAGS_STATIC_LIBGCC) -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
-  ldadd = '$(TARGET_LIBGCC)';
-  cflags = '-Wno-unreachable-code $(TARGET_LDFLAGS_STATIC_LIBGCC)';
+  mips_ldflags = '-Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
+  cflags = '-Wno-unreachable-code';
   enable = mips;
 };
 
@@ -459,9 +461,7 @@ image = {
   cppflags = '-DGRUB_EMBED_DECOMPRESSOR=1';
 
   objcopyflags = '-O binary';
-  mips_ldflags = '$(TARGET_LDFLAGS_STATIC_LIBGCC) -Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
-  ldadd = '$(TARGET_LIBGCC)';
-  cflags = '$(TARGET_LDFLAGS_STATIC_LIBGCC)';
+  mips_ldflags = '-Wl,-Ttext,$(TARGET_DECOMPRESSOR_LINK_ADDR)';
   enable = mips;
 };
 
@@ -479,7 +479,7 @@ image = {
   name = fwstart;
   mips_loongson = boot/mips/loongson/fwstart.S;
   objcopyflags = '-O binary';
-  ldflags = '$(TARGET_LDFLAGS_STATIC_LIBGCC) $(TARGET_LIBGCC) -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
+  ldflags = '-Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;
 };
 
@@ -487,7 +487,7 @@ image = {
   name = fwstart_fuloong2f;
   mips_loongson = boot/mips/loongson/fuloong2f.S;
   objcopyflags = '-O binary';
-  ldflags = '$(TARGET_LDFLAGS_STATIC_LIBGCC) $(TARGET_LIBGCC) -Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
+  ldflags = '-Wl,-N,-S,-Ttext,0xbfc00000,-Bstatic';
   enable = mips_loongson;
 };
 
@@ -510,13 +510,6 @@ module = {
 };
 
 module = {
-  name = libusb;
-  emu = bus/usb/emu/usb.c;
-  enable = emu;
-  condition = COND_GRUB_EMU_USB;
-};
-
-module = {
   name = lsspd;
   mips_loongson = commands/mips/loongson/lsspd.c;
   enable = mips_loongson;
@@ -528,13 +521,6 @@ module = {
   common = bus/usb/usbtrans.c;
   common = bus/usb/usbhub.c;
   enable = usb;
-};
-
-module = {
-  name = emuusb;
-  common = bus/usb/usb.c;
-  enable = emu;
-  condition = COND_GRUB_EMU_USB;
 };
 
 module = {
@@ -2010,8 +1996,39 @@ module = {
 };
 
 module = {
+  name = div;
+  common = lib/division.c;
+  enable = no_softdiv;
+};
+
+module = {
   name = div_test;
   common = tests/div_test.c;
+};
+
+module = {
+  name = mul_test;
+  common = tests/mul_test.c;
+};
+
+module = {
+  name = shift_test;
+  common = tests/shift_test.c;
+};
+
+module = {
+  name = cmp_test;
+  common = tests/cmp_test.c;
+};
+
+module = {
+  name = ctz_test;
+  common = tests/ctz_test.c;
+};
+
+module = {
+  name = bswap_test;
+  common = tests/bswap_test.c;
 };
 
 module = {

@@ -57,6 +57,8 @@ serial_get_divisor (const struct grub_serial_port *port __attribute__ ((unused))
   base_clock = config->base_clock ? (config->base_clock >> 4) : DEFAULT_BASE_CLOCK;
 
   divisor = (base_clock + (config->speed / 2)) / config->speed;
+  if (config->speed == 0)
+    return 0;
   if (divisor > 0xffff || divisor == 0)
     return 0;
   actual_speed = base_clock / divisor;

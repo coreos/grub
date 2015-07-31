@@ -76,6 +76,12 @@ for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 # Flattened Device Trees (FDT)
 GROUPS["fdt"] = [ "arm64_efi", "arm_uboot", "arm_efi" ]
 
+# Needs software helpers for division
+# Must match GRUB_DIVISION_IN_SOFTWARE in misc.h
+GROUPS["softdiv"] = GROUPS["arm"] + ["ia64_efi"]
+GROUPS["no_softdiv"]   = GRUB_PLATFORMS[:]
+for i in GROUPS["softdiv"]: GROUPS["no_softdiv"].remove(i)
+
 # Miscelaneous groups schedulded to disappear in future
 GROUPS["i386_coreboot_multiboot_qemu"] = ["i386_coreboot", "i386_multiboot", "i386_qemu"]
 GROUPS["nopc"] = GRUB_PLATFORMS[:]; GROUPS["nopc"].remove("i386_pc")
@@ -600,7 +606,7 @@ def foreach_enabled_platform(defn, closure):
 #    enable = emu;
 #    enable = i386;
 #    enable = mips_loongson;
-#    emu_condition = COND_GRUB_EMU_USB;
+#    emu_condition = COND_GRUB_EMU_SDL;
 #  };
 #
 def under_platform_specific_conditionals(defn, platform, closure):
@@ -753,7 +759,7 @@ def image(defn, platform):
 if test x$(TARGET_APPLE_LINKER) = x1; then \
   $(MACHO2IMG) $< $@; \
 else \
-  $(TARGET_OBJCOPY) $(""" + cname(defn) + """_OBJCOPYFLAGS) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@; \
+  $(TARGET_OBJCOPY) $(""" + cname(defn) + """_OBJCOPYFLAGS) --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .MIPS.abiflags -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@; \
 fi
 """)
 

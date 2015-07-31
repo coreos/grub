@@ -332,7 +332,7 @@ test_parse (char **args, int *argn, int argc)
 	      get_fileinfo (args[*argn + 1], &ctx);
 	      update_val (ctx.file_exists && ctx.file_info.dir, &ctx);
 	      (*argn) += 2;
-	      return ctx.or || ctx.and;
+	      continue;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-e") == 0)
@@ -340,7 +340,7 @@ test_parse (char **args, int *argn, int argc)
 	      get_fileinfo (args[*argn + 1], &ctx);
 	      update_val (ctx.file_exists, &ctx);
 	      (*argn) += 2;
-	      return ctx.or || ctx.and;
+	      continue;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-f") == 0)
@@ -349,7 +349,7 @@ test_parse (char **args, int *argn, int argc)
 	      /* FIXME: check for other types. */
 	      update_val (ctx.file_exists && ! ctx.file_info.dir, &ctx);
 	      (*argn) += 2;
-	      return ctx.or || ctx.and;
+	      continue;
 	    }
 
 	  if (grub_strcmp (args[*argn], "-s") == 0)
@@ -362,7 +362,7 @@ test_parse (char **args, int *argn, int argc)
 		grub_file_close (file);
 	      grub_errno = GRUB_ERR_NONE;
 	      (*argn) += 2;
-	      return ctx.or || ctx.and;
+	      continue;
 	    }
 
 	  /* String tests. */

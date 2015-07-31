@@ -99,6 +99,8 @@ grub_dmraid_nv_detect (grub_disk_t disk,
   struct grub_nv_super sb;
   int level;
   grub_uint64_t disk_size;
+  grub_uint32_t capacity;
+  grub_uint8_t total_volumes;
   char *uuid;
 
   if (disk->partition)
@@ -124,11 +126,17 @@ grub_dmraid_nv_detect (grub_disk_t disk,
       return NULL;
     }
 
+  capacity = grub_le_to_cpu32 (sb.capacity);
+  total_volumes = sb.array.total_volumes;
+
   switch (sb.array.raid_level)
     {
     case NV_LEVEL_0:
       level = 0;
-      disk_size = sb.capacity / sb.array.total_volumes;
+      if (total_volumes == 0)
+	/* Not RAID.  */
+	return NULL;
+      disk_size = capacity / total_volumes;
       break;
 
     case NV_LEVEL_1:
@@ -138,7 +146,10 @@ grub_dmraid_nv_detect (grub_disk_t disk,
 
     case NV_LEVEL_5:
       level = 5;
-      disk_size = sb.capacity / (sb.array.total_volumes - 1);
+      if (total_volumes == 0 || total_volumes == 1)
+	/* Not RAID.  */
+	return NULL;
+      disk_size = capacity / (total_volumes - 1);
       break;
 
     default:

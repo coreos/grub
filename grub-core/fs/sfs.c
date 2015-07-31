@@ -173,10 +173,11 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   struct grub_sfs_btree *tree;
   int i;
   grub_uint32_t next;
+  grub_size_t blocksize = GRUB_DISK_SECTOR_SIZE << data->log_blocksize;
 
-  treeblock = grub_malloc (GRUB_DISK_SECTOR_SIZE << data->log_blocksize);
-  if (!block)
-    return 0;
+  treeblock = grub_malloc (blocksize);
+  if (!treeblock)
+    return grub_errno;
 
   next = grub_be_to_cpu32 (data->rblock.btree);
   tree = (struct grub_sfs_btree *) treeblock;
@@ -184,17 +185,21 @@ grub_sfs_read_extent (struct grub_sfs_data *data, unsigned int block,
   /* Handle this level in the btree.  */
   do
     {
+      grub_uint16_t nnodes;
       grub_disk_read (data->disk,
 		      ((grub_disk_addr_t) next) << data->log_blocksize,
-		      0, GRUB_DISK_SECTOR_SIZE << data->log_blocksize,
-		      treeblock);
+		      0, blocksize, treeblock);
       if (grub_errno)
 	{
 	  grub_free (treeblock);
 	  return grub_errno;
 	}
 
-      for (i = grub_be_to_cpu16 (tree->nodes) - 1; i >= 0; i--)
+      nnodes = grub_be_to_cpu16 (tree->nodes);
+      if (nnodes * (grub_uint32_t) (tree)->nodesize > blocksize)
+	break;
+
+      for (i = (int) nnodes - 1; i >= 0; i--)
 	{
 
 #define EXTNODE(tree, index)						\

@@ -94,7 +94,7 @@ struct grub_jpeg_data
   jpeg_data_unit_t crdu;
   jpeg_data_unit_t cbdu;
 
-  unsigned vs, hs;
+  unsigned log_vs, log_hs;
   int dri;
   unsigned r1;
 
@@ -315,11 +315,14 @@ grub_jpeg_decode_sof (struct grub_jpeg_data *data)
       ss = grub_jpeg_get_byte (data);	/* Sampling factor.  */
       if (!id)
 	{
-	  data->vs = ss & 0xF;	/* Vertical sampling.  */
-	  data->hs = ss >> 4;	/* Horizontal sampling.  */
-	  if ((data->vs > 2) || (data->hs > 2))
+	  grub_uint8_t vs, hs;
+	  vs = ss & 0xF;	/* Vertical sampling.  */
+	  hs = ss >> 4;	/* Horizontal sampling.  */
+	  if ((vs > 2) || (hs > 2) || (vs == 0) || (hs == 0))
 	    return grub_error (GRUB_ERR_BAD_FILE_TYPE,
 			       "jpeg: sampling method not supported");
+	  data->log_vs = (vs == 2);
+	  data->log_hs = (hs == 2);
 	}
       else if (ss != JPEG_SAMPLING_1x1)
 	return grub_error (GRUB_ERR_BAD_FILE_TYPE,
@@ -616,10 +619,10 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
   unsigned c1, vb, hb, nr1, nc1;
   int rst = data->dri;
 
-  vb = data->vs * 8;
-  hb = data->hs * 8;
-  nr1 = (data->image_height + vb - 1) / vb;
-  nc1 = (data->image_width + hb - 1) / hb;
+  vb = 8 << data->log_vs;
+  hb = 8 << data->log_hs;
+  nr1 = (data->image_height + vb - 1) >> (3 + data->log_vs);
+  nc1 = (data->image_width + hb - 1)  >> (3 + data->log_hs);
 
   for (; data->r1 < nr1 && (!data->dri || rst);
        data->r1++, data->bitmap_ptr += (vb * data->image_width - hb * nc1) * 3)
@@ -629,8 +632,8 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
 	unsigned r2, c2, nr2, nc2;
 	grub_uint8_t *ptr2;
 
-	for (r2 = 0; r2 < data->vs; r2++)
-	  for (c2 = 0; c2 < data->hs; c2++)
+	for (r2 = 0; r2 < (1U << data->log_vs); r2++)
+	  for (c2 = 0; c2 < (1U << data->log_hs); c2++)
 	    grub_jpeg_decode_du (data, 0, data->ydu[r2 * 2 + c2]);
 
 	if (data->color_components >= 3)
@@ -652,7 +655,7 @@ grub_jpeg_decode_data (struct grub_jpeg_data *data)
 	      unsigned i0;
 	      int yy;
 
-	      i0 = (r2 / data->vs) * 8 + (c2 / data->hs);
+	      i0 = (r2 >> data->log_vs) * 8 + (c2 >> data->log_hs);
 	      yy = data->ydu[(r2 / 8) * 2 + (c2 / 8)][(r2 % 8) * 8 + (c2 % 8)];
 
 	      if (data->color_components >= 3)

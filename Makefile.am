@@ -392,7 +392,7 @@ endif
 .PHONY: bootcheck-linux-i386 bootcheck-linux-x86_64 \
        bootcheck-kfreebsd-i386 bootcheck-kfreebsd-x86_64 \
        bootcheck-knetbsd-i386 bootcheck-knetbsd-x86_64 \
-	bootcheck-linux-mips
+	bootcheck-linux-mips FORCE
 
 # Randomly generated
 SUCCESSFUL_BOOT_STRING=3e49994fd5d82b7c9298d672d774080d
@@ -439,3 +439,22 @@ windowszip: windowsdir
 	rm -rf $(windowsdir)
 
 EXTRA_DIST += linguas.sh
+
+changelog_start_date = 2015-01-23
+gitlog_to_changelog = $(top_srcdir)/build-aux/gitlog-to-changelog
+
+ChangeLog: FORCE
+	if test -d $(top_srcdir)/.git; then \
+		$(gitlog_to_changelog) --srcdir=$(top_srcdir) --since=$(changelog_start_date) > '$@.tmp'; \
+		rm -f '$@'; mv '$@.tmp' '$@'; \
+	else \
+		touch $@; \
+	fi
+
+EXTRA_DIST += ChangeLog ChangeLog-2015
+
+syslinux_test: $(top_builddir)/config.status tests/syslinux/ubuntu10.04_grub.cfg
+
+tests/syslinux/ubuntu10.04_grub.cfg: $(top_builddir)/config.status tests/syslinux/ubuntu10.04_grub.cfg.in
+	(for x in tests/syslinux/ubuntu10.04_grub.cfg.in ; do cat $(srcdir)/"$$x"; done) | $(top_builddir)/config.status --file=$@:-
+CLEANFILES += tests/syslinux/ubuntu10.04_grub.cfg

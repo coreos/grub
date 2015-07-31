@@ -171,7 +171,7 @@ struct grub_hfsplus_catkey
   grub_uint16_t keylen;
   grub_uint32_t parent;
   grub_uint16_t namelen;
-  grub_uint16_t name[30];
+  grub_uint16_t name[0];
 } GRUB_PACKED;
 
 /* The on disk layout of an extent overflow file key.  */
@@ -207,12 +207,14 @@ struct grub_hfsplus_btnode
 
 /* Return the offset of the record with the index INDEX, in the node
    NODE which is part of the B+ tree BTREE.  */
-static inline grub_off_t
+static inline grub_uint16_t
 grub_hfsplus_btree_recoffset (struct grub_hfsplus_btree *btree,
-			   struct grub_hfsplus_btnode *node, int index)
+			   struct grub_hfsplus_btnode *node, unsigned index)
 {
   char *cnode = (char *) node;
   void *recptr;
+  if (btree->nodesize < index * sizeof (grub_uint16_t) + 2)
+    index = 0;
   recptr = (&cnode[btree->nodesize - index * sizeof (grub_uint16_t) - 2]);
   return grub_be_to_cpu16 (grub_get_unaligned16 (recptr));
 }
@@ -221,11 +223,13 @@ grub_hfsplus_btree_recoffset (struct grub_hfsplus_btree *btree,
    NODE which is part of the B+ tree BTREE.  */
 static inline struct grub_hfsplus_key *
 grub_hfsplus_btree_recptr (struct grub_hfsplus_btree *btree,
-			   struct grub_hfsplus_btnode *node, int index)
+			   struct grub_hfsplus_btnode *node, unsigned index)
 {
   char *cnode = (char *) node;
-  grub_off_t offset;
+  grub_uint16_t offset;
   offset = grub_hfsplus_btree_recoffset (btree, node, index);
+  if (offset > btree->nodesize - sizeof (struct grub_hfsplus_key))
+    offset = 0;
   return (struct grub_hfsplus_key *) &cnode[offset];
 }
 

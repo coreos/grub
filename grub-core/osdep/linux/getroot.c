@@ -226,7 +226,7 @@ grub_find_root_devices_from_btrfs (const char *dir)
   char **ret;
 
   fd = open (dir, 0);
-  if (!fd)
+  if (fd < 0)
     return NULL;
 
   if (ioctl (fd, BTRFS_IOC_FS_INFO, &fsi) < 0)
@@ -274,11 +274,11 @@ get_btrfs_fs_prefix (const char *mount_path)
   args.objectid = GRUB_BTRFS_TREE_ROOT_OBJECTID;
   
   if (ioctl (fd, BTRFS_IOC_INO_LOOKUP, &args) < 0)
-    return NULL;
+    goto fail;
   tree_id = args.treeid;
 
   if (fstat (fd, &st) < 0)
-    return NULL;
+    goto fail;
   inode_id = st.st_ino;
 
   while (tree_id != GRUB_BTRFS_ROOT_VOL_OBJECTID
@@ -309,11 +309,11 @@ get_btrfs_fs_prefix (const char *mount_path)
 	  sargs.key.nr_items = 1;
 
 	  if (ioctl (fd, BTRFS_IOC_TREE_SEARCH, &sargs) < 0)
-	    return NULL;
+	    goto fail;
 
 	  if (sargs.key.nr_items == 0)
-	    return NULL;
-      
+	    goto fail;
+
 	  tree_id = sargs.buf[2];
 	  br = (struct grub_btrfs_root_backref *) (sargs.buf + 4);
 	  inode_id = br->inode_id;
@@ -336,10 +336,10 @@ get_btrfs_fs_prefix (const char *mount_path)
 	  sargs.key.max_type = GRUB_BTRFS_ITEM_TYPE_INODE_REF;
 
 	  if (ioctl (fd, BTRFS_IOC_TREE_SEARCH, &sargs) < 0)
-	    return NULL;
+	    goto fail;
 
 	  if (sargs.key.nr_items == 0)
-	    return NULL;
+	    goto fail;
 
 	  inode_id = sargs.buf[2];
 
@@ -360,8 +360,14 @@ get_btrfs_fs_prefix (const char *mount_path)
 	ret[1+namelen] = '\0';
     }
   if (!ret)
-    return xstrdup ("/");
+    ret = xstrdup ("/");
+  close (fd);
   return ret;
+
+ fail:
+  free (ret);
+  close (fd);
+  return NULL;
 }
 
 
@@ -688,13 +694,15 @@ char *
 grub_util_part_to_disk (const char *os_dev, struct stat *st,
 			int *is_part)
 {
-  char *path = xmalloc (PATH_MAX);
+  char *path;
 
   if (! S_ISBLK (st->st_mode))
     {
       *is_part = 0;
       return xstrdup (os_dev);
     }
+
+  path = xmalloc (PATH_MAX);
 
   if (! realpath (os_dev, path))
     return NULL;

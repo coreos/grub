@@ -57,6 +57,7 @@ get_uuid (const char *name, char **uuid, int getnative)
   if (!dev->disk)
     {
       grub_dprintf ("nativedisk", "Skipping non-disk\n");
+      grub_device_close (dev);
       return 0;
     }
 
@@ -90,6 +91,7 @@ get_uuid (const char *name, char **uuid, int getnative)
     case GRUB_DISK_DEVICE_MEMDISK_ID:
       grub_dprintf ("nativedisk", "Skipping native disk %s\n",
 		    dev->disk->name);
+      grub_device_close (dev);
       return 0;
 
       /* FIXME: those probably need special handling.  */

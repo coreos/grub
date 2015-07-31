@@ -8,7 +8,7 @@
 #include "../ia64/cache.c"
 #elif defined (__arm__) || defined (__aarch64__)
 
-void __clear_cache (char *beg, char *end);
+void __clear_cache (void *beg, void *end);
 
 void
 grub_arch_sync_caches (void *address, grub_size_t len)

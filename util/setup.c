@@ -322,7 +322,10 @@ SETUP (const char *dir,
 	  continue;
 	try_dev = grub_device_open (drive);
 	if (! try_dev)
-	  continue;
+	  {
+	    free (drive);
+	    continue;
+	  }
 	if (!found && try_dev->disk->id == dest_dev->disk->id
 	    && try_dev->disk->dev->id == dest_dev->disk->dev->id)
 	  {
@@ -526,7 +529,7 @@ SETUP (const char *dir,
     bl.block = bl.first_block;
     while (bl.block->len)
       {
-	grub_memset (bl.block, 0, sizeof (bl.block));
+	grub_memset (bl.block, 0, sizeof (*bl.block));
       
 	bl.block--;
 
@@ -667,15 +670,17 @@ unable_to_embed:
     if (dest_dev->disk->id != root_dev->disk->id
 	|| dest_dev->disk->dev->id != root_dev->disk->dev->id)
       {
-	const char *dest_ofpath;
+	char *dest_ofpath;
 	dest_ofpath
 	  = grub_util_devname_to_ofpath (grub_util_biosdisk_get_osdev (root_dev->disk));
+	/* FIXME handle NULL result */
 	grub_util_info ("dest_ofpath is `%s'", dest_ofpath);
 	strncpy (boot_devpath, dest_ofpath,
 		 GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
 		 - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1);
 	boot_devpath[GRUB_BOOT_MACHINE_BOOT_DEVPATH_END
 		   - GRUB_BOOT_MACHINE_BOOT_DEVPATH - 1] = 0;
+	free (dest_ofpath);
       }
     else
       {

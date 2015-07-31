@@ -119,7 +119,10 @@ syslinux_file (grub_extcmd_context_t ctxt, const char *filename)
     {
       menu = grub_zalloc (sizeof (*menu));
       if (! menu)
-	return grub_errno;
+	{
+	  grub_free (result);
+	  return grub_errno;
+	}
 
       grub_env_set_menu (menu);
     }

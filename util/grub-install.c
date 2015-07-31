@@ -615,14 +615,14 @@ device_map_check_duplicates (const char *dev_map)
   char **d;
   size_t i;
 
-  d = xmalloc (alloced * sizeof (d[0]));
-
   if (dev_map[0] == '\0')
     return;
 
   fp = grub_util_fopen (dev_map, "r");
   if (! fp)
     return;
+
+  d = xmalloc (alloced * sizeof (d[0]));
 
   while (fgets (buf, sizeof (buf), fp))
     {
@@ -967,7 +967,7 @@ main (int argc, char *argv[])
   {
     char * t = grub_util_path_concat (2, bootdir, GRUB_DIR_NAME);
     grub_install_mkdir_p (t);
-    grubdir = canonicalize_file_name (t);
+    grubdir = grub_canonicalize_file_name (t);
     if (!grubdir)
       grub_util_error (_("failed to get canonical path of `%s'"), t);
     free (t);
@@ -1299,7 +1299,7 @@ main (int argc, char *argv[])
   {
     char *t = grub_util_path_concat (2, grubdir,
 				   platname);
-    platdir = canonicalize_file_name (t);
+    platdir = grub_canonicalize_file_name (t);
     if (!platdir)
       grub_util_error (_("failed to get canonical path of `%s'"),
 		       t);
@@ -1809,7 +1809,7 @@ main (int argc, char *argv[])
 	  grub_install_copy_file (imgfile, dst, 1);
 	  free (dst);
 	}
-
+      /* Fallthrough.  */
     case GRUB_INSTALL_PLATFORM_X86_64_EFI:
       if (efidir_is_mac)
 	{

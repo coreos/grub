@@ -689,10 +689,10 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile,
   /* Allocate the space. */
   err = grub_xnu_align_heap (GRUB_XNU_PAGESIZE);
   if (err)
-    return err;
+    goto fail;
   err = grub_xnu_heap_malloc (neededspace, &buf0, &buf_target);
   if (err)
-    return err;
+    goto fail;
   buf = buf0;
 
   exthead = (struct grub_xnu_extheader *) buf;
@@ -709,10 +709,7 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile,
       else
 	err = grub_macho_readfile32 (macho, filename, buf);
       if (err)
-	{
-	  grub_macho_close (macho);
-	  return err;
-	}
+	goto fail;
       grub_macho_close (macho);
       buf += machosize;
     }
@@ -747,6 +744,10 @@ grub_xnu_load_driver (char *infoplistname, grub_file_t binaryfile,
   /* Announce to kernel */
   return grub_xnu_register_memory ("Driver-", &driversnum, buf_target,
 				   neededspace);
+fail:
+  if (macho)
+    grub_macho_close (macho);
+  return err;
 }
 
 /* Load mkext. */
@@ -1378,6 +1379,8 @@ grub_xnu_fill_devicetree (void)
     name[len] = 0;
 
     curvalue = grub_xnu_create_value (curkey, name);
+    if (!curvalue)
+      return grub_errno;
     grub_free (name);
    
     data = grub_malloc (grub_strlen (var->value) + 1);

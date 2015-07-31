@@ -102,7 +102,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		# OS LIMITATION: Linux oopses with >=32768K
 	    MAXBLKSIZE=$((16384*1024))
 	    ;;
-	x"lvm_raid4" | x"lvm_raid5" | x"lvm_raid6")
+	x"lvm_raid1"* | x"lvm_raid4" | x"lvm_raid5" | x"lvm_raid6")
 		# OS LIMITATION: Linux crashes with less than 16384
 	    MINBLKSIZE=16384
 		# Could go further but what's the point?
@@ -166,7 +166,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    x"zfs_raidz" | x"zfs_stripe" | x"zfs_mirror" | xbtrfs_raid0 \
 		| xbtrfs_raid1 | x"mdraid"*"_raid4" | x"mdraid"*"_raid5" \
 		| x"mdraid"*"_linear" \
-		| x"mdraid"*"_raid10" | xlvm_mirror1 | xlvm_mirrorall)
+		| x"mdraid"*"_raid10" | xlvm_raid1* | xlvm_mirror1 | xlvm_mirrorall)
 		MINDEVICES=2
 		MAXDEVICES=7
 		;;
@@ -199,7 +199,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 
 	    case x$fs in
   	    # RAID 1 has to work with even one device of the set.
-		xzfs_mirror | x"mdraid"*"_raid1" | xlvm_mirrorall)
+		xzfs_mirror | x"mdraid"*"_raid1" | xlvm_mirrorall | xlvm_raid1all)
 		    NEED_IMAGES_N=1;;
             # Degrade raidz by removing 3 devices
 		xzfs_raidz3)
@@ -210,7 +210,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    # Degrade raidz and btrfs RAID1 by removing one device
  		xbtrfs_raid1 | xbtrfs_raid10 | xzfs_raidz | x"mdraid"*"_raid4" \
 		    | x"mdraid"*"_raid5" | x"mdraid"*"_raid10" | xlvm_mirror1 \
-		    | x"lvm_raid4" | x"lvm_raid5")
+		    | x"lvm_raid1" | x"lvm_raid4" | x"lvm_raid5")
 		    NEED_IMAGES_N=$((NDEVICES-1));;
 		*)
 		    NEED_IMAGES_N=$NDEVICES;;
@@ -283,7 +283,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    #FSLABEL="g;/_é莭莽😁кит u"
 		    ;;
 	    # FS LIMITATION: reiserfs, extN and jfs label is at most 16 UTF-8 characters
-		x"reiserfs_old" | x"reiserfs" | x"ext2" | xext2_old | x"ext3" | x"ext4" | x"lvm"* | x"mdraid"* | x"jfs" | x"jfs_caseins")
+		x"reiserfs_old" | x"reiserfs" | x"ext"* | x"lvm"* | x"mdraid"* | x"jfs" | x"jfs_caseins")
 		    FSLABEL="g;/éт 莭😁";;
             # FS LIMITATION: No underscore, space, semicolon, slash or international characters in UFS* in label. Limited to 32 UTF-8 characters
 		x"ufs1" | x"ufs1_sun" | x"ufs2")
@@ -730,10 +730,15 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -n testvol grub_test
 		    elif [ x$fs = xlvm_stripe ] ; then
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -i "$NDEVICES" -n testvol grub_test
-		    elif [ x$fs = xlvm_mirror1 ] ; then
-			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" -n testvol grub_test
+		    elif [ x$fs = xlvm_mirror1 ] || [ x$fs = xlvm_raid1 ] ; then
+			lvcreate -m 1 -l "$((NDEVICES*2*LVMBLKMUL))" --type "${fs/lvm_/}" -n testvol grub_test
 		    elif [ x$fs = xlvm_mirrorall ] ; then
-			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL))" -n testvol grub_test
+			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL))" --type mirror -n testvol grub_test
+		    elif [ x$fs = xlvm_raid1all ] ; then
+			# Until version 2.02.103 LVM counts metadata segments
+			# twice when checking available space. Reduce segment
+			# count to work around it.
+			lvcreate -m "$((NDEVICES-1))" -l "$((6*LVMBLKMUL - 1))" --type raid1 -n testvol grub_test
 		    elif [ x$fs = xlvm_raid4 ] || [ x$fs = xlvm_raid5 ]; then
 			lvcreate -l "$(((NDEVICES-1) * 5*LVMBLKMUL))" -i "$((NDEVICES-1))" --type "${fs/lvm_/}" -n testvol grub_test
 		    elif [ x$fs = xlvm_raid6 ]; then
@@ -747,6 +752,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		xext2_old)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext2" -r 0 -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
 		    MOUNTFS=ext2
+		    ;;
+		xext4_metabg)
+		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O meta_bg,^resize_inode -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    MOUNTFS=ext4
 		    ;;
 		xext*)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
@@ -991,6 +1000,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			fi
 			sleep 1;
 		    done
+		    UMOUNT_TIME=$(date -u "+%Y-%m-%d %H:%M:%S")
 		    sleep 1
 		    vgchange -a n grub_test
 		    ;;
@@ -1002,6 +1012,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			fi
 			sleep 1;
 		    done
+		    UMOUNT_TIME=$(date -u "+%Y-%m-%d %H:%M:%S")
 		    sleep 1
 		    mdadm --stop /dev/md/"${fs}_$NDEVICES"
 		    ;;
@@ -1212,10 +1223,15 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    case x$fs in
 		xiso9660 | xziso9660 | xrockridge | xjoliet | xrockridge_joliet | xiso9660_1999 | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999)
 		    FSTIME="$(date -d "$(echo ${FSUUID} | awk -F - '{ print $1"-"$2"-"$3" "$4":"$5":"$6 ;}')" '+%Y-%m-%d %H:%M:%S')";;
+		xlvm*|xmdraid*)
+		    # With some abstractions like mdraid flushing to disk
+		    # may be delayed for a long time.
+		    FSTIME="$UMOUNT_TIME";;
 		*)
 		    FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGES[0]}"|awk '{print $6; }'|sed 's,_, ,g')";;
 	    esac
-		# With some abstractions like mdraid it may take up to 2 seconds for the data to reach the disks after it was flushed by FS in these tests.
+	    # With some abstractions like mdraid computing of UMOUNT_TIME
+	    # is not precise. Account for small difference here.
 	    FSTIMEM1="$(date -d "$FSTIME UTC -1 second" -u "+%Y-%m-%d %H:%M:%S")"
 	    FSTIMEM2="$(date -d "$FSTIME UTC -2 second" -u "+%Y-%m-%d %H:%M:%S")"
 

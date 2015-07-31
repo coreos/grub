@@ -403,8 +403,6 @@ test_header (grub_file_t file)
   return 1;
 
 CORRUPTED:
-  grub_free(name);
-
   return 0;
 }
 

@@ -48,11 +48,6 @@
 #ifdef __linux__
 # include <sys/ioctl.h>         /* ioctl */
 # include <sys/mount.h>
-# if !defined(__GLIBC__) || \
-        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1)))
-/* Maybe libc doesn't have large file support.  */
-#  include <linux/unistd.h>     /* _llseek */
-# endif /* (GLIBC < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR < 1)) */
 #endif /* __linux__ */
 
 grub_uint64_t
@@ -79,24 +74,6 @@ grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsiz
   return st.st_size;
 }
 
-#if defined(__linux__) && (!defined(__GLIBC__) || \
-        ((__GLIBC__ < 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ < 1))))
-  /* Maybe libc doesn't have large file support.  */
-int
-grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
-{
-  loff_t offset, result;
-  static int _llseek (uint filedes, ulong hi, ulong lo,
-		      loff_t *res, uint wh);
-  _syscall5 (int, _llseek, uint, filedes, ulong, hi, ulong, lo,
-	     loff_t *, res, uint, wh);
-
-  offset = (loff_t) off;
-  if (_llseek (fd, offset >> 32, offset & 0xffffffff, &result, SEEK_SET))
-    return -1;
-  return GRUB_ERR_NONE;
-}
-#else
 int
 grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
@@ -107,7 +84,6 @@ grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 
   return 0;
 }
-#endif
 
 
 /* Read LEN bytes from FD in BUF. Return less than or equal to zero if an
@@ -222,7 +198,7 @@ grub_util_fd_close (grub_util_fd_t fd)
 }
 
 char *
-canonicalize_file_name (const char *path)
+grub_canonicalize_file_name (const char *path)
 {
 #if defined (PATH_MAX)
   char *ret;

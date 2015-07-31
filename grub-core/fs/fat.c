@@ -1136,7 +1136,7 @@ grub_fat_label (grub_device_t device, char **label)
   if (! (data->attr & GRUB_FAT_ATTR_DIRECTORY))
     {
       grub_error (GRUB_ERR_BAD_FILE_TYPE, N_("not a directory"));
-      return 0;
+      goto fail;
     }
 
   err = grub_fat_iterate_init (&ctxt);

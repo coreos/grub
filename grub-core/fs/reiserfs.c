@@ -1090,7 +1090,7 @@ grub_reiserfs_read_real (struct grub_fshelp_node *node,
       switch (found.type)
         {
         case GRUB_REISERFS_DIRECT:
-          block = found.block_number * (block_size  >> GRUB_DISK_SECTOR_BITS);
+          block = ((grub_disk_addr_t) found.block_number) * (block_size  >> GRUB_DISK_SECTOR_BITS);
           grub_dprintf ("reiserfs_blocktype", "D: %u\n", (unsigned) block);
           if (initial_position < current_position + item_size)
             {

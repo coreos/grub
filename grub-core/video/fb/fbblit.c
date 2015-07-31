@@ -1145,6 +1145,20 @@ grub_video_fbblit_replace_index_RGB888 (struct grub_video_fbblit_info *dst,
     }
 }
 
+static inline grub_uint8_t
+alpha_dilute (grub_uint8_t bg, grub_uint8_t fg, grub_uint8_t alpha)
+{
+  grub_uint16_t s;
+  grub_uint16_t h, l;
+  s = (fg * alpha) + (bg * (255 ^ alpha));
+  /* Optimised division by 255.  */
+  h = s >> 8;
+  l = s & 0xff;
+  if (h + l >= 255)
+    h++;
+  return h;
+}
+
 /* Generic blending blitter.  Works for every supported format.  */
 static void
 grub_video_fbblit_blend (struct grub_video_fbblit_info *dst,
@@ -1190,12 +1204,9 @@ grub_video_fbblit_blend (struct grub_video_fbblit_info *dst,
           grub_video_fb_unmap_color_int (dst, dst_color, &dst_red,
 					 &dst_green, &dst_blue, &dst_alpha);
 
-          dst_red = (((src_red * src_alpha)
-                      + (dst_red * (255 ^ src_alpha))) / 255U);
-          dst_green = (((src_green * src_alpha)
-                        + (dst_green * (255 ^ src_alpha))) / 255U);
-          dst_blue = (((src_blue * src_alpha)
-                       + (dst_blue * (255 ^ src_alpha))) / 255U);
+          dst_red = alpha_dilute (dst_red, src_red, src_alpha);
+          dst_green = alpha_dilute (dst_green, src_green, src_alpha);
+          dst_blue = alpha_dilute (dst_blue, src_blue, src_alpha);
 
           dst_alpha = src_alpha;
           dst_color = grub_video_fb_map_rgba (dst_red, dst_green, dst_blue,
@@ -1270,11 +1281,11 @@ grub_video_fbblit_blend_BGRA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
               color = *dstptr;
 
               dr = (color >> 16) & 0xFF;
-              dr = (dr * (255 ^ a) + sr * a) / 255U;
+              dr = alpha_dilute (dr, sr, a);
               dg = (color >> 8) & 0xFF;
-              dg = (dg * (255 ^ a) + sg * a) / 255U;
+              dg = alpha_dilute (dg, sg, a);
               db = (color >> 0) & 0xFF;
-              db = (db * (255 ^ a) + sb * a) / 255U;
+              db = alpha_dilute (db, sb, a);
             }
 
           color = (a << 24) | (dr << 16) | (dg << 8) | db;
@@ -1360,9 +1371,9 @@ grub_video_fbblit_blend_BGR888_RGBA8888 (struct grub_video_fbblit_info *dst,
               db = dstptr[2];
 #endif
 
-              db = (db * (255 ^ a) + sb * a) / 255U;
-              dg = (dg * (255 ^ a) + sg * a) / 255U;
-              dr = (dr * (255 ^ a) + sr * a) / 255U;
+              db = alpha_dilute (db, sb, a);
+              dg = alpha_dilute (dg, sg, a);
+              dr = alpha_dilute (dr, sr, a);
             }
 
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
@@ -1440,9 +1451,9 @@ grub_video_fbblit_blend_RGBA8888_RGBA8888 (struct grub_video_fbblit_info *dst,
           dg = (color >> 8) & 0xFF;
           db = (color >> 16) & 0xFF;
 
-          dr = (dr * (255 ^ a) + sr * a) / 255U;
-          dg = (dg * (255 ^ a) + sg * a) / 255U;
-          db = (db * (255 ^ a) + sb * a) / 255U;
+          dr = alpha_dilute (dr, sr, a);
+          dg = alpha_dilute (dg, sg, a);
+          db = alpha_dilute (db, sb, a);
 
           color = (a << 24) | (db << 16) | (dg << 8) | dr;
 
@@ -1525,9 +1536,9 @@ grub_video_fbblit_blend_RGB888_RGBA8888 (struct grub_video_fbblit_info *dst,
           dr = dstptr[2];
 #endif
 
-          dr = (dr * (255 ^ a) + sr * a) / 255U;
-          dg = (dg * (255 ^ a) + sg * a) / 255U;
-          db = (db * (255 ^ a) + sb * a) / 255U;
+          dr = alpha_dilute (dr, sr, a);
+          dg = alpha_dilute (dg, sg, a);
+          db = alpha_dilute (db, sb, a);
 
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
           *dstptr++ = dr;
@@ -1601,9 +1612,9 @@ grub_video_fbblit_blend_index_RGBA8888 (struct grub_video_fbblit_info *dst,
 
           grub_video_fb_unmap_color_int (dst, *dstptr, &dr, &dg, &db, &da);
 
-          dr = (dr * (255 ^ a) + sr * a) / 255U;
-          dg = (dg * (255 ^ a) + sg * a) / 255U;
-          db = (db * (255 ^ a) + sb * a) / 255U;
+          dr = alpha_dilute (dr, sr, a);
+          dg = alpha_dilute (dg, sg, a);
+          db = alpha_dilute (db, sb, a);
 
           color = grub_video_fb_map_rgb(dr, dg, db);
 
@@ -1683,9 +1694,9 @@ grub_video_fbblit_blend_XXXA8888_1bit (struct grub_video_fbblit_info *dst,
 	      grub_uint8_t d2 = (*dstptr >> 8) & 0xFF;
 	      grub_uint8_t d3 = (*dstptr >> 16) & 0xFF;
 
-	      d1 = (d1 * (255 ^ a) + s1 * a) / 255U;
-	      d2 = (d2 * (255 ^ a) + s2 * a) / 255U;
-	      d3 = (d3 * (255 ^ a) + s3 * a) / 255U;
+	      d1 = alpha_dilute (d1, s1, a);
+	      d2 = alpha_dilute (d2, s2, a);
+	      d3 = alpha_dilute (d3, s3, a);
 
 	      *dstptr = (a << 24) | (d3 << 16) | (d2 << 8) | d1;
 	    }
@@ -1791,9 +1802,9 @@ grub_video_fbblit_blend_XXX888_1bit (struct grub_video_fbblit_info *dst,
 	      grub_uint8_t d2 = (*(grub_uint32_t *) dstptr >> 8) & 0xFF;
 	      grub_uint8_t d3 = (*(grub_uint32_t *) dstptr >> 16) & 0xFF;
 
-	      ((grub_uint8_t *) dstptr)[0] = (d1 * (255 ^ a) + s1 * a) / 255U;
-	      ((grub_uint8_t *) dstptr)[1] = (d2 * (255 ^ a) + s2 * a) / 255U;
-	      ((grub_uint8_t *) dstptr)[2] = (d3 * (255 ^ a) + s3 * a) / 255U;
+	      ((grub_uint8_t *) dstptr)[0] = alpha_dilute (d1, s1, a);
+	      ((grub_uint8_t *) dstptr)[1] = alpha_dilute (d2, s2, a);
+	      ((grub_uint8_t *) dstptr)[2] = alpha_dilute (d3, s3, a);
 	    }
 
 	  srcmask >>= 1;
@@ -1887,9 +1898,9 @@ grub_video_fbblit_blend_XXX565_1bit (struct grub_video_fbblit_info *dst,
 	      grub_uint8_t d2 = (*dstptr >> 5) & 0x3F;
 	      grub_uint8_t d3 = (*dstptr >> 11) & 0x1F;
 
-	      d1 = (d1 * (255 ^ a) + s1 * a) / 255U;
-	      d2 = (d2 * (255 ^ a) + s2 * a) / 255U;
-	      d3 = (d3 * (255 ^ a) + s3 * a) / 255U;
+	      d1 = alpha_dilute (d1, s1, a);
+	      d2 = alpha_dilute (d2, s2, a);
+	      d3 = alpha_dilute (d3, s3, a);
 
 	      *dstptr = (d1 & 0x1f) | ((d2 & 0x3f) << 5) | ((d3 & 0x1f) << 11);
 	    }

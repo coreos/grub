@@ -625,9 +625,7 @@ grub_uhci_check_transfer (grub_usb_controller_t dev,
       return GRUB_USB_ERR_NONE;
     }
 
-  grub_dprintf ("uhci", "t status=0x%02x\n", errtd->ctrl_status);
-
-  if (!(errtd->ctrl_status & (1 << 23)))
+  if (errtd && !(errtd->ctrl_status & (1 << 23)))
     {
       grub_usb_err_t err = GRUB_USB_ERR_NONE;
 

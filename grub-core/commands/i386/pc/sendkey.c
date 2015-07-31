@@ -292,7 +292,7 @@ find_key_code (char *key)
 {
   unsigned i;
 
-  for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+  for (i = 0; i < ARRAY_SIZE(keysym_table); i++)
     {
       if (keysym_table[i].unshifted_name 
 	  && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
@@ -311,7 +311,7 @@ find_ascii_code (char *key)
 {
   unsigned i;
 
-  for (i = 0; i < sizeof (keysym_table) / sizeof (keysym_table[0]); i++)
+  for (i = 0; i < ARRAY_SIZE(keysym_table); i++)
     {
       if (keysym_table[i].unshifted_name 
 	  && grub_strcmp (key, keysym_table[i].unshifted_name) == 0)
@@ -352,15 +352,13 @@ grub_cmd_sendkey (grub_extcmd_context_t ctxt, int argc, char **args)
 
   {
     unsigned i;
-    for (i = 0; i < sizeof (simple_flag_offsets) 
-	   / sizeof (simple_flag_offsets[0]); i++)
+    for (i = 0; i < ARRAY_SIZE(simple_flag_offsets); i++)
       grub_sendkey_set_simple_flag (simple_flag_offsets[i], 
 				    grub_sendkey_parse_op(state[i]));
   }
 
   /* Set noled. */
-  noled = (state[sizeof (simple_flag_offsets) 
-		 / sizeof (simple_flag_offsets[0])].set);
+  noled = (state[ARRAY_SIZE(simple_flag_offsets)].set);
 
   return GRUB_ERR_NONE;
 }

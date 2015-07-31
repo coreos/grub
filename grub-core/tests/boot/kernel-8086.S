@@ -46,5 +46,5 @@ message:
 	.ascii "Boot Test Passed Successfully\n" SUCCESSFUL_BOOT_STRING "\n"
 	.byte 0
 
-	. = base + 510
+	.org 510
 	.short 0xaa55

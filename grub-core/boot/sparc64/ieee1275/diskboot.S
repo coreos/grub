@@ -136,7 +136,7 @@ lastlist:
 	.word	0
 	.word	0
 
-	. = _start + (0x200 - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE)
+	.org (0x200 - GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE)
 blocklist_default_start:
 	.word	0
 	.word	2

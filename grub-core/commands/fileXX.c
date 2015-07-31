@@ -40,10 +40,10 @@ grub_file_check_netbsdXX (grub_elf_t elf)
     return 0;
 
   if (grub_file_seek (elf->file, elf->ehdr.ehdrXX.e_shoff) == (grub_off_t) -1)
-    return 0;
+    goto fail;
 
   if (grub_file_read (elf->file, s0, shsize) != (grub_ssize_t) shsize)
-    return 0;
+    goto fail;
 
   s = (Elf_Shdr *) ((char *) s0 + elf->ehdr.ehdrXX.e_shstrndx * shentsize);
   stroff = s->sh_offset;
@@ -54,18 +54,21 @@ grub_file_check_netbsdXX (grub_elf_t elf)
       char name[sizeof(".note.netbsd.ident")];
       grub_memset (name, 0, sizeof (name));
       if (grub_file_seek (elf->file, stroff + s->sh_name) == (grub_off_t) -1)
-	return grub_errno;
+	goto fail;
 
       if (grub_file_read (elf->file, name, sizeof (name)) != (grub_ssize_t) sizeof (name))
 	{
 	  if (grub_errno)
-	    return grub_errno;
+	    goto fail;
 	  continue;
 	}
       if (grub_memcmp (name, ".note.netbsd.ident",
 		       sizeof(".note.netbsd.ident")) != 0)
 	continue;
+      grub_free (s0);
       return 1;
     }
+ fail:
+  grub_free (s0);
   return 0;
 }

@@ -50,23 +50,23 @@ LOCAL (base):
 	 *  This is a special data area.
 	 */
 
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_COMPRESSED_SIZE
 LOCAL(compressed_size):
 	.long 0
-	. = _start + GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
+	.org GRUB_DECOMPRESSOR_MACHINE_UNCOMPRESSED_SIZE
 LOCAL(uncompressed_size):
 	.long 0
 
-	. = _start + GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
+	.org GRUB_KERNEL_I386_PC_REED_SOLOMON_REDUNDANCY
 reed_solomon_redundancy:
 	.long	0
-	. = _start + GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH
+	.org GRUB_KERNEL_I386_PC_NO_REED_SOLOMON_LENGTH
 	.short	(LOCAL(reed_solomon_part) - _start)
 
 /*
  *  This is the area for all of the special variables.
  */
-	. = _start + GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
+	.org GRUB_DECOMPRESSOR_I386_PC_BOOT_DEVICE
 LOCAL(boot_dev):
 	.byte	0xFF, 0xFF, 0xFF
 LOCAL(boot_drive):
@@ -89,13 +89,13 @@ LOCAL (codestart):
 	sti		/* we're safe again */
 
 	/* save the boot drive */
-	ADDR32	movb	%dl, LOCAL(boot_drive)
+	movb	%dl, LOCAL(boot_drive)
 
 	/* reset disk system (%ah = 0) */
 	int	$0x13
 
 	/* transition to protected mode */
-	DATA32	call real_to_prot
+	calll	real_to_prot
 
 	/* The ".code32" directive takes GAS out of 16-bit mode. */
 	.code32
@@ -149,7 +149,7 @@ gate_a20_try_bios:
 	movw	$0x2401, %ax
 	int	$0x15
 
-	DATA32	call	real_to_prot
+	calll	real_to_prot
 	.code32
 
 	popl	%ebp

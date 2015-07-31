@@ -41,7 +41,7 @@ void grub_util_write_image_at (const void *img, size_t size, off_t offset,
 
 char *make_system_path_relative_to_its_root (const char *path);
 
-char *canonicalize_file_name (const char *path);
+char *grub_canonicalize_file_name (const char *path);
 
 void grub_util_init_nls (void);
 

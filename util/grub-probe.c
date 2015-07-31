@@ -262,7 +262,7 @@ probe (const char *path, char **device_names, char delim)
 
   if (path != NULL)
     {
-      grub_path = canonicalize_file_name (path);
+      grub_path = grub_canonicalize_file_name (path);
       if (! grub_path)
 	grub_util_error (_("failed to get canonical path of `%s'"), path);
       device_names = grub_guess_root_devices (grub_path);
@@ -295,6 +295,7 @@ probe (const char *path, char **device_names, char delim)
 	    }
 	  printf ("%s", disk);
 	  putchar (delim);
+	  free (disk);
 	}
       return;
     }
@@ -496,6 +497,7 @@ probe (const char *path, char **device_names, char delim)
 	{
 	  grub_util_fprint_full_disk_name (stdout, dev->disk->name, dev);
 	  putchar (delim);
+	  grub_device_close (dev);
 	  continue;
 	}
 
@@ -542,7 +544,7 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_IEEE1275_HINT)
 	{
 	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-	  const char *ofpath = grub_util_devname_to_ofpath (osdev);
+	  char *ofpath = grub_util_devname_to_ofpath (osdev);
 	  const char *map;
 
 	  map = grub_util_biosdisk_get_compatibility_hint (dev->disk);
@@ -560,6 +562,7 @@ probe (const char *path, char **device_names, char delim)
 	      strcpy (p, ofpath);
 	      grub_util_fprint_full_disk_name (stdout, tmp, dev);
 	      free (tmp);
+	      free (ofpath);
 	      putchar (delim);
 	    }
 
@@ -725,11 +728,14 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 
       case 't':
 	{
-	  char *ret, *t = get_targets_string ();
+	  char *ret, *t = get_targets_string (), *def;
 
-	  ret = xasprintf ("%s\n%s %s [default=%s]", _("print TARGET"),
-			    _("available targets:"), t, targets[print]);
+	  def = xasprintf (_("[default=%s]"), targets[print]);
+
+	  ret = xasprintf ("%s\n%s %s %s", _("print TARGET"),
+			    _("available targets:"), t, def);
 	  free (t);
+	  free (def);
 	  return ret;
 	}
 

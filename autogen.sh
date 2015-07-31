@@ -2,6 +2,9 @@
 
 set -e
 
+# Set ${PYTHON} to plain 'python' if not set already
+: ${PYTHON:=python}
+
 export LC_COLLATE=C
 unset LC_ALL
 
@@ -9,10 +12,10 @@ find . -iname '*.[ch]' ! -ipath './grub-core/lib/libgcrypt-grub/*' ! -ipath './b
 find util -iname '*.in' ! -name Makefile.in  |sort > po/POTFILES-shell.in
 
 echo "Importing unicode..."
-python util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt grub-core/unidata.c
+${PYTHON} util/import_unicode.py unicode/UnicodeData.txt unicode/BidiMirroring.txt unicode/ArabicShaping.txt grub-core/unidata.c
 
 echo "Importing libgcrypt..."
-python util/import_gcry.py grub-core/lib/libgcrypt/ grub-core
+${PYTHON} util/import_gcry.py grub-core/lib/libgcrypt/ grub-core
 sed -n -f util/import_gcrypth.sed < grub-core/lib/libgcrypt/src/gcrypt.h.in > include/grub/gcrypt/gcrypt.h
 if [ -f include/grub/gcrypt/g10lib.h ]; then
     rm include/grub/gcrypt/g10lib.h
@@ -54,8 +57,8 @@ for extra in contrib/*/Makefile.core.def; do
   fi
 done
 
-python gentpl.py $UTIL_DEFS > Makefile.util.am
-python gentpl.py $CORE_DEFS > grub-core/Makefile.core.am
+${PYTHON} gentpl.py $UTIL_DEFS > Makefile.util.am
+${PYTHON} gentpl.py $CORE_DEFS > grub-core/Makefile.core.am
 
 for extra in contrib/*/Makefile.common; do
   if test -e "$extra"; then

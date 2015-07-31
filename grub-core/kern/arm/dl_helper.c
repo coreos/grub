@@ -25,6 +25,20 @@
 #include <grub/i18n.h>
 #include <grub/arm/reloc.h>
 
+static inline grub_uint32_t
+thumb_get_instruction_word (grub_uint16_t *target)
+{
+  /* Extract instruction word in alignment-safe manner */
+  return grub_le_to_cpu16 ((*target)) << 16 | grub_le_to_cpu16 (*(target + 1));
+}
+
+static inline void
+thumb_set_instruction_word (grub_uint16_t *target, grub_uint32_t insword)
+{
+  *target = grub_cpu_to_le16 (insword >> 16);
+  *(target + 1) = grub_cpu_to_le16 (insword & 0xffff);
+}
+
 /*
  * R_ARM_ABS32
  *
@@ -56,9 +70,7 @@ grub_arm_thm_call_get_offset (grub_uint16_t *target)
   grub_uint32_t insword;
   grub_int32_t offset;
 
-  /* Extract instruction word in alignment-safe manner */
-  insword = (grub_le_to_cpu16 (*target) << 16)
-    | (grub_le_to_cpu16(*(target + 1)));
+  insword = thumb_get_instruction_word (target);
 
   /* Extract bitfields from instruction words */
   sign = (insword >> 26) & 1;
@@ -83,9 +95,7 @@ grub_arm_thm_call_set_offset (grub_uint16_t *target, grub_int32_t offset)
   grub_uint32_t insword;
   int is_blx;
 
-  /* Extract instruction word in alignment-safe manner */
-  insword = (grub_le_to_cpu16 (*target) << 16)
-    | (grub_le_to_cpu16(*(target + 1)));
+  insword = thumb_get_instruction_word (target);
 
   if (((insword >> 12) & 0xd) == 0xc)
     is_blx = 1;
@@ -108,9 +118,7 @@ grub_arm_thm_call_set_offset (grub_uint16_t *target, grub_int32_t offset)
     (((offset >> 12) & 0x03ff) << 16) |
     (j1 << 13) | (j2 << 11) | ((offset >> 1) & 0x07ff);
 
-  /* Write instruction word back in alignment-safe manner */
-  *target = grub_cpu_to_le16 ((insword >> 16) & 0xffff);
-  *(target + 1) = grub_cpu_to_le16 (insword & 0xffff);
+  thumb_set_instruction_word (target, insword);
 
   grub_dprintf ("dl", "    *insword = 0x%08x", insword);
 
@@ -123,9 +131,7 @@ grub_arm_thm_jump19_get_offset (grub_uint16_t *target)
   grub_int32_t offset;
   grub_uint32_t insword;
 
-  /* Extract instruction word in alignment-safe manner */
-  insword = (grub_le_to_cpu16 (*target) << 16)
-    | (grub_le_to_cpu16(*(target + 1)));
+  insword = thumb_get_instruction_word (target);
 
   /* Extract and sign extend offset */
   offset = ((insword >> 26) & 1) << 19
@@ -149,9 +155,7 @@ grub_arm_thm_jump19_set_offset (grub_uint16_t *target, grub_int32_t offset)
   offset >>= 1;
   offset &= 0xfffff;
 
-  /* Extract instruction word in alignment-safe manner */
-  insword = grub_le_to_cpu16 ((*target)) << 16
-    | grub_le_to_cpu16 (*(target + 1));
+  insword = thumb_get_instruction_word (target);
 
   /* Reassemble instruction word and write back */
   insword &= insmask;
@@ -160,8 +164,7 @@ grub_arm_thm_jump19_set_offset (grub_uint16_t *target, grub_int32_t offset)
     | ((offset >> 17) & 1) << 13
     | ((offset >> 11) & 0x3f) << 16
     | (offset & 0x7ff);
-  *target = grub_cpu_to_le16 (insword >> 16);
-  *(target + 1) = grub_cpu_to_le16 (insword & 0xffff);
+  thumb_set_instruction_word (target, insword);
 }
 
 int
@@ -170,6 +173,32 @@ grub_arm_thm_jump19_check_offset (grub_int32_t offset)
   if ((offset > 1048574) || (offset < -1048576))
     return 0;
   return 1;
+}
+
+grub_uint16_t
+grub_arm_thm_movw_movt_get_value (grub_uint16_t *target)
+{
+  grub_uint32_t insword;
+
+  insword = thumb_get_instruction_word (target);
+
+  return ((insword & 0xf0000) >> 4) | ((insword & 0x04000000) >> 15) | \
+    ((insword & 0x7000) >> 4) | (insword & 0xff);
+}
+
+void
+grub_arm_thm_movw_movt_set_value (grub_uint16_t *target, grub_uint16_t value)
+{
+  grub_uint32_t insword;
+  const grub_uint32_t insmask = 0xfbf08f00;
+
+  insword = thumb_get_instruction_word (target);
+  insword &= insmask;
+
+  insword |= ((value & 0xf000) << 4) | ((value & 0x0800) << 15) | \
+    ((value & 0x0700) << 4) | (value & 0xff);
+
+  thumb_set_instruction_word (target, insword);
 }
 
 

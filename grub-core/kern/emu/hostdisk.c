@@ -99,7 +99,7 @@ find_free_slot (void)
 {
   unsigned int i;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (map); i++)
     if (! map[i].drive)
       return i;
 
@@ -115,7 +115,7 @@ grub_util_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   if (pull != GRUB_DISK_PULL_NONE)
     return 0;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (map); i++)
     if (map[i].drive && hook (map[i].drive, hook_data))
       return 1;
 
@@ -184,7 +184,7 @@ grub_hostdisk_os_dev_to_grub_drive (const char *os_disk, int add)
   unsigned int i;
   char *canon;
 
-  canon = canonicalize_file_name (os_disk);
+  canon = grub_canonicalize_file_name (os_disk);
   if (!canon)
     canon = xstrdup (os_disk);
 
@@ -535,7 +535,7 @@ read_device_map (const char *dev_map)
       /* On Linux, the devfs uses symbolic links horribly, and that
 	 confuses the interface very much, so use realpath to expand
 	 symbolic links.  */
-      map[drive].device = canonicalize_file_name (p);
+      map[drive].device = grub_canonicalize_file_name (p);
       if (! map[drive].device)
 	map[drive].device = xstrdup (p);
       
@@ -581,7 +581,7 @@ grub_util_biosdisk_fini (void)
 {
   unsigned i;
 
-  for (i = 0; i < sizeof (map) / sizeof (map[0]); i++)
+  for (i = 0; i < ARRAY_SIZE(map); i++)
     {
       if (map[i].drive)
 	free (map[i].drive);

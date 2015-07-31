@@ -145,7 +145,7 @@ prepare_grub_to_access_device ()
   done
 
   if [ x$GRUB_ENABLE_CRYPTODISK = xy ]; then
-      for uuid in "`"${grub_probe}" --device $@ --target=cryptodisk_uuid`"; do
+      for uuid in `"${grub_probe}" --device $@ --target=cryptodisk_uuid`; do
 	  echo "cryptomount -u $uuid"
       done
   fi
@@ -246,8 +246,8 @@ version_test_gt ()
   fi
   case "$version_test_gt_a:$version_test_gt_b" in
     *.old:*.old) ;;
-    *.old:*) version_test_gt_a="`echo -n "$version_test_gt_a" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=gt ;;
-    *:*.old) version_test_gt_b="`echo -n "$version_test_gt_b" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=ge ;;
+    *.old:*) version_test_gt_a="`echo "$version_test_gt_a" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=gt ;;
+    *:*.old) version_test_gt_b="`echo "$version_test_gt_b" | sed -e 's/\.old$//'`" ; version_test_gt_cmp=ge ;;
   esac
   version_test_numeric "$version_test_gt_a" "$version_test_gt_cmp" "$version_test_gt_b"
   return "$?"

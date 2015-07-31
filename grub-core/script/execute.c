@@ -635,57 +635,77 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 	    {
 	    case GRUB_SCRIPT_ARG_TYPE_VAR:
 	    case GRUB_SCRIPT_ARG_TYPE_DQVAR:
-	      values = grub_script_env_get (arg->str, arg->type);
-	      for (i = 0; values && values[i]; i++)
-		{
-		  if (i != 0 && grub_script_argv_next (&result))
-		    goto fail;
+	      {
+		int need_cleanup = 0;
 
-		  if (arg->type == GRUB_SCRIPT_ARG_TYPE_VAR)
-		    {
-		      int len;
-		      char ch;
-		      char *p;
-		      char *op;
-		      const char *s = values[i];
+		values = grub_script_env_get (arg->str, arg->type);
+		for (i = 0; values && values[i]; i++)
+		  {
+		    if (!need_cleanup)
+		      {
+			if (i != 0 && grub_script_argv_next (&result))
+			  {
+			    need_cleanup = 1;
+			    goto cleanup;
+			  }
 
-		      len = grub_strlen (values[i]);
-		      /* \? -> \\\? */
-		      /* \* -> \\\* */
-		      /* \ -> \\ */
-		      p = grub_malloc (len * 2 + 1);
-		      if (! p)
-			goto fail;
+			if (arg->type == GRUB_SCRIPT_ARG_TYPE_VAR)
+			  {
+			    int len;
+			    char ch;
+			    char *p;
+			    char *op;
+			    const char *s = values[i];
 
-		      op = p;
-		      while ((ch = *s++))
-			{
-			  if (ch == '\\')
-			    {
-			      *op++ = '\\';
-			      if (*s == '?' || *s == '*')
-				*op++ = '\\';
-			    }
-			  *op++ = ch;
-			}
-		      *op = '\0';
+			    len = grub_strlen (values[i]);
+			    /* \? -> \\\? */
+			    /* \* -> \\\* */
+			    /* \ -> \\ */
+			    p = grub_malloc (len * 2 + 1);
+			    if (! p)
+			      {
+				need_cleanup = 1;
+				goto cleanup;
+			      }
 
-		      if (grub_script_argv_append (&result, p, op - p))
-			{
-			  grub_free (p);
-			  goto fail;
-			}
-		    }
-		  else
-		    {
-		      if (append (&result, values[i], 1))
-			goto fail;
-		    }
+			    op = p;
+			    while ((ch = *s++))
+			      {
+				if (ch == '\\')
+				  {
+				    *op++ = '\\';
+				    if (*s == '?' || *s == '*')
+				      *op++ = '\\';
+				  }
+				*op++ = ch;
+			      }
+			    *op = '\0';
 
-		  grub_free (values[i]);
-		}
-	      grub_free (values);
-	      break;
+			    if (grub_script_argv_append (&result, p, op - p))
+			      {
+				grub_free (p);
+				need_cleanup = 1;
+				/* Fall through to cleanup */
+			      }
+			  }
+			else
+			  {
+			    if (append (&result, values[i], 1))
+			      need_cleanup = 1;
+			      /* Fall through to cleanup */
+			  }
+		      }
+
+cleanup:
+		    grub_free (values[i]);
+		  }
+		grub_free (values);
+
+		if (need_cleanup)
+		  goto fail;
+
+		break;
+	      }
 
 	    case GRUB_SCRIPT_ARG_TYPE_BLOCK:
 	      {

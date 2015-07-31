@@ -107,6 +107,14 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
           return grub_errno;
         }
 
+      if (!tempo)
+        {
+          grub_file_close (file);
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, N_("Invalid tempo in %s"),
+		      args[0]);
+          return grub_errno;
+        }
+
       tempo = grub_le_to_cpu32 (tempo);
       grub_dprintf ("play","tempo = %d\n", tempo);
 
@@ -130,6 +138,13 @@ grub_cmd_play (grub_command_t cmd __attribute__ ((unused)),
       int i;
 
       tempo = grub_strtoul (args[0], &end, 0);
+
+      if (!tempo)
+        {
+	  grub_error (GRUB_ERR_BAD_ARGUMENT, N_("Invalid tempo in %s"),
+		      args[0]);
+          return grub_errno;
+        }
 
       if (*end)
         /* Was not a number either, assume it was supposed to be a file name.  */

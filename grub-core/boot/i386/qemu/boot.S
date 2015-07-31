@@ -31,7 +31,7 @@ _start:
 
 	jmp	1f
 
-	. = _start + GRUB_BOOT_I386_QEMU_CORE_ENTRY_ADDR
+	.org GRUB_BOOT_I386_QEMU_CORE_ENTRY_ADDR
 VARIABLE(grub_core_entry_addr)
 	.long	0
 1:
@@ -48,8 +48,9 @@ VARIABLE(grub_core_entry_addr)
 	/* Transition to protected mode.  We use pushl to force generation
 	   of a flat return address.  */
 	pushl	$1f
-	DATA32	jmp real_to_prot
+	jmp	real_to_prot
 	.code32
+1:
 	/* Ensure A20 is enabled. We're in qemu, so control port A works
 	   and there is no need to wait since there is no real logic, it's
 	   all emulated.  */
@@ -57,7 +58,6 @@ VARIABLE(grub_core_entry_addr)
 	andb	$(~0x03), %al
 	orb	$0x02, %al
 	outb	$0x92
-1:
 	movl	EXT_C(grub_core_entry_addr), %edx
 	jmp	*%edx
 
@@ -66,9 +66,9 @@ VARIABLE(grub_core_entry_addr)
 	/* Intel, in its infinite wisdom, decided to put the i8086 entry point
 	   *right here* and this is why we need this kludge.  */
 
-	. = GRUB_BOOT_MACHINE_SIZE - 16
+	.org GRUB_BOOT_MACHINE_SIZE - 16
 
        .code16
        
 	jmp	_start
-	. = GRUB_BOOT_MACHINE_SIZE
+	.org GRUB_BOOT_MACHINE_SIZE

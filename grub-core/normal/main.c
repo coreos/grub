@@ -130,7 +130,7 @@ read_config_file (const char *config)
   file = grub_bufio_open (rawfile, 0);
   if (! file)
     {
-      grub_file_close (file);
+      grub_file_close (rawfile);
       return 0;
     }
 
@@ -445,7 +445,7 @@ grub_cmdline_run (int nested, int force_auth)
 
   while (1)
     {
-      char *line;
+      char *line = NULL;
 
       if (grub_normal_exit_level)
 	break;

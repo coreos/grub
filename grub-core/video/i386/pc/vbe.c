@@ -304,8 +304,7 @@ grub_vbe_bios_getset_dac_palette_width (int set, int *dac_mask_size)
   struct grub_bios_int_registers regs;
 
   regs.eax = 0x4f08;
-  regs.ebx = (*dac_mask_size & 0xff) >> 8;
-  regs.ebx = set ? 1 : 0;
+  regs.ebx = ((*dac_mask_size & 0xff) << 8) | (set ? 1 : 0);
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   grub_bios_interrupt (0x10, &regs);
   *dac_mask_size = (regs.ebx >> 8) & 0xff;
@@ -875,6 +874,7 @@ vbe2videoinfo (grub_uint32_t mode,
       /* CGA is basically 4-bit packed pixel.  */
     case GRUB_VBE_MEMORY_MODEL_CGA:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_CGA;
+      /* Fallthrough.  */
     case GRUB_VBE_MEMORY_MODEL_PACKED_PIXEL:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;
       break;
@@ -887,6 +887,7 @@ vbe2videoinfo (grub_uint32_t mode,
       /* Non chain 4 is a special case of planar.  */
     case GRUB_VBE_MEMORY_MODEL_NONCHAIN4_256:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_NONCHAIN4;
+      /* Fallthrough.  */
     case GRUB_VBE_MEMORY_MODEL_PLANAR:
       mode_info->mode_type |= GRUB_VIDEO_MODE_TYPE_PLANAR
 	| GRUB_VIDEO_MODE_TYPE_INDEX_COLOR;

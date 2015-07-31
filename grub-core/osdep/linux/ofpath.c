@@ -122,12 +122,16 @@ find_obppath (const char *sysfs_path_orig)
       fd = open(path, O_RDONLY);
       if (fd < 0 || fstat (fd, &st) < 0)
 	{
+	  if (fd >= 0)
+	    close (fd);
 	  snprintf(path, path_size, "%s/devspec", sysfs_path);
 	  fd = open(path, O_RDONLY);
 	}
 
       if (fd < 0 || fstat (fd, &st) < 0)
 	{
+	  if (fd >= 0)
+	    close (fd);
 	  kill_trailing_dir(sysfs_path);
 	  if (!strcmp(sysfs_path, "/sys"))
 	    {
@@ -147,6 +151,9 @@ find_obppath (const char *sysfs_path_orig)
 	{
 	  grub_util_info (_("cannot read `%s': %s"), path, strerror (errno));
 	  close(fd);
+	  free (path);
+	  free (of_path);
+	  free (sysfs_path);
 	  return NULL;
 	}
       close(fd);
@@ -329,7 +336,7 @@ vendor_is_ATA(const char *path)
 }
 
 static void
-check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
+check_sas (const char *sysfs_path, int *tgt, unsigned long int *sas_address)
 {
   char *ed = strstr (sysfs_path, "end_device");
   char *p, *q, *path;
@@ -341,8 +348,10 @@ check_sas (char *sysfs_path, int *tgt, unsigned long int *sas_address)
     return;
 
   /* SAS devices are identified using disk@$PHY_ID */
-  p = strdup (sysfs_path);
+  p = xstrdup (sysfs_path);
   ed = strstr(p, "end_device");
+  if (!ed)
+    return;
 
   q = ed;
   while (*q && *q != '/')
@@ -480,6 +489,7 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
               snprintf(disk, sizeof (disk),
                        "/sas/%s@%lx,%lu:%c", disk_name, sas_address, longlun, 'a' + (part - 1));
             }
+	  free (lunstr);
         }
     }
   strcat(of_path, disk);
@@ -530,7 +540,7 @@ grub_util_devname_to_ofpath (const char *sys_devname)
   else
     {
       grub_util_warn (_("unknown device type %s\n"), device);
-      return NULL;
+      ofpath = NULL;
     }
 
   free (devnode);

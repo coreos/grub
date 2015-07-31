@@ -175,7 +175,7 @@ main (int argc, char *argv[])
   grub_host_init ();
 
   char *t, *inpfull, *rootfull, *res;
-  t = canonicalize_file_name (arguments.input);
+  t = grub_canonicalize_file_name (arguments.input);
   if (!t)
     {
       grub_util_error (_("cannot open `%s': %s"), arguments.input,
@@ -185,7 +185,7 @@ main (int argc, char *argv[])
   inpfull = xasprintf ("(host)/%s", t);
   free (t);
 
-  t = canonicalize_file_name (arguments.root ? : "/");
+  t = grub_canonicalize_file_name (arguments.root ? : "/");
   if (!t)
     {
       grub_util_error (_("cannot open `%s': %s"), arguments.root,
@@ -206,7 +206,7 @@ main (int argc, char *argv[])
       cwd = xstrdup (".");
     }
 
-  t = canonicalize_file_name (arguments.cwd ? : cwd);
+  t = grub_canonicalize_file_name (arguments.cwd ? : cwd);
   if (!t)
     {
       grub_util_error (_("cannot open `%s': %s"), arguments.root,

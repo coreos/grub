@@ -349,6 +349,7 @@ fi
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
     pkgdatadir="@builddir@" "@builddir@/grub-mkrescue" "--output=${isofile}" "--override-directory=${builddir}/grub-core" \
 	--rom-directory="${rom_directory}" \
+	--locale-directory="@srcdir@/po" \
 	--themes-directory="@srcdir@/themes" \
 	$mkimage_extra_arg ${mkrescue_args} \
 	"/boot/grub/grub.cfg=${cfgfile}" "/boot/grub/testcase.cfg=${source}" \
@@ -422,11 +423,28 @@ do_trim ()
     fi
 }
 
+copy_extra_files() {
+    _destdir="$1"
+    shift
+
+    # FIXME support '=' in file names
+    for _file in "$@"; do
+	_target="${_file%=*}"
+	_source="${_file#*=}"
+	[ -n "$_source" ] || _source="$_target"
+	_target="$_destdir/$_target"
+	_targetdir="$(dirname "$_target")"
+	[ -d "$_targetdir" ] || mkdir -p "$_targetdir"
+	cp "$_source" "$_target"
+    done
+}
+
 if [ x$boot = xnet ]; then
     netdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     pkgdatadir="@builddir@" "@builddir@/grub-mknetdir" "--grub-mkimage=${builddir}/grub-mkimage" "--directory=${builddir}/grub-core" "--net-directory=$netdir" ${mkrescue_args} > /dev/null
     cp "${cfgfile}" "$netdir/boot/grub/grub.cfg"
     cp "${source}" "$netdir/boot/grub/testcase.cfg"
+    [ -z "$files" ] || copy_extra_files "$netdir" $files
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 elif [ x$boot = xemu ]; then
     grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"

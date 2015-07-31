@@ -613,7 +613,6 @@ program = {
   common = grub-core/disk/host.c;
 
   common = util/resolve.c;
-  enable = noemu;
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
 
@@ -1160,6 +1159,24 @@ script = {
   testcase;
   name = gptprio_test;
   common = tests/gptprio_test.in;
+};
+
+script = {
+  testcase;
+  name = file_filter_test;
+  common = tests/file_filter_test.in;
+};
+
+script = {
+  testcase;
+  name = grub_cmd_test;
+  common = tests/grub_cmd_test.in;
+};
+
+script = {
+  testcase;
+  name = syslinux_test;
+  common = tests/syslinux_test.in;
 };
 
 program = {

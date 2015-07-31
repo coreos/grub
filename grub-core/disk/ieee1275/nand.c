@@ -113,6 +113,11 @@ grub_nand_open (const char *name, grub_disk_t disk)
     }
 
   data->block_size = (args.size1 >> GRUB_DISK_SECTOR_BITS);
+  if (!data->block_size)
+    {
+      grub_error (GRUB_ERR_UNKNOWN_DEVICE, "invalid block size");
+      goto fail;
+    }
 
   INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
   args.method = (grub_ieee1275_cell_t) "size";

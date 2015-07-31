@@ -98,7 +98,7 @@ static int registered = 0;
 
 GRUB_MOD_INIT(emunet)
 {
-  if (grub_emunet_create (&emucard.mtu))
+  if (!grub_emunet_create (&emucard.mtu))
     {
       grub_net_card_register (&emucard);
       registered = 1;

@@ -64,7 +64,7 @@ bless (const char *path, int x86)
   grub_err_t err;
   struct stat st;
 
-  grub_path = canonicalize_file_name (path);
+  grub_path = grub_canonicalize_file_name (path);
 
   if (stat (grub_path, &st) < 0)
     grub_util_error (N_("cannot stat `%s': %s"),
@@ -92,6 +92,8 @@ bless (const char *path, int x86)
   free (filebuf_via_grub);
   free (filebuf_via_sys);
   free (drive_name);
+  free (devices);
+  grub_device_close (dev);
 }
 
 static struct argp_option options[] = {

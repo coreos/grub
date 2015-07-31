@@ -79,6 +79,25 @@ grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
   elf_sections = data;
 }
 
+static struct multiboot_header *
+find_header (grub_properly_aligned_t *buffer, grub_ssize_t len)
+{
+  struct multiboot_header *header;
+  /* Look for the multiboot header in the buffer.  The header should
+     be at least 12 bytes and aligned on a 4-byte boundary.  */
+  for (header = (struct multiboot_header *) buffer;
+       ((char *) header <= (char *) buffer + len - 12);
+       header = (struct multiboot_header *) ((grub_uint32_t *) header + MULTIBOOT_HEADER_ALIGN / 4))
+    {
+      if (header->magic == MULTIBOOT_HEADER_MAGIC
+	  && !(header->magic + header->architecture
+	       + header->header_length + header->checksum)
+	  && header->architecture == MULTIBOOT_ARCHITECTURE_CURRENT)
+	return header;
+    }
+  return NULL;
+}
+
 grub_err_t
 grub_multiboot_load (grub_file_t file, const char *filename)
 {
@@ -107,18 +126,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 
   COMPILE_TIME_ASSERT (MULTIBOOT_HEADER_ALIGN % 4 == 0);
 
-  /* Look for the multiboot header in the buffer.  The header should
-     be at least 12 bytes and aligned on a 4-byte boundary.  */
-  for (header = (struct multiboot_header *) buffer;
-       ((char *) header <= (char *) buffer + len - 12) || (header = 0);
-       header = (struct multiboot_header *) ((grub_uint32_t *) header + MULTIBOOT_HEADER_ALIGN / 4))
-    {
-      if (header->magic == MULTIBOOT_HEADER_MAGIC
-	  && !(header->magic + header->architecture
-	       + header->header_length + header->checksum)
-	  && header->architecture == MULTIBOOT_ARCHITECTURE_CURRENT)
-	break;
-    }
+  header = find_header (buffer, len);
 
   if (header == 0)
     {
@@ -142,7 +150,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	    = (struct multiboot_header_tag_information_request *) tag;
 	  if (request_tag->flags & MULTIBOOT_HEADER_TAG_OPTIONAL)
 	    break;
-	  for (i = 0; i < (request_tag->size - sizeof (request_tag))
+	  for (i = 0; i < (request_tag->size - sizeof (*request_tag))
 		 / sizeof (request_tag->requests[0]); i++)
 	    switch (request_tag->requests[i])
 	      {

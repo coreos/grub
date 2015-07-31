@@ -382,7 +382,8 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
                 /* Some buggy BIOSes doesn't return the total sectors
                    correctly but returns zero. So if it is zero, compute
                    it by C/H/S returned by the LBA BIOS call.  */
-                total_sectors = drp->cylinders * drp->heads * drp->sectors;
+                total_sectors = ((grub_uint64_t) drp->cylinders)
+		  * drp->heads * drp->sectors;
 	      if (drp->bytes_per_sector
 		  && !(drp->bytes_per_sector & (drp->bytes_per_sector - 1))
 		  && drp->bytes_per_sector >= 512
@@ -419,8 +420,14 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 	    }
         }
 
+      if (data->sectors == 0)
+	data->sectors = 63;
+      if (data->heads == 0)
+	data->heads = 255;
+
       if (! total_sectors)
-        total_sectors = data->cylinders * data->heads * data->sectors;
+        total_sectors = ((grub_uint64_t) data->cylinders)
+	  * data->heads * data->sectors;
     }
 
   disk->total_sectors = total_sectors;

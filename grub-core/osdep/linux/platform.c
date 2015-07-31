@@ -60,6 +60,43 @@ is_64_kernel (void)
   return strcmp (un.machine, "x86_64") == 0;
 }
 
+static int
+read_platform_size (void)
+{
+  FILE *fp;
+  char *buf = NULL;
+  size_t len = 0;
+  int ret = 0;
+
+  /* Newer kernels can tell us directly about the size of the
+   * underlying firmware - let's see if that interface is there. */
+  fp = grub_util_fopen ("/sys/firmware/efi/fw_platform_size", "r");
+  if (fp != NULL)
+  {
+    if (getline (&buf, &len, fp) >= 3) /* 2 digits plus newline */
+      {
+	if (strncmp (buf, "32", 2) == 0)
+	  ret = 32;
+	else if (strncmp (buf, "64", 2) == 0)
+	  ret = 64;
+      }
+    free (buf);
+    fclose (fp);
+  }
+
+  if (ret == 0)
+    {
+      /* Unrecognised - fall back to matching the kernel size
+       * instead */
+      if (is_64_kernel ())
+	ret = 64;
+      else
+	ret = 32;
+    }
+
+  return ret;
+}
+
 const char *
 grub_install_get_default_x86_platform (void)
 { 
@@ -77,7 +114,7 @@ grub_install_get_default_x86_platform (void)
   if (is_not_empty_directory ("/sys/firmware/efi"))
     {
       grub_util_info ("...found");
-      if (is_64_kernel ())
+      if (read_platform_size() == 64)
 	return "x86_64-efi";
       else
 	return "i386-efi";

@@ -55,6 +55,9 @@
 
 #define TARGET_NO_FIELD 0xffffffff
 
+/* use 2015-01-01T00:00:00+0000 as a stock timestamp */
+#define STABLE_EMBEDDING_TIMESTAMP 1420070400
+
 struct grub_install_image_target_desc
 {
   const char *dirname;
@@ -937,8 +940,8 @@ grub_install_get_image_target (const char *arg)
 {
   unsigned i, j;
   for (i = 0; i < ARRAY_SIZE (image_targets); i++)
-    for (j = 0; image_targets[i].names[j]
-	   && j < ARRAY_SIZE (image_targets[i].names); j++)
+    for (j = 0; j < ARRAY_SIZE (image_targets[i].names) &&
+		    image_targets[i].names[j]; j++)
       if (strcmp (arg, image_targets[i].names[j]) == 0)
 	return &image_targets[i];
   return NULL;
@@ -1278,6 +1281,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       free (core_img);
       core_img = full_img;
       core_size = full_size;
+      free (decompress_img);
+      free (decompress_path);
     }
 
   switch (image_target->id)
@@ -1437,7 +1442,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	c->machine = grub_host_to_target16 (image_target->pe_target);
 
 	c->num_sections = grub_host_to_target16 (4);
-	c->time = grub_host_to_target32 (time (0));
+	c->time = grub_host_to_target32 (STABLE_EMBEDDING_TIMESTAMP);
 	c->characteristics = grub_host_to_target16 (GRUB_PE32_EXECUTABLE_IMAGE
 						    | GRUB_PE32_LINE_NUMS_STRIPPED
 						    | ((image_target->voidp_sizeof == 4)
@@ -1744,6 +1749,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
       free (core_img);
       core_img = rom_img;
       core_size = rom_size;
+      free (boot_img);
+      free (boot_path);
     }
     break;
     case IMAGE_QEMU_MIPS_FLASH:
@@ -1778,7 +1785,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
       memset (hdr, 0, sizeof (*hdr));
       hdr->ih_magic = grub_cpu_to_be32_compile_time (GRUB_UBOOT_IH_MAGIC);
-      hdr->ih_time = grub_cpu_to_be32 (time (0));
+      hdr->ih_time = grub_cpu_to_be32 (STABLE_EMBEDDING_TIMESTAMP);
       hdr->ih_size = grub_cpu_to_be32 (core_size);
       hdr->ih_load = grub_cpu_to_be32 (image_target->link_addr);
       hdr->ih_ep = grub_cpu_to_be32 (image_target->link_addr);

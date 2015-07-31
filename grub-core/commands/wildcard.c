@@ -245,7 +245,10 @@ match_devices_iter (const char *name, void *data)
 
   t = grub_realloc (ctx->devs, sizeof (char*) * (ctx->ndev + 2));
   if (! t)
-    return 1;
+    {
+      grub_free (buffer);
+      return 1;
+    }
 
   ctx->devs = t;
   ctx->devs[ctx->ndev++] = buffer;
@@ -290,7 +293,8 @@ struct match_files_ctx
 
 /* Helper for match_files.  */
 static int
-match_files_iter (const char *name, const struct grub_dirhook_info *info,
+match_files_iter (const char *name,
+		  const struct grub_dirhook_info *info __attribute__((unused)),
 		  void *data)
 {
   struct match_files_ctx *ctx = data;

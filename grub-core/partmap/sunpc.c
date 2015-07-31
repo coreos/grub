@@ -74,7 +74,7 @@ sun_pc_partition_map_iterate (grub_disk_t disk,
   grub_partition_t p;
   union
   {
-    struct grub_sun_pc_block sun;
+    struct grub_sun_pc_block sun_block;
     grub_uint16_t raw[0];
   } block;
   int partnum;
@@ -92,7 +92,7 @@ sun_pc_partition_map_iterate (grub_disk_t disk,
       return err;
     }
   
-  if (GRUB_PARTMAP_SUN_PC_MAGIC != grub_le_to_cpu16 (block.sun.magic))
+  if (GRUB_PARTMAP_SUN_PC_MAGIC != grub_le_to_cpu16 (block.sun_block.magic))
     {
       grub_free (p);
       return grub_error (GRUB_ERR_BAD_PART_TABLE, 
@@ -111,12 +111,12 @@ sun_pc_partition_map_iterate (grub_disk_t disk,
     {
       struct grub_sun_pc_partition_descriptor *desc;
 
-      if (block.sun.partitions[partnum].id == 0
-	  || block.sun.partitions[partnum].id
+      if (block.sun_block.partitions[partnum].id == 0
+	  || block.sun_block.partitions[partnum].id
 	  == GRUB_PARTMAP_SUN_PC_WHOLE_DISK_ID)
 	continue;
 
-      desc = &block.sun.partitions[partnum];
+      desc = &block.sun_block.partitions[partnum];
       p->start = grub_le_to_cpu32 (desc->start_sector);
       p->len = grub_le_to_cpu32 (desc->num_sectors);
       p->number = partnum;

@@ -959,14 +959,15 @@ grub_iso9660_read (grub_file_t file, char *buf, grub_size_t len)
 {
   struct grub_iso9660_data *data =
     (struct grub_iso9660_data *) file->data;
+  grub_err_t err;
 
   /* XXX: The file is stored in as a single extent.  */
   data->disk->read_hook = file->read_hook;
   data->disk->read_hook_data = file->read_hook_data;
-  read_node (data->node, file->offset, len, buf);
+  err = read_node (data->node, file->offset, len, buf);
   data->disk->read_hook = NULL;
 
-  if (grub_errno)
+  if (err || grub_errno)
     return -1;
 
   return len;

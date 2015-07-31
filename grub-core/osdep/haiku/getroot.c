@@ -65,7 +65,7 @@ grub_util_find_partition_start_os (const char *dev)
   device_geometry geo;
   if (ioctl (fd, B_GET_GEOMETRY, &geo, sizeof (geo)) < 0)
     return 0;
-  ret /= geo.bytes_per_sector;
+  ret /= geo.bytes_per_sector ? : 512;
   close (fd);  
   return ret;
 }

@@ -359,6 +359,7 @@ grub_video_bochs_setup (unsigned int width, unsigned int height,
     case 32:
       framebuffer.mode_info.reserved_mask_size = 8;
       framebuffer.mode_info.reserved_field_pos = 24;
+      /* Fallthrough.  */
 
     case 24:
       framebuffer.mode_info.red_mask_size = 8;

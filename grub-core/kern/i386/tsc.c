@@ -57,6 +57,8 @@ grub_get_tsc (void)
   return (((grub_uint64_t) hi) << 32) | lo;
 }
 
+#ifndef GRUB_MACHINE_XEN
+
 static __inline int
 grub_cpu_is_tsc_supported (void)
 {
@@ -68,8 +70,6 @@ grub_cpu_is_tsc_supported (void)
 
   return (d & (1 << 4)) != 0;
 }
-
-#ifndef GRUB_MACHINE_XEN
 
 static void
 grub_pit_wait (grub_uint16_t tics)
@@ -122,7 +122,11 @@ calibrate_tsc (void)
   grub_pit_wait (0xffff);
   end_tsc = grub_get_tsc ();
 
-  grub_tsc_rate = grub_divmod64 ((55ULL << 32), end_tsc - tsc_boot_time, 0);
+  grub_tsc_rate = 0;
+  if (end_tsc > tsc_boot_time)
+    grub_tsc_rate = grub_divmod64 ((55ULL << 32), end_tsc - tsc_boot_time, 0);
+  if (grub_tsc_rate == 0)
+    grub_tsc_rate = 5368;/* 800 MHz */
 }
 #endif
 

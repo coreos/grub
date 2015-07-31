@@ -2296,10 +2296,6 @@ msgstr ""
 msgid "WEEKDAY"
 msgstr ""
 
-#: grub-core/io/lzopio.c:30
-msgid "�LZO"
-msgstr ""
-
 #: grub-core/kern/dl.c:412
 msgid "grub_mod_init"
 msgstr ""
@@ -4215,20 +4211,8 @@ msgstr ""
 msgid "ext*"
 msgstr ""
 
-#: grub-core/partmap/msdos.c:74
-msgid "�A��"
-msgstr ""
-
-#: grub-core/partmap/msdos.c:80
-msgid "�A��"
-msgstr ""
-
 #: grub-core/partmap/msdos.c:86
 msgid "HP Backup and Recovery Manager (?)"
-msgstr ""
-
-#: grub-core/partmap/msdos.c:87
-msgid "p�]F5���=���U>�"
 msgstr ""
 
 #: grub-core/partmap/msdos.c:94
@@ -4572,10 +4556,6 @@ msgstr ""
 #: grub-core/disk/arc/arcdisk.c:238 grub-core/disk/arc/arcdisk.c:275
 #, c-format
 msgid " failed: %ld\n"
-msgstr ""
-
-#: grub-core/lib/xzembed/xz_stream.h:35
-msgid "�7zXZ"
 msgstr ""
 
 #: grub-core/lib/xzembed/xz_stream.h:38
@@ -7172,4 +7152,295 @@ msgstr ""
 
 #: util/grub-mkimagexx.c:845
 msgid "CALL26 Relocation out of range"
+msgstr ""
+
+#: grub-core/commands/verify.c:313
+msgid "\x99"
+msgstr ""
+
+#: grub-core/commands/videotest.c:122
+msgid "Unicode test: happy\xE2\x98\xBA \xC2\xA3 5.00"
+      " \xC2\xA1\xCF\x84\xC3\xA4u! "
+      " \xE2\x84\xA4\xE2\x8A\x86\xE2\x84\x9D"
+msgstr ""
+
+#: grub-core/disk/luks.c:40
+msgid "LUKS\xBA\xBE"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:67 grub-core/disk/lvmparse.c:69
+msgid " = ["
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:115 grub-core/disk/lvmparse.c:123
+#: grub-core/disk/lvmparse.c:167 grub-core/disk/lvmparse.c:170
+msgid "id = \""
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:127
+msgid "extent_size = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:143 grub-core/disk/lvmparse.c:146
+msgid "physical_volumes {"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:174
+msgid "pe_start = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:199
+msgid "logical_volumes"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:202
+msgid "logical_volumes = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:226 grub-core/disk/lvmparse.c:227
+msgid "status"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:226
+msgid "VISIBLE"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:227
+msgid "PVMOVE"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:228
+msgid "segment_count = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:246
+msgid "segment"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:255
+msgid "start_extent = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:263
+msgid "extent_count = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:272 grub-core/disk/lvmparse.c:275
+msgid "type = \""
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:277 grub-core/disk/lvmparse.c:278
+msgid "striped\""
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:282
+msgid "stripe_count = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:292 grub-core/disk/lvmparse.c:396
+msgid "stripe_size = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:299 grub-core/disk/lvmparse.c:307
+msgid "stripes = ["
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:332
+msgid "mirror\""
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:336
+msgid "mirror_count = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:350 grub-core/disk/lvmparse.c:358
+msgid "mirrors = ["
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:375 grub-core/disk/lvmparse.c:376
+#: grub-core/disk/lvmparse.c:377 grub-core/disk/lvmparse.c:384
+msgid "raid"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:378
+msgid "raidX"
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:386
+msgid "device_count = "
+msgstr ""
+
+#: grub-core/disk/lvmparse.c:410 grub-core/disk/lvmparse.c:418
+msgid "raids = ["
+msgstr ""
+
+#: grub-core/fs/cpio.c:24
+msgid "\xc7\x71"
+msgstr ""
+
+#: grub-core/fs/cpio_be.c:23
+msgid "\x71\xc7"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_circular_progress.c:244
+msgid "\xc2\xb0"
+msgstr ""
+
+#: grub-core/kern/ieee1275/cmain.c:88
+msgid "IBM pSeries (emulated by qemu)"
+msgstr ""
+
+#: grub-core/lib/all_video.c:36
+msgid "/video.lst"
+msgstr ""
+
+#: grub-core/osdep/unix/config.c:108
+#, c-format
+msgid ""
+"'; printf \"GRUB_ENABLE_CRYPTODISK=%s\\nGRUB_DISTRIBUTOR=%s\\n\" "
+"\"$GRUB_ENABLE_CRYPTODISK\" \"$GRUB_DISTRIBUTOR\""
+msgstr ""
+
+#: include/grub/dl.h:141
+msgid "license"
+msgstr ""
+
+#: util/grub-install.c:1106
+msgid "BOOTAA64.EFI"
+msgstr ""
+
+#: util/grub-install.c:1133
+msgid "grubaa64.efi"
+msgstr ""
+
+#: util/grub-install.c:1274
+msgid "GRUB_ENABLE_CRYPTODISK=y"
+msgstr ""
+
+#: util/grub-mkrescue.c:656
+msgid "part_gpt"
+msgstr ""
+
+#: util/grub-mkrescue.c:657
+msgid "part_msdos"
+msgstr ""
+
+#: util/grub-mkrescue.c:663 util/grub-mkrescue.c:668 util/grub-mkrescue.c:723
+msgid "part_apple"
+msgstr ""
+
+#: util/grub-mkrescue.c:677
+msgid "bootaa64.efi"
+msgstr ""
+
+#: util/grub-probe.c:136 util/grub-probe.c:151 util/grub-probe.c:190
+#: util/grub-probe.c:247
+#, c-format
+msgid "%s%c"
+msgstr ""
+
+#: util/grub-probe.c:233
+#, c-format
+msgid "lvm%c"
+msgstr ""
+
+#: util/grub-probe.c:237
+#, c-format
+msgid "ldm%c"
+msgstr ""
+
+#: util/grub-probe.c:245
+#, c-format
+msgid "diskfilter%c"
+msgstr ""
+
+#: util/grub-probe.c:250
+#, c-format
+msgid "raid5rec%c"
+msgstr ""
+
+#: util/grub-probe.c:252
+#, c-format
+msgid "raid6rec%c"
+msgstr ""
+
+#: util/grub-mkrescue.c:136
+#, c-format
+msgid "%s\n\n%s\n\n%s"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:133
+msgid "couldn't get memory map, not enabling caches"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:149
+#, c-format
+msgid "%d crossers\n"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:154
+msgid "couldn't allocate place for MMU table, not enabling caches"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:212
+msgid "MMU tables generated\n"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:216
+msgid "enabling MMU\n"
+msgstr ""
+
+#: grub-core/kern/arm/cache.c:218
+msgid "MMU enabled\n"
+msgstr ""
+
+#: grub-core/commands/verify.c:313
+msgid ""
+msgstr ""
+
+#: grub-core/commands/videotest.c:122
+msgid "Unicode test: happyâº Â£ 5.00 Â¡ÏÃ¤u!  â¤ââ"
+msgstr ""
+
+#: grub-core/disk/luks.c:40
+msgid "LUKSº¾"
+msgstr ""
+
+#: grub-core/fs/cpio.c:24
+msgid "Çq"
+msgstr ""
+
+#: grub-core/fs/cpio_be.c:23
+msgid "qÇ"
+msgstr ""
+
+#: grub-core/gfxmenu/gui_circular_progress.c:244
+msgid "Â°"
+msgstr ""
+
+#: grub-core/lib/xzembed/xz_stream.h:35
+msgid "ý7zXZ"
+msgstr ""
+
+#: grub-core/partmap/msdos.c:74
+msgid "ÔA õ"
+msgstr ""
+
+#: grub-core/partmap/msdos.c:80
+msgid "ØA õ"
+msgstr ""
+
+#: grub-core/partmap/msdos.c:87
+msgid "p]F5Å®=ý±U>à"
+msgstr ""
+
+#: grub-core/io/lzopio.c:30
+msgid ""
+"LZO\n"
+"\n"
+msgstr ""
+
+#: util/grub-probe.c:735
+#, c-format
+msgid "%s\n%s %s %s"
 msgstr ""

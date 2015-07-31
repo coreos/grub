@@ -34,6 +34,8 @@ static void
 test32 (grub_uint32_t a, grub_uint32_t b)
 {
   grub_uint64_t q, r;
+  if (b == 0)
+    return;
   q = grub_divmod64 (a, b, &r);
   grub_test_assert (r < b, "remainder is larger than dividend: 0x%llx %% 0x%llx = 0x%llx",
 		    (long long) a, (long long) b, (long long) r);
@@ -95,6 +97,72 @@ test64 (grub_uint64_t a, grub_uint64_t b)
 #endif
 }
 
+static grub_int64_t
+abs64(grub_int64_t a)
+{
+  return a > 0 ? a : -a;
+}
+
+static void
+test32s (grub_int32_t a, grub_int32_t b)
+{
+  grub_int64_t q, r;
+  if (b == 0)
+    return;
+
+  q = grub_divmod64s (a, b, &r);
+  grub_test_assert (a > 0 ? r >= 0 : r <= 0, "remainder sign mismatch: %lld %% %lld = %lld",
+		    (long long) a, (long long) b, (long long) r);
+  grub_test_assert (((a > 0) == (b > 0)) ? q >= 0 : q <= 0, "quotient sign mismatch: %lld / %lld = %lld",
+		    (long long) a, (long long) b, (long long) q);
+  grub_test_assert (abs64(r) < abs64(b), "remainder is larger than dividend: %lld %% %lld = %lld",
+		    (long long) a, (long long) b, (long long) r);
+  grub_test_assert (q * b + r == a, "division doesn't satisfy base property: %lld * %lld + %lld != %lld", (long long) q, (long long) b, (long long) r,
+		    (long long) a);
+  if (0) {  grub_test_assert (q == (a / b),
+		    "C compiler division failure in 0x%llx, 0x%llx", (long long) a, (long long) b);
+  grub_test_assert (r == (a % b),
+		    "C compiler modulo failure in 0x%llx, 0x%llx", (long long) a, (long long) b);
+  }
+}
+
+static void
+test64s (grub_int64_t a, grub_int64_t b)
+{
+  grub_int64_t q, r;
+  q = grub_divmod64s (a, b, &r);
+
+  grub_test_assert (a > 0 ? r >= 0 : r <= 0, "remainder sign mismatch: %lld %% %lld = %lld",
+		    (long long) a, (long long) b, (long long) r);
+  grub_test_assert (((a > 0) == (b > 0)) ? q >= 0 : q <= 0, "quotient sign mismatch: %lld / %lld = %lld",
+		    (long long) a, (long long) b, (long long) q);
+  grub_test_assert (abs64(r) < abs64(b), "remainder is larger than dividend: %lld %% %lld = %lld",
+		    (long long) a, (long long) b, (long long) r);
+  grub_test_assert (q * b + r == a, "division doesn't satisfy base property: 0x%llx * 0x%llx + 0x%llx != 0x%llx", (long long) q, (long long) b, (long long) r,
+		    (long long) a);
+#if GRUB_TARGET_SIZEOF_VOID_P == 8
+  grub_test_assert (q == (a / b),
+		    "C compiler division failure in 0x%llx, 0x%llx", (long long) a, (long long) b);
+  grub_test_assert (r == (a % b),
+		    "C compiler modulo failure in 0x%llx, 0x%llx", (long long) a, (long long) b);
+#endif
+}
+
+static void
+test_all(grub_uint64_t a, grub_uint64_t b)
+{
+  test64 (a, b);
+  test32 (a, b);
+  test64s (a, b);
+  test32s (a, b);
+  test64s (a, -b);
+  test32s (a, -b);
+  test64s (-a, b);
+  test32s (-a, b);
+  test64s (-a, -b);
+  test32s (-a, -b);
+}
+
 static void
 div_test (void)
 {
@@ -103,8 +171,7 @@ div_test (void)
 
   for (i = 0; i < ARRAY_SIZE (vectors); i++)
     {
-      test64 (vectors[i][0], vectors[i][1]);
-      test32 (vectors[i][0], vectors[i][1]);
+      test_all (vectors[i][0], vectors[i][1]);
     }
   for (i = 0; i < 40000; i++)
     {
@@ -114,9 +181,7 @@ div_test (void)
 	b = 1;
       if (a == 0)
 	a = 1;
-      test64 (a, b);
-      test32 (a, b);
-
+      test_all (a, b);
     }
 }
 

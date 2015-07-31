@@ -43,7 +43,7 @@ _start:
 LOCAL(next):
 	jmp	1f
 
-	. = start + 8
+	.org 8
 
 bi_pvd:
 	.long 0		/* LBA of primary volume descriptor.  */
@@ -168,6 +168,6 @@ err_noboot_msg:
 err_cdfail_msg:
 	.ascii	"cdrom read fails\0"
 
-	. = start + 0x7FF
+	.org 0x7FF
 
 	.byte	0

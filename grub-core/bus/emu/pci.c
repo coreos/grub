@@ -55,7 +55,8 @@ grub_pci_device_map_range (grub_pci_device_t dev, grub_addr_t base,
   int err;
   err = pci_device_map_range (dev, base, size, PCI_DEV_MAP_FLAG_WRITABLE, &addr);
   if (err)
-    grub_util_error ("mapping 0x%x failed (error %d)\n", base, err);
+    grub_util_error ("mapping 0x%llx failed (error %d)\n",
+		     (unsigned long long) base, err);
   return addr;
 }
 
@@ -66,12 +67,12 @@ grub_pci_device_unmap_range (grub_pci_device_t dev, void *mem,
   pci_device_unmap_range (dev, mem, size);
 }
 
-GRUB_MOD_INIT (pci)
+GRUB_MOD_INIT (emupci)
 {
   pci_system_init ();
 }
 
-GRUB_MOD_FINI (pci)
+GRUB_MOD_FINI (emupci)
 {
   pci_system_cleanup ();
 }
