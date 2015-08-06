@@ -47,18 +47,18 @@ send_card_buffer (struct grub_net_card *dev,
 	if (st != GRUB_EFI_SUCCESS)
 	  return grub_error (GRUB_ERR_IO,
 			     N_("couldn't send network packet"));
-	if (txbuf == dev->txbuf)
+	/*
+	   Some buggy firmware could return an arbitrary address instead of the
+	   txbuf address we trasmitted, so just check that txbuf is non NULL
+	   for success.  This is ok because we open the SNP protocol in
+	   exclusive mode so we know we're the only ones transmitting on this
+	   box and since we only transmit one packet at a time we know our
+	   transmit was successfull.
+	 */
+	if (txbuf)
 	  {
 	    dev->txbusy = 0;
 	    break;
-	  }
-	if (txbuf)
-	  {
-	    st = efi_call_7 (net->transmit, net, 0, dev->last_pkt_size,
-			     dev->txbuf, NULL, NULL, NULL);
-	    if (st != GRUB_EFI_SUCCESS)
-	      return grub_error (GRUB_ERR_IO,
-				 N_("couldn't send network packet"));
 	  }
 	if (limit_time < grub_get_time_ms ())
 	  return grub_error (GRUB_ERR_TIMEOUT,
@@ -84,8 +84,9 @@ send_card_buffer (struct grub_net_card *dev,
      we run in the GRUB_ERR_TIMEOUT case above.
      Perhaps a timeout in the FW has discarded the recycle buffer.
    */
+  txbuf = NULL;
   st = efi_call_3 (net->get_status, net, 0, &txbuf);
-  dev->txbusy = !(st == GRUB_EFI_SUCCESS && txbuf == dev->txbuf);
+  dev->txbusy = !(st == GRUB_EFI_SUCCESS && txbuf);
 
   return GRUB_ERR_NONE;
 }
