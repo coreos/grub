@@ -35,6 +35,7 @@
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
 #include <grub/linux.h>
+#include <grub/tpm.h>
 
 #include "verity-hash.h"
 GRUB_MOD_LICENSE ("GPLv3+");
@@ -717,7 +718,10 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  grub_tpm_measure (kernel, len, GRUB_KERNEL_PCR, "Linux Kernel");
+
   grub_memcpy (&lh, kernel, sizeof (lh));
+
   kernel_offset = sizeof (lh);
 
   if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55))
@@ -1027,6 +1031,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_pass_verity_hash(&lh, linux_cmdline);
   len = prot_file_size;
   grub_memcpy (prot_mode_mem, kernel + kernel_offset, len);
+  kernel_offset += len;
 
   if (grub_errno == GRUB_ERR_NONE)
     {
