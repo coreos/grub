@@ -35,6 +35,7 @@
 #include <grub/i386/floppy.h>
 #include <grub/lib/cmdline.h>
 #include <grub/linux.h>
+#include <grub/tpm.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -159,6 +160,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		    argv[0]);
       goto fail;
     }
+
+  grub_tpm_measure (kernel, len, GRUB_KERNEL_PCR, "BIOS Linux Kernel");
 
   grub_memcpy (&lh, kernel, sizeof (lh));
   kernel_offset = sizeof (lh);
