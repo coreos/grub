@@ -30,6 +30,7 @@
 #define GRUB_KERNEL_PCR 10
 #define GRUB_INITRD_PCR 11
 #define GRUB_CMDLINE_PCR 12
+#define GRUB_COMMAND_PCR 13
 
 #define TPM_TAG_RQU_COMMAND 0x00C1
 #define TPM_ORD_Extend 0x14
