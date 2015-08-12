@@ -893,7 +893,10 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 	  grub_priority_queue_pop (sock->pq);
 	}
       if (grub_be_to_cpu32 (tcph->seqnr) != sock->their_cur_seq)
-	return GRUB_ERR_NONE;
+	{
+	  ack (sock);
+	  return GRUB_ERR_NONE;
+	}
       while (1)
 	{
 	  nb_top_p = grub_priority_queue_top (sock->pq);
