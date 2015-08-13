@@ -451,6 +451,12 @@ main (int argc, char *argv[])
     int i;
     for (i = 1; i < argc; i++)
       {
+	if (strcmp (argv[i], "-output") == 0) {
+	  argp_argv[argp_argc++] = (char *) "--output";
+	  i++;
+	  argp_argv[argp_argc++] = argv[i];
+	  continue;
+	}
 	switch (args_to_eat (argv[i]))
 	  {
 	  case 2:

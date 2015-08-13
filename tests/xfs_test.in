@@ -16,4 +16,5 @@ if ! which mkfs.xfs >/dev/null 2>&1; then
 fi
 
 
+"@builddir@/grub-fs-tester" xfs_crc
 "@builddir@/grub-fs-tester" xfs

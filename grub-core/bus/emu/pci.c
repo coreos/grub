@@ -55,7 +55,7 @@ grub_pci_device_map_range (grub_pci_device_t dev, grub_addr_t base,
   int err;
   err = pci_device_map_range (dev, base, size, PCI_DEV_MAP_FLAG_WRITABLE, &addr);
   if (err)
-    grub_util_error ("mapping 0x%llx failed (error %d)\n",
+    grub_util_error ("mapping 0x%llx failed (error %d)",
 		     (unsigned long long) base, err);
   return addr;
 }

@@ -823,7 +823,7 @@ compress_kernel (const struct grub_install_image_target_desc *image_target, char
 
  if (image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS
      && (comp != GRUB_COMPRESSION_NONE))
-   grub_util_error (_("unknown compression %d\n"), comp);
+   grub_util_error (_("unknown compression %d"), comp);
 
   *core_img = xmalloc (kernel_size);
   memcpy (*core_img, kernel_img, kernel_size);
@@ -1234,7 +1234,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	  name = "none_decompress.img";
 	  break;
 	default:
-	  grub_util_error (_("unknown compression %d\n"), comp);
+	  grub_util_error (_("unknown compression %d"), comp);
 	}
       
       decompress_path = grub_util_get_path (dir, name);

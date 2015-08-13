@@ -172,7 +172,7 @@ grub_dmraid_nv_detect (grub_disk_t disk,
 
   return grub_diskfilter_make_raid (sizeof (sb.array.signature),
 				    uuid, sb.array.total_volumes,
-				    NULL, disk_size,
+				    "nv", disk_size,
 				    sb.array.stripe_block_size,
 				    GRUB_RAID_LAYOUT_LEFT_ASYMMETRIC,
 				    level);

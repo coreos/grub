@@ -160,7 +160,7 @@ grub_lvm_detect (grub_disk_t disk,
 		  "we don't support multiple LVM data areas");
 
 #ifdef GRUB_UTIL
-      grub_util_info ("we don't support multiple LVM data areas\n");
+      grub_util_info ("we don't support multiple LVM data areas");
 #endif
       goto fail;
     }
@@ -189,7 +189,7 @@ grub_lvm_detect (grub_disk_t disk,
       grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		  "unknown LVM metadata header");
 #ifdef GRUB_UTIL
-      grub_util_info ("unknown LVM metadata header\n");
+      grub_util_info ("unknown LVM metadata header");
 #endif
       goto fail2;
     }
@@ -213,7 +213,7 @@ grub_lvm_detect (grub_disk_t disk,
   if (q == metadatabuf + mda_size)
     {
 #ifdef GRUB_UTIL
-      grub_util_info ("error parsing metadata\n");
+      grub_util_info ("error parsing metadata");
 #endif
       goto fail2;
     }
@@ -230,7 +230,7 @@ grub_lvm_detect (grub_disk_t disk,
   if (p == NULL)
     {
 #ifdef GRUB_UTIL
-      grub_util_info ("couldn't find ID\n");
+      grub_util_info ("couldn't find ID");
 #endif
       goto fail3;
     }
@@ -258,7 +258,7 @@ grub_lvm_detect (grub_disk_t disk,
       if (p == NULL)
 	{
 #ifdef GRUB_UTIL
-	  grub_util_info ("unknown extent size\n");
+	  grub_util_info ("unknown extent size");
 #endif
 	  goto fail4;
 	}
@@ -306,7 +306,7 @@ grub_lvm_detect (grub_disk_t disk,
 	      if (p == NULL)
 		{
 #ifdef GRUB_UTIL
-		  grub_util_info ("unknown pe_start\n");
+		  grub_util_info ("unknown pe_start");
 #endif
 		  goto pvs_fail;
 		}
@@ -315,7 +315,7 @@ grub_lvm_detect (grub_disk_t disk,
 	      if (p == NULL)
 		{
 #ifdef GRUB_UTIL
-		  grub_util_info ("error parsing pe_start\n");
+		  grub_util_info ("error parsing pe_start");
 #endif
 		  goto pvs_fail;
 		}
@@ -402,7 +402,7 @@ grub_lvm_detect (grub_disk_t disk,
 		if (p == NULL)
 		  {
 #ifdef GRUB_UTIL
-		    grub_util_info ("couldn't find ID\n");
+		    grub_util_info ("couldn't find ID");
 #endif
 		    goto lvs_fail;
 		  }
@@ -422,7 +422,7 @@ grub_lvm_detect (grub_disk_t disk,
 	      if (p == NULL)
 		{
 #ifdef GRUB_UTIL
-		  grub_util_info ("unknown segment_count\n");
+		  grub_util_info ("unknown segment_count");
 #endif
 		  goto lvs_fail;
 		}
@@ -436,7 +436,7 @@ grub_lvm_detect (grub_disk_t disk,
 		  if (p == NULL)
 		    {
 #ifdef GRUB_UTIL
-		      grub_util_info ("unknown segment\n");
+		      grub_util_info ("unknown segment");
 #endif
 		      goto lvs_segment_fail;
 		    }
@@ -445,7 +445,7 @@ grub_lvm_detect (grub_disk_t disk,
 		  if (p == NULL)
 		    {
 #ifdef GRUB_UTIL
-		      grub_util_info ("unknown start_extent\n");
+		      grub_util_info ("unknown start_extent");
 #endif
 		      goto lvs_segment_fail;
 		    }
@@ -453,7 +453,7 @@ grub_lvm_detect (grub_disk_t disk,
 		  if (p == NULL)
 		    {
 #ifdef GRUB_UTIL
-		      grub_util_info ("unknown extent_count\n");
+		      grub_util_info ("unknown extent_count");
 #endif
 		      goto lvs_segment_fail;
 		    }
@@ -475,7 +475,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown stripe_count\n");
+			  grub_util_info ("unknown stripe_count");
 #endif
 			  goto lvs_segment_fail;
 			}
@@ -491,7 +491,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown stripes\n");
+			  grub_util_info ("unknown stripes");
 #endif
 			  goto lvs_segment_fail2;
 			}
@@ -533,7 +533,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown mirror_count\n");
+			  grub_util_info ("unknown mirror_count");
 #endif
 			  goto lvs_segment_fail;
 			}
@@ -545,7 +545,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown mirrors\n");
+			  grub_util_info ("unknown mirrors");
 #endif
 			  goto lvs_segment_fail2;
 			}
@@ -607,7 +607,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown device_count\n");
+			  grub_util_info ("unknown device_count");
 #endif
 			  goto lvs_segment_fail;
 			}
@@ -618,7 +618,7 @@ grub_lvm_detect (grub_disk_t disk,
 			  if (p == NULL)
 			    {
 #ifdef GRUB_UTIL
-			      grub_util_info ("unknown stripe_size\n");
+			      grub_util_info ("unknown stripe_size");
 #endif
 			      goto lvs_segment_fail;
 			    }
@@ -631,7 +631,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      if (p == NULL)
 			{
 #ifdef GRUB_UTIL
-			  grub_util_info ("unknown raids\n");
+			  grub_util_info ("unknown raids");
 #endif
 			  goto lvs_segment_fail2;
 			}
@@ -678,7 +678,7 @@ grub_lvm_detect (grub_disk_t disk,
 		      p2 = grub_strchr (p, '"');
 		      if (p2)
 			*p2 = 0;
-		      grub_util_info ("unknown LVM type %s\n", p);
+		      grub_util_info ("unknown LVM type %s", p);
 		      if (p2)
 			*p2 ='"';
 #endif

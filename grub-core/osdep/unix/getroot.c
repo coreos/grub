@@ -544,6 +544,7 @@ grub_guess_root_devices (const char *dir_in)
 
   if (stat (dir, &st) < 0)
     grub_util_error (_("cannot stat `%s': %s"), dir, strerror (errno));
+  free (dir);
 
   dev = st.st_dev;
 

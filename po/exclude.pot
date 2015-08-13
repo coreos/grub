@@ -7440,7 +7440,57 @@ msgid ""
 "\n"
 msgstr ""
 
-#: util/grub-probe.c:735
+#: grub-core/bus/emu/pci.c:58
 #, c-format
-msgid "%s\n%s %s %s"
+msgid "mapping 0x%llx failed (error %d)"
+msgstr ""
+
+#: grub-core/disk/dmraid_nvidia.c:175
+msgid "nv"
+msgstr ""
+
+#: grub-core/fs/xfs.c:478
+msgid ") - %"
+msgstr ""
+
+#: grub-core/fs/xfs.c:478
+#, c-format
+msgid ", %d
+"
+msgstr ""
+
+#: grub-core/fs/xfs.c:550
+msgid "BMA3"
+msgstr ""
+
+#: grub-core/fs/zfs/zfs.c:284
+msgid "com.delphix:hole_birth"
+msgstr ""
+
+#: grub-core/fs/zfs/zfs.c:285
+msgid "com.delphix:embedded_data"
+msgstr ""
+
+#: grub-core/fs/zfs/zfs.c:286
+msgid "com.delphix:extensible_dataset"
+msgstr ""
+
+#: grub-core/fs/zfs/zfs.c:287
+msgid "org.open-zfs:large_blocks"
+msgstr ""
+
+#: grub-core/fs/zfs/zfs.c:1877
+msgid "/%"
+msgstr ""
+
+#: grub-core/osdep/linux/platform.c:73
+msgid "/sys/firmware/efi/fw_platform_size"
+msgstr ""
+
+#: util/grub-mkrescue.c:454
+msgid "-output"
+msgstr ""
+
+#: util/grub-mkrescue.c:455
+msgid "--output"
 msgstr ""

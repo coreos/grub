@@ -344,7 +344,7 @@ printhex:
 	 nop
 	srl  $t1, $a0, 28
 	addiu $t1, $t1, -10
-	blt  $t1, $zero, 2f
+	bltz  $t1, 2f
 	 sll  $a0, $a0, 4
 	addiu $t1, $t1, 'A'-10-'0' 
 2:	addiu $t1, $t1, '0'+10
@@ -398,7 +398,7 @@ read_spd:
 	move $t2, $a0
 	move $t3, $ra
 	lui $a0, %hi(read_spd_fail)
-	addiu $a0, $a0, %hi(read_spd_fail)
+	addiu $a0, $a0, %lo(read_spd_fail)
 
 	/* Send START.  */
 	lui $t0, %hi(GRUB_CS5536_LBAR_SMBUS + GRUB_CS5536_SMB_REG_CTRL1 + GRUB_MACHINE_PCI_IO_BASE_2F)
@@ -547,7 +547,7 @@ gpio_dump:
 #endif
 gpio_dump_end:	
 
-	.p2align
+	.p2align 3
 
 write_dumpreg:	
 	ld $t2, 0($t6)

@@ -422,7 +422,7 @@ read_device_map (const char *dev_map)
   char buf[1024];	/* XXX */
   int lineno = 0;
 
-  if (dev_map[0] == '\0')
+  if (!dev_map || dev_map[0] == '\0')
     {
       grub_util_info ("no device.map");
       return;

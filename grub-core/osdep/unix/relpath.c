@@ -51,7 +51,10 @@ grub_make_system_path_relative_to_its_root (const char *path)
 #ifdef __linux__
   ret = grub_make_system_path_relative_to_its_root_os (p);
   if (ret)
-    return ret;
+    {
+      free (p);
+      return ret;
+    }
 #endif
 
   /* For ZFS sub-pool filesystems.  */

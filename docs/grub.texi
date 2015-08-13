@@ -5162,8 +5162,10 @@ by @var{shortname} which can be used to remove it (@pxref{net_del_route}).
 Perform configuration of @var{card} using DHCP protocol. If no card name
 is specified, try to configure all existing cards. If configuration was
 successful, interface with name @var{card}@samp{:dhcp} and configured
-address is added to @var{card}. If server provided gateway information in
-DHCP ACK packet, it is added as route entry with the name @var{card}@samp{:dhcp:gw}. Additionally the following DHCP options are recognized and processed:
+address is added to @var{card}.
+@comment If server provided gateway information in
+@comment DHCP ACK packet, it is added as route entry with the name @var{card}@samp{:dhcp:gw}.
+Additionally the following DHCP options are recognized and processed:
 
 @table @samp
 @item 1 (Subnet Mask)
@@ -5426,10 +5428,12 @@ In order to enable authentication support, the @samp{superusers} environment
 variable must be set to a list of usernames, separated by any of spaces,
 commas, semicolons, pipes, or ampersands.  Superusers are permitted to use
 the GRUB command line, edit menu entries, and execute any menu entry.  If
-@samp{superusers} is set, then use of the command line is automatically
-restricted to superusers.
+@samp{superusers} is set, then use of the command line and editing of menu
+entries are automatically restricted to superusers. Setting @samp{superusers}
+to empty string effectively disables both access to CLI and editing of menu
+entries.
 
-Other users may be given access to specific menu entries by giving a list of
+Other users may be allowed to execute specific menu entries by giving a list of
 usernames (as above) using the @option{--users} option to the
 @samp{menuentry} command (@pxref{menuentry}).  If the @option{--unrestricted}
 option is used for a menu entry, then that entry is unrestricted.

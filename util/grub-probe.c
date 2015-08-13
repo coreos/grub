@@ -429,7 +429,7 @@ probe (const char *path, char **device_names, char delim)
       if (print == PRINT_HINT_STR)
 	{
 	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
-	  const char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
+	  char *ofpath = osdev ? grub_util_devname_to_ofpath (osdev) : 0;
 	  char *biosname, *bare, *efi;
 	  const char *map;
 
@@ -443,6 +443,7 @@ probe (const char *path, char **device_names, char delim)
 	      grub_util_fprint_full_disk_name (stdout, tmp, dev);
 	      printf ("' ");
 	      free (tmp);
+	      free (ofpath);
 	    }
 
 	  biosname = grub_util_guess_bios_drive (*curdev);
@@ -485,23 +486,18 @@ probe (const char *path, char **device_names, char delim)
 	    printf (" ");
 	  else
 	    printf ("\n");
-
-	  grub_device_close (dev);
-	  continue;
 	}
       
-      if ((print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
+      else if ((print == PRINT_COMPATIBILITY_HINT || print == PRINT_BIOS_HINT
 	   || print == PRINT_IEEE1275_HINT || print == PRINT_BAREMETAL_HINT
 	   || print == PRINT_EFI_HINT || print == PRINT_ARC_HINT)
 	  && dev->disk->dev->id != GRUB_DISK_DEVICE_HOSTDISK_ID)
 	{
 	  grub_util_fprint_full_disk_name (stdout, dev->disk->name, dev);
 	  putchar (delim);
-	  grub_device_close (dev);
-	  continue;
 	}
 
-      if (print == PRINT_COMPATIBILITY_HINT)
+      else if (print == PRINT_COMPATIBILITY_HINT)
 	{
 	  const char *map;
 	  char *biosname;
@@ -519,16 +515,14 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      grub_util_fprint_full_disk_name (stdout, biosname, dev);
 	      putchar (delim);
+	      free (biosname);
+	      /* Compatibility hint is one device only.  */
+	      grub_device_close (dev);
+	      break;
 	    }
-	  free (biosname);
-	  grub_device_close (dev);
-	  /* Compatibility hint is one device only.  */
-	  if (biosname)
-	    break;
-	  continue;
 	}
 
-      if (print == PRINT_BIOS_HINT)
+      else if (print == PRINT_BIOS_HINT)
 	{
 	  char *biosname;
 	  biosname = grub_util_guess_bios_drive (*curdev);
@@ -536,12 +530,10 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      grub_util_fprint_full_disk_name (stdout, biosname, dev);
 	      putchar (delim);
+	      free (biosname);
 	    }
-	  free (biosname);
-	  grub_device_close (dev);
-	  continue;
 	}
-      if (print == PRINT_IEEE1275_HINT)
+      else if (print == PRINT_IEEE1275_HINT)
 	{
 	  const char *osdev = grub_util_biosdisk_get_osdev (dev->disk);
 	  char *ofpath = grub_util_devname_to_ofpath (osdev);
@@ -565,11 +557,8 @@ probe (const char *path, char **device_names, char delim)
 	      free (ofpath);
 	      putchar (delim);
 	    }
-
-	  grub_device_close (dev);
-	  continue;
 	}
-      if (print == PRINT_EFI_HINT)
+      else if (print == PRINT_EFI_HINT)
 	{
 	  char *biosname;
 	  const char *map;
@@ -585,14 +574,11 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      grub_util_fprint_full_disk_name (stdout, biosname, dev);
 	      putchar (delim);
+	      free (biosname);
 	    }
-
-	  free (biosname);
-	  grub_device_close (dev);
-	  continue;
 	}
 
-      if (print == PRINT_BAREMETAL_HINT)
+      else if (print == PRINT_BAREMETAL_HINT)
 	{
 	  char *biosname;
 	  const char *map;
@@ -609,14 +595,11 @@ probe (const char *path, char **device_names, char delim)
 	    {
 	      grub_util_fprint_full_disk_name (stdout, biosname, dev);
 	      putchar (delim);
+	      free (biosname);
 	    }
-
-	  free (biosname);
-	  grub_device_close (dev);
-	  continue;
 	}
 
-      if (print == PRINT_ARC_HINT)
+      else if (print == PRINT_ARC_HINT)
 	{
 	  const char *map;
 
@@ -626,46 +609,28 @@ probe (const char *path, char **device_names, char delim)
 	      grub_util_fprint_full_disk_name (stdout, map, dev);
 	      putchar (delim);
 	    }
-
-	  /* FIXME */
-	  grub_device_close (dev);
-	  continue;
 	}
 
-      if (print == PRINT_ABSTRACTION)
-	{
-	  probe_abstraction (dev->disk, delim);
-	  grub_device_close (dev);
-	  continue;
-	}
+      else if (print == PRINT_ABSTRACTION)
+	probe_abstraction (dev->disk, delim);
 
-      if (print == PRINT_CRYPTODISK_UUID)
-	{
-	  probe_cryptodisk_uuid (dev->disk, delim);
-	  grub_device_close (dev);
-	  continue;
-	}
+      else if (print == PRINT_CRYPTODISK_UUID)
+	probe_cryptodisk_uuid (dev->disk, delim);
 
-      if (print == PRINT_PARTMAP)
-	{
-	  /* Check if dev->disk itself is contained in a partmap.  */
-	  probe_partmap (dev->disk, delim);
-	  grub_device_close (dev);
-	  continue;
-	}
+      else if (print == PRINT_PARTMAP)
+	/* Check if dev->disk itself is contained in a partmap.  */
+	probe_partmap (dev->disk, delim);
 
-      if (print == PRINT_MSDOS_PARTTYPE)
+      else if (print == PRINT_MSDOS_PARTTYPE)
 	{
 	  if (dev->disk->partition
 	      && strcmp(dev->disk->partition->partmap->name, "msdos") == 0)
 	    printf ("%02x", dev->disk->partition->msdostype);
 
 	  putchar (delim);
-	  grub_device_close (dev);
-	  continue;
 	}
 
-      if (print == PRINT_GPT_PARTTYPE)
+      else if (print == PRINT_GPT_PARTTYPE)
 	{
           if (dev->disk->partition
 	      && strcmp (dev->disk->partition->partmap->name, "gpt") == 0)
@@ -694,9 +659,9 @@ probe (const char *path, char **device_names, char delim)
               dev->disk->partition = p;
             }
           putchar (delim);
-          grub_device_close (dev);
-          continue;
         }
+
+      grub_device_close (dev);
     }
 
  end:

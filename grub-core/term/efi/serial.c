@@ -173,7 +173,10 @@ grub_efiserial_init (void)
 
       port->name = grub_malloc (sizeof ("efiXXXXXXXXXXXXXXXXXXXX"));
       if (!port->name)
-	return;
+	{
+	  grub_free (port);
+	  return;
+	}
       grub_snprintf (port->name, sizeof ("efiXXXXXXXXXXXXXXXXXXXX"),
 		     "efi%d", num_serial++);
 

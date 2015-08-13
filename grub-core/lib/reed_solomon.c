@@ -362,7 +362,7 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
 
   /* Nothing to do.  */
   if (!rs)
-    return;
+    goto exit;
 
   init_powx ();
 
@@ -388,6 +388,7 @@ grub_reed_solomon_add_redundancy (void *buffer, grub_size_t data_size,
 #ifndef TEST
   assert (grub_memcmp (tmp, buffer, data_size) == 0);
 #endif
+exit:
   free (tmp);
 }
 #endif

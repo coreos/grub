@@ -750,7 +750,10 @@ grub_ohci_setup_transfer (grub_usb_controller_t dev,
     {
       cdata->td_head_virt = grub_ohci_alloc_td (o);
       if (!cdata->td_head_virt)
-        return GRUB_USB_ERR_INTERNAL; /* We don't need de-allocate ED */
+	{
+	  grub_free (cdata);
+	  return GRUB_USB_ERR_INTERNAL; /* We don't need de-allocate ED */
+	}
       /* We can set td_head only when ED is not active, i.e.
        * when it is newly allocated. */
       cdata->ed_virt->td_head

@@ -311,8 +311,8 @@ grub_usb_bulk_finish_readwrite (grub_usb_transfer_t transfer)
 		 transfer->size + 1);
 
   grub_free (transfer->transactions);
-  grub_free (transfer);
   grub_dma_free (transfer->data_chunk);
+  grub_free (transfer);
 }
 
 static grub_usb_err_t

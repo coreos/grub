@@ -773,7 +773,7 @@ bless (grub_device_t dev, const char *path, int x86)
   err = grub_mac_bless_inode (dev, st.st_ino, S_ISDIR (st.st_mode), x86);
   if (err)
     grub_util_error ("%s", grub_errmsg);
-  grub_util_info ("blessed\n");
+  grub_util_info ("blessed");
 }
 
 static void
@@ -1070,7 +1070,7 @@ main (int argc, char *argv[])
 	efidir_is_mac = 1;
 
       if (!efidir_is_mac && grub_strcmp (fs->name, "fat") != 0)
-	grub_util_error (_("%s doesn't look like an EFI partition.\n"), efidir);
+	grub_util_error (_("%s doesn't look like an EFI partition"), efidir);
 
       /* The EFI specification requires that an EFI System Partition must
 	 contain an "EFI" subdirectory, and that OS loaders are stored in
@@ -1271,7 +1271,7 @@ main (int argc, char *argv[])
 
   if (!config.is_cryptodisk_enabled && have_cryptodisk)
     grub_util_error (_("attempt to install to encrypted disk without cryptodisk enabled. "
-		       "Set `%s' in file `%s'."), "GRUB_ENABLE_CRYPTODISK=y",
+		       "Set `%s' in file `%s'"), "GRUB_ENABLE_CRYPTODISK=y",
 		     grub_util_get_config_filename ());
 
   if (disk_module && grub_strcmp (disk_module, "ata") == 0)
@@ -1727,7 +1727,7 @@ main (int argc, char *argv[])
 	  grub_elf = grub_util_path_concat (2, core_services, "grub.elf");
 	  grub_install_copy_file (imgfile, grub_elf, 1);
 
-	  f = grub_util_fopen (mach_kernel, "r+");
+	  f = grub_util_fopen (mach_kernel, "a+");
 	  if (!f)
 	    grub_util_error (_("Can't create file: %s"), strerror (errno));
 	  fclose (f);

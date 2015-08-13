@@ -1501,17 +1501,31 @@ enum
     GRUB_EFI_NETWORK_INITIALIZED,
   };
 
+enum
+  {
+    GRUB_EFI_SIMPLE_NETWORK_RECEIVE_UNICAST		  = 0x01,
+    GRUB_EFI_SIMPLE_NETWORK_RECEIVE_MULTICAST		  = 0x02,
+    GRUB_EFI_SIMPLE_NETWORK_RECEIVE_BROADCAST		  = 0x04,
+    GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS		  = 0x08,
+    GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS_MULTICAST = 0x10,
+  };
+
 struct grub_efi_simple_network
 {
   grub_uint64_t revision;
   grub_efi_status_t (*start) (struct grub_efi_simple_network *this);
-  void (*stop) (void);
+  grub_efi_status_t (*stop) (struct grub_efi_simple_network *this);
   grub_efi_status_t (*initialize) (struct grub_efi_simple_network *this,
 				   grub_efi_uintn_t extra_rx,
 				   grub_efi_uintn_t extra_tx);
   void (*reset) (void);
-  void (*shutdown) (void);
-  void (*receive_filters) (void);
+  grub_efi_status_t (*shutdown) (struct grub_efi_simple_network *this);
+  grub_efi_status_t (*receive_filters) (struct grub_efi_simple_network *this,
+					grub_uint32_t enable,
+					grub_uint32_t disable,
+					grub_efi_boolean_t reset_mcast_filter,
+					grub_efi_uintn_t mcast_filter_count,
+					grub_efi_mac_address_t *mcast_filter);
   void (*station_address) (void);
   void (*statistics) (void);
   void (*mcastiptomac) (void);

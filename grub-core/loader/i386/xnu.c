@@ -269,9 +269,9 @@ grub_xnu_devprop_add_property (struct grub_xnu_devprop_device_descriptor *dev,
   prop->data = grub_malloc (prop->length);
   if (!prop->data)
     {
-      grub_free (prop);
       grub_free (prop->name);
       grub_free (prop->name16);
+      grub_free (prop);
       return grub_errno;
     }
   grub_memcpy (prop->data, data, prop->length);

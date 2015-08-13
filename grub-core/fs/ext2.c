@@ -538,8 +538,9 @@ grub_ext2_read_block (grub_fshelp_node_t node, grub_disk_addr_t fileblock)
       shift = 2;
       goto indirect;
     }
-  return grub_error (GRUB_ERR_BAD_FS,
-		     "ext2fs doesn't support quadruple indirect blocks");
+  grub_error (GRUB_ERR_BAD_FS,
+	      "ext2fs doesn't support quadruple indirect blocks");
+  return -1;
 
 indirect:
   do {
@@ -554,7 +555,7 @@ indirect:
 			 & ((1 << log_perblock) - 1))
 			* sizeof (indir),
 			sizeof (indir), &indir))
-      return grub_errno;
+      return -1;
   } while (shift--);
 
   return grub_le_to_cpu32 (indir);

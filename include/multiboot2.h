@@ -156,9 +156,6 @@ struct multiboot_header_tag_module_align
   multiboot_uint16_t type;
   multiboot_uint16_t flags;
   multiboot_uint32_t size;
-  multiboot_uint32_t width;
-  multiboot_uint32_t height;
-  multiboot_uint32_t depth;
 };
 
 struct multiboot_color

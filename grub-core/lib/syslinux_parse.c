@@ -772,7 +772,7 @@ print_escaped (struct output_buffer *outbuf,
   if (err)
     return err;
   outbuf->buf[outbuf->ptr++] = '\'';
-  for (ptr = from; *ptr; ptr++)
+  for (ptr = from; *ptr && ptr < to; ptr++)
     {
       if (*ptr == '\'')
 	{
@@ -874,7 +874,9 @@ print_config (struct output_buffer *outbuf,
   print_string ("#");
   print_file (outbuf, menu, filename, NULL);
   print_string (" ");
-  print (outbuf, newname, grub_strlen (newname));
+  err = print (outbuf, newname, grub_strlen (newname));
+  if (err)
+    return err;
   print_string (":\n");
 
   for (menuptr = menu; menuptr; menuptr = menuptr->parent, depth++)
@@ -944,8 +946,8 @@ write_entry (struct output_buffer *outbuf,
     {
     case KERNEL_LINUX:
       {
-	char *ptr;
-	char *initrd = NULL;
+	const char *ptr;
+	const char *initrd = NULL, *initrde= NULL;
 	for (ptr = curentry->append; ptr && *ptr; ptr++)
 	  if ((ptr == curentry->append || grub_isspace (ptr[-1]))
 	      && grub_strncasecmp (ptr, "initrd=", sizeof ("initrd=") - 1)
@@ -953,12 +955,8 @@ write_entry (struct output_buffer *outbuf,
 	    break;
 	if (ptr && *ptr)
 	  {
-	    char *ptr2;
-	    initrd = grub_strdup(ptr + sizeof ("initrd=") - 1);
-	    if (!initrd)
-	      return grub_errno;
-	    for (ptr2 = initrd; *ptr2 && !grub_isspace (*ptr2); ptr2++);
-	    *ptr2 = 0;
+	    initrd = ptr + sizeof ("initrd=") - 1;
+	    for (initrde = initrd; *initrde && !grub_isspace (*initrde); initrde++);
 	  }
 	print_string (" if test x$grub_platform = xpc; then "
 		      "linux_suffix=16; else linux_suffix= ; fi\n");
@@ -966,7 +964,11 @@ write_entry (struct output_buffer *outbuf,
 	print_file (outbuf, menu, curentry->kernel_file, NULL);
 	print_string (" ");
 	if (curentry->append)
-	  print (outbuf, curentry->append, grub_strlen (curentry->append));
+	  {
+	    err = print (outbuf, curentry->append, grub_strlen (curentry->append));
+	    if (err)
+	      return err;
+	  }
 	print_string ("\n");
 	if (initrd || curentry->initrds)
 	  {
@@ -974,7 +976,7 @@ write_entry (struct output_buffer *outbuf,
 	    print_string ("  initrd$linux_suffix ");
 	    if (initrd)
 	      {
-		print_file (outbuf, menu, initrd, NULL);
+		print_file (outbuf, menu, initrd, initrde);
 		print_string (" ");
 	      }
 	    for (lst = curentry->initrds; lst; lst = lst->next)
@@ -985,7 +987,6 @@ write_entry (struct output_buffer *outbuf,
 
 	    print_string ("\n");
 	  }
-	grub_free (initrd);
       }
       break;
     case KERNEL_CHAINLOADER:
@@ -1197,8 +1198,7 @@ write_entry (struct output_buffer *outbuf,
 		  ptr++;
 		i386e = ptr;
 	      }
-	    if (lme)
-	      *lme = '\0';
+	    *lme = '\0';
 	    if (paee)
 	      *paee = '\0';
 	    if (i386e)

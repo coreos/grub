@@ -116,6 +116,7 @@ if test "x$with_platform" = x; then
     x86_64-*) platform=pc ;;
     powerpc-*) platform=ieee1275 ;;
     powerpc64-*) platform=ieee1275 ;;
+    powerpc64le-*) platform=ieee1275 ;;
     sparc64-*) platform=ieee1275 ;;
     mipsel-*) platform=loongson ;;
     mips-*) platform=arc ;;
@@ -138,6 +139,7 @@ case "$target_cpu"-"$platform" in
   x86_64-none) ;;
   x86_64-*) target_cpu=i386 ;;
   powerpc64-ieee1275) target_cpu=powerpc ;;
+  powerpc64le-ieee1275) target_cpu=powerpc ;;
 esac
 
 # Check if the platform is supported, make final adjustments.
@@ -560,6 +562,41 @@ AC_COMPILE_IFELSE(
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
 
+if test x$target_cpu = xpowerpc; then
+  AC_CACHE_CHECK([for options to get big-endian compilation], grub_cv_target_cc_big_endian, [
+    grub_cv_target_cc_big_endian=no
+    for cand in "-target powerpc -Wl,-EB" "-target powerpc" \
+		"-target powerpc-linux-gnu -Wl,-EB" "-target powerpc-linux-gnu" \
+		"-mbig-endian"; do
+      if test x"$grub_cv_target_cc_big_endian" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__ORDER_BIG_ENDIAN__ != __BYTE_ORDER__)
+#error still little endian
+#endif
+asm (".globl start; start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_big_endian="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_big_endian" = xno ; then
+    AC_MSG_ERROR([could not force big-endian])
+  fi
+
+  skip_linkflags="$(echo "$grub_cv_target_cc_big_endian"|sed 's@-Wl,-EB@@')"
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $skip_linkflags"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_big_endian"
+fi
+
 AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
 test_program=
 case "x$target_cpu-$platform" in
@@ -686,9 +723,9 @@ if test x"$platform" != xemu ; then
   AC_CACHE_CHECK([for options to get soft-float], grub_cv_target_cc_soft_float, [
     grub_cv_target_cc_soft_float=no
     if test "x$target_cpu" = xarm64; then
-       CFLAGS="$TARGET_CFLAGS -march=armv8-a+nofp+nosimd -Werror"
+       CFLAGS="$TARGET_CFLAGS -mgeneral-regs-only -Werror"
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		         [grub_cv_target_cc_soft_float="-march=armv8-a+nofp+nosimd"], [])
+		         [grub_cv_target_cc_soft_float="-mgeneral-regs-only"], [])
     fi
     if test "x$target_cpu" = xia64; then
        CFLAGS="$TARGET_CFLAGS -mno-inline-float-divide -mno-inline-sqrt -Werror"
@@ -720,15 +757,7 @@ if test x"$platform" != xemu ; then
       TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_soft_float"
       ;;
   esac
-  case x"$grub_cv_target_cc_soft_float" in
-    x"-march=armv8-a+nofp+nosimd")
-      # +nosimd disables also the cache opcodes that we need in asm.
-      TARGET_CCASFLAGS="$TARGET_CCASFLAGS -march=armv8-a+nofp"
-      ;;
-    *)
-      TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
-      ;;
-  esac
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_soft_float"
 
 fi
 
@@ -1152,7 +1181,7 @@ fi
 
 # Check for libgcc symbols
 if test x"$platform" = xemu; then
-AC_CHECK_FUNCS(__udivsi3 __umodsi3 __divsi3 __modsi3 __divdi3 __moddi3 __udivdi3 __umoddi3 __ctzdi2 __ctzsi2 __aeabi_uidiv __aeabi_uidivmod __aeabi_idiv __aeabi_idivmod __aeabi_ulcmp __muldi3 __aeabi_lmul __aeabi_memcpy __aeabi_memset __aeabi_lasr __aeabi_llsl __aeabi_llsr _restgpr_14_x __ucmpdi2 __ashldi3 __ashrdi3 __lshrdi3 __bswapsi2 __bswapdi2 __bzero __register_frame_info __deregister_frame_info ___chkstk_ms __chkstk_ms)
+AC_CHECK_FUNCS(__udivsi3 __umodsi3 __divsi3 __modsi3 __divdi3 __moddi3 __udivdi3 __umoddi3 __ctzdi2 __ctzsi2 __aeabi_uidiv __aeabi_uidivmod __aeabi_idiv __aeabi_idivmod __aeabi_ulcmp __muldi3 __aeabi_lmul __aeabi_memcpy __aeabi_memcpy4 __aeabi_memcpy8 __aeabi_memclr __aeabi_memclr4 __aeabi_memclr8 __aeabi_memset __aeabi_lasr __aeabi_llsl __aeabi_llsr _restgpr_14_x __ucmpdi2 __ashldi3 __ashrdi3 __lshrdi3 __bswapsi2 __bswapdi2 __bzero __register_frame_info __deregister_frame_info ___chkstk_ms __chkstk_ms)
 fi
 
 if test "x$TARGET_APPLE_LINKER" = x1 ; then

@@ -17,6 +17,7 @@ New in 2.02:
     files.
   * ZFS features support.
   * ZFS LZ4 support.
+  * XFS V5 format support.
 
 * New/improved terminal and video support:
   * Monochrome text (matching `hercules' in GRUB Legacy).
@@ -145,6 +146,10 @@ New in 2.02:
     Python 2.6.
   * modinfo.sh contains build information now.
   * Added many new tests to improve robustness.
+  * Target is built without libgcc now. Necessary builtins are reimplemented
+    directly. This removes requirement for target-specific runtime on build
+    system.
+  * emu libusb support removed (was broken and unmaintained).
 
 * Revision control moved to git.
 

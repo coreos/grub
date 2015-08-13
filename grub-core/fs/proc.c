@@ -22,6 +22,7 @@
 #include <grub/file.h>
 #include <grub/mm.h>
 #include <grub/dl.h>
+#include <grub/archelp.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -74,6 +75,44 @@ grub_procdev_write (grub_disk_t disk __attribute ((unused)),
   return GRUB_ERR_OUT_OF_RANGE;
 }
 
+struct grub_archelp_data
+{
+  struct grub_procfs_entry *entry, *next_entry;
+};
+
+static void
+grub_procfs_rewind (struct grub_archelp_data *data)
+{
+  data->entry = NULL;
+  data->next_entry = grub_procfs_entries;
+}
+
+static grub_err_t
+grub_procfs_find_file (struct grub_archelp_data *data, char **name,
+		     grub_int32_t *mtime,
+		     grub_uint32_t *mode)
+{
+  data->entry = data->next_entry;
+  if (!data->entry)
+    {
+      *mode = GRUB_ARCHELP_ATTR_END;
+      return GRUB_ERR_NONE;
+    }
+  data->next_entry = data->entry->next;
+  *mode = GRUB_ARCHELP_ATTR_FILE | GRUB_ARCHELP_ATTR_NOTIME;
+  *name = grub_strdup (data->entry->name);
+  *mtime = 0;
+  if (!*name)
+    return grub_errno;
+  return GRUB_ERR_NONE;
+}
+
+static struct grub_archelp_ops arcops =
+  {
+    .find_file = grub_procfs_find_file,
+    .rewind = grub_procfs_rewind
+  };
+
 static grub_ssize_t
 grub_procfs_read (grub_file_t file, char *buf, grub_size_t len)
 {
@@ -99,44 +138,35 @@ static grub_err_t
 grub_procfs_dir (grub_device_t device, const char *path,
 		 grub_fs_dir_hook_t hook, void *hook_data)
 {
-  const char *ptr;
-  struct grub_dirhook_info info;
-  struct grub_procfs_entry *entry;
-
-  grub_memset (&info, 0, sizeof (info));
+  struct grub_archelp_data data;
 
   /* Check if the disk is our dummy disk.  */
   if (grub_strcmp (device->disk->name, "proc"))
     return grub_error (GRUB_ERR_BAD_FS, "not a procfs");
-  for (ptr = path; *ptr == '/'; ptr++);
-  if (*ptr)
-    return 0;
-  FOR_LIST_ELEMENTS((entry), (grub_procfs_entries))
-    if (hook (entry->name, &info, hook_data))
-      return 0;
-  return 0;
+
+  grub_procfs_rewind (&data);
+
+  return grub_archelp_dir (&data, &arcops,
+			   path, hook, hook_data);
 }
 
 static grub_err_t
 grub_procfs_open (struct grub_file *file, const char *path)
 {
-  const char *pathptr;
-  struct grub_procfs_entry *entry;
+  grub_err_t err;
+  struct grub_archelp_data data;
+  grub_size_t sz;
 
-  for (pathptr = path; *pathptr == '/'; pathptr++);
+  grub_procfs_rewind (&data);
 
-  FOR_LIST_ELEMENTS((entry), (grub_procfs_entries))
-    if (grub_strcmp (pathptr, entry->name) == 0)
-    {
-      grub_size_t sz;
-      file->data = entry->get_contents (&sz);
-      if (!file->data)
-	return grub_errno;
-      file->size = sz;
-      return GRUB_ERR_NONE;
-    }
-
-  return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("file `%s' not found"), path);
+  err = grub_archelp_open (&data, &arcops, path);
+  if (err)
+    return err;
+  file->data = data.entry->get_contents (&sz);
+  if (!file->data)
+    return grub_errno;
+  file->size = sz;
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_disk_dev grub_procfs_dev = {

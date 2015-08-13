@@ -17,13 +17,11 @@
  */
 
 #include <grub/symbol.h>
-#include <grub/cpu/kernel.h>
 	
 	.p2align	4	/* force 16-byte alignment */
 
 	.set noreorder
 	.set nomacro
-	mips_attributes
 
 VARIABLE (grub_relocator_forward_start)
 	move $a0, $9

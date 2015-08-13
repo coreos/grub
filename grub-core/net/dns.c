@@ -262,7 +262,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
       grub_netbuff_free (nb);
       return GRUB_ERR_NONE;
     }
-  for (i = 0; i < grub_cpu_to_be16 (head->qdcount); i++)
+  for (i = 0; i < grub_be_to_cpu16 (head->qdcount); i++)
     {
       if (ptr >= nb->tail)
 	{
@@ -277,7 +277,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
       ptr += 4;
     }
   *data->addresses = grub_malloc (sizeof ((*data->addresses)[0])
-				 * grub_cpu_to_be16 (head->ancount));
+				 * grub_be_to_cpu16 (head->ancount));
   if (!*data->addresses)
     {
       grub_errno = GRUB_ERR_NONE;
@@ -286,7 +286,7 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
     }
   reparse_ptr = ptr;
  reparse:
-  for (i = 0, ptr = reparse_ptr; i < grub_cpu_to_be16 (head->ancount); i++)
+  for (i = 0, ptr = reparse_ptr; i < grub_be_to_cpu16 (head->ancount); i++)
     {
       int ignored = 0;
       grub_uint8_t class;

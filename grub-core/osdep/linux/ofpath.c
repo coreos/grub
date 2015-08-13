@@ -539,7 +539,7 @@ grub_util_devname_to_ofpath (const char *sys_devname)
     ofpath = xstrdup ("floppy");
   else
     {
-      grub_util_warn (_("unknown device type %s\n"), device);
+      grub_util_warn (_("unknown device type %s"), device);
       ofpath = NULL;
     }
 

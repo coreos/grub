@@ -140,7 +140,7 @@ process_input_dir (const char *input_dir, enum grub_install_plat platform)
 
   prefix = xasprintf ("/%s", subdir);
   if (!targets[platform].mkimage_target)
-    grub_util_error (_("unsupported platform %s\n"), platsub);
+    grub_util_error (_("unsupported platform %s"), platsub);
 
   grub_cfg = grub_util_path_concat (2, grubdir, "grub.cfg");
   cfg = grub_util_fopen (grub_cfg, "wb");

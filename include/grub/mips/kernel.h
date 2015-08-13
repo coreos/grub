@@ -21,8 +21,4 @@
 
 #include <grub/symbol.h>
 
-#ifdef ASM_FILE
-#define mips_attributes .gnu_attribute 4, 3
-#endif
-
 #endif /* ! GRUB_KERNEL_MACHINE_HEADER */

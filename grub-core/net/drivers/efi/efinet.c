@@ -142,9 +142,80 @@ get_card_packet (struct grub_net_card *dev)
   return nb;
 }
 
+static grub_err_t
+open_card (struct grub_net_card *dev)
+{
+  grub_efi_simple_network_t *net;
+
+  /* Try to reopen SNP exlusively to close any active MNP protocol instance
+     that may compete for packet polling
+   */
+  net = grub_efi_open_protocol (dev->efi_handle, &net_io_guid,
+				GRUB_EFI_OPEN_PROTOCOL_BY_EXCLUSIVE);
+  if (net)
+    {
+      if (net->mode->state == GRUB_EFI_NETWORK_STOPPED
+	  && efi_call_1 (net->start, net) != GRUB_EFI_SUCCESS)
+	return grub_error (GRUB_ERR_NET_NO_CARD, "%s: net start failed",
+			   dev->name);
+
+      if (net->mode->state == GRUB_EFI_NETWORK_STOPPED)
+	return grub_error (GRUB_ERR_NET_NO_CARD, "%s: card stopped",
+			   dev->name);
+
+      if (net->mode->state == GRUB_EFI_NETWORK_STARTED
+	  && efi_call_3 (net->initialize, net, 0, 0) != GRUB_EFI_SUCCESS)
+	return grub_error (GRUB_ERR_NET_NO_CARD, "%s: net initialize failed",
+			   dev->name);
+
+      /* Enable hardware receive filters if driver declares support for it.
+	 We need unicast and broadcast and additionaly all nodes and
+	 solicited multicast for IPv6. Solicited multicast is per-IPv6
+	 address and we currently do not have API to do it so simply
+	 try to enable receive of all multicast packets or evertyhing in
+	 the worst case (i386 PXE driver always enables promiscuous too).
+
+	 This does trust firmware to do what it claims to do.
+       */
+      if (net->mode->receive_filter_mask)
+	{
+	  grub_uint32_t filters = GRUB_EFI_SIMPLE_NETWORK_RECEIVE_UNICAST   |
+				  GRUB_EFI_SIMPLE_NETWORK_RECEIVE_BROADCAST |
+				  GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS_MULTICAST;
+
+	  filters &= net->mode->receive_filter_mask;
+	  if (!(filters & GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS_MULTICAST))
+	    filters |= (net->mode->receive_filter_mask &
+			GRUB_EFI_SIMPLE_NETWORK_RECEIVE_PROMISCUOUS);
+
+	  efi_call_6 (net->receive_filters, net, filters, 0, 0, 0, NULL);
+	}
+
+      efi_call_4 (grub_efi_system_table->boot_services->close_protocol,
+		  dev->efi_net, &net_io_guid,
+		  grub_efi_image_handle, dev->efi_handle);
+      dev->efi_net = net;
+    }
+
+  /* If it failed we just try to run as best as we can */
+  return GRUB_ERR_NONE;
+}
+
+static void
+close_card (struct grub_net_card *dev)
+{
+  efi_call_1 (dev->efi_net->shutdown, dev->efi_net);
+  efi_call_1 (dev->efi_net->stop, dev->efi_net);
+  efi_call_4 (grub_efi_system_table->boot_services->close_protocol,
+	      dev->efi_net, &net_io_guid,
+	      grub_efi_image_handle, dev->efi_handle);
+}
+
 static struct grub_net_card_driver efidriver =
   {
     .name = "efinet",
+    .open = open_card,
+    .close = close_card,
     .send = send_card_buffer,
     .recv = get_card_packet
   };
@@ -174,6 +245,29 @@ grub_efinet_findcards (void)
     {
       grub_efi_simple_network_t *net;
       struct grub_net_card *card;
+      grub_efi_device_path_t *dp, *parent = NULL, *child = NULL;
+
+      /* EDK2 UEFI PXE driver creates IPv4 and IPv6 messaging devices as
+	 children of main MAC messaging device. We only need one device with
+	 bound SNP per physical card, otherwise they compete with each other
+	 when polling for incoming packets.
+       */
+      dp = grub_efi_get_device_path (*handle);
+      if (!dp)
+	continue;
+      for (; ! GRUB_EFI_END_ENTIRE_DEVICE_PATH (dp); dp = GRUB_EFI_NEXT_DEVICE_PATH (dp))
+	{
+	  parent = child;
+	  child = dp;
+	}
+      if (child
+	  && GRUB_EFI_DEVICE_PATH_TYPE (child) == GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	  && (GRUB_EFI_DEVICE_PATH_SUBTYPE (child) == GRUB_EFI_IPV4_DEVICE_PATH_SUBTYPE
+	      || GRUB_EFI_DEVICE_PATH_SUBTYPE (child) == GRUB_EFI_IPV6_DEVICE_PATH_SUBTYPE)
+	  && parent
+	  && GRUB_EFI_DEVICE_PATH_TYPE (parent) == GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	  && GRUB_EFI_DEVICE_PATH_SUBTYPE (parent) == GRUB_EFI_MAC_ADDRESS_DEVICE_PATH_SUBTYPE)
+	continue;
 
       net = grub_efi_open_protocol (*handle, &net_io_guid,
 				    GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
@@ -251,7 +345,33 @@ grub_efi_net_config_real (grub_efi_handle_t hnd, char **device,
     if (! cdp)
       continue;
     if (grub_efi_compare_device_paths (dp, cdp) != 0)
-      continue;
+      {
+	grub_efi_device_path_t *ldp, *dup_dp, *dup_ldp;
+	int match;
+
+	/* EDK2 UEFI PXE driver creates pseudo devices with type IPv4/IPv6
+	   as children of Ethernet card and binds PXE and Load File protocols
+	   to it. Loaded Image Device Path protocol will point to these pseudo
+	   devices. We skip them when enumerating cards, so here we need to
+	   find matching MAC device.
+         */
+	ldp = grub_efi_find_last_device_path (dp);
+	if (GRUB_EFI_DEVICE_PATH_TYPE (ldp) != GRUB_EFI_MESSAGING_DEVICE_PATH_TYPE
+	    || (GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) != GRUB_EFI_IPV4_DEVICE_PATH_SUBTYPE
+		&& GRUB_EFI_DEVICE_PATH_SUBTYPE (ldp) != GRUB_EFI_IPV6_DEVICE_PATH_SUBTYPE))
+	  continue;
+	dup_dp = grub_efi_duplicate_device_path (dp);
+	if (!dup_dp)
+	  continue;
+	dup_ldp = grub_efi_find_last_device_path (dup_dp);
+	dup_ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
+	dup_ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
+	dup_ldp->length = sizeof (*dup_ldp);
+	match = grub_efi_compare_device_paths (dup_dp, cdp) == 0;
+	grub_free (dup_dp);
+	if (!match)
+	  continue;
+      }
     pxe = grub_efi_open_protocol (hnd, &pxe_io_guid,
 				  GRUB_EFI_OPEN_PROTOCOL_GET_PROTOCOL);
     if (! pxe)
