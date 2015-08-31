@@ -30,7 +30,8 @@
 #include <grub/i18n.h>
 #include <grub/disk.h>
 #include <grub/partition.h>
-#if defined(DO_SEARCH_PART_UUID) || defined(DO_SEARCH_PART_LABEL)
+#if defined(DO_SEARCH_PART_UUID) || defined(DO_SEARCH_PART_LABEL) || \
+    defined(DO_SEARCH_DISK_UUID)
 #include <grub/gpt_partition.h>
 #endif
 
@@ -69,7 +70,7 @@ iterate_device (const char *name, void *data)
       name[0] == 'f' && name[1] == 'd' && name[2] >= '0' && name[2] <= '9')
     return 0;
 
-#ifdef DO_SEARCH_FS_UUID
+#if defined(DO_SEARCH_FS_UUID) || defined(DO_SEARCH_DISK_UUID)
 #define compare_fn grub_strcasecmp
 #else
 #define compare_fn grub_strcmp
@@ -124,6 +125,25 @@ iterate_device (const char *name, void *data)
 	    {
 	      if (grub_strcmp (quid, ctx->key) == 0)
 		    found = 1;
+
+	      grub_free (quid);
+	    }
+
+	  grub_device_close (dev);
+	}
+    }
+#elif defined(DO_SEARCH_DISK_UUID)
+    {
+      grub_device_t dev;
+      char *quid;
+
+      dev = grub_device_open (name);
+      if (dev)
+	{
+	  if (grub_gpt_disk_uuid (dev, &quid) == GRUB_ERR_NONE)
+	    {
+	      if (grub_strcmp (quid, ctx->key) == 0)
+		found = 1;
 
 	      grub_free (quid);
 	    }
@@ -360,6 +380,8 @@ GRUB_MOD_INIT(search_part_uuid)
 GRUB_MOD_INIT(search_part_label)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_INIT(search_fs_uuid)
+#elif defined (DO_SEARCH_DISK_UUID)
+GRUB_MOD_INIT(search_disk_uuid)
 #else
 GRUB_MOD_INIT(search_label)
 #endif
@@ -378,6 +400,8 @@ GRUB_MOD_FINI(search_part_uuid)
 GRUB_MOD_FINI(search_part_label)
 #elif defined (DO_SEARCH_FS_UUID)
 GRUB_MOD_FINI(search_fs_uuid)
+#elif defined (DO_SEARCH_DISK_UUID)
+GRUB_MOD_FINI(search_disk_uuid)
 #else
 GRUB_MOD_FINI(search_label)
 #endif

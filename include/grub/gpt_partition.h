@@ -232,4 +232,8 @@ grub_err_t grub_gpt_part_label (grub_device_t device, char **label);
  * The uuid is in a new buffer and should be freed by the caller.  */
 grub_err_t grub_gpt_part_uuid (grub_device_t device, char **uuid);
 
+/* Return the disk uuid of the device DEVICE in UUID.
+ * The uuid is in a new buffer and should be freed by the caller.  */
+grub_err_t grub_gpt_disk_uuid (grub_device_t device, char **uuid);
+
 #endif /* ! GRUB_GPT_PARTITION_HEADER */

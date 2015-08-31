@@ -1024,6 +1024,11 @@ module = {
 };
 
 module = {
+  name = search_disk_uuid;
+  common = commands/search_disk_uuid.c;
+};
+
+module = {
   name = setpci;
   common = commands/setpci.c;
   enable = pci;
