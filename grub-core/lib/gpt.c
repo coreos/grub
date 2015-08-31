@@ -108,6 +108,27 @@ grub_gpt_part_uuid (grub_device_t device, char **uuid)
   return GRUB_ERR_NONE;
 }
 
+grub_err_t
+grub_gpt_disk_uuid (grub_device_t device, char **uuid)
+{
+  grub_gpt_t gpt = grub_gpt_read (device->disk);
+  if (!gpt)
+    goto done;
+
+  grub_errno = GRUB_ERR_NONE;
+
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+    *uuid = grub_gpt_guid_to_str (&gpt->primary.guid);
+  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
+    *uuid = grub_gpt_guid_to_str (&gpt->backup.guid);
+  else
+    grub_errno = grub_error (GRUB_ERR_BUG, "No valid GPT header");
+
+done:
+  grub_gpt_free (gpt);
+  return grub_errno;
+}
+
 static grub_uint64_t
 grub_gpt_size_to_sectors (grub_gpt_t gpt, grub_size_t size)
 {
