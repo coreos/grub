@@ -36,6 +36,7 @@
 #include <grub/net.h>
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
+#include <grub/tpm.h>
 
 #ifdef GRUB_MACHINE_EFI
 #include <grub/efi/efi.h>
@@ -172,6 +173,8 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 		    filename);
       return grub_errno;
     }
+
+  grub_tpm_measure((unsigned char*)buffer, len, GRUB_KERNEL_PCR, filename);
 
   header = find_header (buffer, len);
 

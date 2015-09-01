@@ -36,6 +36,7 @@
 #include <grub/i18n.h>
 #include <grub/net.h>
 #include <grub/lib/cmdline.h>
+#include <grub/tpm.h>
 
 #if defined (GRUB_MACHINE_EFI)
 #include <grub/efi/efi.h>
@@ -130,6 +131,8 @@ grub_multiboot_load (grub_file_t file, const char *filename)
     }
 
   COMPILE_TIME_ASSERT (MULTIBOOT_HEADER_ALIGN % 4 == 0);
+
+  grub_tpm_measure ((unsigned char *)mld.buffer, len, GRUB_KERNEL_PCR, filename);
 
   header = find_header (mld.buffer, len);
 
