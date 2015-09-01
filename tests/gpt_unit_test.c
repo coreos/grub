@@ -538,7 +538,7 @@ repair_test (void)
 }
 
 static void
-search_label_test (void)
+search_part_label_test (void)
 {
   struct test_data data;
   const char *test_result;
@@ -575,7 +575,7 @@ search_label_test (void)
 }
 
 static void
-search_uuid_test (void)
+search_part_uuid_test (void)
 {
   struct test_data data;
   const char gpt1_uuid[] = "A0F1792E-B4CE-4136-BCF2-1AFC133C2828";
@@ -614,6 +614,37 @@ search_uuid_test (void)
   close_disk (&data);
 }
 
+static void
+search_disk_uuid_test (void)
+{
+  struct test_data data;
+  const char disk_uuid[] = "69c131ad-67d6-46c6-93c4-124c755256ac";
+  const char bogus_uuid[] = "1534c928-c50e-4866-9daf-6a9fd7918a76";
+  const char *test_result;
+  char *expected_result;
+
+  open_disk (&data);
+
+  expected_result = grub_xasprintf ("%s", data.dev->disk->name);
+  grub_env_unset ("test_result");
+  grub_search_disk_uuid (disk_uuid, "test_result", 0, NULL, 0);
+  test_result = grub_env_get ("test_result");
+  grub_test_assert (test_result && strcmp (test_result, expected_result) == 0,
+		    "wrong device: %s (%s)", test_result, expected_result);
+  grub_free (expected_result);
+
+  grub_env_unset ("test_result");
+  grub_search_disk_uuid (bogus_uuid, "test_result", 0, NULL, 0);
+  test_result = grub_env_get ("test_result");
+  grub_test_assert (test_result == NULL,
+		    "unexpected device: %s", test_result);
+  grub_test_assert (grub_errno == GRUB_ERR_FILE_NOT_FOUND,
+		    "unexpected error: %s", grub_errmsg);
+  grub_errno = GRUB_ERR_NONE;
+
+  close_disk (&data);
+}
+
 void
 grub_unit_test_init (void)
 {
@@ -626,8 +657,9 @@ grub_unit_test_init (void)
   grub_test_register ("gpt_read_invalid_test", read_invalid_entries_test);
   grub_test_register ("gpt_read_fallback_test", read_fallback_test);
   grub_test_register ("gpt_repair_test", repair_test);
-  grub_test_register ("gpt_search_label_test", search_label_test);
-  grub_test_register ("gpt_search_uuid_test", search_uuid_test);
+  grub_test_register ("gpt_search_part_label_test", search_part_label_test);
+  grub_test_register ("gpt_search_uuid_test", search_part_uuid_test);
+  grub_test_register ("gpt_search_disk_uuid_test", search_disk_uuid_test);
 }
 
 void
@@ -639,7 +671,8 @@ grub_unit_test_fini (void)
   grub_test_unregister ("gpt_read_invalid_test");
   grub_test_unregister ("gpt_read_fallback_test");
   grub_test_unregister ("gpt_repair_test");
-  grub_test_unregister ("gpt_search_label_test");
-  grub_test_unregister ("gpt_search_uuid_test");
+  grub_test_unregister ("gpt_search_part_label_test");
+  grub_test_unregister ("gpt_search_part_uuid_test");
+  grub_test_unregister ("gpt_search_disk_uuid_test");
   grub_fini_all ();
 }
