@@ -964,33 +964,43 @@ grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_disk_t disk;
       grub_cryptodisk_t dev;
       char *diskname;
-      char *disklast;
+      char *disklast = NULL;
+      grub_size_t len;
 
       search_uuid = NULL;
       check_boot = state[2].set;
       diskname = args[0];
-      if (diskname[0] == '(' && *(disklast = &diskname[grub_strlen (diskname) - 1]) == ')')
+      len = grub_strlen (diskname);
+      if (len && diskname[0] == '(' && diskname[len - 1] == ')')
 	{
+	  disklast = &diskname[len - 1];
 	  *disklast = '\0';
-	  disk = grub_disk_open (diskname + 1);
-	  *disklast = ')';
+	  diskname++;
 	}
-      else
-	disk = grub_disk_open (diskname);
+
+      disk = grub_disk_open (diskname);
       if (!disk)
-	return grub_errno;
+	{
+	  if (disklast)
+	    *disklast = ')';
+	  return grub_errno;
+	}
 
       dev = grub_cryptodisk_get_by_source_disk (disk);
       if (dev)
 	{
 	  grub_dprintf ("cryptodisk", "already mounted as crypto%lu\n", dev->id);
 	  grub_disk_close (disk);
+	  if (disklast)
+	    *disklast = ')';
 	  return GRUB_ERR_NONE;
 	}
 
-      err = grub_cryptodisk_scan_device_real (args[0], disk);
+      err = grub_cryptodisk_scan_device_real (diskname, disk);
 
       grub_disk_close (disk);
+      if (disklast)
+	*disklast = ')';
 
       return err;
     }
