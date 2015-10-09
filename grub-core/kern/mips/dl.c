@@ -138,6 +138,10 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
       sym = (Elf_Sym *) ((char *) mod->symtab
 			 + mod->symsize * ELF_R_SYM (rel->r_info));
       sym_value = sym->st_value;
+      if (s->sh_type == SHT_RELA)
+	{
+	  sym_value += ((Elf_Rela *) rel)->r_addend;
+	}
       if (sym_value == (grub_addr_t) &__gnu_local_gp_dummy)
 	sym_value = (grub_addr_t) mod->got;
       else if (sym_value == (grub_addr_t) &_gp_disp_dummy)
