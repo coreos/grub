@@ -89,7 +89,11 @@ grub_file_open (const char *name)
 
   file->device = device;
 
-  if (device->disk && file_name[0] != '/')
+  if (device->disk && file_name[0] != '/'
+#if defined(GRUB_UTIL) || defined(GRUB_MACHINE_EMU)
+      && grub_strcmp (device->disk->name, "host")
+#endif
+     )
     /* This is a block list.  */
     file->fs = &grub_fs_blocklist;
   else
