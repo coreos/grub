@@ -39,7 +39,7 @@
   { "locales", GRUB_INSTALL_OPTIONS_INSTALL_LOCALES, N_("LOCALES"),\
     0, N_("install only LOCALES [default=all]"), 1 },			  \
   { "compress", GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS,		  \
-    "no,xz,gz,lzo", OPTION_ARG_OPTIONAL,				  \
+    "no|xz|gz|lzo", 0,				  \
     N_("compress GRUB files [optional]"), 1 },			          \
   {"core-compress", GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS,		\
       "xz|none|auto",						\
