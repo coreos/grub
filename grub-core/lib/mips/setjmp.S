@@ -18,6 +18,7 @@
 
 #include <grub/symbol.h>
 #include <grub/dl.h>
+#include <grub/mips/asm.h>
 
 	.file	"setjmp.S"
 
@@ -29,40 +30,42 @@ GRUB_MOD_LICENSE "GPLv3+"
  * int grub_setjmp (grub_jmp_buf env)
  */
 FUNCTION(grub_setjmp)
-	sw $s0, 0($a0)
-	sw $s1, 4($a0)
-	sw $s2, 8($a0)
-	sw $s3, 12($a0)
-	sw $s4, 16($a0)
-	sw $s5, 20($a0)
-	sw $s6, 24($a0)
-	sw $s7, 28($a0)
-	sw $s8, 32($a0)
-	sw $gp, 36($a0)
-	sw $sp, 40($a0)
-	sw $ra, 44($a0)
+	GRUB_ASM_REG_S $s0, 0($a0)
+	GRUB_ASM_REG_S $s1, 8($a0)
+	GRUB_ASM_REG_S $s2, 16($a0)
+	GRUB_ASM_REG_S $s3, 24($a0)
+	GRUB_ASM_REG_S $s4, 32($a0)
+	GRUB_ASM_REG_S $s5, 40($a0)
+	GRUB_ASM_REG_S $s6, 48($a0)
+	GRUB_ASM_REG_S $s7, 56($a0)
+	GRUB_ASM_REG_S $s8, 64($a0)
+	GRUB_ASM_REG_S $gp, 72($a0)
+	GRUB_ASM_REG_S $sp, 80($a0)
+	GRUB_ASM_REG_S $ra, 88($a0)
 	move $v0, $zero
 	move $v1, $zero
 	jr $ra
+	 nop
 /*
  * int grub_longjmp (grub_jmp_buf env, int val)
  */
 FUNCTION(grub_longjmp)
-	lw $s0, 0($a0)
-	lw $s1, 4($a0)
-	lw $s2, 8($a0)
-	lw $s3, 12($a0)
-	lw $s4, 16($a0)
-	lw $s5, 20($a0)
-	lw $s6, 24($a0)
-	lw $s7, 28($a0)
-	lw $s8, 32($a0)
-	lw $gp, 36($a0)
-	lw $sp, 40($a0)
-	lw $ra, 44($a0)
+	GRUB_ASM_REG_L $s0, 0($a0)
+	GRUB_ASM_REG_L $s1, 8($a0)
+	GRUB_ASM_REG_L $s2, 16($a0)
+	GRUB_ASM_REG_L $s3, 24($a0)
+	GRUB_ASM_REG_L $s4, 32($a0)
+	GRUB_ASM_REG_L $s5, 40($a0)
+	GRUB_ASM_REG_L $s6, 48($a0)
+	GRUB_ASM_REG_L $s7, 56($a0)
+	GRUB_ASM_REG_L $s8, 64($a0)
+	GRUB_ASM_REG_L $gp, 72($a0)
+	GRUB_ASM_REG_L $sp, 80($a0)
+	GRUB_ASM_REG_L $ra, 88($a0)
 	move $v0, $a1
 	bne  $v0, $zero, 1f
 	addiu $v0, $v0, 1
 1:	
 	move $v1, $zero
 	jr $ra
+	 nop
