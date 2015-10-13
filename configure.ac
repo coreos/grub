@@ -562,12 +562,12 @@ AC_COMPILE_IFELSE(
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
 
-if test x$target_cpu = xpowerpc; then
+if test x$target_cpu = xpowerpc -o x$target_cpu = xmips; then
   AC_CACHE_CHECK([for options to get big-endian compilation], grub_cv_target_cc_big_endian, [
     grub_cv_target_cc_big_endian=no
-    for cand in "-target powerpc -Wl,-EB" "-target powerpc" \
-		"-target powerpc-linux-gnu -Wl,-EB" "-target powerpc-linux-gnu" \
-		"-mbig-endian"; do
+    for cand in "-target $target_cpu -Wl,-EB" "-target $target_cpu" \
+		"-target $target_cpu-linux-gnu -Wl,-EB" "-target $target_cpu-linux-gnu" \
+		"-EB" "-mbig-endian"; do
       if test x"$grub_cv_target_cc_big_endian" != xno ; then
         break
       fi
@@ -577,6 +577,8 @@ if test x$target_cpu = xpowerpc; then
 #error still little endian
 #endif
 asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
 void __main (void);
 void __main (void) {}
 int main (void);
@@ -595,6 +597,41 @@ int main (void);
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
   TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
   TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_big_endian"
+elif test x$target_cpu = xmipsel; then
+  AC_CACHE_CHECK([for options to get little-endian compilation], grub_cv_target_cc_little_endian, [
+    grub_cv_target_cc_little_endian=no
+    for cand in "-target $target_cpu -Wl,-EL" "-target $target_cpu" \
+		"-target $target_cpu-linux-gnu -Wl,-EL" "-target $target_cpu-linux-gnu" \
+		"-EL"; do
+      if test x"$grub_cv_target_cc_little_endian" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__ORDER_BIG_ENDIAN__ == __BYTE_ORDER__)
+#error still big endian
+#endif
+asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_little_endian="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_little_endian" = xno ; then
+    AC_MSG_ERROR([could not force little-endian])
+  fi
+
+  skip_linkflags="$(echo "$grub_cv_target_cc_little_endian"|sed 's@-Wl,-EL@@')"
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $skip_linkflags"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_little_endian"
 fi
 
 # GRUB code is N32-compliant but it's experimental and we would prefer to
