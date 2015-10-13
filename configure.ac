@@ -597,6 +597,40 @@ int main (void);
   TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_big_endian"
 fi
 
+# GRUB code is N32-compliant but it's experimental and we would prefer to
+# avoid having too much variety when it doesn't result in any real improvement.
+# Moreover N64 isn't supported.
+if test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ; then
+  AC_CACHE_CHECK([for options to force MIPS o32 ABI], grub_cv_target_cc_mips_o32_abi, [
+    grub_cv_target_cc_mips_o32_abi=no
+    for arg in "" "-mabi=32" "-target $target_cpu -mabi=32" ; do
+      if test x"$grub_cv_target_cc_mips_o32_abi" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $arg -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if !defined(_ABIO32) || !defined(_MIPS_SIM) || (_MIPS_SIM != _ABIO32)
+#error not o32 ABI
+#endif
+asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_mips_o32_abi="$arg"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_mips_o32_abi" = xno ; then
+    AC_MSG_ERROR([could not force MIPS o32 ABI])
+  fi
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_mips_o32_abi"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_mips_o32_abi"
+fi
+
 AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
 test_program=
 case "x$target_cpu-$platform" in
