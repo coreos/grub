@@ -422,16 +422,20 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     op = ofdisk_hash_find (devpath);
     if (!op)
       op = ofdisk_hash_add (devpath, NULL);
-    else
-      grub_free (devpath);
     if (!op)
-      return grub_errno;
+      {
+        grub_free (devpath);
+        return grub_errno;
+      }
     disk->id = (unsigned long) op;
     disk->data = op->open_path;
 
     err = grub_ofdisk_get_block_size (devpath, &block_size, op);
     if (err)
-      return err;
+      {
+        grub_free (devpath);
+        return err;
+      }
     if (block_size != 0)
       {
 	for (disk->log_sector_size = 0;
@@ -442,6 +446,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       disk->log_sector_size = 9;
   }
 
+  grub_free (devpath);
   return 0;
 }
 
