@@ -31,6 +31,25 @@ grub_elfXX_load_phdrs (grub_elf_t elf)
       return grub_errno;
     }
 
+#if GRUB_ELF_ENABLE_BI_ENDIAN
+  if (elf->ehdr.ehdrXX.e_ident[EI_DATA] == GRUB_ELF_OPPOSITE_ENDIANNESS)
+    {
+      ElfXX_Phdr *phdr;
+      for (phdr = elf->phdrs; (char *) phdr < (char *) elf->phdrs + phdrs_size;
+	   phdr = (ElfXX_Phdr *) ((char *) phdr + elf->ehdr.ehdrXX.e_phentsize))
+	{
+	  phdr->p_type = grub_swap_bytes_wordXX (phdr->p_type);
+	  phdr->p_flags = grub_swap_bytes_wordXX (phdr->p_flags);
+          phdr->p_offset = grub_swap_bytes_offXX (phdr->p_offset);
+          phdr->p_vaddr = grub_swap_bytes_addrXX (phdr->p_vaddr);
+          phdr->p_paddr = grub_swap_bytes_addrXX (phdr->p_paddr);
+          phdr->p_filesz = grub_swap_bytes_XwordXX (phdr->p_filesz);
+          phdr->p_memsz = grub_swap_bytes_XwordXX (phdr->p_memsz);
+          phdr->p_align = grub_swap_bytes_XwordXX (phdr->p_align);
+        }
+    }
+#endif /* GRUB_ELF_ENABLE_BI_ENDIAN */
+
   return GRUB_ERR_NONE;
 }
 
@@ -153,4 +172,36 @@ grub_elfXX_load (grub_elf_t elf, const char *filename,
     *size = load_size;
 
   return grub_errno;
+}
+
+static int
+grub_elfXX_check_endianess_and_bswap_ehdr (grub_elf_t elf)
+{
+  ElfXX_Ehdr *e = &(elf->ehdr.ehdrXX);
+  if (e->e_ident[EI_DATA] == GRUB_ELF_NATIVE_ENDIANNESS)
+    {
+      return 1;
+    }
+
+#if GRUB_ELF_ENABLE_BI_ENDIAN
+  if (e->e_ident[EI_DATA] == GRUB_ELF_OPPOSITE_ENDIANNESS)
+    {
+      e->e_type = grub_swap_bytes_halfXX (e->e_type);
+      e->e_machine = grub_swap_bytes_halfXX (e->e_machine);
+      e->e_version = grub_swap_bytes_wordXX (e->e_version);
+      e->e_entry = grub_swap_bytes_addrXX (e->e_entry);
+      e->e_phoff = grub_swap_bytes_offXX (e->e_phoff);
+      e->e_shoff = grub_swap_bytes_offXX (e->e_shoff);
+      e->e_flags = grub_swap_bytes_wordXX (e->e_flags);
+      e->e_ehsize = grub_swap_bytes_halfXX (e->e_ehsize);
+      e->e_phentsize = grub_swap_bytes_halfXX (e->e_phentsize);
+      e->e_phnum = grub_swap_bytes_halfXX (e->e_phnum);
+      e->e_shentsize = grub_swap_bytes_halfXX (e->e_shentsize);
+      e->e_shnum = grub_swap_bytes_halfXX (e->e_shnum);
+      e->e_shstrndx = grub_swap_bytes_halfXX (e->e_shstrndx);
+      return 1;
+    }
+#endif /* GRUB_ELF_ENABLE_BI_ENDIAN */
+
+  return 0;
 }
