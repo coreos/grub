@@ -125,7 +125,7 @@ grub_efi_translate_key (grub_efi_input_key_t key)
   else if (key.scan_code < ARRAY_SIZE (efi_codes))
     return efi_codes[key.scan_code];
 
-  if (key.unicode_char >= 0x20 && key.unicode_char <= 0x7f
+  if ((key.unicode_char >= 0x20 && key.unicode_char <= 0x7f)
       || key.unicode_char == '\t' || key.unicode_char == '\b'
       || key.unicode_char == '\n' || key.unicode_char == '\r')
     return key.unicode_char;
