@@ -498,11 +498,22 @@ grub_net_tcp_accept (grub_net_tcp_socket_t sock,
   struct grub_net_buff *nb_ack;
   struct tcphdr *tcph;
   grub_err_t err;
+  grub_net_network_level_address_t gateway;
+  struct grub_net_network_level_interface *inf;
 
   sock->recv_hook = recv_hook;
   sock->error_hook = error_hook;
   sock->fin_hook = fin_hook;
   sock->hook_data = hook_data;
+
+  err = grub_net_route_address (sock->out_nla, &gateway, &inf);
+  if (err)
+    return err;
+
+  err = grub_net_link_layer_resolve (sock->inf, &gateway, &(sock->ll_target_addr));
+  if (err)
+    return err;
+
   nb_ack = grub_netbuff_alloc (sizeof (*tcph)
 			       + GRUB_NET_OUR_MAX_IP_HEADER_SIZE
 			       + GRUB_NET_MAX_LINK_HEADER_SIZE);
