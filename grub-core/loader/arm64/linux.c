@@ -26,6 +26,7 @@
 #include <grub/mm.h>
 #include <grub/types.h>
 #include <grub/cpu/linux.h>
+#include <grub/cpu/fdtload.h>
 #include <grub/efi/efi.h>
 #include <grub/efi/pe32.h>
 #include <grub/i18n.h>
@@ -44,69 +45,6 @@ static grub_uint32_t cmdline_size;
 
 static grub_addr_t initrd_start;
 static grub_addr_t initrd_end;
-
-static void *loaded_fdt;
-static void *fdt;
-
-static void *
-get_firmware_fdt (void)
-{
-  grub_efi_configuration_table_t *tables;
-  grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
-  void *firmware_fdt = NULL;
-  unsigned int i;
-
-  /* Look for FDT in UEFI config tables. */
-  tables = grub_efi_system_table->configuration_table;
-
-  for (i = 0; i < grub_efi_system_table->num_table_entries; i++)
-    if (grub_memcmp (&tables[i].vendor_guid, &fdt_guid, sizeof (fdt_guid)) == 0)
-      {
-	firmware_fdt = tables[i].vendor_table;
-	grub_dprintf ("linux", "found registered FDT @ %p\n", firmware_fdt);
-	break;
-      }
-
-  return firmware_fdt;
-}
-
-void *
-grub_linux_get_fdt (void)
-{
-  void *raw_fdt;
-  grub_size_t size;
-
-  if (fdt)
-    {
-      size = BYTES_TO_PAGES (grub_fdt_get_totalsize (fdt));
-      grub_efi_free_pages ((grub_efi_physical_address_t) fdt, size);
-    }
-
-  if (loaded_fdt)
-    raw_fdt = loaded_fdt;
-  else
-    raw_fdt = get_firmware_fdt();
-
-  size =
-    raw_fdt ? grub_fdt_get_totalsize (raw_fdt) : GRUB_FDT_EMPTY_TREE_SZ;
-  size += 0x400;
-
-  grub_dprintf ("linux", "allocating %ld bytes for fdt\n", size);
-  fdt = grub_efi_allocate_pages (0, BYTES_TO_PAGES (size));
-  if (!fdt)
-    return NULL;
-
-  if (raw_fdt)
-    {
-      grub_memmove (fdt, raw_fdt, size);
-      grub_fdt_set_totalsize (fdt, size);
-    }
-  else
-    {
-      grub_fdt_create_empty_tree (fdt, size);
-    }
-  return fdt;
-}
 
 grub_err_t
 grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
@@ -129,12 +67,13 @@ grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
 static grub_err_t
 finalize_params_linux (void)
 {
-  grub_efi_boot_services_t *b;
-  grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
-  grub_efi_status_t status;
   int node, retval;
 
-  if (!grub_linux_get_fdt ())
+  void *fdt;
+
+  fdt = grub_fdt_load (0x400);
+
+  if (!fdt)
     goto failure;
 
   node = grub_fdt_find_subnode (fdt, 0, "chosen");
@@ -160,80 +99,14 @@ finalize_params_linux (void)
 	goto failure;
     }
 
-  b = grub_efi_system_table->boot_services;
-  status = b->install_configuration_table (&fdt_guid, fdt);
-  if (status != GRUB_EFI_SUCCESS)
+  if (grub_fdt_install() != GRUB_ERR_NONE)
     goto failure;
-
-  grub_dprintf ("linux", "Installed/updated FDT configuration table @ %p\n",
-		fdt);
 
   return GRUB_ERR_NONE;
 
 failure:
-  grub_efi_free_pages ((grub_efi_physical_address_t) fdt,
-		       BYTES_TO_PAGES (grub_fdt_get_totalsize (fdt)));
-  fdt = NULL;
+  grub_fdt_unload();
   return grub_error(GRUB_ERR_BAD_OS, "failed to install/update FDT");
-}
-
-static grub_err_t
-grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
-		     int argc, char *argv[])
-{
-  grub_file_t dtb;
-  void *blob = NULL;
-  int size;
-
-  if (!loaded)
-    {
-      grub_error (GRUB_ERR_BAD_ARGUMENT,
-		  N_("you need to load the kernel first"));
-      return GRUB_ERR_BAD_OS;
-    }
-
-  if (argc != 1)
-    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
-
-  if (loaded_fdt)
-    grub_free (loaded_fdt);
-  loaded_fdt = NULL;
-
-  dtb = grub_file_open (argv[0]);
-  if (!dtb)
-    goto out;
-
-  size = grub_file_size (dtb);
-  blob = grub_malloc (size);
-  if (!blob)
-    goto out;
-
-  if (grub_file_read (dtb, blob, size) < size)
-    {
-      if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"), argv[0]);
-      goto out;
-    }
-
-  if (grub_fdt_check_header (blob, size) != 0)
-    {
-      grub_error (GRUB_ERR_BAD_OS, N_("invalid device tree"));
-      goto out;
-    }
-
-out:
-  if (dtb)
-    grub_file_close (dtb);
-
-  if (blob)
-    {
-      if (grub_errno == GRUB_ERR_NONE)
-	loaded_fdt = blob;
-      else
-	grub_free (blob);
-    }
-
-  return grub_errno;
 }
 
 grub_err_t
@@ -276,7 +149,7 @@ grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size, char *args)
     (grub_strlen (args) + 1) * sizeof (grub_efi_char16_t);
   loaded_image->load_options =
     grub_efi_allocate_pages (0,
-			     BYTES_TO_PAGES (loaded_image->load_options_size));
+			     GRUB_EFI_BYTES_TO_PAGES (loaded_image->load_options_size));
   if (!loaded_image->load_options)
     return grub_errno;
 
@@ -290,7 +163,7 @@ grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size, char *args)
   /* When successful, not reached */
   b->unload_image (image_handle);
   grub_efi_free_pages ((grub_efi_physical_address_t) loaded_image->load_options,
-		       BYTES_TO_PAGES (loaded_image->load_options_size));
+		       GRUB_EFI_BYTES_TO_PAGES (loaded_image->load_options_size));
 
   return grub_errno;
 }
@@ -312,16 +185,13 @@ grub_linux_unload (void)
   loaded = 0;
   if (initrd_start)
     grub_efi_free_pages ((grub_efi_physical_address_t) initrd_start,
-			 BYTES_TO_PAGES (initrd_end - initrd_start));
+			 GRUB_EFI_BYTES_TO_PAGES (initrd_end - initrd_start));
   initrd_start = initrd_end = 0;
   grub_free (linux_args);
   if (kernel_addr)
     grub_efi_free_pages ((grub_efi_physical_address_t) kernel_addr,
-			 BYTES_TO_PAGES (kernel_size));
-  if (fdt)
-    grub_efi_free_pages ((grub_efi_physical_address_t) fdt,
-			 BYTES_TO_PAGES (grub_fdt_get_totalsize (fdt)));
-
+			 GRUB_EFI_BYTES_TO_PAGES (kernel_size));
+  grub_fdt_unload ();
   return GRUB_ERR_NONE;
 }
 
@@ -352,7 +222,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   initrd_size = grub_get_initrd_size (&initrd_ctx);
   grub_dprintf ("linux", "Loading initrd\n");
 
-  initrd_pages = (BYTES_TO_PAGES (initrd_size));
+  initrd_pages = (GRUB_EFI_BYTES_TO_PAGES (initrd_size));
   initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
   if (!initrd_mem)
     {
@@ -407,9 +277,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset();
 
   grub_dprintf ("linux", "kernel file size: %lld\n", (long long) kernel_size);
-  kernel_addr = grub_efi_allocate_pages (0, BYTES_TO_PAGES (kernel_size));
+  kernel_addr = grub_efi_allocate_pages (0, GRUB_EFI_BYTES_TO_PAGES (kernel_size));
   grub_dprintf ("linux", "kernel numpages: %lld\n",
-		(long long) BYTES_TO_PAGES (kernel_size));
+		(long long) GRUB_EFI_BYTES_TO_PAGES (kernel_size));
   if (!kernel_addr)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
@@ -460,13 +330,13 @@ fail:
 
   if (kernel_addr && !loaded)
     grub_efi_free_pages ((grub_efi_physical_address_t) kernel_addr,
-			 BYTES_TO_PAGES (kernel_size));
+			 GRUB_EFI_BYTES_TO_PAGES (kernel_size));
 
   return grub_errno;
 }
 
 
-static grub_command_t cmd_linux, cmd_initrd, cmd_devicetree;
+static grub_command_t cmd_linux, cmd_initrd;
 
 GRUB_MOD_INIT (linux)
 {
@@ -474,9 +344,6 @@ GRUB_MOD_INIT (linux)
 				     N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd, 0,
 				      N_("Load initrd."));
-  cmd_devicetree =
-    grub_register_command ("devicetree", grub_cmd_devicetree, 0,
-			   N_("Load DTB file."));
   my_mod = mod;
 }
 
@@ -484,5 +351,4 @@ GRUB_MOD_FINI (linux)
 {
   grub_unregister_command (cmd_linux);
   grub_unregister_command (cmd_initrd);
-  grub_unregister_command (cmd_devicetree);
 }

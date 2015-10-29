@@ -1665,6 +1665,12 @@ module = {
 };
 
 module = {
+  name = fdt;
+  arm64 = loader/arm64/fdt.c;
+  enable = arm64;
+};
+
+module = {
   name = xnu;
   x86 = loader/xnu_resume.c;
   x86 = loader/i386/xnu.c;
