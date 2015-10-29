@@ -1647,6 +1647,13 @@ module = {
 };
 
 module = {
+  name = xen_boot;
+  common = lib/cmdline.c;
+  arm64 = loader/arm64/xen_boot.c;
+  enable = arm64;
+};
+
+module = {
   name = linux;
   x86 = loader/i386/linux.c;
   xen = loader/i386/xen.c;
