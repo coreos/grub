@@ -783,7 +783,7 @@ fi
 if ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ) && test "x$platform" != xemu; then
   # Some toolchains enable these features by default, but they need
   # registers that aren't set up properly in GRUB.
-  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow"
 fi
 
 # GRUB doesn't use float or doubles at all. Yet some toolchains may decide
