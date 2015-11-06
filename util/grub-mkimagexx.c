@@ -101,7 +101,7 @@ SUFFIX (generate_elf) (const struct grub_install_image_target_desc *image_target
   program_size = ALIGN_ADDR (*core_size);
 
   elf_img = xmalloc (program_size + header_size + footer_size);
-  memset (elf_img, 0, program_size + header_size);
+  memset (elf_img, 0, program_size + header_size + footer_size);
   memcpy (elf_img  + header_size, *core_img, *core_size);
   ehdr = (void *) elf_img;
   phdr = (void *) (elf_img + sizeof (*ehdr));
@@ -1587,6 +1587,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
     }
 
   out_img = xmalloc (*kernel_sz + total_module_size);
+  memset (out_img, 0, *kernel_sz + total_module_size);
 
   if (image_target->id == IMAGE_EFI)
     {
