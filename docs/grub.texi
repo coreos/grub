@@ -3038,6 +3038,8 @@ These variables have special meaning to GRUB.
 * cmdpath::
 * color_highlight::
 * color_normal::
+* config_directory::
+* config_file::
 * debug::
 * default::
 * fallback::
@@ -3179,6 +3181,22 @@ matching colors of first half.
 @samp{gfxterm} supports all 16 colors and would be theoretically extendable
 to support whole rgb24 palette but currently there is no compelling reason
 to go beyond the current 16 colors.
+
+
+@node config_directory
+@subsection config_directory
+
+This variable is automatically set by GRUB to the directory part of
+current configuration file name (@pxref{config_file}).
+
+
+@node config_file
+@subsection config_file
+
+This variable is automatically set by GRUB to the name of configuration file that is being
+processed by commands @command{configfile} (@pxref{configfile}) or @command{normal}
+(@pxref{normal}).  It is restored to the previous value when command completes.
+
 
 @node debug
 @subsection debug
