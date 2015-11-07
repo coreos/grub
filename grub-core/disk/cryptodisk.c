@@ -25,6 +25,7 @@
 #include <grub/fs.h>
 #include <grub/file.h>
 #include <grub/procfs.h>
+#include <grub/partition.h>
 
 #ifdef GRUB_UTIL
 #include <grub/emu/hostdisk.h>
@@ -718,6 +719,7 @@ grub_cryptodisk_insert (grub_cryptodisk_t newdev, const char *name,
   newdev->id = last_cryptodisk_id++;
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
+  newdev->partition_start = grub_partition_get_start (source->partition);
   newdev->next = cryptodisk_list;
   cryptodisk_list = newdev;
 
@@ -740,7 +742,9 @@ grub_cryptodisk_get_by_source_disk (grub_disk_t disk)
   grub_cryptodisk_t dev;
   for (dev = cryptodisk_list; dev != NULL; dev = dev->next)
     if (dev->source_id == disk->id && dev->source_dev_id == disk->dev->id)
-      return dev;
+      if ((disk->partition && grub_partition_get_start (disk->partition) == dev->partition_start) ||
+          (!disk->partition && dev->partition_start == 0))
+        return dev;
   return NULL;
 }
 
@@ -761,6 +765,7 @@ grub_cryptodisk_cheat_insert (grub_cryptodisk_t newdev, const char *name,
   newdev->cheat_fd = GRUB_UTIL_FD_INVALID;
   newdev->source_id = source->id;
   newdev->source_dev_id = source->dev->id;
+  newdev->partition_start = grub_partition_get_start (source->partition);
   newdev->id = last_cryptodisk_id++;
   newdev->next = cryptodisk_list;
   cryptodisk_list = newdev;
