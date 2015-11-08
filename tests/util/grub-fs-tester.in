@@ -10,7 +10,7 @@ tempdir=`mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 
 # This wrapper is to ease insertion of valgrind or time statistics
 run_it () {
-    "$GRUBFSTEST" "$@"
+    LC_ALL=C "$GRUBFSTEST" "$@"
 }
 
 run_grubfstest () {
