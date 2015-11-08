@@ -1665,7 +1665,6 @@ module = {
   ia64_efi = loader/ia64/efi/linux.c;
   arm = loader/arm/linux.c;
   arm64 = loader/arm64/linux.c;
-  fdt = lib/fdt.c;
   common = loader/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
@@ -1674,7 +1673,8 @@ module = {
 module = {
   name = fdt;
   arm64 = loader/arm64/fdt.c;
-  enable = arm64;
+  common = lib/fdt.c;
+  enable = fdt;
 };
 
 module = {
