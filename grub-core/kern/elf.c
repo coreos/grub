@@ -28,6 +28,8 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 #if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
 #define GRUB_ELF_ENABLE_BI_ENDIAN 1
 #else
