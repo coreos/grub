@@ -25,8 +25,6 @@
 #include <grub/file.h>
 #include <grub/efi/efi.h>
 
-GRUB_MOD_LICENSE ("GPLv3+");
-
 static void *loaded_fdt;
 static void *fdt;
 

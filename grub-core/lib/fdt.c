@@ -19,6 +19,9 @@
 #include <grub/fdt.h>
 #include <grub/misc.h>
 #include <grub/mm.h>
+#include <grub/dl.h>
+
+GRUB_MOD_LICENSE ("GPLv3+");
 
 #define FDT_SUPPORTED_VERSION	17
 
