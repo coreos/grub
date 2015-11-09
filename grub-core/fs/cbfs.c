@@ -352,7 +352,7 @@ init_cbfsdisk (void)
      reading ROMs through controller directly.
    */
   if (ptr < 0xff000000
-      || 0xffffffff - ptr < sizeof (*head) + 0x10
+      || 0xffffffff - ptr < (grub_uint32_t) sizeof (*head) + 0xf
       || !validate_head (head))
     return;
 
