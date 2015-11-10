@@ -227,7 +227,10 @@ dev_iterate (const struct grub_ieee1275_devalias *alias)
 
       if (grub_ieee1275_open (alias->path, &ihandle))
 	return;
-    
+
+      /* This method doesn't need memory allocation for the table. Open
+         firmware takes care of all memory management and the result table
+         stays in memory and is never freed. */
       INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
       args.method = (grub_ieee1275_cell_t) "vscsi-report-luns";
       args.ihandle = ihandle;
