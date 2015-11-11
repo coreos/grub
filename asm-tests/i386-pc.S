@@ -5,6 +5,10 @@
 	.code16
 	jmp far
 	.org 4
-	.space 300
+	jmp nearer
+	.org 6
+	.space 100
+nearer:
+	.space 200
 far:
 	.byte 0
