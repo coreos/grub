@@ -73,6 +73,9 @@ load_kernel (grub_file_t file, const char *filename,
   if (grub_multiboot_quirks & GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE)
     {
       err = grub_multiboot_load_elf (file, filename, buffer);
+      if (err == GRUB_ERR_NONE) {
+	return GRUB_ERR_NONE;
+      }
       if (err == GRUB_ERR_UNKNOWN_OS && (header->flags & MULTIBOOT_AOUT_KLUDGE))
 	grub_errno = err = GRUB_ERR_NONE;
     }
