@@ -136,16 +136,10 @@ xen_boot_address_align (grub_addr_t start, grub_size_t align)
   return (align ? (ALIGN_UP (start, align)) : start);
 }
 
-/* Parse the option of xen_module command. For now, we support
-   (1) --type <the compatible stream>
-   We also set up the type of module in this function.
-   If there are some "--type" options in the command line,
-   we make a custom compatible stream in this function. */
+/* set module type according to command name. */
 static grub_err_t
-set_module_type (grub_command_t cmd, struct xen_boot_binary *module, int *file_name_index)
+set_module_type (grub_command_t cmd, struct xen_boot_binary *module)
 {
-  *file_name_index = 0;
-
   if (!grub_strcmp (cmd->name, "xen_linux"))
     module->node_info.type = MODULE_IMAGE;
   else if (!grub_strcmp (cmd->name, "xen_initrd"))
@@ -440,7 +434,6 @@ grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
 {
 
   struct xen_boot_binary *module = NULL;
-  int file_name_index = 0;
   grub_file_t file = 0;
 
   if (!argc)
@@ -462,8 +455,7 @@ grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
     return grub_errno;
 
   /* process all the options and get module type */
-  if (set_module_type (cmd, module, &file_name_index) !=
-      GRUB_ERR_NONE)
+  if (set_module_type (cmd, module) != GRUB_ERR_NONE)
     goto fail;
   switch (module->node_info.type)
     {
@@ -491,12 +483,11 @@ grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
 		module->name, module->node_info.compat_string,
 		module->node_info.compat_string_size);
 
-  file = grub_file_open (argv[file_name_index]);
+  file = grub_file_open (argv[0]);
   if (!file)
     goto fail;
 
-  xen_boot_binary_load (module, file, argc - file_name_index,
-			argv + file_name_index);
+  xen_boot_binary_load (module, file, argc, argv);
   if (grub_errno == GRUB_ERR_NONE)
     grub_list_push (GRUB_AS_LIST_P (&module_head), GRUB_AS_LIST (module));
 
