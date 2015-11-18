@@ -54,7 +54,8 @@ grub_password_get (char buf[], unsigned buf_size)
   grub_memset (buf, 0, buf_size);
   if (!fgets (buf, buf_size, stdin))
     {
-      fclose (in);
+      if (in != stdin)
+	fclose (in);
       return 0;
     }
   ptr = buf + strlen (buf) - 1;
@@ -67,7 +68,8 @@ grub_password_get (char buf[], unsigned buf_size)
   grub_xputs ("\n");
   grub_refresh ();
 
-  fclose (in);
+  if (in != stdin)
+    fclose (in);
 
   return 1;
 }
