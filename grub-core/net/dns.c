@@ -568,11 +568,10 @@ grub_net_dns_lookup (const char *name,
 	{
           grub_err_t err2;
 
-          nb->data = nbd;
-
           grub_size_t t = 0;
           do
             {
+              nb->data = nbd;
               if (servers[j].option == DNS_OPTION_IPV4 ||
                  ((servers[j].option == DNS_OPTION_PREFER_IPV4) && (t++ == 0)) ||
                  ((servers[j].option == DNS_OPTION_PREFER_IPV6) && (t++ == 1)))
