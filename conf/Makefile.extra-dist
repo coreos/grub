@@ -37,7 +37,6 @@ EXTRA_DIST += grub-core/lib/libgcrypt
 EXTRA_DIST += grub-core/lib/libgcrypt-grub/mpi/generic
 EXTRA_DIST += $(shell find $(top_srcdir)/include -name '*.h')
 EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/lib -name '*.h')
-EXTRA_DIST += $(shell find $(top_srcdir)/grub-core/gnulib -name '*.h')
 EXTRA_DIST += grub-core/efiemu/runtime/config.h
 
 EXTRA_DIST += grub-core/lib/LzmaDec.c
