@@ -49,7 +49,7 @@ grub_pit_wait (void)
 	     | GRUB_PIT_SPK_TMR2,
              GRUB_PIT_SPEAKER_PORT);
 
-  if ((grub_inb (GRUB_PIT_SPEAKER_PORT) & GRUB_PIT_SPK_TMR2_LATCH)) {
+  if ((grub_inb (GRUB_PIT_SPEAKER_PORT) & GRUB_PIT_SPK_TMR2_LATCH) == 0x00) {
     ret = 1;
     /* Wait.  */
     while ((grub_inb (GRUB_PIT_SPEAKER_PORT) & GRUB_PIT_SPK_TMR2_LATCH) == 0x00);
