@@ -476,6 +476,7 @@ enum grub_efi_memory_type
     GRUB_EFI_MEMORY_MAPPED_IO,
     GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE,
     GRUB_EFI_PAL_CODE,
+    GRUB_EFI_PERSISTENT_MEMORY,
     GRUB_EFI_MAX_MEMORY_TYPE
   };
 typedef enum grub_efi_memory_type grub_efi_memory_type_t;

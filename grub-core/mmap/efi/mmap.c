@@ -118,6 +118,11 @@ grub_efi_mmap_iterate (grub_memory_hook_t hook, void *hook_data,
 		GRUB_MEMORY_NVS, hook_data);
 	  break;
 
+	case GRUB_EFI_PERSISTENT_MEMORY:
+	  hook (desc->physical_start, desc->num_pages * 4096,
+		GRUB_MEMORY_PERSISTENT, hook_data);
+	break;
+
 	default:
 	  grub_printf ("Unknown memory type %d, considering reserved\n",
 		       desc->type);
@@ -147,6 +152,13 @@ make_efi_memtype (int type)
       /* No way to remove a chunk of memory from EFI mmap.
 	 So mark it as unusable. */
     case GRUB_MEMORY_HOLE:
+    /*
+     * AllocatePages() does not support GRUB_EFI_PERSISTENT_MEMORY,
+     * so no translation for GRUB_MEMORY_PERSISTENT or
+     * GRUB_MEMORY_PERSISTENT_LEGACY.
+     */
+    case GRUB_MEMORY_PERSISTENT:
+    case GRUB_MEMORY_PERSISTENT_LEGACY:
     case GRUB_MEMORY_RESERVED:
       return GRUB_EFI_UNUSABLE_MEMORY;
 
