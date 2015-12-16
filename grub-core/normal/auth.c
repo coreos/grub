@@ -177,7 +177,7 @@ grub_username_get (char buf[], unsigned buf_size)
 	  if (cur_len)
 	    {
 	      cur_len--;
-	      grub_printf ("\b");
+	      grub_printf ("\b \b");
 	    }
 	  continue;
 	}
