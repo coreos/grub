@@ -470,7 +470,8 @@ grub_password_get (char buf[], unsigned buf_size)
 
       if (key == '\b')
 	{
-	  cur_len--;
+	  if (cur_len)
+	    cur_len--;
 	  continue;
 	}
 
