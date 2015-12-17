@@ -51,7 +51,7 @@ grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
 
   grub_printf
     ("Type      Physical start  - end             #Pages   "
-     "  Size Attributes\n");
+     "     Size Attributes\n");
   memory_map_end = ADD_MEMORY_DESCRIPTOR (memory_map, map_size);
   for (desc = memory_map;
        desc < memory_map_end;
@@ -74,7 +74,8 @@ grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
 	  "ACPI-nvs",
 	  "MMIO    ",
 	  "IO-ports",
-	  "PAL-code"
+	  "PAL-code",
+	  "persist ",
 	};
       if (desc->type < ARRAY_SIZE (types_str))
 	grub_printf ("%s ", types_str[desc->type]);
@@ -87,21 +88,29 @@ grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
 		   desc->physical_start + (desc->num_pages << 12) - 1,
 		   desc->num_pages);
 
-      size = desc->num_pages;
-      size <<= (12 - 10);
-      if (size < 1024)
-	grub_printf (" %4" PRIuGRUB_UINT64_T "KB", size);
+      size = desc->num_pages << 12;	/* 4 KiB page size */
+      /*
+       * Since size is a multiple of 4 KiB, no need to handle units
+       * of just Bytes (which would use a mask of 0x3ff).
+       *
+       * 14 characters would support the largest possible number of 4 KiB
+       * pages that are not a multiple of larger units (e.g., MiB):
+       * 17592186044415 (0xffffff_fffff000), but that uses a lot of
+       * whitespace for a rare case.  6 characters usually suffices;
+       * columns will be off if not, but this is preferable to rounding.
+       */
+      if (size & 0xfffff)
+	grub_printf (" %6" PRIuGRUB_UINT64_T "KiB", size >> 10);
+      else if (size & 0x3fffffff)
+	grub_printf (" %6" PRIuGRUB_UINT64_T "MiB", size >> 20);
+      else if (size & 0xffffffffff)
+	grub_printf (" %6" PRIuGRUB_UINT64_T "GiB", size >> 30);
+      else if (size & 0x3ffffffffffff)
+	grub_printf (" %6" PRIuGRUB_UINT64_T "TiB", size >> 40);
+      else if (size & 0xfffffffffffffff)
+	grub_printf (" %6" PRIuGRUB_UINT64_T "PiB", size >> 50);
       else
-	{
-	  size /= 1024;
-	  if (size < 1024)
-	    grub_printf (" %4" PRIuGRUB_UINT64_T "MB", size);
-	  else
-	    {
-	      size /= 1024;
-	      grub_printf (" %4" PRIuGRUB_UINT64_T "GB", size);
-	    }
-	}
+	grub_printf (" %6" PRIuGRUB_UINT64_T "EiB", size >> 60);
 
       attr = desc->attribute;
       if (attr & GRUB_EFI_MEMORY_RUNTIME)
@@ -122,6 +131,12 @@ grub_cmd_lsefimmap (grub_command_t cmd __attribute__ ((unused)),
 	grub_printf (" RP");
       if (attr & GRUB_EFI_MEMORY_XP)
 	grub_printf (" XP");
+      if (attr & GRUB_EFI_MEMORY_NV)
+	grub_printf (" NV");
+      if (attr & GRUB_EFI_MEMORY_MORE_RELIABLE)
+	grub_printf (" MR");
+      if (attr & GRUB_EFI_MEMORY_RO)
+	grub_printf (" RO");
 
       grub_printf ("\n");
     }
