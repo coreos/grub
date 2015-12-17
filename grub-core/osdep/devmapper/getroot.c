@@ -208,8 +208,7 @@ grub_util_devmapper_part_to_disk (struct stat *st,
 					 &major, &minor, 0))
     {
       *is_part = 1;
-      return grub_find_device ("/dev",
-			       (major << 8) | minor);
+      return grub_find_device ("/dev", makedev (major, minor));
     }
   *is_part = 0;
   return xstrdup (path);

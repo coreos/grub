@@ -3038,6 +3038,8 @@ These variables have special meaning to GRUB.
 * cmdpath::
 * color_highlight::
 * color_normal::
+* config_directory::
+* config_file::
 * debug::
 * default::
 * fallback::
@@ -3179,6 +3181,22 @@ matching colors of first half.
 @samp{gfxterm} supports all 16 colors and would be theoretically extendable
 to support whole rgb24 palette but currently there is no compelling reason
 to go beyond the current 16 colors.
+
+
+@node config_directory
+@subsection config_directory
+
+This variable is automatically set by GRUB to the directory part of
+current configuration file name (@pxref{config_file}).
+
+
+@node config_file
+@subsection config_file
+
+This variable is automatically set by GRUB to the name of configuration file that is being
+processed by commands @command{configfile} (@pxref{configfile}) or @command{normal}
+(@pxref{normal}).  It is restored to the previous value when command completes.
+
 
 @node debug
 @subsection debug
@@ -3839,6 +3857,11 @@ you forget a command, you can run the command @command{help}
 @comment * vbeinfo::                     List available video modes
 * verify_detached::             Verify detached digital signature
 * videoinfo::                   List available video modes
+@comment * xen_*::              Xen boot commands
+* xen_hypervisor::              Load xen hypervisor binary
+* xen_linux::                   Load dom0 kernel for xen hypervisor
+* xen_initrd::                  Load dom0 initrd for dom0 kernel
+* xen_xsm::                     Load xen security module for xen hypervisor
 @end menu
 
 
@@ -5102,6 +5125,39 @@ successfully.  If validation fails, it is set to a non-zero value.
 List available video modes. If resolution is given, show only matching modes.
 @end deffn
 
+@node xen_hypervisor
+@subsection xen_hypervisor
+
+@deffn Command xen_hypervisor file  [arguments] @dots{}
+Load a Xen hypervisor binary from @var{file}. The rest of the line is passed
+verbatim as the @dfn{kernel command-line}. Any other binaries must be
+reloaded after using this command.
+@end deffn
+
+@node xen_linux
+@subsection xen_linux
+
+@deffn Command xen_linux file [arguments]
+Load a dom0 kernel image for xen hypervisor at the booting process of xen.
+The rest of the line is passed verbatim as the module command line.
+@end deffn
+
+@node xen_initrd
+@subsection xen_initrd
+
+@deffn Command xen_initrd file
+Load a initrd image for dom0 kernel at the booting process of xen.
+@end deffn
+
+@node xen_xsm
+@subsection xen_xsm
+
+@deffn Command xen_xsm file
+Load a xen security module for xen hypervisor at the booting process of xen.
+See @uref{http://wiki.xen.org/wiki/XSM} for more detail.
+@end deffn
+
+
 @node Networking commands
 @section The list of networking commands
 
@@ -5613,6 +5669,16 @@ BadRAM is the ability to mark some of the RAM as ``bad''. Note: due to protocol
 limitations mips-loongson (with Linux protocol)
 and mips-qemu_mips can use only memory up to first hole.
 
+Bootlocation is ability of GRUB to automatically detect where it boots from.
+``disk'' means the detection is limited to detecting the disk with partition
+being discovered on install time. ``partition'' means that disk and partiton
+can be automatically discovered. ``file'' means that boot image file name as
+well as disk and partition can be discovered. For consistency default install ignores
+partition and relies solely on disk detection. If no bootlocation discovery is available
+or boot and grub-root disks are different, UUID is used instead. On ARC if no device
+to install to is specified, UUID is used instead as well.
+
+
 @multitable @columnfractions .20 .20 .20 .20 .20
 @item                    @tab BIOS    @tab Coreboot @tab Multiboot    @tab Qemu 
 @item video              @tab yes     @tab yes      @tab yes          @tab yes
@@ -5629,6 +5695,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item badram             @tab yes     @tab yes      @tab yes          @tab yes
 @item compression        @tab always  @tab pointless @tab no           @tab no
 @item exit               @tab yes     @tab no       @tab no           @tab no
+@item bootlocation       @tab disk    @tab no       @tab no           @tab no
 @end multitable
 
 @multitable @columnfractions .20 .20 .20 .20 .20
@@ -5647,6 +5714,7 @@ and mips-qemu_mips can use only memory up to first hole.
 @item badram             @tab yes         @tab yes       @tab no            @tab yes
 @item compression        @tab no          @tab no        @tab no            @tab no
 @item exit               @tab yes         @tab yes       @tab yes           @tab yes
+@item bootlocation       @tab file        @tab file      @tab file, ignored @tab file
 @end multitable
 
 @multitable @columnfractions .20 .20 .20 .20 .20
@@ -5665,24 +5733,26 @@ and mips-qemu_mips can use only memory up to first hole.
 @item badram             @tab yes (*)     @tab no      @tab no      @tab no
 @item compression        @tab configurable @tab no     @tab no      @tab configurable
 @item exit               @tab no          @tab yes     @tab yes     @tab yes
+@item bootlocation       @tab no          @tab partition @tab file  @tab file (*)
 @end multitable
 
 @multitable @columnfractions .20 .20 .20 .20 .20
-@item                    @tab MIPS qemu @tab emu
-@item video              @tab no        @tab yes
-@item console charset    @tab CP437     @tab Unicode (*)
-@item network            @tab no        @tab yes
-@item ATA/AHCI           @tab yes       @tab no
-@item AT keyboard        @tab yes       @tab no
-@item Speaker            @tab no        @tab no
-@item USB                @tab N/A       @tab yes
-@item chainloader        @tab yes       @tab no
-@item cpuid              @tab no        @tab no
-@item hints              @tab guess     @tab no
-@item PCI                @tab no        @tab no
-@item badram             @tab yes (*)   @tab no
-@item compression        @tab configurable @tab no
-@item exit               @tab no        @tab yes
+@item                    @tab MIPS qemu @tab emu         @tab xen
+@item video              @tab no        @tab yes         @tab no
+@item console charset    @tab CP437     @tab Unicode (*) @tab ASCII
+@item network            @tab no        @tab yes         @tab no
+@item ATA/AHCI           @tab yes       @tab no          @tab no
+@item AT keyboard        @tab yes       @tab no          @tab no
+@item Speaker            @tab no        @tab no          @tab no
+@item USB                @tab N/A       @tab yes         @tab no
+@item chainloader        @tab yes       @tab no          @tab yes
+@item cpuid              @tab no        @tab no          @tab yes
+@item hints              @tab guess     @tab no          @tab no
+@item PCI                @tab no        @tab no          @tab no
+@item badram             @tab yes (*)   @tab no          @tab no
+@item compression        @tab configurable @tab no       @tab no
+@item exit               @tab no        @tab yes         @tab no
+@item bootlocation       @tab no        @tab file        @tab no
 @end multitable
 
 @node Platform-specific operations

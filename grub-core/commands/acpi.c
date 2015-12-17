@@ -61,18 +61,6 @@ static const struct grub_arg_option options[] = {
   {0, 0, 0, 0, 0, 0}
 };
 
-/* Simple checksum by summing all bytes. Used by ACPI and SMBIOS. */
-grub_uint8_t
-grub_byte_checksum (void *base, grub_size_t size)
-{
-  grub_uint8_t *ptr;
-  grub_uint8_t ret = 0;
-  for (ptr = (grub_uint8_t *) base; ptr < ((grub_uint8_t *) base) + size;
-       ptr++)
-    ret += *ptr;
-  return ret;
-}
-
 /* rev1 is 1 if ACPIv1 is to be generated, 0 otherwise.
    rev2 contains the revision of ACPIv2+ to generate or 0 if none. */
 static int rev1, rev2;

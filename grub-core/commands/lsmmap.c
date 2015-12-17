@@ -37,6 +37,8 @@ static const char *names[] =
        is required to save accross hibernations.  */
     [GRUB_MEMORY_NVS] = N_("ACPI non-volatile storage RAM"),
     [GRUB_MEMORY_BADRAM] = N_("faulty RAM (BadRAM)"),
+    [GRUB_MEMORY_PERSISTENT] = N_("persistent RAM"),
+    [GRUB_MEMORY_PERSISTENT_LEGACY] = N_("persistent RAM (legacy)"),
     [GRUB_MEMORY_COREBOOT_TABLES] = N_("RAM holding coreboot tables"),
     [GRUB_MEMORY_CODE] = N_("RAM holding firmware code")
   };

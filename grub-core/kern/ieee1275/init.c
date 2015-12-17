@@ -166,7 +166,7 @@ heap_init (grub_uint64_t addr, grub_uint64_t len, grub_memory_type_t type,
 {
   unsigned long *total = data;
 
-  if (type != 1)
+  if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
 
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_PRE1_5M_CLAIM))

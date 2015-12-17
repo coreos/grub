@@ -97,6 +97,7 @@ struct grub_cryptodisk
   grub_uint8_t rekey_key[64];
   grub_uint64_t last_rekey;
   int rekey_derived_size;
+  grub_disk_addr_t partition_start;
 };
 typedef struct grub_cryptodisk *grub_cryptodisk_t;
 

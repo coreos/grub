@@ -268,6 +268,7 @@ grub_parser_execute (char *source)
       grub_parser_execute_getline (&line, 0, &source);
       grub_rescue_parse_line (line, grub_parser_execute_getline, &source);
       grub_free (line);
+      grub_print_error ();
     }
 
   return grub_errno;

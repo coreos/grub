@@ -89,7 +89,16 @@ grub_file_open (const char *name)
 
   file->device = device;
 
-  if (device->disk && file_name[0] != '/')
+  /* In case of relative pathnames and non-Unix systems (like Windows)
+   * name of host files may not start with `/'. Blocklists for host files
+   * are meaningless as well (for a start, host disk does not allow any direct
+   * access - it is just a marker). So skip host disk in this case.
+   */
+  if (device->disk && file_name[0] != '/'
+#if defined(GRUB_UTIL) || defined(GRUB_MACHINE_EMU)
+      && grub_strcmp (device->disk->name, "host")
+#endif
+     )
     /* This is a block list.  */
     file->fs = &grub_fs_blocklist;
   else

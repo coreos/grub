@@ -23,6 +23,7 @@
 #include <grub/dl.h>
 #include <grub/misc.h>
 #include <grub/normal.h>
+#include <grub/net.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -70,7 +71,15 @@ grub_file_progress_hook_real (grub_disk_addr_t sector __attribute__ ((unused)),
 	percent = grub_divmod64 (100 * file->progress_offset,
 				 file->size, 0);
 
-      partial_file_name = grub_strrchr (file->name, '/');
+      /* grub_net_fs_open() saves off partial file structure before name is initialized.
+         It already saves passed file name in net structure so just use it in this case.
+       */
+      if (file->device->net)
+	partial_file_name = grub_strrchr (file->device->net->name, '/');
+      else if (file->name) /* grub_file_open() may leave it as NULL */
+	partial_file_name = grub_strrchr (file->name, '/');
+      else
+	partial_file_name = NULL;
       if (partial_file_name)
 	partial_file_name++;
       else

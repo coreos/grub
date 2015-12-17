@@ -437,7 +437,7 @@ grub_net_dns_lookup (const char *name,
   struct recv_data data = {naddresses, addresses, cache,
 			   grub_cpu_to_be16 (id++), 0, 0, name, 0};
   grub_uint8_t *nbd;
-  int have_server = 0;
+  grub_size_t try_server = 0;
 
   if (!servers)
     {
@@ -543,38 +543,35 @@ grub_net_dns_lookup (const char *name,
   for (i = 0; i < n_servers * 4; i++)
     {
       /* Connect to a next server.  */
-      while (!(i & 1) && send_servers < n_servers)
+      while (!(i & 1) && try_server < n_servers)
 	{
-	  sockets[send_servers] = grub_net_udp_open (servers[send_servers],
+	  sockets[send_servers] = grub_net_udp_open (servers[try_server++],
 						     DNS_PORT,
 						     recv_hook,
 						     &data);
-	  send_servers++;
-	  if (!sockets[send_servers - 1])
+	  if (!sockets[send_servers])
 	    {
 	      err = grub_errno;
 	      grub_errno = GRUB_ERR_NONE;
 	    }
 	  else
 	    {
-	      have_server = 1;
+	      send_servers++;
 	      break;
 	    }
 	}
-      if (!have_server)
+      if (!send_servers)
 	goto out;
       if (*data.naddresses)
 	goto out;
       for (j = 0; j < send_servers; j++)
 	{
           grub_err_t err2;
-          if (!sockets[j])
-            continue;
-          nb->data = nbd;
 
           grub_size_t t = 0;
           do
             {
+              nb->data = nbd;
               if (servers[j].option == DNS_OPTION_IPV4 ||
                  ((servers[j].option == DNS_OPTION_PREFER_IPV4) && (t++ == 0)) ||
                  ((servers[j].option == DNS_OPTION_PREFER_IPV6) && (t++ == 1)))

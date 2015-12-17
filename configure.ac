@@ -315,7 +315,7 @@ AC_PROG_LN_S
 if test "x$LEX" = "x:"; then
   AC_MSG_ERROR([flex is not found])
 else
-  version=`$LEX --version | $AWK '{ split($NF,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
+  version=`$LEX --version | $AWK '{ split($2,x,"."); print x[[1]]*10000+x[[2]]*100+x[[3]]; }'`
   if test -n "$version" -a "$version" -ge 20535; then
     :
   else
@@ -562,12 +562,12 @@ AC_COMPILE_IFELSE(
 ]])],
 [grub_cv_cc_target_clang=no], [grub_cv_cc_target_clang=yes])])
 
-if test x$target_cpu = xpowerpc; then
+if test x$target_cpu = xpowerpc -o x$target_cpu = xmips; then
   AC_CACHE_CHECK([for options to get big-endian compilation], grub_cv_target_cc_big_endian, [
     grub_cv_target_cc_big_endian=no
-    for cand in "-target powerpc -Wl,-EB" "-target powerpc" \
-		"-target powerpc-linux-gnu -Wl,-EB" "-target powerpc-linux-gnu" \
-		"-mbig-endian"; do
+    for cand in "-target $target_cpu -Wl,-EB" "-target $target_cpu" \
+		"-target $target_cpu-linux-gnu -Wl,-EB" "-target $target_cpu-linux-gnu" \
+		"-EB" "-mbig-endian"; do
       if test x"$grub_cv_target_cc_big_endian" != xno ; then
         break
       fi
@@ -577,6 +577,8 @@ if test x$target_cpu = xpowerpc; then
 #error still little endian
 #endif
 asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
 void __main (void);
 void __main (void) {}
 int main (void);
@@ -595,6 +597,75 @@ int main (void);
   TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
   TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
   TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_big_endian"
+elif test x$target_cpu = xmipsel; then
+  AC_CACHE_CHECK([for options to get little-endian compilation], grub_cv_target_cc_little_endian, [
+    grub_cv_target_cc_little_endian=no
+    for cand in "-target $target_cpu -Wl,-EL" "-target $target_cpu" \
+		"-target $target_cpu-linux-gnu -Wl,-EL" "-target $target_cpu-linux-gnu" \
+		"-EL"; do
+      if test x"$grub_cv_target_cc_little_endian" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && (__ORDER_BIG_ENDIAN__ == __BYTE_ORDER__)
+#error still big endian
+#endif
+asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_little_endian="$cand"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_little_endian" = xno ; then
+    AC_MSG_ERROR([could not force little-endian])
+  fi
+
+  skip_linkflags="$(echo "$grub_cv_target_cc_little_endian"|sed 's@-Wl,-EL@@')"
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $skip_linkflags"
+  TARGET_CPPFLAGS="$TARGET_CPPFLAGS $skip_linkflags"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $skip_linkflags"
+  TARGET_LDFLAGS="$TARGET_LDFLAGS $grub_cv_target_cc_little_endian"
+fi
+
+# GRUB code is N32-compliant but it's experimental and we would prefer to
+# avoid having too much variety when it doesn't result in any real improvement.
+# Moreover N64 isn't supported.
+if test "x$target_cpu" = xmips || test "x$target_cpu" = xmipsel ; then
+  AC_CACHE_CHECK([for options to force MIPS o32 ABI], grub_cv_target_cc_mips_o32_abi, [
+    grub_cv_target_cc_mips_o32_abi=no
+    for arg in "" "-mabi=32" "-target $target_cpu -mabi=32" ; do
+      if test x"$grub_cv_target_cc_mips_o32_abi" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $arg -Werror"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+#if !defined(_ABIO32) || !defined(_MIPS_SIM) || (_MIPS_SIM != _ABIO32)
+#error not o32 ABI
+#endif
+asm (".globl start; start:");
+asm (".globl _start; _start:");
+asm (".globl __start; __start:");
+void __main (void);
+void __main (void) {}
+int main (void);
+]], [[]])],
+		        [grub_cv_target_cc_mips_o32_abi="$arg"], [])
+    done
+  ])
+
+  if test x"$grub_cv_target_cc_mips_o32_abi" = xno ; then
+    AC_MSG_ERROR([could not force MIPS o32 ABI])
+  fi
+
+  TARGET_CFLAGS="$TARGET_CFLAGS $grub_cv_target_cc_mips_o32_abi"
+  TARGET_CCASFLAGS="$TARGET_CCASFLAGS $grub_cv_target_cc_mips_o32_abi"
 fi
 
 AC_CACHE_CHECK([for options to compile assembly], [grub_cv_cc_target_asm_compile], [
@@ -712,7 +783,7 @@ fi
 if ( test "x$target_cpu" = xi386 || test "x$target_cpu" = xx86_64 ) && test "x$platform" != xemu; then
   # Some toolchains enable these features by default, but they need
   # registers that aren't set up properly in GRUB.
-  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-3dnow"
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow"
 fi
 
 # GRUB doesn't use float or doubles at all. Yet some toolchains may decide

@@ -240,20 +240,27 @@ grub_cmd_multiboot (grub_command_t cmd __attribute__ ((unused)),
 
 #ifndef GRUB_USE_MULTIBOOT2
   grub_multiboot_quirks = GRUB_MULTIBOOT_QUIRKS_NONE;
+  int option_found = 0;
 
-  if (argc != 0 && grub_strcmp (argv[0], "--quirk-bad-kludge") == 0)
+  do
     {
-      argc--;
-      argv++;
-      grub_multiboot_quirks |= GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE;
-    }
+      option_found = 0;
+      if (argc != 0 && grub_strcmp (argv[0], "--quirk-bad-kludge") == 0)
+	{
+	  argc--;
+	  argv++;
+	  option_found = 1;
+	  grub_multiboot_quirks |= GRUB_MULTIBOOT_QUIRK_BAD_KLUDGE;
+	}
 
-  if (argc != 0 && grub_strcmp (argv[0], "--quirk-modules-after-kernel") == 0)
-    {
-      argc--;
-      argv++;
-      grub_multiboot_quirks |= GRUB_MULTIBOOT_QUIRK_MODULES_AFTER_KERNEL;
-    }
+      if (argc != 0 && grub_strcmp (argv[0], "--quirk-modules-after-kernel") == 0)
+	{
+	  argc--;
+	  argv++;
+	  option_found = 1;
+	  grub_multiboot_quirks |= GRUB_MULTIBOOT_QUIRK_MODULES_AFTER_KERNEL;
+	}
+    } while (option_found);
 #endif
 
   if (argc == 0)

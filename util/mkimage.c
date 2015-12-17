@@ -992,7 +992,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 {
   char *kernel_img, *core_img;
   size_t kernel_size, total_module_size, core_size, exec_size;
-  size_t memdisk_size = 0, config_size = 0, config_size_pure = 0;
+  size_t memdisk_size = 0, config_size = 0;
   size_t prefix_size = 0;
   char *kernel_path;
   size_t offset;
@@ -1043,8 +1043,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
   if (config_path)
     {
-      config_size_pure = grub_util_get_image_size (config_path) + 1;
-      config_size = ALIGN_ADDR (config_size_pure);
+      config_size = ALIGN_ADDR (grub_util_get_image_size (config_path) + 1);
       grub_util_info ("the size of config file is 0x%" GRUB_HOST_PRIxLONG_LONG,
 		      (unsigned long long) config_size);
       total_module_size += config_size + sizeof (struct grub_module_header);
@@ -1080,7 +1079,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
       = grub_host_to_target32 (total_module_size);
 
   if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
-    memmove (kernel_img + total_module_size, kernel_img, kernel_size);
+    {
+      memmove (kernel_img + total_module_size, kernel_img, kernel_size);
+      memset (kernel_img, 0, total_module_size);
+    }
 
   if (image_target->voidp_sizeof == 8)
     {
@@ -1090,7 +1092,6 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	modinfo = (struct grub_module_info64 *) kernel_img;
       else
 	modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
-      memset (modinfo, 0, sizeof (struct grub_module_info64));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info64));
       modinfo->size = grub_host_to_target_addr (total_module_size);
@@ -1107,7 +1108,6 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	modinfo = (struct grub_module_info32 *) kernel_img;
       else
 	modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
-      memset (modinfo, 0, sizeof (struct grub_module_info32));
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info32));
       modinfo->size = grub_host_to_target_addr (total_module_size);
@@ -1120,17 +1120,14 @@ grub_install_generate_image (const char *dir, const char *prefix,
   for (p = path_list; p; p = p->next)
     {
       struct grub_module_header *header;
-      size_t mod_size, orig_size;
+      size_t mod_size;
 
-      orig_size = grub_util_get_image_size (p->name);
-      mod_size = ALIGN_ADDR (orig_size);
+      mod_size = ALIGN_ADDR (grub_util_get_image_size (p->name));
 
       header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
       header->type = grub_host_to_target32 (OBJ_TYPE_ELF);
       header->size = grub_host_to_target32 (mod_size + sizeof (*header));
       offset += sizeof (*header);
-      memset (kernel_img + offset + orig_size, 0, mod_size - orig_size);
 
       grub_util_load_image (p->name, kernel_img + offset);
       offset += mod_size;
@@ -1146,7 +1143,6 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	curs = grub_util_get_image_size (pubkey_paths[i]);
 
 	header = (struct grub_module_header *) (kernel_img + offset);
-	memset (header, 0, sizeof (struct grub_module_header));
 	header->type = grub_host_to_target32 (OBJ_TYPE_PUBKEY);
 	header->size = grub_host_to_target32 (curs + sizeof (*header));
 	offset += sizeof (*header);
@@ -1161,7 +1157,6 @@ grub_install_generate_image (const char *dir, const char *prefix,
       struct grub_module_header *header;
 
       header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
       header->type = grub_host_to_target32 (OBJ_TYPE_MEMDISK);
       header->size = grub_host_to_target32 (memdisk_size + sizeof (*header));
       offset += sizeof (*header);
@@ -1175,13 +1170,11 @@ grub_install_generate_image (const char *dir, const char *prefix,
       struct grub_module_header *header;
 
       header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
       header->type = grub_host_to_target32 (OBJ_TYPE_CONFIG);
       header->size = grub_host_to_target32 (config_size + sizeof (*header));
       offset += sizeof (*header);
 
       grub_util_load_image (config_path, kernel_img + offset);
-      *(kernel_img + offset + config_size_pure - 1) = 0;
       offset += config_size;
     }
 
@@ -1190,12 +1183,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
       struct grub_module_header *header;
 
       header = (struct grub_module_header *) (kernel_img + offset);
-      memset (header, 0, sizeof (struct grub_module_header));
       header->type = grub_host_to_target32 (OBJ_TYPE_PREFIX);
       header->size = grub_host_to_target32 (prefix_size + sizeof (*header));
       offset += sizeof (*header);
 
-      grub_memset (kernel_img + offset, 0, prefix_size);
       grub_strcpy (kernel_img + offset, prefix);
       offset += prefix_size;
     }
@@ -1269,14 +1260,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
       full_size = core_size + decompress_size;
 
       full_img = xmalloc (full_size);
-      memset (full_img, 0, full_size); 
 
       memcpy (full_img, decompress_img, decompress_size);
 
       memcpy (full_img + decompress_size, core_img, core_size);
-
-      memset (full_img + decompress_size + core_size, 0,
-	      full_size - (decompress_size + core_size));
 
       free (core_img);
       core_img = full_img;
@@ -1428,6 +1415,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	pe_img = xmalloc (reloc_addr + reloc_size);
 	memset (pe_img, 0, header_size);
 	memcpy ((char *) pe_img + header_size, core_img, core_size);
+	memset ((char *) pe_img + header_size + core_size, 0, reloc_addr - (header_size + core_size));
 	memcpy ((char *) pe_img + reloc_addr, rel_section, reloc_size);
 	header = pe_img;
 

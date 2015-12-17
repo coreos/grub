@@ -305,6 +305,7 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
   grub_uint64_t prop;
   grub_uint8_t *pprop;
   char *shortname;
+  char need_suffix = 1;
 
   if (grub_strcmp (alias->type, "network") != 0)
     return 0;
@@ -325,7 +326,43 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
 
 #define SUFFIX ":speed=auto,duplex=auto,1.1.1.1,dummy,1.1.1.1,1.1.1.1,5,5,1.1.1.1,512"
 
-  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+    need_suffix = 0;
+
+  /* sun4v vnet devices do not support setting duplex/speed */
+  {
+    char *ptr;
+
+    grub_ieee1275_finddevice (alias->path, &devhandle);
+
+    grub_ieee1275_get_property_length (devhandle, "compatible", &prop_size);
+    if (prop_size > 0)
+      {
+	pprop = grub_malloc (prop_size);
+	if (!pprop)
+	  {
+	    grub_free (card);
+	    grub_free (ofdata);
+	    grub_print_error ();
+	    return 1;
+	  }
+
+	if (!grub_ieee1275_get_property (devhandle, "compatible",
+					 pprop, prop_size, NULL))
+	  {
+	    for (ptr = (char *) pprop; ptr - (char *) pprop < prop_size;
+		 ptr += grub_strlen (ptr) + 1)
+	      {
+		if (!grub_strcmp(ptr, "SUNW,sun4v-network"))
+		  need_suffix = 0;
+	      }
+	}
+
+	grub_free (pprop);
+      }
+  }
+
+  if (need_suffix)
     ofdata->path = grub_malloc (grub_strlen (alias->path) + sizeof (SUFFIX));
   else
     ofdata->path = grub_malloc (grub_strlen (alias->path) + 1);
@@ -335,7 +372,7 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
       return 0;
     }
   ofdata->suffix = grub_stpcpy (ofdata->path, alias->path);
-  if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_OFNET_SUFFIX))
+  if (need_suffix)
     grub_memcpy (ofdata->suffix, SUFFIX, sizeof (SUFFIX));
   else
     *ofdata->suffix = '\0';
