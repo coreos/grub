@@ -370,9 +370,9 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
     }
 
   hddp->partition_start = grub_partition_get_start (efidir_grub_dev->disk->partition)
-    << (efidir_grub_dev->disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
+    >> (efidir_grub_dev->disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
   hddp->partition_size = grub_disk_get_size (efidir_grub_dev->disk)
-    << (efidir_grub_dev->disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
+    >> (efidir_grub_dev->disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
 
   pathptr = hddp + 1;
   filep = pathptr;
