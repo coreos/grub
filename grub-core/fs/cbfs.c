@@ -344,8 +344,16 @@ init_cbfsdisk (void)
 
   ptr = *(grub_uint32_t *) 0xfffffffc;
   head = (struct cbfs_header *) (grub_addr_t) ptr;
+  grub_dprintf ("cbfs", "head=%p\n", head);
 
-  if (!validate_head (head))
+  /* coreboot current supports only ROMs <= 16 MiB. Bigger ROMs will
+     have problems as RCBA is 18 MiB below end of 32-bit typically,
+     so either memory map would have to be rearranged or we'd need to support
+     reading ROMs through controller directly.
+   */
+  if (ptr < 0xff000000
+      || 0xffffffff - ptr < (grub_uint32_t) sizeof (*head) + 0xf
+      || !validate_head (head))
     return;
 
   cbfsdisk_size = ALIGN_UP (grub_be_to_cpu32 (head->romsize),

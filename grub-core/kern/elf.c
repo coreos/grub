@@ -28,6 +28,25 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
+#if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
+#define GRUB_ELF_ENABLE_BI_ENDIAN 1
+#else
+#define GRUB_ELF_ENABLE_BI_ENDIAN 0
+#endif
+
+#if defined(GRUB_CPU_WORDS_BIGENDIAN)
+#define GRUB_ELF_NATIVE_ENDIANNESS ELFDATA2MSB
+#define GRUB_ELF_OPPOSITE_ENDIANNESS ELFDATA2LSB
+#else
+#define GRUB_ELF_NATIVE_ENDIANNESS ELFDATA2LSB
+#define GRUB_ELF_OPPOSITE_ENDIANNESS ELFDATA2MSB
+#endif
+
+static int grub_elf32_check_endianess_and_bswap_ehdr (grub_elf_t elf);
+static int grub_elf64_check_endianess_and_bswap_ehdr (grub_elf_t elf);
+
 /* Check if EHDR is a valid ELF header.  */
 static grub_err_t
 grub_elf_check_header (grub_elf_t elf)
@@ -38,8 +57,25 @@ grub_elf_check_header (grub_elf_t elf)
       || e->e_ident[EI_MAG1] != ELFMAG1
       || e->e_ident[EI_MAG2] != ELFMAG2
       || e->e_ident[EI_MAG3] != ELFMAG3
-      || e->e_ident[EI_VERSION] != EV_CURRENT
-      || e->e_version != EV_CURRENT)
+      || e->e_ident[EI_VERSION] != EV_CURRENT)
+    return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-independent ELF magic"));
+
+  if (grub_elf_is_elf32 (elf))
+    {
+      if (!grub_elf32_check_endianess_and_bswap_ehdr (elf)) {
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF endianness magic");
+      }
+    }
+  else if (grub_elf_is_elf64 (elf))
+    {
+      if (!grub_elf64_check_endianess_and_bswap_ehdr (elf)) {
+	return grub_error (GRUB_ERR_BAD_OS, "invalid ELF endianness magic");
+      }
+    }
+  else
+    return grub_error (GRUB_ERR_BAD_OS, "unknown ELF class");
+
+  if (e->e_version != EV_CURRENT)
     return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-independent ELF magic"));
 
   return GRUB_ERR_NONE;
@@ -117,6 +153,9 @@ grub_elf_open (const char *name)
 }
 
 
+#define grub_swap_bytes_halfXX grub_swap_bytes16
+#define grub_swap_bytes_wordXX grub_swap_bytes32
+
 /* 32-bit */
 #define ehdrXX ehdr32
 #define ELFCLASSXX ELFCLASS32
@@ -127,7 +166,12 @@ grub_elf_open (const char *name)
 #define grub_elf_is_elfXX grub_elf_is_elf32
 #define grub_elfXX_load_phdrs grub_elf32_load_phdrs
 #define ElfXX_Phdr Elf32_Phdr
+#define ElfXX_Ehdr Elf32_Ehdr
 #define grub_uintXX_t grub_uint32_t
+#define grub_swap_bytes_addrXX grub_swap_bytes32
+#define grub_swap_bytes_offXX grub_swap_bytes32
+#define grub_swap_bytes_XwordXX grub_swap_bytes32
+#define grub_elfXX_check_endianess_and_bswap_ehdr grub_elf32_check_endianess_and_bswap_ehdr
 
 #include "elfXX.c"
 
@@ -140,7 +184,12 @@ grub_elf_open (const char *name)
 #undef grub_elf_is_elfXX
 #undef grub_elfXX_load_phdrs
 #undef ElfXX_Phdr
+#undef ElfXX_Ehdr
 #undef grub_uintXX_t
+#undef grub_swap_bytes_addrXX
+#undef grub_swap_bytes_offXX
+#undef grub_swap_bytes_XwordXX
+#undef grub_elfXX_check_endianess_and_bswap_ehdr
 
 
 /* 64-bit */
@@ -153,6 +202,11 @@ grub_elf_open (const char *name)
 #define grub_elf_is_elfXX grub_elf_is_elf64
 #define grub_elfXX_load_phdrs grub_elf64_load_phdrs
 #define ElfXX_Phdr Elf64_Phdr
+#define ElfXX_Ehdr Elf64_Ehdr
 #define grub_uintXX_t grub_uint64_t
+#define grub_swap_bytes_addrXX grub_swap_bytes64
+#define grub_swap_bytes_offXX grub_swap_bytes64
+#define grub_swap_bytes_XwordXX grub_swap_bytes64
+#define grub_elfXX_check_endianess_and_bswap_ehdr grub_elf64_check_endianess_and_bswap_ehdr
 
 #include "elfXX.c"

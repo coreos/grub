@@ -21,9 +21,6 @@ if COND_powerpc_ieee1275
   CFLAGS_PLATFORM += -mcpu=powerpc
 endif
 
-#FIXME: discover and check XEN headers
-CPPFLAGS_XEN = -I/usr/include
-
 # Other options
 
 CPPFLAGS_DEFAULT = -DGRUB_FILE=\"$(subst $(srcdir)/,,$<)\"

@@ -196,7 +196,7 @@ alloc_phys_choose (grub_uint64_t addr, grub_uint64_t len,
   struct alloc_phys_ctx *ctx = data;
   grub_addr_t end = addr + len;
 
-  if (type != 1)
+  if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
 
   addr = ALIGN_UP (addr, FOUR_MB);
@@ -430,7 +430,7 @@ static int
 get_physbase (grub_uint64_t addr, grub_uint64_t len __attribute__ ((unused)),
 	      grub_memory_type_t type, void *data __attribute__ ((unused)))
 {
-  if (type != 1)
+  if (type != GRUB_MEMORY_AVAILABLE)
     return 0;
   if (addr < phys_base)
     phys_base = addr;

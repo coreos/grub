@@ -45,12 +45,6 @@
 #ifdef __linux__
 #include <sys/ioctl.h>         /* ioctl */
 #include <sys/mount.h>
-#ifndef MAJOR
-# ifndef MINORBITS
-#  define MINORBITS	8
-# endif /* ! MINORBITS */
-# define MAJOR(dev)	((unsigned) ((dev) >> MINORBITS))
-#endif /* ! MAJOR */
 #ifndef FLOPPY_MAJOR
 # define FLOPPY_MAJOR	2
 #endif /* ! FLOPPY_MAJOR */
@@ -73,7 +67,6 @@
 #include <grub/emu/getroot.h>
 
 #if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-# define MAJOR(dev) major(dev)
 # define FLOPPY_MAJOR	2
 #endif
 
@@ -90,7 +83,6 @@
 #endif /* defined(__NetBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) */
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
-# define MAJOR(dev) major(dev)
 # ifdef HAVE_GETRAWPARTITION
 #  include <util.h>    /* getrawpartition */
 # endif /* HAVE_GETRAWPARTITION */

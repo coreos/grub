@@ -1341,6 +1341,43 @@ grub_net_open_real (const char *name)
       }
       if (try == 0)
 	{
+	  const char *prefix, *root;
+	  char *prefdev, *comma;
+	  int skip = 0;
+	  grub_size_t devlen;
+
+	  /* Do not attempt to load module if it requires protocol provided
+	     by this module - it results in infinite recursion. Just continue,
+	     fail and cleanup on next iteration.
+	   */
+	  prefix = grub_env_get ("prefix");
+	  if (!prefix)
+	    continue;
+
+	  prefdev = grub_file_get_device_name (prefix);
+	  if (!prefdev)
+	    {
+	      root = grub_env_get ("root");
+	      if (!root)
+		continue;
+	      prefdev = grub_strdup (root);
+	      if (!prefdev)
+		continue;
+	    }
+
+	  comma = grub_strchr (prefdev, ',');
+	  if (comma)
+	    *comma = '\0';
+	  devlen = grub_strlen (prefdev);
+
+	  if (protnamelen == devlen && grub_memcmp (prefdev, protname, devlen) == 0)
+	    skip = 1;
+
+	  grub_free (prefdev);
+
+	  if (skip)
+	    continue;
+
 	  if (sizeof ("http") - 1 == protnamelen
 	      && grub_memcmp ("http", protname, protnamelen) == 0)
 	    {

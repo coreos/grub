@@ -30,6 +30,8 @@ typedef enum grub_memory_type
     GRUB_MEMORY_ACPI = 3,
     GRUB_MEMORY_NVS = 4,
     GRUB_MEMORY_BADRAM = 5,
+    GRUB_MEMORY_PERSISTENT = 7,
+    GRUB_MEMORY_PERSISTENT_LEGACY = 12,
     GRUB_MEMORY_COREBOOT_TABLES = 16,
     GRUB_MEMORY_CODE = 20,
     /* This one is special: it's used internally but is never reported

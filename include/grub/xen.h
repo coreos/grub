@@ -33,7 +33,12 @@
 #include <grub/err.h>
 
 #ifndef GRUB_SYMBOL_GENERATOR
-#include <stdint.h>
+typedef grub_int8_t int8_t;
+typedef grub_int16_t int16_t;
+typedef grub_uint8_t uint8_t;
+typedef grub_uint16_t uint16_t;
+typedef grub_uint32_t uint32_t;
+typedef grub_uint64_t uint64_t;
 #include <xen/xen.h>
 
 #include <xen/sched.h>

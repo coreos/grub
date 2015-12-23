@@ -394,7 +394,7 @@ grub_ufs_read_file (struct grub_ufs_data *data,
 	    return -1;
 	}
       else
-	grub_memset (buf, UFS_BLKSZ (sblock) - skipfirst, 0);
+	grub_memset (buf, 0, blockend);
 
       buf += UFS_BLKSZ (sblock) - skipfirst;
     }

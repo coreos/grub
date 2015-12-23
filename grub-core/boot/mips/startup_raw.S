@@ -22,6 +22,7 @@
 #include <grub/machine/memory.h>
 #include <grub/machine/kernel.h>
 #include <grub/offsets.h>
+#include <grub/mips/asm.h>
 
 #define BASE_ADDR 8
 
@@ -118,32 +119,32 @@ parsestr:
 	move $v0, $zero
 	move $t3, $t1
 3:	
-	lb $t4, 0($t2)
-	lb $t5, 0($t3)
+	lb GRUB_ASM_T4, 0($t2)
+	lb GRUB_ASM_T5, 0($t3)
 	addiu $t2, $t2, 1
 	addiu $t3, $t3, 1
-	beq $t5, $zero, 1f
+	beq GRUB_ASM_T5, $zero, 1f
 	 nop
-	beq $t5, $t4, 3b
+	beq GRUB_ASM_T5, GRUB_ASM_T4, 3b
 	 nop
-	bne $t4, $zero, 1f
+	bne GRUB_ASM_T4, $zero, 1f
 	 nop
 
 	addiu $t3, $t3, 0xffff
 digcont:	
-	lb $t5, 0($t3)
+	lb GRUB_ASM_T5, 0($t3)
 	/* Substract '0' from digit.  */
-	addiu $t5, $t5, 0xffd0
-	bltz $t5, 1f
+	addiu GRUB_ASM_T5, GRUB_ASM_T5, 0xffd0
+	bltz GRUB_ASM_T5, 1f
 	 nop
-	addiu $t4, $t5, 0xfff7
-	bgtz $t4, 1f
+	addiu GRUB_ASM_T4, GRUB_ASM_T5, 0xfff7
+	bgtz GRUB_ASM_T4, 1f
 	 nop
 	/* Multiply $v0 by 10 with bitshifts. */
 	sll $v0, $v0, 1
-	sll $t4, $v0, 2
-	addu $v0, $v0, $t4
-	addu $v0, $v0, $t5
+	sll GRUB_ASM_T4, $v0, 2
+	addu $v0, $v0, GRUB_ASM_T4
+	addu $v0, $v0, GRUB_ASM_T5
 	addiu $t3, $t3, 1
 	b digcont
 	 nop
@@ -182,10 +183,10 @@ argdone:
 	b argdone
   	 addiu $a1, $a1, 4
 do_check:
-	lb $t4, 0($t7)
-	beq $t4, $zero, 1f
+	lb GRUB_ASM_T4, 0($t7)
+	beq GRUB_ASM_T4, $zero, 1f
 	 lb $t3, 0($t6)
-	bne $t3, $t4, 2f
+	bne $t3, GRUB_ASM_T4, 2f
 	 addiu $t6, $t6, 1
 	b do_check
 	 addiu $t7, $t7, 1
@@ -222,8 +223,8 @@ cmdlinedone:
 
 1:
 	beq $t1, $t3, 2f
-	 lb $t4, 0($t2)
-	sb $t4, 0($t1)
+	 lb GRUB_ASM_T4, 0($t2)
+	sb GRUB_ASM_T4, 0($t1)
 	addiu $t1, $t1, 1
 	b 1b
 	 addiu $t2, $t2, 1

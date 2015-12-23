@@ -19,7 +19,7 @@
 #ifndef GRUB_SETJMP_CPU_HEADER
 #define GRUB_SETJMP_CPU_HEADER	1
 
-typedef unsigned long grub_jmp_buf[12];
+typedef grub_uint64_t grub_jmp_buf[12];
 
 int grub_setjmp (grub_jmp_buf env) RETURNS_TWICE;
 void grub_longjmp (grub_jmp_buf env, int val) __attribute__ ((noreturn));

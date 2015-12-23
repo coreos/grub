@@ -49,6 +49,9 @@
 #define GRUB_EFI_MEMORY_WP	0x0000000000001000LL
 #define GRUB_EFI_MEMORY_RP	0x0000000000002000LL
 #define GRUB_EFI_MEMORY_XP	0x0000000000004000LL
+#define GRUB_EFI_MEMORY_NV	0x0000000000008000LL
+#define GRUB_EFI_MEMORY_MORE_RELIABLE	0x0000000000010000LL
+#define GRUB_EFI_MEMORY_RO	0x0000000000020000LL
 #define GRUB_EFI_MEMORY_RUNTIME	0x8000000000000000LL
 
 #define GRUB_EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL	0x00000001
@@ -111,7 +114,7 @@
     { 0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b } \
   }
 
-#define EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID \
+#define GRUB_EFI_SIMPLE_TEXT_INPUT_EX_PROTOCOL_GUID \
   { 0xdd9e7534, 0x7762, 0x4698, \
     { 0x8c, 0x14, 0xf5, 0x85, 0x17, 0xa6, 0x25, 0xaa } \
   }
@@ -244,6 +247,51 @@
 #define GRUB_EFI_USB_IO_PROTOCOL_GUID \
   { 0x2B2F68D6, 0x0CD2, 0x44cf, \
     { 0x8E, 0x8B, 0xBB, 0xA2, 0x0B, 0x1B, 0x5B, 0x75 } \
+  }
+
+#define GRUB_EFI_TIANO_CUSTOM_DECOMPRESS_GUID \
+  { 0xa31280ad, 0x481e, 0x41b6, \
+    { 0x95, 0xe8, 0x12, 0x7f, 0x4c, 0x98, 0x47, 0x79 } \
+  }
+
+#define GRUB_EFI_CRC32_GUIDED_SECTION_EXTRACTION_GUID \
+  { 0xfc1bcdb0, 0x7d31, 0x49aa, \
+    { 0x93, 0x6a, 0xa4, 0x60, 0x0d, 0x9d, 0xd0, 0x83 } \
+  }
+
+#define GRUB_EFI_LZMA_CUSTOM_DECOMPRESS_GUID \
+  { 0xee4e5898, 0x3914, 0x4259, \
+    { 0x9d, 0x6e, 0xdc, 0x7b, 0xd7, 0x94, 0x03, 0xcf } \
+  }
+
+#define GRUB_EFI_TSC_FREQUENCY_GUID \
+  { 0xdba6a7e3, 0xbb57, 0x4be7, \
+    { 0x8a, 0xf8, 0xd5, 0x78, 0xdb, 0x7e, 0x56, 0x87 } \
+  }
+
+#define GRUB_EFI_SYSTEM_RESOURCE_TABLE_GUID \
+  { 0xb122a263, 0x3661, 0x4f68, \
+    { 0x99, 0x29, 0x78, 0xf8, 0xb0, 0xd6, 0x21, 0x80 } \
+  }
+
+#define GRUB_EFI_DXE_SERVICES_TABLE_GUID \
+  { 0x05ad34ba, 0x6f02, 0x4214, \
+    { 0x95, 0x2e, 0x4d, 0xa0, 0x39, 0x8e, 0x2b, 0xb9 } \
+  }
+
+#define GRUB_EFI_HOB_LIST_GUID \
+  { 0x7739f24c, 0x93d7, 0x11d4, \
+    { 0x9a, 0x3a, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d } \
+  }
+
+#define GRUB_EFI_MEMORY_TYPE_INFORMATION_GUID \
+  { 0x4c19049f, 0x4137, 0x4dd3, \
+    { 0x9c, 0x10, 0x8b, 0x97, 0xa8, 0x3f, 0xfd, 0xfa } \
+  }
+
+#define GRUB_EFI_DEBUG_IMAGE_INFO_TABLE_GUID \
+  { 0x49152e77, 0x1ada, 0x4764, \
+    { 0xb7, 0xa2, 0x7a, 0xfe, 0xfe, 0xd9, 0x5e, 0x8b } \
   }
 
 #define GRUB_EFI_MPS_TABLE_GUID	\
@@ -431,6 +479,7 @@ enum grub_efi_memory_type
     GRUB_EFI_MEMORY_MAPPED_IO,
     GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE,
     GRUB_EFI_PAL_CODE,
+    GRUB_EFI_PERSISTENT_MEMORY,
     GRUB_EFI_MAX_MEMORY_TYPE
   };
 typedef enum grub_efi_memory_type grub_efi_memory_type_t;
@@ -952,6 +1001,32 @@ struct grub_efi_input_key
 };
 typedef struct grub_efi_input_key grub_efi_input_key_t;
 
+typedef grub_efi_uint8_t grub_efi_key_toggle_state_t;
+struct grub_efi_key_state
+{
+	grub_efi_uint32_t key_shift_state;
+	grub_efi_key_toggle_state_t key_toggle_state;
+};
+typedef struct grub_efi_key_state grub_efi_key_state_t;
+
+#define GRUB_EFI_SHIFT_STATE_VALID     0x80000000
+#define GRUB_EFI_RIGHT_SHIFT_PRESSED   0x00000001
+#define GRUB_EFI_LEFT_SHIFT_PRESSED    0x00000002
+#define GRUB_EFI_RIGHT_CONTROL_PRESSED 0x00000004
+#define GRUB_EFI_LEFT_CONTROL_PRESSED  0x00000008
+#define GRUB_EFI_RIGHT_ALT_PRESSED     0x00000010
+#define GRUB_EFI_LEFT_ALT_PRESSED      0x00000020
+#define GRUB_EFI_RIGHT_LOGO_PRESSED    0x00000040
+#define GRUB_EFI_LEFT_LOGO_PRESSED     0x00000080
+#define GRUB_EFI_MENU_KEY_PRESSED      0x00000100
+#define GRUB_EFI_SYS_REQ_PRESSED       0x00000200
+
+#define GRUB_EFI_TOGGLE_STATE_VALID 0x80
+#define GRUB_EFI_KEY_STATE_EXPOSED  0x40
+#define GRUB_EFI_SCROLL_LOCK_ACTIVE 0x01
+#define GRUB_EFI_NUM_LOCK_ACTIVE    0x02
+#define GRUB_EFI_CAPS_LOCK_ACTIVE   0x04
+
 struct grub_efi_simple_text_output_mode
 {
   grub_efi_int32_t max_mode;
@@ -1293,6 +1368,43 @@ struct grub_efi_simple_input_interface
   grub_efi_event_t wait_for_key;
 };
 typedef struct grub_efi_simple_input_interface grub_efi_simple_input_interface_t;
+
+struct grub_efi_key_data {
+	grub_efi_input_key_t key;
+	grub_efi_key_state_t key_state;
+};
+typedef struct grub_efi_key_data grub_efi_key_data_t;
+
+typedef grub_efi_status_t (*grub_efi_key_notify_function_t) (
+	grub_efi_key_data_t *key_data
+	);
+
+struct grub_efi_simple_text_input_ex_interface
+{
+	grub_efi_status_t
+	(*reset) (struct grub_efi_simple_text_input_ex_interface *this,
+		  grub_efi_boolean_t extended_verification);
+
+	grub_efi_status_t
+	(*read_key_stroke) (struct grub_efi_simple_text_input_ex_interface *this,
+			    grub_efi_key_data_t *key_data);
+
+	grub_efi_event_t wait_for_key;
+
+	grub_efi_status_t
+	(*set_state) (struct grub_efi_simple_text_input_ex_interface *this,
+		      grub_efi_key_toggle_state_t *key_toggle_state);
+
+	grub_efi_status_t
+	(*register_key_notify) (struct grub_efi_simple_text_input_ex_interface *this,
+				grub_efi_key_data_t *key_data,
+				grub_efi_key_notify_function_t key_notification_function);
+
+	grub_efi_status_t
+	(*unregister_key_notify) (struct grub_efi_simple_text_input_ex_interface *this,
+				  void *notification_handle);
+};
+typedef struct grub_efi_simple_text_input_ex_interface grub_efi_simple_text_input_ex_interface_t;
 
 struct grub_efi_simple_text_output_interface
 {

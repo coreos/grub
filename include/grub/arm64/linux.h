@@ -23,8 +23,6 @@
 
 #define GRUB_ARM64_LINUX_MAGIC 0x644d5241 /* 'ARM\x64' */
 
-#define GRUB_EFI_PAGE_SHIFT	12
-#define BYTES_TO_PAGES(bytes)   (((bytes) + 0xfff) >> GRUB_EFI_PAGE_SHIFT)
 #define GRUB_EFI_PE_MAGIC	0x5A4D
 
 /* From linux/Documentation/arm64/booting.txt */
@@ -42,8 +40,6 @@ struct grub_arm64_linux_kernel_header
   grub_uint32_t hdr_offset;	/* Offset of PE/COFF header */
 };
 
-/* Declare the functions for getting dtb and checking/booting image */
-void *grub_linux_get_fdt (void);
 grub_err_t grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header
                                         *lh);
 grub_err_t grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size,

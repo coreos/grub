@@ -227,7 +227,10 @@ dev_iterate (const struct grub_ieee1275_devalias *alias)
 
       if (grub_ieee1275_open (alias->path, &ihandle))
 	return;
-    
+
+      /* This method doesn't need memory allocation for the table. Open
+         firmware takes care of all memory management and the result table
+         stays in memory and is never freed. */
       INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
       args.method = (grub_ieee1275_cell_t) "vscsi-report-luns";
       args.ihandle = ihandle;
@@ -259,6 +262,82 @@ dev_iterate (const struct grub_ieee1275_devalias *alias)
       grub_ieee1275_close (ihandle);
       grub_free (buf);
       return;
+    }
+  else if (grub_strcmp (alias->type, "sas_ioa") == 0)
+    {
+      /* The method returns the number of disks and a table where
+       * each ID is 64-bit long. Example of sas paths:
+       *  /pci@80000002000001f/pci1014,034A@0/sas/disk@c05db70800
+       *  /pci@80000002000001f/pci1014,034A@0/sas/disk@a05db70800
+       *  /pci@80000002000001f/pci1014,034A@0/sas/disk@805db70800 */
+
+      struct sas_children
+        {
+          struct grub_ieee1275_common_hdr common;
+          grub_ieee1275_cell_t method;
+          grub_ieee1275_cell_t ihandle;
+          grub_ieee1275_cell_t max;
+          grub_ieee1275_cell_t table;
+          grub_ieee1275_cell_t catch_result;
+          grub_ieee1275_cell_t nentries;
+        }
+      args;
+      char *buf, *bufptr;
+      unsigned i;
+      grub_uint64_t *table;
+      grub_uint16_t table_size;
+      grub_ieee1275_ihandle_t ihandle;
+
+      buf = grub_malloc (grub_strlen (alias->path) +
+                         sizeof ("/disk@7766554433221100"));
+      if (!buf)
+        return;
+      bufptr = grub_stpcpy (buf, alias->path);
+
+      /* Power machines documentation specify 672 as maximum SAS disks in
+         one system. Using a slightly larger value to be safe. */
+      table_size = 768;
+      table = grub_malloc (table_size * sizeof (grub_uint64_t));
+
+      if (!table)
+        {
+          grub_free (buf);
+          return;
+        }
+
+      if (grub_ieee1275_open (alias->path, &ihandle))
+        {
+          grub_free (buf);
+          grub_free (table);
+          return;
+        }
+
+      INIT_IEEE1275_COMMON (&args.common, "call-method", 4, 2);
+      args.method = (grub_ieee1275_cell_t) "get-sas-children";
+      args.ihandle = ihandle;
+      args.max = table_size;
+      args.table = (grub_ieee1275_cell_t) table;
+      args.catch_result = 0;
+      args.nentries = 0;
+
+      if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+        {
+          grub_ieee1275_close (ihandle);
+          grub_free (table);
+          grub_free (buf);
+          return;
+        }
+
+      for (i = 0; i < args.nentries; i++)
+        {
+          grub_snprintf (bufptr, sizeof ("/disk@7766554433221100"),
+                        "/disk@%" PRIxGRUB_UINT64_T, table[i]);
+          dev_iterate_real (buf, buf);
+        }
+
+      grub_ieee1275_close (ihandle);
+      grub_free (table);
+      grub_free (buf);
     }
 
   if (!grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_NO_TREE_SCANNING_FOR_DISKS)
@@ -422,16 +501,20 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
     op = ofdisk_hash_find (devpath);
     if (!op)
       op = ofdisk_hash_add (devpath, NULL);
-    else
-      grub_free (devpath);
     if (!op)
-      return grub_errno;
+      {
+        grub_free (devpath);
+        return grub_errno;
+      }
     disk->id = (unsigned long) op;
     disk->data = op->open_path;
 
     err = grub_ofdisk_get_block_size (devpath, &block_size, op);
     if (err)
-      return err;
+      {
+        grub_free (devpath);
+        return err;
+      }
     if (block_size != 0)
       {
 	for (disk->log_sector_size = 0;
@@ -442,6 +525,7 @@ grub_ofdisk_open (const char *name, grub_disk_t disk)
       disk->log_sector_size = 9;
   }
 
+  grub_free (devpath);
   return 0;
 }
 

@@ -92,6 +92,12 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	disk=hd0
 	;;
 esac
+
+if ! which parted >/dev/null 2>&1; then
+   echo "parted not installed; cannot test partmap"
+   exit 77
+fi
+
 imgfile="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
 outfile="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
 

@@ -249,7 +249,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
   if (embed_type != GRUB_EMBED_PCBIOS)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "PC-style partitions curently support "
+		       "PC-style partitions currently support "
 		       "only PC-BIOS embedding");
 
   if (disk->partition)

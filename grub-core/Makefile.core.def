@@ -59,9 +59,6 @@ kernel = {
   ia64_efi_ldflags = '-Wl,-r,-d';
   ia64_efi_stripflags = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
-  x86_64_xen_cppflags	   = '$(CPPFLAGS_XEN)';
-  i386_xen_cppflags	   = '$(CPPFLAGS_XEN)';
-
   arm_efi_ldflags          = '-Wl,-r,-d';
   arm_efi_stripflags       = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
@@ -174,8 +171,20 @@ kernel = {
   efi = kern/efi/init.c;
   efi = kern/efi/mm.c;
   efi = term/efi/console.c;
+  efi = kern/acpi.c;
+  efi = kern/efi/acpi.c;
+  i386_coreboot = kern/i386/pc/acpi.c;
+  i386_multiboot = kern/i386/pc/acpi.c;
+  i386_coreboot = kern/acpi.c;
+  i386_multiboot = kern/acpi.c;
 
   x86 = kern/i386/tsc.c;
+  x86 = kern/i386/tsc_pit.c;
+  i386_efi = kern/i386/efi/tsc.c;
+  x86_64_efi = kern/i386/efi/tsc.c;
+  i386_efi = kern/i386/tsc_pmtimer.c;
+  i386_coreboot = kern/i386/tsc_pmtimer.c;
+  x86_64_efi = kern/i386/tsc_pmtimer.c;
 
   i386_efi = kern/i386/efi/init.c;
   i386_efi = bus/pci.c;
@@ -187,6 +196,7 @@ kernel = {
   x86_64_efi = bus/pci.c;
 
   xen = kern/i386/tsc.c;
+  xen = kern/i386/xen/tsc.c;
   x86_64_xen = kern/x86_64/xen/hypercall.S;
   i386_xen = kern/i386/xen/hypercall.S;
   xen = kern/xen/init.c;
@@ -604,7 +614,6 @@ module = {
 module = {
   name = lsxen;
   common = commands/xen/lsxen.c;
-  cppflags = '$(CPPFLAGS_XEN)';
 
   enable = xen;
 };
@@ -669,10 +678,8 @@ module = {
   name = acpi;
 
   common = commands/acpi.c;
-  efi = commands/efi/acpi.c;
-  i386_pc = commands/i386/pc/acpi.c;
-  i386_coreboot = commands/i386/pc/acpi.c;
-  i386_multiboot = commands/i386/pc/acpi.c;
+  i386_pc = kern/acpi.c;
+  i386_pc = kern/i386/pc/acpi.c;
 
   enable = efi;
   enable = i386_pc;
@@ -847,7 +854,6 @@ module = {
   i386_coreboot = lib/i386/halt.c;
   i386_qemu = lib/i386/halt.c;
   xen = lib/xen/halt.c;
-  xen_cppflags = '$(CPPFLAGS_XEN)';
   efi = lib/efi/halt.c;
   ieee1275 = lib/ieee1275/halt.c;
   emu = lib/emu/halt.c;
@@ -868,7 +874,6 @@ module = {
   mips_loongson = lib/mips/loongson/reboot.c;
   mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
   xen = lib/xen/reboot.c;
-  xen_cppflags = '$(CPPFLAGS_XEN)';
   uboot = lib/uboot/reboot.c;
   common = commands/reboot.c;
 };
@@ -1485,7 +1490,6 @@ module = {
 module = {
   name = gfxmenu;
   common = gfxmenu/gfxmenu.c;
-  common = gfxmenu/model.c;
   common = gfxmenu/view.c;
   common = gfxmenu/font.c;
   common = gfxmenu/icon_manager.c;
@@ -1564,7 +1568,6 @@ module = {
   i386_xen = lib/i386/xen/relocator.S;
   x86_64_xen = lib/x86_64/xen/relocator.S;
   xen = lib/i386/relocator_common_c.c;
-  xen_cppflags = '$(CPPFLAGS_XEN)';
 
   extra_dist = lib/i386/relocator_common.S;
   extra_dist = kern/powerpc/cache_flush.S;
@@ -1585,7 +1588,6 @@ module = {
   sparc64_ieee1275 = lib/ieee1275/cmos.c;
   powerpc_ieee1275 = lib/ieee1275/cmos.c;
   xen = lib/xen/datetime.c;
-  xen_cppflags = '$(CPPFLAGS_XEN)';
 
   mips_arc = lib/arc/datetime.c;
   enable = noemu;
@@ -1685,10 +1687,16 @@ module = {
 };
 
 module = {
+  name = xen_boot;
+  common = lib/cmdline.c;
+  arm64 = loader/arm64/xen_boot.c;
+  enable = arm64;
+};
+
+module = {
   name = linux;
   x86 = loader/i386/linux.c;
   xen = loader/i386/xen.c;
-  xen_cppflags	   = '$(CPPFLAGS_XEN)';
   i386_pc = lib/i386/pc/vesa_modes_table.c;
   mips = loader/mips/linux.c;
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
@@ -1696,10 +1704,16 @@ module = {
   ia64_efi = loader/ia64/efi/linux.c;
   arm = loader/arm/linux.c;
   arm64 = loader/arm64/linux.c;
-  fdt = lib/fdt.c;
   common = loader/linux.c;
   common = lib/cmdline.c;
   enable = noemu;
+};
+
+module = {
+  name = fdt;
+  arm64 = loader/arm64/fdt.c;
+  common = lib/fdt.c;
+  enable = fdt;
 };
 
 module = {

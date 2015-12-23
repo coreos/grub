@@ -4,8 +4,8 @@
 
 	.set mips3
 	sync
-	ld $t2, 0($t6)
+	ld $t2, 0($t1)
 
 a:
-	addiu $t7, $s0, (b - a)
+	addiu $t1, $s0, (b - a)
 b:	nop

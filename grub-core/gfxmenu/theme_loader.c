@@ -255,7 +255,7 @@ theme_set_string (grub_gfxmenu_view_t view,
     {
       unsigned int tmp;
       int err = theme_get_unsigned_int_from_proportional (value,
-                                                          view->screen.width,
+                                                          view->screen.height,
                                                           &tmp);
       if (err != GRUB_ERR_NONE)
         return err;
@@ -275,7 +275,7 @@ theme_set_string (grub_gfxmenu_view_t view,
     {
       unsigned int tmp;
       int err = theme_get_unsigned_int_from_proportional (value,
-                                                          view->screen.width,
+                                                          view->screen.height,
                                                           &tmp);
       if (err != GRUB_ERR_NONE)
         return err;
