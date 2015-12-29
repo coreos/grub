@@ -310,6 +310,7 @@ make_image_fwdisk_abs (enum grub_install_plat plat,
   grub_install_make_image_wrap (source_dirs[plat], "()/boot/grub", output,
 				0, load_cfg, mkimage_target, 0);
   grub_install_pop_module ();
+  grub_util_unlink (load_cfg);
 }
 
 static int
@@ -647,6 +648,7 @@ main (int argc, char *argv[])
 	}
       grub_install_pop_module ();
       grub_install_pop_module ();
+      grub_util_unlink (load_cfg);
     }
 
   /** build multiboot core.img */
