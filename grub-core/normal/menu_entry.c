@@ -126,9 +126,13 @@ ensure_space (struct line *linep, int extra)
 static int
 get_logical_num_lines (struct line *linep, struct per_term_screen *term_screen)
 {
-  return (grub_getstringwidth (linep->buf, linep->buf + linep->len,
-			       term_screen->term)
-	  / (unsigned) term_screen->geo.entry_width) + 1;
+  grub_size_t width = grub_getstringwidth (linep->buf, linep->buf + linep->len,
+					   term_screen->term);
+
+  /* Empty line still consumes space on screen */
+  return width ? (width + (unsigned) term_screen->geo.entry_width - 1) /
+		 (unsigned) term_screen->geo.entry_width
+	       : 1;
 }
 
 static void
