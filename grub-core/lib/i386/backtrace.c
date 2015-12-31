@@ -57,10 +57,10 @@ grub_backtrace (void)
 {
 #ifdef __x86_64__
   asm volatile ("movq %%rbp, %%rdi\n"
-		"call %%rax": :"a"(grub_backtrace_pointer));
+		"callq *%%rax": :"a"(grub_backtrace_pointer));
 #else
   asm volatile ("movl %%ebp, %%eax\n"
-		"call %%ecx": :"c"(grub_backtrace_pointer));
+		"calll *%%ecx": :"c"(grub_backtrace_pointer));
 #endif
 }
 
