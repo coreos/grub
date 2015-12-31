@@ -89,7 +89,7 @@ VARIABLE(grub_relocator_xen_mfn_list)
 
 	loop 1b
 
-	leaq   EXT_C(grub_relocator_xen_mmu_op) (%rip), %rdi
+	leaq   LOCAL(mmu_op) (%rip), %rdi
 	movq   $3, %rsi
 	movq   $0, %rdx
 	movq   $0x7FF0, %r10
@@ -104,6 +104,7 @@ VARIABLE(grub_relocator_xen_remap_continue)
 
 	jmp *%rax
 
+LOCAL(mmu_op):
 VARIABLE(grub_relocator_xen_mmu_op)
 	.space 256
 
