@@ -937,6 +937,17 @@ if test "x$grub_cv_cc_fno_asynchronous_unwind_tables" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-asynchronous-unwind-tables"
 fi
 
+AC_CACHE_CHECK([whether -fno-unwind-tables works], [grub_cv_cc_fno_unwind_tables], [
+  CFLAGS="$TARGET_CFLAGS -fno-unwind-tables"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_fno_unwind_tables=yes],
+      [grub_cv_cc_fno_unwind_tables=no])
+])
+
+if test "x$grub_cv_cc_fno_unwind_tables" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-unwind-tables"
+fi
+
 AC_ARG_ENABLE([efiemu],
 	      [AS_HELP_STRING([--enable-efiemu],
                              [build and install the efiemu runtimes (default=guessed)])])
