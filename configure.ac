@@ -948,66 +948,6 @@ if test "x$grub_cv_cc_fno_unwind_tables" = xyes; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-unwind-tables"
 fi
 
-AC_ARG_ENABLE([efiemu],
-	      [AS_HELP_STRING([--enable-efiemu],
-                             [build and install the efiemu runtimes (default=guessed)])])
-if test x"$enable_efiemu" = xno ; then
-  efiemu_excuse="explicitly disabled"
-fi
-if test x"$grub_cv_target_cc_link_format" = x-mi386pe || test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
-  efiemu_excuse="not available on cygwin"
-fi
-if test x"$target_cpu" != xi386 ; then
-  efiemu_excuse="only available on i386"
-fi
-if test x"$platform" = xefi ; then
-  efiemu_excuse="not available on efi"
-fi
-if test x"$efiemu_excuse" = x ; then
-  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
-    CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_efiemu=yes],
-		      [grub_cv_cc_efiemu=no])
-  ])
-  if test x$grub_cv_cc_efiemu = xno; then
-     efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
-  fi
-fi
-if test x"$efiemu_excuse" = x ; then
-  AC_CACHE_CHECK([for efiemu64 linking format], [grub_cv_target_cc_efiemu64_link_format], [
-    grub_cv_target_cc_efiemu64_link_format=unknown
-    for format in -melf_x86_64 -melf_x86_64_fbsd -melf_x86_64_obsd -melf_x86_64_haiku -arch,x86_64; do
-      CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
-      LDFLAGS="-m64 -Wl,$format -nostdlib -static"
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
-      asm (".globl start; start:");
-      asm (".globl _start; _start:");
-      asm (".globl __start; __start:");
-      void __main (void);
-      void __main (void) {}
-      ]], [[]])], [flag=1], [flag=0])
-      if test x"$flag" = x1; then
-        grub_cv_target_cc_efiemu64_link_format="$format"
-	break
-      fi
-    done])
-  if test x"$grub_cv_target_cc_efiemu64_link_format" = xunknown; then
-    efiemu_excuse="no suitable link format for efiemu64 found"
-  else
-    EFIEMU64_LINK_FORMAT="-Wl,$grub_cv_target_cc_efiemu64_link_format"
-  fi
-fi
-if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
-  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled ($efiemu_excuse)])
-fi
-if test x"$efiemu_excuse" = x ; then
-enable_efiemu=yes
-else
-enable_efiemu=no
-fi
-AC_SUBST([enable_efiemu])
-AC_SUBST([EFIEMU64_LINK_FORMAT])
 
 CFLAGS="$TARGET_CFLAGS"
 
@@ -1100,6 +1040,73 @@ else
   TARGET_IMG_BASE_LDOPT="-Wl,-Ttext"
   TARGET_IMG_CFLAGS=
 fi
+
+CFLAGS="$TARGET_CFLAGS"
+
+AC_ARG_ENABLE([efiemu],
+	      [AS_HELP_STRING([--enable-efiemu],
+                             [build and install the efiemu runtimes (default=guessed)])])
+if test x"$enable_efiemu" = xno ; then
+  efiemu_excuse="explicitly disabled"
+fi
+
+if test x"$grub_cv_target_cc_link_format" = x-mi386pe || test x"$grub_cv_target_cc_link_format" = x-mi386pep ; then
+  efiemu_excuse="not available on cygwin"
+fi
+if test x"$target_cpu" != xi386 ; then
+  efiemu_excuse="only available on i386"
+fi
+if test x"$platform" = xefi ; then
+  efiemu_excuse="not available on efi"
+fi
+
+if test x"$efiemu_excuse" = x ; then
+  AC_CACHE_CHECK([whether options required for efiemu work], grub_cv_cc_efiemu, [
+    CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_efiemu=yes],
+		      [grub_cv_cc_efiemu=no])
+  ])
+  if test x$grub_cv_cc_efiemu = xno; then
+     efiemu_excuse="cannot compile with -m64 -mcmodel=large -mno-red-zone -nostdlib"
+  fi
+fi
+if test x"$efiemu_excuse" = x ; then
+  AC_CACHE_CHECK([for efiemu64 linking format], [grub_cv_target_cc_efiemu64_link_format], [
+    grub_cv_target_cc_efiemu64_link_format=unknown
+    for format in -melf_x86_64 -melf_x86_64_fbsd -melf_x86_64_obsd -melf_x86_64_haiku -arch,x86_64; do
+      CFLAGS="-m64 -nostdlib -O2 -mcmodel=large -mno-red-zone"
+      LDFLAGS="-m64 -Wl,$format -nostdlib -static"
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+      asm (".globl start; start:");
+      asm (".globl _start; _start:");
+      asm (".globl __start; __start:");
+      void __main (void);
+      void __main (void) {}
+      ]], [[]])], [flag=1], [flag=0])
+      if test x"$flag" = x1; then
+        grub_cv_target_cc_efiemu64_link_format="$format"
+	break
+      fi
+    done])
+  if test x"$grub_cv_target_cc_efiemu64_link_format" = xunknown; then
+    efiemu_excuse="no suitable link format for efiemu64 found"
+  else
+    EFIEMU64_LINK_FORMAT="-Wl,$grub_cv_target_cc_efiemu64_link_format"
+  fi
+fi
+if test x"$enable_efiemu" = xyes && test x"$efiemu_excuse" != x ; then
+  AC_MSG_ERROR([efiemu runtime was explicitly requested but can't be compiled ($efiemu_excuse)])
+fi
+if test x"$efiemu_excuse" = x ; then
+enable_efiemu=yes
+else
+enable_efiemu=no
+fi
+AC_SUBST([enable_efiemu])
+AC_SUBST([EFIEMU64_LINK_FORMAT])
+
+CFLAGS="$TARGET_CFLAGS"
 
 AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
