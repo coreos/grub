@@ -161,14 +161,12 @@ check_license (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
   grub_util_error ("incompatible license");
 }
 
-static void
-check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
+static Elf_Sym *
+get_symtab (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e, Elf_Word *size, Elf_Word *entsize)
 {
   unsigned i;
   Elf_Shdr *s, *sections;
   Elf_Sym *sym;
-  const char *str;
-  Elf_Word size, entsize;
 
   sections = (Elf_Shdr *) ((char *) e + grub_target_to_host (e->e_shoff));
   for (i = 0, s = sections;
@@ -181,11 +179,19 @@ check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
     grub_util_error ("no symbol table");
 
   sym = (Elf_Sym *) ((char *) e + grub_target_to_host (s->sh_offset));
-  size = grub_target_to_host (s->sh_size);
-  entsize = grub_target_to_host (s->sh_entsize);
+  *size = grub_target_to_host (s->sh_size);
+  *entsize = grub_target_to_host (s->sh_entsize);
+  return sym;
+}
 
-  s = (Elf_Shdr *) ((char *) sections + grub_target_to_host16 (e->e_shentsize) * grub_target_to_host32 (s->sh_link));
-  str = (char *) e + grub_target_to_host (s->sh_offset);
+static void
+check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
+{
+  Elf_Sym *sym;
+  Elf_Word size, entsize;
+  unsigned i;
+
+  sym = get_symtab (arch, e, &size, &entsize);
 
   for (i = 0;
        i < size / entsize;
@@ -208,19 +214,41 @@ check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
     }
 }
 
-/* Relocate symbols.  */
+static int
+is_symbol_local(Elf_Sym *sym)
+{
+  switch (ELF_ST_TYPE (sym->st_info))
+    {
+    case STT_NOTYPE:
+    case STT_OBJECT:
+      if (sym->st_name != 0 && sym->st_shndx == 0)
+	return 0;
+      return 1;
+
+    case STT_FUNC:
+    case STT_SECTION:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
 static void
 section_check_relocations (const struct grub_module_verifier_arch *arch, void *ehdr,
 			   Elf_Shdr *s, size_t target_seg_size)
 {
   Elf_Rel *rel, *max;
+  Elf_Sym *symtab;
+  Elf_Word symtabsize, symtabentsize;
+
+  symtab = get_symtab (arch, ehdr, &symtabsize, &symtabentsize);
 
   for (rel = (Elf_Rel *) ((char *) ehdr + grub_target_to_host (s->sh_offset)),
 	 max = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_size));
        rel < max;
        rel = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_entsize)))
     {
-      Elf_Word *addr;
       Elf_Sym *sym;
       unsigned i;
 
@@ -235,8 +263,20 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
       for (i = 0; arch->supported_relocations[i] != -1; i++)
 	if (type == arch->supported_relocations[i])
 	  break;
-      if (arch->supported_relocations[i] == -1)
+      if (arch->supported_relocations[i] != -1)
+	continue;
+      if (!arch->short_relocations)
 	grub_util_error ("unsupported relocation 0x%x", type);
+      for (i = 0; arch->short_relocations[i] != -1; i++)
+	if (type == arch->short_relocations[i])
+	  break;
+      if (arch->short_relocations[i] == -1)
+	grub_util_error ("unsupported relocation 0x%x", type);
+      sym = (Elf_Sym *) ((char *) symtab + symtabentsize * ELF_R_SYM (grub_target_to_host (rel->r_info)));
+
+      if (is_symbol_local (sym))
+	continue;
+      grub_util_error ("relocation 0x%x is not module-local", type);
     }
 }
 

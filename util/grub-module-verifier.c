@@ -15,9 +15,13 @@ struct grub_module_verifier_arch archs[] = {
   { "x86_64", 8, 0, EM_X86_64, GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){
       R_X86_64_64,
       R_X86_64_PC64,
-      /* R_X86_64_32, R_X86_64_32S, R_X86_64_PC32 are supported but shouldn't be used because of their limited range.  */
+      /* R_X86_64_32, R_X86_64_32S are supported but shouldn't be used because of their limited range.  */
       -1
-    } },
+    }, (int[]){
+      R_X86_64_PC32,
+      -1
+    }
+  },
   { "powerpc", 4, 1, EM_PPC, GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){
       GRUB_ELF_R_PPC_ADDR16_LO,
       GRUB_ELF_R_PPC_REL24, /* It has limited range but GRUB adds trampolines when necessarry.  */
@@ -39,16 +43,23 @@ struct grub_module_verifier_arch archs[] = {
     } },
   { "ia64", 8, 0, EM_IA_64, GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){
       R_IA64_PCREL21B, /* We should verify that it's pointing either
-			  to a function or to a section in the same module.  */
+			  to a function or to a section in the same module.
+			  Checking that external symbol is a function is
+			  non-trivial and I have never seen this relocation used
+			  for anything else, so assume that it always points to a
+			  function.
+		       */
       R_IA64_SEGREL64LSB,
       R_IA64_FPTR64LSB,
       R_IA64_DIR64LSB,
       R_IA64_PCREL64LSB,
-      R_IA64_GPREL22,  /* We should verify that it's pointing  to a section in the same module.  */
       R_IA64_LTOFF22X,
       R_IA64_LTOFF22,
       R_IA64_LTOFF_FPTR22,
       R_IA64_LDXMOV,
+      -1
+    }, (int[]){
+      R_IA64_GPREL22,
       -1
     } },
   { "mipsel", 4, 0, EM_MIPS, GRUB_MODULE_VERIFY_SUPPORTS_REL | GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){

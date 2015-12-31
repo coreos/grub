@@ -13,6 +13,7 @@ struct grub_module_verifier_arch {
   int machine;
   int flags;
   const int *supported_relocations;
+  const int *short_relocations;
 };
 
 void grub_module_verify64(void *module_img, size_t module_size, const struct grub_module_verifier_arch *arch);
