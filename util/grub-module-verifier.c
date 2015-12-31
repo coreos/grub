@@ -38,7 +38,12 @@ struct grub_module_verifier_arch archs[] = {
       R_SPARC_LO10,
       R_SPARC_64,
       R_SPARC_OLO10,
-      /* R_SPARC_32, R_SPARC_HI22  are supported but shouldn't be used because of their limited range.  */
+      /* Following 2 relocations have limited range but unfortunately
+	 clang generates them, as it doesn't implement mcmodel=large properly.
+	 At least our heap and core are under 4G, so it's not a problem
+	 usually. */
+      R_SPARC_HI22,
+      R_SPARC_32,
       -1
     } },
   { "ia64", 8, 0, EM_IA_64, GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){
