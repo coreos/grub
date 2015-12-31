@@ -91,14 +91,19 @@ if COND_STARFIELD
 starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
 dejavu_10.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -s 10 -o $@ $(DJVU_FONT_SOURCE)
+CLEANFILES += dejavu_10.pf2
 dejavu_12.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -s 12 -o $@ $(DJVU_FONT_SOURCE)
+CLEANFILES += dejavu_12.pf2
 dejavu_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -s 14 -o $@ $(DJVU_FONT_SOURCE)
+CLEANFILES += dejavu_14.pf2
 dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
+CLEANFILES += dejavu_bold_14.pf2
 dejavu_16.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
 	./build-grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
+CLEANFILES += dejavu_16.pf2
 else
 starfield_DATA =
 endif
