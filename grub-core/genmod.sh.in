@@ -15,12 +15,12 @@ set -e
 #
 # Example:
 #
-# genmod.sh moddep.lst normal.module normal.mod
+# genmod.sh moddep.lst normal.module build-grub-module-verifier normal.mod
 #
 
 moddep=$1
 infile=$2
-outfile=$3
+outfile=$4
 
 tmpfile=${outfile}.tmp
 modname=`echo $infile | sed -e 's@\.module.*$@@'`
@@ -93,4 +93,5 @@ else
 	    -wd1106 -nu -nd $tmpfile.bin $tmpfile || exit 1
 	rm -f $name.bin
 fi
+./build-grub-module-verifier $tmpfile @target_cpu@
 mv $tmpfile $outfile
