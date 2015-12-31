@@ -910,6 +910,18 @@ if test x"$target_os" = xcygwin && test "x$grub_cv_cc_no_reorder_functions" = xy
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-reorder-functions"
 fi
 
+AC_CACHE_CHECK([whether -mno-stack-arg-probe works], [grub_cv_cc_mno_stack_arg_probe], [
+  CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+      [grub_cv_cc_mno_stack_arg_probe=yes],
+      [grub_cv_cc_mno_stack_arg_probe=no])
+])
+
+if test "x$grub_cv_cc_mno_stack_arg_probe" = xyes; then
+  TARGET_CFLAGS="$TARGET_CFLAGS -mno-stack-arg-probe"
+fi
+
+
 # By default, GCC 4.6 generates .eh_frame sections containing unwind
 # information in some cases where it previously did not. GRUB doesn't need
 # these and they just use up vital space. Restore the old compiler
