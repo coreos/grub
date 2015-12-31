@@ -50,7 +50,12 @@ EXTRA_DIST += util/import_gcrypth.sed
 EXTRA_DIST += util/bin2h.c
 EXTRA_DIST += util/grub-gen-asciih.c
 EXTRA_DIST += util/grub-gen-widthspec.c
+EXTRA_DIST += util/grub-module-verifier.c
+EXTRA_DIST += util/grub-module-verifier32.c
+EXTRA_DIST += util/grub-module-verifier64.c
+EXTRA_DIST += util/grub-module-verifierXX.c
 EXTRA_DIST += util/grub-pe2elf.c
+
 
 EXTRA_DIST += m4/gnulib-cache.m4
 EXTRA_DIST += m4/glibc2.m4
