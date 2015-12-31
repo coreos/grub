@@ -91,7 +91,7 @@ else
 	    -nr:_grub_mod_init:grub_mod_init \
 	    -nr:_grub_mod_fini:grub_mod_fini \
 	    -wd1106 -nu -nd $tmpfile.bin $tmpfile || exit 1
-	rm -f $name.bin
+	rm -f $tmpfile.bin
 fi
 if test x@platform@ != xemu; then
     ./build-grub-module-verifier $tmpfile @target_cpu@

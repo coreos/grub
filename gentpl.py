@@ -729,9 +729,11 @@ def kernel(defn, platform):
 """if test x$(TARGET_APPLE_LINKER) = x1; then \
   $(TARGET_STRIP) -S -x $(""" + cname(defn) + """) -o $@.bin $<; \
   $(TARGET_OBJCONV) -f$(TARGET_MODULE_FORMAT) -nr:_grub_mod_init:grub_mod_init -nr:_grub_mod_fini:grub_mod_fini -ed2022 -ed2016 -wd1106 -nu -nd $@.bin $@; \
+  rm -f $@.bin; \
    elif test ! -z '$(TARGET_OBJ2ELF)'; then \
      """  + "$(TARGET_STRIP) $(" + cname(defn) + "_STRIPFLAGS) -o $@.bin $< && \
      $(TARGET_OBJ2ELF) $@.bin $@ || (rm -f $@; rm -f $@.bin; exit 1); \
+     rm -f $@.bin; \
 else """  + "$(TARGET_STRIP) $(" + cname(defn) + "_STRIPFLAGS) -o $@ $<; \
 fi"""))
 
