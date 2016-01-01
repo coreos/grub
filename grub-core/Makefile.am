@@ -394,7 +394,7 @@ moddep.lst: syminfo.lst genmoddep.awk video.lst
 platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
-$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT) build-grub-module-verifier
+$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT) build-grub-module-verifier$(BUILD_EXEEXT)
 	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 platform_DATA += modinfo.sh

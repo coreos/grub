@@ -89,20 +89,20 @@ CLEANFILES += build-grub-gen-widthspec$(BUILD_EXEEXT)
 
 if COND_STARFIELD
 starfield_DATA = dejavu_10.pf2 dejavu_12.pf2 dejavu_bold_14.pf2 dejavu_14.pf2 dejavu_16.pf2 $(starfield_theme_files)
-dejavu_10.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -s 10 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_10.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -s 10 -o $@ $(DJVU_FONT_SOURCE)
 CLEANFILES += dejavu_10.pf2
-dejavu_12.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -s 12 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_12.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -s 12 -o $@ $(DJVU_FONT_SOURCE)
 CLEANFILES += dejavu_12.pf2
-dejavu_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -s 14 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -s 14 -o $@ $(DJVU_FONT_SOURCE)
 CLEANFILES += dejavu_14.pf2
-dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_bold_14.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -b -s 14 -o $@ $(DJVU_FONT_SOURCE)
 CLEANFILES += dejavu_bold_14.pf2
-dejavu_16.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -s 16 -o $@ $(DJVU_FONT_SOURCE)
+dejavu_16.pf2: $(DJVU_FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -s 16 -o $@ $(DJVU_FONT_SOURCE)
 CLEANFILES += dejavu_16.pf2
 else
 starfield_DATA =
@@ -111,28 +111,28 @@ endif
 EXTRA_DIST += $(starfield_theme_files)
 EXTRA_DIST += $(srcdir)/themes/starfield/src/slider_s.xcf $(srcdir)/themes/starfield/src/slider_n.xcf $(srcdir)/themes/starfield/src/slider_c.xcf $(srcdir)/themes/starfield/src/blob_nw.xcf $(srcdir)/themes/starfield/src/bootmenu/center.xcf $(srcdir)/themes/starfield/src/bootmenu/corner.xcf $(srcdir)/themes/starfield/src/bootmenu/side.xcf $(srcdir)/themes/starfield/src/terminalbox/side.xcf $(srcdir)/themes/starfield/src/terminalbox/corner.xcf $(srcdir)/themes/starfield/src/terminalbox/center.xcf
 
-unicode.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE) || (rm -f $@; exit 1)
+unicode.pf2: $(FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -o $@ $(FONT_SOURCE) || (rm -f $@; exit 1)
 CLEANFILES += unicode.pf2
 
 # Arrows and lines are needed to draw the menu, so always include them
 UNICODE_ARROWS=0x2190-0x2193
 UNICODE_LINES=0x2501-0x251B
 
-ascii.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
+ascii.pf2: $(FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -o $@ $(FONT_SOURCE) -r 0x0-0x7f,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
 CLEANFILES += ascii.pf2
 
-euro.pf2: $(FONT_SOURCE) build-grub-mkfont
-	./build-grub-mkfont -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
+euro.pf2: $(FONT_SOURCE) build-grub-mkfont$(BUILD_EXEEXT)
+	./build-grub-mkfont$(BUILD_EXEEXT) -o $@ $(FONT_SOURCE) -r 0x0-0x4ff,0x1e00-0x1fff,$(UNICODE_ARROWS),$(UNICODE_LINES) || (rm -f $@; exit 1)
 CLEANFILES += euro.pf2
 
-ascii.h: $(FONT_SOURCE) build-grub-gen-asciih
-	./build-grub-gen-asciih $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
+ascii.h: $(FONT_SOURCE) build-grub-gen-asciih$(BUILD_EXEEXT)
+	./build-grub-gen-asciih$(BUILD_EXEEXT) $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
 CLEANFILES += ascii.h
 
-widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec
-	./build-grub-gen-widthspec $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
+widthspec.h: $(FONT_SOURCE) build-grub-gen-widthspec$(BUILD_EXEEXT)
+	./build-grub-gen-widthspec$(BUILD_EXEEXT) $(FONT_SOURCE) $@ || (rm -f $@; exit 1)
 CLEANFILES += widthspec.h
 
 # Install config.h into platformdir
