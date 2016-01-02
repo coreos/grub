@@ -22,6 +22,8 @@
 #ifndef GRUB_DSDT_TEST
 #include <grub/types.h>
 #include <grub/err.h>
+#else
+#define GRUB_PACKED __attribute__ ((packed))
 #endif
 
 #define GRUB_RSDP_SIGNATURE "RSD PTR "
