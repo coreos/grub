@@ -248,6 +248,7 @@ get_sleep_type (grub_uint8_t *table, grub_uint8_t *ptr, grub_uint8_t *end,
 	  if (!add)
 	    return -1;
 	  break;
+	case GRUB_ACPI_OPCODE_CREATE_DWORD_FIELD:
 	case GRUB_ACPI_OPCODE_CREATE_WORD_FIELD:
 	case GRUB_ACPI_OPCODE_CREATE_BYTE_FIELD:
 	  {
