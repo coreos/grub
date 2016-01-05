@@ -149,3 +149,51 @@ grub_get_time_ms (void)
 
   return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
+
+size_t
+grub_util_get_image_size (const char *path)
+{
+  FILE *f;
+  size_t ret;
+  off_t sz;
+
+  f = grub_util_fopen (path, "rb");
+
+  if (!f)
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
+
+  fseeko (f, 0, SEEK_END);
+  
+  sz = ftello (f);
+  if (sz < 0)
+    grub_util_error (_("cannot open `%s': %s"), path, strerror (errno));
+  if (sz != (size_t) sz)
+    grub_util_error (_("file `%s' is too big"), path);
+  ret = (size_t) sz;
+
+  fclose (f);
+
+  return ret;
+}
+
+void
+grub_util_load_image (const char *path, char *buf)
+{
+  FILE *fp;
+  size_t size;
+
+  grub_util_info ("reading %s", path);
+
+  size = grub_util_get_image_size (path);
+
+  fp = grub_util_fopen (path, "rb");
+  if (! fp)
+    grub_util_error (_("cannot open `%s': %s"), path,
+		     strerror (errno));
+
+  if (fread (buf, 1, size, fp) != size)
+    grub_util_error (_("cannot read `%s': %s"), path,
+		     strerror (errno));
+
+  fclose (fp);
+}
