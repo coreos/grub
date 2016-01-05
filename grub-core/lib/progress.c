@@ -38,10 +38,16 @@ grub_file_progress_hook_real (grub_disk_addr_t sector __attribute__ ((unused)),
   grub_uint64_t now;
   static grub_uint64_t last_progress_update_time;
   grub_file_t file = data;
+  const char *e;
   file->progress_offset += length;
 
   if (call_depth)
     return;
+
+  e = grub_env_get ("enable_progress_indicator");
+  if (e && e[0] == '0') {
+    return;
+  }
 
   call_depth = 1;
   now = grub_get_time_ms ();
