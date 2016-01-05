@@ -449,7 +449,8 @@ if [ x$boot = xnet ]; then
     [ -z "$files" ] || copy_extra_files "$netdir" $files
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 elif [ x$boot = xemu ]; then
-    grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    rootdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    grubdir="$rootdir/boot/grub"
     mkdir -p "$grubdir/fonts"
     mkdir -p "$grubdir/themes"
     mkdir -p "$grubdir/locale"
@@ -462,8 +463,12 @@ elif [ x$boot = xemu ]; then
     done
     cp "${cfgfile}" "$grubdir/grub.cfg"
     cp "${source}" "$grubdir/testcase.cfg"
-    @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
-    rm -rf "$grubdir"
+    [ -z "$files" ] || copy_extra_files "$rootdir" $files
+    roottar="$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    (cd "$rootdir"; tar cf "$roottar" .)
+    @builddir@/grub-core/grub-emu -m "$device_map" --memdisk "$roottar" -r memdisk -d "/boot/grub" | tr -d "\r" | do_trim
+    test -n "$debug" || rm -rf "$rootdir"
+    test -n "$debug" || rm -f "$roottar"
 else
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -${device}"${isofile}" ${bootdev} | cat | tr -d "\r" | do_trim
 fi
