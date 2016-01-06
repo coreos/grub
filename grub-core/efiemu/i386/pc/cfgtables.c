@@ -22,18 +22,22 @@
 #include <grub/misc.h>
 #include <grub/mm.h>
 #include <grub/acpi.h>
+#include <grub/smbios.h>
 
 grub_err_t
 grub_machine_efiemu_init_tables (void)
 {
-  grub_uint8_t *ptr;
   void *table;
   grub_err_t err;
   grub_efi_guid_t smbios = GRUB_EFI_SMBIOS_TABLE_GUID;
+  grub_efi_guid_t smbios3 = GRUB_EFI_SMBIOS3_TABLE_GUID;
   grub_efi_guid_t acpi20 = GRUB_EFI_ACPI_20_TABLE_GUID;
   grub_efi_guid_t acpi = GRUB_EFI_ACPI_TABLE_GUID;
 
   err = grub_efiemu_unregister_configuration_table (smbios);
+  if (err)
+    return err;
+  err = grub_efiemu_unregister_configuration_table (smbios3);
   if (err)
     return err;
   err = grub_efiemu_unregister_configuration_table (acpi);
@@ -43,6 +47,20 @@ grub_machine_efiemu_init_tables (void)
   if (err)
     return err;
 
+  table = grub_smbios_get_eps ();
+  if (table)
+    {
+      err = grub_efiemu_register_configuration_table (smbios, 0, 0, table);
+      if (err)
+	return err;
+    }
+  table = grub_smbios_get_eps3 ();
+  if (table)
+    {
+      err = grub_efiemu_register_configuration_table (smbios3, 0, 0, table);
+      if (err)
+	return err;
+    }
   table = grub_acpi_get_rsdpv1 ();
   if (table)
     {
@@ -54,20 +72,6 @@ grub_machine_efiemu_init_tables (void)
   if (table)
     {
       err = grub_efiemu_register_configuration_table (acpi20, 0, 0, table);
-      if (err)
-	return err;
-    }
-
-  for (ptr = (grub_uint8_t *) 0xf0000; ptr < (grub_uint8_t *) 0x100000;
-       ptr += 16)
-    if (grub_memcmp (ptr, "_SM_", 4) == 0
-	&& grub_byte_checksum (ptr, *(ptr + 5)) == 0)
-      break;
-
-  if (ptr < (grub_uint8_t *) 0x100000)
-    {
-      grub_dprintf ("efiemu", "Registering SMBIOS\n");
-      err = grub_efiemu_register_configuration_table (smbios, 0, 0, ptr);
       if (err)
 	return err;
     }
