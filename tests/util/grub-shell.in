@@ -97,13 +97,13 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips)
 	boot=mips_qemu
 	qemu=qemu-system-mips
-	qemuopts="$qemuopts -M mips"
+	qemuopts="-M mips $qemuopts"
 	console=vga_text
 	;;
     mips-arc)
 	boot=cd
 	qemu=qemu-system-mips64
-	qemuopts="$qemuopts -M indy"
+	qemuopts="-M indy $qemuopts"
 	serial_port=arc/serial0/line0
 	console=
 	trim=1
@@ -111,7 +111,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mipsel-arc)
 	boot=cd
 	qemu=qemu-system-mips64el
-	qemuopts="$qemuopts -M magnum -no-reboot"
+	qemuopts="-M magnum $qemuopts -no-reboot"
 	serial_port=arc/multi0/serial0
 	console=console
 	halt_cmd=reboot
@@ -120,13 +120,13 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mipsel-qemu_mips)
 	boot=mipsel_qemu
 	qemu=qemu-system-mipsel
-	qemuopts="$qemuopts -M mips"
+	qemuopts="-M mips $qemuopts"
 	console=vga_text
 	;;
     mipsel-loongson)
 	boot=mipsel_fulong2e
 	qemu=qemu-system-mips64el
-	qemuopts="$qemuopts -M fulong2e"
+	qemuopts="-M fulong2e $qemuopts"
 	console=
 	trim=1
 	;;
