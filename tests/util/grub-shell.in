@@ -402,7 +402,7 @@ fi
 if [ x$boot = xcoreboot ]; then
     imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
-    "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
+    "${GRUB_CBFSTOOL}" "${imgfile}" add-payload -f "${rom_directory}/coreboot.elf" -n fallback/payload
     bootdev="-bios ${imgfile}"
     device="cdrom "
     test -z "$debug" || echo "Coreboot image: ${imgfile}" >&2
