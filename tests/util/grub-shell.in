@@ -331,7 +331,8 @@ cat <<EOF >>${cfgfile}
 source "\$prefix/testcase.cfg"
 # Stop serial output to suppress "ACPI shutdown failed" error.
 EOF
-if [ x$console != x ]; then
+# Attempt to switch to console on i386-ieee1275 causes "screen not found" message
+if [ x$console != x ] && [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" != xi386-ieee1275 ]; then
     echo "terminal_output $console" >>${cfgfile}
 fi
 echo "${halt_cmd}" >>${cfgfile}
