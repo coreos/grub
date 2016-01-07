@@ -353,25 +353,25 @@ BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-
 endif
 
 if COND_i386_multiboot
-# FreeBSD requires ACPI
-BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
+# *BSD requires ACPI
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64
+endif
+
+
+if COND_i386_qemu
+# *BSD requires ACPI
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64
 endif
 
 if COND_i386_coreboot
-# Freebsd requires ACPI
-BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
-endif
-
-if COND_i386_qemu
-# FreeBSD requires ACPI
-BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64 bootcheck-kfreebsd-x86_64 bootcheck-kfreebsd-i386
 endif
 
 if COND_i386_pc
 #pc chainloader by definition is only for i386-pc
 #ntldr and bootmgr require BIOS.
-#legacy protocol makes early BIOS calls.
-# NetBSD crashes early on non-BIOS
+#legacy protocol (linux16) makes early BIOS calls.
+# 32-bit NetBSD crashes early on non-BIOS
 BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64 bootcheck-kfreebsd-x86_64 bootcheck-kfreebsd-i386 bootcheck-pc-chainloader bootcheck-ntldr bootcheck-linux16-i386 bootcheck-linux16-x86_64 bootcheck-knetbsd-i386
 endif
 
