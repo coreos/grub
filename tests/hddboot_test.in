@@ -29,9 +29,6 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     # FIXME: currently grub-shell uses only -kernel for loongson
     mipsel-loongson)
 	exit 0;;
-    # FIXME: OVMF skips HDDs for automatic boot and has no USB support
-    *-efi)
-	exit 0;;
 esac
 
 if [ "$(echo hello | "${grubshell}" --boot=hd)" != "Hello World" ]; then
