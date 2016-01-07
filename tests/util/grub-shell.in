@@ -65,7 +65,7 @@ serial_port=com0
 serial_null=
 halt_cmd=halt
 pseries=n
-disk=hda
+disk="hda "
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     *-emu)
 	device_map=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -145,7 +145,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	qemu=qemu-system-i386
 	console=console
 	trim=1
-	disk=hdb
+	disk="hdb "
 	;;
     i386-qemu)
 	boot=qemu
@@ -164,6 +164,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	boot=cd
 	console=console
 	trim=1
+	qemuopts="-bios OVMF32.fd $qemuopts"
 	;;
     x86_64-efi)
 	qemu=qemu-system-x86_64
@@ -171,6 +172,15 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	console=console
 	trim=1
 	qemuopts="-bios OVMF.fd $qemuopts"
+	;;
+    arm64-efi)
+	qemu=qemu-system-aarch64
+	boot=hd
+	console=console
+	trim=1
+	qemuopts="-machine virt -cpu cortex-a57 -bios /usr/share/qemu-efi/QEMU_EFI.fd $qemuopts"
+	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
+	serial_port=efi0
 	;;
     *)
 	boot=hd
@@ -227,13 +237,13 @@ for option in "$@"; do
 		echo "Too many disks" 1>&2
 		exit 1;
 	    fi
-            qemuopts="$qemuopts -$disk $dsk"
-	    if [ "$disk" = hda ]; then
-		disk=hdb;
-	    elif [ "$disk" = hdb ]; then
+            qemuopts="$qemuopts -$disk$dsk"
+	    if [ "$disk" = "hda " ]; then
+		disk="hdb ";
+	    elif [ "$disk" = "hdb " ]; then
 		# CDROM is hdc
-		disk=hdd
-	    elif [ "$disk" = hdd ]; then
+		disk="hdd "
+	    elif [ "$disk" = "hdd " ]; then
 		# CDROM is hdc
 		disk=error
 	    fi
@@ -360,7 +370,9 @@ if [ x$boot != xnet ] && [ x$boot != xemu ]; then
 	${files} >/dev/null 2>&1
 fi
 if [ x$boot = xhd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ]; then
+	device="device virtio-blk-device,drive=hd0 -drive if=none,id=hd0,file="
+    elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
 	device="hdb "
     else
 	device="hda "
@@ -368,7 +380,9 @@ if [ x$boot = xhd ]; then
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ]; then
+	device="device virtio-blk-device,drive=cd0 -drive if=none,id=cd0,media=cdrom,file="
+    elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
 	device="-drive if=ide,media=cdrom,file="
     else
 	device="cdrom "
