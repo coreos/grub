@@ -119,7 +119,7 @@ grub_cmd_getenv (grub_extcmd_context_t ctxt, int argc, char **args)
     {
       bindata = grub_zalloc(datasize * 2 + 1);
       for (i=0; i<datasize; i++)
-	  grub_snprintf(bindata + i*2, 3, "%02x", data[i]);
+	  grub_snprintf(bindata + i*2, 3, "%02x", data[i] & 0xff);
 
       if (grub_env_set (args[0], bindata))
 	goto done;
