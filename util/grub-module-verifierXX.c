@@ -337,7 +337,7 @@ SUFFIX(grub_module_verify) (void *module_img, size_t size, const struct grub_mod
 
   /* Make sure that every section is within the core.  */
   if (size < grub_target_to_host (e->e_shoff)
-      + grub_target_to_host16 (e->e_shentsize) * grub_target_to_host16(e->e_shnum))
+      + (grub_uint32_t) grub_target_to_host16 (e->e_shentsize) * grub_target_to_host16(e->e_shnum))
     {
       grub_util_error ("ELF sections outside core");
     }
