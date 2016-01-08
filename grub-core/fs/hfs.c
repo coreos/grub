@@ -1308,6 +1308,7 @@ grub_hfs_open (struct grub_file *file, const char *name)
   if (grub_hfs_find_dir (data, name, &found, GRUB_FSHELP_REG))
     {
       grub_free (data);
+      grub_free (found);
       grub_dl_unref (my_mod);
       return grub_errno;
     }
