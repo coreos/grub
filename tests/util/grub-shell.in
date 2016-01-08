@@ -182,6 +182,15 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
 	serial_port=efi0
 	;;
+     arm-efi)
+	qemu=qemu-system-arm
+	boot=hd
+	console=console
+	trim=1
+	qemuopts="-machine virt -bios /usr/share/ovmf-arm/QEMU_EFI.fd $qemuopts"
+	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
+	serial_port=efi0
+	;;
     *)
 	boot=hd
 	qemu=qemu-system-i386
@@ -233,7 +242,7 @@ for option in "$@"; do
 	    echo "(hd$disk)  $dsk" >> "$device_map"
 	    disk="$((disk+1))"
 	else
-	    if [ $disk = error ]; then
+	    if [ "$disk" = error ]; then
 		echo "Too many disks" 1>&2
 		exit 1;
 	    fi
@@ -370,7 +379,7 @@ if [ x$boot != xnet ] && [ x$boot != xemu ]; then
 	${files} >/dev/null 2>&1
 fi
 if [ x$boot = xhd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm-efi ]; then
 	device="device virtio-blk-device,drive=hd0 -drive if=none,id=hd0,file="
     elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
 	device="hdb "
@@ -380,7 +389,7 @@ if [ x$boot = xhd ]; then
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm-efi ]; then
 	device="device virtio-blk-device,drive=cd0 -drive if=none,id=cd0,media=cdrom,file="
     elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
 	device="-drive if=ide,media=cdrom,file="
