@@ -353,6 +353,10 @@ SETUP (const char *dir,
       }
     grub_util_info ("guessed root_dev `%s' from "
 		    "dir `%s'", root_dev->disk->name, dir);
+
+    for (cur = root_devices; *cur; cur++)
+      free (*cur);
+    free (root_devices);
   }
 
   grub_util_info ("setting the root device to `%s'", root);
