@@ -1465,7 +1465,7 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
   section_entsize = grub_target_to_host16 (e->e_shentsize);
   num_sections = grub_target_to_host16 (e->e_shnum);
 
-  if (kernel_size < section_offset + section_entsize * num_sections)
+  if (kernel_size < section_offset + (grub_uint32_t) section_entsize * num_sections)
     grub_util_error (_("premature end of file %s"), kernel_path);
 
   sections = (Elf_Shdr *) (kernel_img + section_offset);
