@@ -312,6 +312,9 @@ SETUP (const char *dir,
     char **cur;
     int found = 0;
 
+    if (!root_devices)
+      grub_util_error (_("cannot find a device for %s (is /dev mounted?)"), dir);
+
     for (cur = root_devices; *cur; cur++)
       {
 	char *drive;
