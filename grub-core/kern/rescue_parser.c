@@ -43,13 +43,17 @@ grub_rescue_parse_line (char *line,
 
   /* In case of an assignment set the environment accordingly
      instead of calling a function.  */
-  if (n == 1 && grub_strchr (line, '='))
+  if (n == 1)
     {
       char *val = grub_strchr (args[0], '=');
-      val[0] = 0;
-      grub_env_set (args[0], val + 1);
-      val[0] = '=';
-      goto quit;
+
+      if (val)
+	{
+	  val[0] = 0;
+	  grub_env_set (args[0], val + 1);
+	  val[0] = '=';
+	  goto quit;
+	}
     }
 
   /* Get the command name.  */
@@ -72,6 +76,7 @@ grub_rescue_parse_line (char *line,
     }
 
  quit:
+  /* Arguments are returned in single memory chunk separated by zeroes */
   grub_free (args[0]);
   grub_free (args);
 
