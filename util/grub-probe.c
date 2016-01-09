@@ -668,6 +668,13 @@ probe (const char *path, char **device_names, char delim)
   for (curdrive = drives_names; *curdrive; curdrive++)
     free (*curdrive);
   free (drives_names);
+
+  if (path != NULL)
+    {
+      for (curdev = device_names; *curdev; curdev++)
+	free (*curdev);
+      free (device_names);
+    }
 }
 
 static struct argp_option options[] = {
