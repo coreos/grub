@@ -83,10 +83,16 @@ SUFFIX (grub_efiemu_prepare) (struct grub_efiemu_prepare_hook *prepare_hooks,
     ((grub_uint8_t *) grub_efiemu_mm_obtain_request (handle) + off);
 
   /* Put pointer to the list of configuration tables in system table */
-  grub_efiemu_write_value
-    (&(SUFFIX (grub_efiemu_system_table)->configuration_table), 0,
-     conftable_handle, 0, 1,
-     sizeof (SUFFIX (grub_efiemu_system_table)->configuration_table));
+  err = grub_efiemu_write_value
+	(&(SUFFIX (grub_efiemu_system_table)->configuration_table), 0,
+	 conftable_handle, 0, 1,
+	 sizeof (SUFFIX (grub_efiemu_system_table)->configuration_table));
+  if (err)
+    {
+      grub_efiemu_unload ();
+      return err;
+    }
+
   SUFFIX(grub_efiemu_system_table)->num_table_entries = cntconftables;
 
   /* Fill the list of configuration tables */
