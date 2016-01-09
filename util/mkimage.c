@@ -996,7 +996,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
   size_t prefix_size = 0;
   char *kernel_path;
   size_t offset;
-  struct grub_util_path_list *path_list, *p, *next;
+  struct grub_util_path_list *path_list, *p;
   size_t bss_size;
   grub_uint64_t start_address;
   void *rel_section = 0;
@@ -1904,11 +1904,5 @@ grub_install_generate_image (const char *dir, const char *prefix,
   free (kernel_path);
   free (rel_section);
 
-  while (path_list)
-    {
-      next = path_list->next;
-      free ((void *) path_list->name);
-      free (path_list);
-      path_list = next;
-    }
+  grub_util_free_path_list (path_list);
 }

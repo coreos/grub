@@ -765,6 +765,8 @@ grub_install_copy_files (const char *src,
 	  grub_install_compress_file (srcf, dstf, 1);
 	  free (dstf);
 	}
+
+      grub_util_free_path_list (path_list);
     }
 
   const char *pkglib_DATA[] = {"efiemu32.o", "efiemu64.o",
