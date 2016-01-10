@@ -1322,20 +1322,13 @@ grub_net_open_real (const char *name)
 	    if (!ret)
 	      return NULL;
 	    ret->protocol = proto;
-	    if (server)
+	    ret->server = grub_strdup (server);
+	    if (!ret->server)
 	      {
-		ret->server = grub_strdup (server);
-		if (!ret->server)
-		  {
-		    grub_free (ret);
-		    return NULL;
-		  }
+		grub_free (ret);
+		return NULL;
 	      }
-	    else
-	      ret->server = NULL;
 	    ret->fs = &grub_net_fs;
-	    ret->offset = 0;
-	    ret->eof = 0;
 	    return ret;
 	  }
       }
