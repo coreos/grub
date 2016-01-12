@@ -45,6 +45,7 @@ check_password (const char *user, const char *entered, void *pin)
   grub_uint8_t *buf;
   struct pbkdf2_password *pass = pin;
   gcry_err_code_t err;
+  grub_err_t ret;
 
   buf = grub_malloc (pass->buflen);
   if (!buf)
@@ -55,17 +56,17 @@ check_password (const char *user, const char *entered, void *pin)
 			    pass->salt, pass->saltlen, pass->c,
 			    buf, pass->buflen);
   if (err)
+      ret = grub_crypto_gcry_error (err);
+  else if (grub_crypto_memcmp (buf, pass->expected, pass->buflen) != 0)
+      ret = GRUB_ACCESS_DENIED;
+  else
     {
-      grub_free (buf);
-      return grub_crypto_gcry_error (err);
+      grub_auth_authenticate (user);
+      ret = GRUB_ERR_NONE;
     }
 
-  if (grub_crypto_memcmp (buf, pass->expected, pass->buflen) != 0)
-    return GRUB_ACCESS_DENIED;
-
-  grub_auth_authenticate (user);
-
-  return GRUB_ERR_NONE;
+  grub_free (buf);
+  return ret;
 }
 
 static inline int
