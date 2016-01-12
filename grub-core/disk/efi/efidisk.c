@@ -85,6 +85,12 @@ make_devices (void)
 	{
 	  /* Uggh.  */
 	  grub_free (handles);
+	  while (devices)
+	    {
+	      d = devices->next;
+	      grub_free (devices);
+	      devices = d;
+	    }
 	  return 0;
 	}
 
