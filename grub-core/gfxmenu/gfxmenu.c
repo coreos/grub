@@ -63,13 +63,13 @@ grub_gfxmenu_try (int entry, grub_menu_t menu, int nested)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND, N_("variable `%s' isn't set"),
 		       "theme");
 
-  instance = grub_zalloc (sizeof (*instance));
-  if (!instance)
-    return grub_errno;
-
   err = grub_video_get_info (&mode_info);
   if (err)
     return err;
+
+  instance = grub_zalloc (sizeof (*instance));
+  if (!instance)
+    return grub_errno;
 
   if (theme_path[0] != '/' && theme_path[0] != '(')
     {
