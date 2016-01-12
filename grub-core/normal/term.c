@@ -77,8 +77,6 @@ print_more (void)
   grub_term_output_t term;
   grub_uint32_t *unicode_str, *unicode_last_position;
 
-  pos = grub_term_save_pos ();
-
   /* TRANSLATORS: This has to fit on one line.  It's ok to include few
      words but don't write poems.  */
   grub_utf8_to_ucs4_alloc (_("--MORE--"), &unicode_str,
@@ -89,6 +87,8 @@ print_more (void)
       grub_errno = GRUB_ERR_NONE;
       return;
     }
+
+  pos = grub_term_save_pos ();
 
   grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
 

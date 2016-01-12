@@ -476,7 +476,10 @@ insert_string (struct screen *screen, const char *s, int update)
 				    (grub_uint8_t *) s, (p - s), 0);
 
 	  if (! ensure_space (current_linep, size))
-	    return 0;
+	    {
+	      grub_free (unicode_msg);
+	      return 0;
+	    }
 
 	  grub_memmove (current_linep->buf + screen->column + size,
 			current_linep->buf + screen->column,
@@ -1265,6 +1268,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
       if (! screen->lines[i].pos)
 	{
 	  grub_print_error ();
+	  destroy_screen (screen);
 	  grub_errno = GRUB_ERR_NONE;
 	  return;
 	}
@@ -1274,6 +1278,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
   if (!screen->terms)
     {
       grub_print_error ();
+      destroy_screen (screen);
       grub_errno = GRUB_ERR_NONE;
       return;
     }
