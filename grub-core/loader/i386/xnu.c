@@ -338,7 +338,7 @@ grub_xnu_devprop_add_property_utf16 (struct grub_xnu_devprop_device_descriptor *
   utf8 = grub_malloc (namelen * 4 + 1);
   if (!utf8)
     {
-      grub_free (utf8);
+      grub_free (utf16);
       return grub_errno;
     }
 
