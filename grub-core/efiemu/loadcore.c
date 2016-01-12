@@ -154,7 +154,10 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
 		 s->sh_flags & SHF_EXECINSTR ? GRUB_EFI_RUNTIME_SERVICES_CODE
 		 : GRUB_EFI_RUNTIME_SERVICES_DATA);
 	      if (seg->handle < 0)
-		return grub_errno;
+		{
+		  grub_free (seg);
+		  return grub_errno;
+		}
 	      seg->off = 0;
 	    }
 
