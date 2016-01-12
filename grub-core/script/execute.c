@@ -681,18 +681,14 @@ grub_script_arglist_to_argv (struct grub_script_arglist *arglist,
 			      }
 			    *op = '\0';
 
-			    if (grub_script_argv_append (&result, p, op - p))
-			      {
-				grub_free (p);
-				need_cleanup = 1;
-				/* Fall through to cleanup */
-			      }
+			    need_cleanup = grub_script_argv_append (&result, p, op - p);
+			    grub_free (p);
+			    /* Fall through to cleanup */
 			  }
 			else
 			  {
-			    if (append (&result, values[i], 1))
-			      need_cleanup = 1;
-			      /* Fall through to cleanup */
+			    need_cleanup = append (&result, values[i], 1);
+			    /* Fall through to cleanup */
 			  }
 		      }
 
