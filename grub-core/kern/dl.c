@@ -605,7 +605,7 @@ grub_dl_load_core_noinit (void *addr, grub_size_t size)
     }
 
   /* Make sure that every section is within the core.  */
-  if (size < e->e_shoff + e->e_shentsize * e->e_shnum)
+  if (size < e->e_shoff + (grub_uint32_t) e->e_shentsize * e->e_shnum)
     {
       grub_error (GRUB_ERR_BAD_OS, "ELF sections outside core");
       return 0;

@@ -164,7 +164,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
     {
       grub_uint8_t *shdr, *shdrptr;
 
-      shdr = grub_malloc (ehdr->e_shnum * ehdr->e_shentsize);
+      shdr = grub_malloc ((grub_uint32_t) ehdr->e_shnum * ehdr->e_shentsize);
       if (!shdr)
 	return grub_errno;
       
@@ -174,7 +174,7 @@ CONCAT(grub_multiboot_load_elf, XX) (grub_file_t file, const char *filename, voi
 	  return grub_errno;
 	}
 
-      if (grub_file_read (file, shdr, ehdr->e_shnum * ehdr->e_shentsize)
+      if (grub_file_read (file, shdr, (grub_uint32_t) ehdr->e_shnum * ehdr->e_shentsize)
               != (grub_ssize_t) ehdr->e_shnum * ehdr->e_shentsize)
 	{
 	  if (!grub_errno)
