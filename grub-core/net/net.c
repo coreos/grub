@@ -299,12 +299,6 @@ grub_net_ipv6_get_link_local (struct grub_net_card *card,
   char *ptr;
   grub_net_network_level_address_t addr;
 
-  name = grub_malloc (grub_strlen (card->name)
-		      + GRUB_NET_MAX_STR_HWADDR_LEN
-		      + sizeof (":link"));
-  if (!name)
-    return NULL;
-
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   addr.ipv6[0] = grub_cpu_to_be64_compile_time (0xfe80ULL << 48);
   addr.ipv6[1] = grub_net_ipv6_get_id (hwaddr);
@@ -316,6 +310,12 @@ grub_net_ipv6_get_link_local (struct grub_net_card *card,
 	&& grub_net_addr_cmp (&inf->address, &addr) == 0)
       return inf;
   }
+
+  name = grub_malloc (grub_strlen (card->name)
+		      + GRUB_NET_MAX_STR_HWADDR_LEN
+		      + sizeof (":link"));
+  if (!name)
+    return NULL;
 
   ptr = grub_stpcpy (name, card->name);
   if (grub_net_hwaddr_cmp (&card->default_address, hwaddr) != 0)
@@ -1421,7 +1421,10 @@ grub_net_fs_open (struct grub_file *file_out, const char *name)
   file->device->net->packs.last = NULL;
   file->device->net->name = grub_strdup (name);
   if (!file->device->net->name)
-    return grub_errno;
+    {
+      grub_free (file);
+      return grub_errno;
+    }
 
   err = file->device->net->protocol->open (file, name);
   if (err)
