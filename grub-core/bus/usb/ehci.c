@@ -1121,7 +1121,7 @@ grub_ehci_free_tds (struct grub_ehci *e, grub_ehci_td_t td,
       token = grub_le_to_cpu32 (td->token);
       to_transfer = (token & GRUB_EHCI_TOTAL_MASK) >> GRUB_EHCI_TOTAL_OFF;
 
-      /* Check state of TD - if it did not transfered
+      /* Check state of TD - if it did not transfer
        * whole data then set last_trans - it should be last executed TD
        * in case when something went wrong. */
       if (transfer && (td->size != to_transfer))

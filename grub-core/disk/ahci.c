@@ -32,7 +32,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 struct grub_ahci_cmd_head
 {
   grub_uint32_t config;
-  grub_uint32_t transfered;
+  grub_uint32_t transferred;
   grub_uint64_t command_table_base;
   grub_uint32_t unused[4];
 };
@@ -954,7 +954,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
   grub_dprintf ("ahci", "AHCI tfd = %x\n",
 		dev->hba->ports[dev->port].task_file_data);
 
-  dev->command_list[0].transfered = 0;
+  dev->command_list[0].transferred = 0;
   dev->command_list[0].command_table_base
     = grub_dma_get_phys (dev->command_table_chunk);
 
@@ -1044,7 +1044,7 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 		dev->hba->ports[dev->port].command_issue,
 		dev->hba->ports[dev->port].intstatus,
 		dev->hba->ports[dev->port].task_file_data,
-		dev->command_list[0].transfered,
+		dev->command_list[0].transferred,
 		dev->hba->ports[dev->port].sata_error,
 		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x00],
 		((grub_uint32_t *) grub_dma_get_virt (dev->rfis))[0x18]);
