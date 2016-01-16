@@ -56,7 +56,7 @@ read_headers (grub_file_t file, const char *filename, Elf_Ehdr *e, char **shdr)
     return grub_errno;
 
   if (grub_file_read (file, *shdr, (grub_uint32_t) e->e_shnum * e->e_shentsize)
-      != (grub_uint32_t) e->e_shnum * e->e_shentsize)
+      != (grub_ssize_t) ((grub_uint32_t) e->e_shnum * e->e_shentsize))
     {
       if (grub_errno)
 	return grub_errno;
