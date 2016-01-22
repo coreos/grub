@@ -22,5 +22,13 @@
 int grub_arm_64_check_xxxx26_offset (grub_int64_t offset);
 void
 grub_arm64_set_xxxx26_offset (grub_uint32_t *place, grub_int64_t offset);
+int
+grub_arm64_check_hi21_signed (grub_int64_t offset);
+void
+grub_arm64_set_hi21 (grub_uint32_t *place, grub_int64_t offset);
+void
+grub_arm64_set_abs_lo12 (grub_uint32_t *place, grub_int64_t target);
+void
+grub_arm64_set_abs_lo12_ldst64 (grub_uint32_t *place, grub_int64_t target);
 
 #endif

@@ -836,6 +836,14 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       *target = grub_host_to_target64 (grub_target_to_host64 (*target) + sym_addr);
 		     }
 		     break;
+		   case R_AARCH64_ADD_ABS_LO12_NC:
+		     grub_arm64_set_abs_lo12 ((grub_uint32_t *) target,
+					      sym_addr);
+		     break;
+		   case R_AARCH64_LDST64_ABS_LO12_NC:
+		     grub_arm64_set_abs_lo12_ldst64 ((grub_uint32_t *) target,
+						     sym_addr);
+		     break;
 		   case R_AARCH64_JUMP26:
 		   case R_AARCH64_CALL26:
 		     {
@@ -846,6 +854,17 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 
 		       grub_arm64_set_xxxx26_offset((grub_uint32_t *)target,
 						     sym_addr);
+		     }
+		     break;
+		   case R_AARCH64_ADR_PREL_PG_HI21:
+		     {
+		       sym_addr &= ~0xfffULL;
+		       sym_addr -= (offset + SUFFIX (entry_point)) & ~0xfffULL;
+		       if (!grub_arm64_check_hi21_signed (sym_addr))
+			 grub_util_error ("%s", "CALL26 Relocation out of range");
+
+		       grub_arm64_set_hi21((grub_uint32_t *)target,
+					   sym_addr);
 		     }
 		     break;
 		   default:
@@ -1200,6 +1219,15 @@ SUFFIX (make_reloc_section) (Elf_Ehdr *e, void **out,
 		  case R_AARCH64_CALL26:
 		  case R_AARCH64_JUMP26:
 		    break;
+		    /* Page-relative relocations do not require fixup entries. */
+		  case R_AARCH64_ADR_PREL_PG_HI21:
+		     /* We page-align the whole kernel, so no need
+			for fixup entries.
+		      */
+		  case R_AARCH64_ADD_ABS_LO12_NC:
+		  case R_AARCH64_LDST64_ABS_LO12_NC:
+		    break;
+
 		  default:
 		    grub_util_error (_("relocation 0x%x is not implemented yet"),
 				     (unsigned int) ELF_R_TYPE (info));
@@ -1343,6 +1371,9 @@ SUFFIX (locate_sections) (const char *kernel_path,
   Elf_Shdr *s;
 
   *all_align = 1;
+  /* Page-aligning simplifies relocation handling.  */
+  if (image_target->elf_target == EM_AARCH64)
+    *all_align = 4096;
 
   section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
   memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);

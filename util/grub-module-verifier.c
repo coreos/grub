@@ -107,7 +107,13 @@ struct grub_module_verifier_arch archs[] = {
       R_AARCH64_CALL26,
       R_AARCH64_JUMP26,
       -1
-    } },
+    }, (int[]){
+      R_AARCH64_ADR_PREL_PG_HI21,
+      R_AARCH64_ADD_ABS_LO12_NC,
+      R_AARCH64_LDST64_ABS_LO12_NC,
+      -1
+    }
+  },
 };
 
 

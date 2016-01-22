@@ -132,6 +132,12 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    *abs_place = (grub_uint64_t) sym_addr;
 	  }
 	  break;
+	case R_AARCH64_ADD_ABS_LO12_NC:
+	  grub_arm64_set_abs_lo12 (place, sym_addr);
+	  break;
+	case R_AARCH64_LDST64_ABS_LO12_NC:
+	  grub_arm64_set_abs_lo12_ldst64 (place, sym_addr);
+	  break;
 	case R_AARCH64_CALL26:
 	case R_AARCH64_JUMP26:
 	  {
@@ -154,6 +160,18 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    grub_arm64_set_xxxx26_offset (place, offset);
 	  }
 	  break;
+	case R_AARCH64_ADR_PREL_PG_HI21:
+	  {
+	    grub_int64_t offset = (sym_addr & ~0xfffULL) - (((grub_uint64_t) place) & ~0xfffULL);
+
+	    if (!grub_arm64_check_hi21_signed (offset))
+		return grub_error (GRUB_ERR_BAD_MODULE,
+				   "HI21 out of range");
+
+	    grub_arm64_set_hi21 (place, offset);
+	  }
+	  break;
+
 	default:
 	  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			     N_("relocation 0x%x is not implemented yet"),
