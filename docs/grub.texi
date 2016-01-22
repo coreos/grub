@@ -5042,6 +5042,8 @@ the length of @var{string} is zero
 @var{expression} is false
 @item @var{expression1} @code{-a} @var{expression2}
 both @var{expression1} and @var{expression2} are true
+@item @var{expression1} @var{expression2}
+both @var{expression1} and @var{expression2} are true. This syntax is not POSIX-compliant and is not recommended.
 @item @var{expression1} @code{-o} @var{expression2}
 either @var{expression1} or @var{expression2} is true
 @end table
