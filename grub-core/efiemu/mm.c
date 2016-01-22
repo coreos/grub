@@ -410,8 +410,8 @@ fill_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 	return grub_efiemu_add_to_mmap (addr, size,
 					GRUB_EFI_ACPI_MEMORY_NVS);
 
-      case GRUB_MEMORY_PRAM:
-      case GRUB_MEMORY_PMEM:
+      case GRUB_MEMORY_PERSISTENT:
+      case GRUB_MEMORY_PERSISTENT_LEGACY:
 	return grub_efiemu_add_to_mmap (addr, size,
 					GRUB_EFI_PERSISTENT_MEMORY);
       default:
@@ -483,7 +483,7 @@ grub_efiemu_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 
       case GRUB_EFI_PERSISTENT_MEMORY:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
-	      GRUB_MEMORY_PMEM, hook_data);
+	      GRUB_MEMORY_PERSISTENT, hook_data);
 	break;
 
       }
