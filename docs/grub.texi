@@ -4073,11 +4073,14 @@ after @command{configfile} returns.
 @node cpuid
 @subsection cpuid
 
-@deffn Command cpuid [-l]
+@deffn Command cpuid [-l] [-p]
 Check for CPU features.  This command is only available on x86 systems.
 
 With the @option{-l} option, return true if the CPU supports long mode
 (64-bit).
+
+With the @option{-p} option, return true if the CPU supports Physical
+Address Extension (PAE).
 
 If invoked without options, this command currently behaves as if it had been
 invoked with @option{-l}.  This may change in the future.
