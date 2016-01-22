@@ -66,6 +66,12 @@ grub_reboot (void)
 }
 
 void
+grub_exit (void)
+{
+  grub_reboot ();
+}
+
+void
 grub_machine_init (void)
 {
 }

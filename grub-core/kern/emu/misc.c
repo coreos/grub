@@ -134,11 +134,13 @@ xasprintf (const char *fmt, ...)
 }
 #endif
 
+#if !defined (GRUB_MACHINE_EMU) || defined (GRUB_UTIL)
 void
 grub_exit (void)
 {
   exit (1);
 }
+#endif
 
 grub_uint64_t
 grub_get_time_ms (void)
