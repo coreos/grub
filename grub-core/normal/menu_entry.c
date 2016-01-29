@@ -254,6 +254,8 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
       mode = ALL_LINES;
     }
 
+  grub_term_setcursor (term_screen->term, 0);
+
   if (mode != NO_LINE)
     {
       /* Draw lines. This code is tricky, because this must calculate logical
@@ -360,6 +362,8 @@ update_screen (struct screen *screen, struct per_term_screen *term_screen,
 			      y + term_screen->geo.first_entry_y });
 
     }
+
+  grub_term_setcursor (term_screen->term, 1);
 
   grub_term_refresh (term_screen->term);
 }
