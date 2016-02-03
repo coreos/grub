@@ -176,7 +176,7 @@ get_symtab (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e, Elf_Word 
       break;
 
   if (i == grub_target_to_host16 (e->e_shnum))
-    grub_util_error ("no symbol table");
+    return NULL;
 
   sym = (Elf_Sym *) ((char *) e + grub_target_to_host (s->sh_offset));
   *size = grub_target_to_host (s->sh_size);
@@ -191,7 +191,21 @@ check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
   Elf_Word size, entsize;
   unsigned i;
 
+  /* Module without symbol table and without .moddeps section is useless
+     at boot time, so catch it early to prevent build errors */
   sym = get_symtab (arch, e, &size, &entsize);
+  if (!sym)
+    {
+      Elf_Shdr *s = find_section (arch, e, ".moddeps");
+
+      if (!s)
+	grub_util_error ("no symbol table and no .moddeps section");
+
+      if (!s->sh_size)
+	grub_util_error ("no symbol table and empty .moddeps section");
+
+      return;
+    }
 
   for (i = 0;
        i < size / entsize;
@@ -243,6 +257,8 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
   Elf_Word symtabsize, symtabentsize;
 
   symtab = get_symtab (arch, ehdr, &symtabsize, &symtabentsize);
+  if (!symtab)
+    grub_util_error ("relocation without symbol table");
 
   for (rel = (Elf_Rel *) ((char *) ehdr + grub_target_to_host (s->sh_offset)),
 	 max = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_size));
