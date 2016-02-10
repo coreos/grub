@@ -1292,6 +1292,10 @@ grub_net_open_real (const char *name)
       const char *comma;
       char *colon;
       comma = grub_strchr (name, ',');
+      if (!comma)
+	{
+	  comma = grub_strchr (name, ';');
+	}
       colon = grub_strchr (name, ':');
       if (colon)
 	{
