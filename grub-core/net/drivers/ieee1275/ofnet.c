@@ -151,7 +151,7 @@ grub_ieee1275_parse_bootpath (const char *devpath, char *bootpath,
   grub_net_network_level_address_t client_addr, gateway_addr, subnet_mask;
   grub_net_link_level_address_t hw_addr;
   grub_net_interface_flags_t flags = 0;
-  struct grub_net_network_level_interface *inter;
+  struct grub_net_network_level_interface *inter = NULL;
 
   hw_addr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
@@ -221,7 +221,7 @@ grub_ieee1275_parse_bootpath (const char *devpath, char *bootpath,
       target.ipv4.masksize = 0;
       rname = grub_xasprintf ("%s:default", ((*card)->name));
       if (rname)
-        grub_net_add_route_gw (rname, target, gateway_addr);
+        grub_net_add_route_gw (rname, target, gateway_addr, inter);
       else
         return grub_errno;
     }

@@ -37,21 +37,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 char *grub_net_default_server;
 
-struct grub_net_route
-{
-  struct grub_net_route *next;
-  struct grub_net_route **prev;
-  grub_net_network_level_netaddress_t target;
-  char *name;
-  struct grub_net_network_level_protocol *prot;
-  int is_gateway;
-  union
-  {
-    struct grub_net_network_level_interface *interface;
-    grub_net_network_level_address_t gw;
-  };
-};
-
 struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
@@ -410,14 +395,6 @@ grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static inline void
-grub_net_route_register (struct grub_net_route *route)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_routes),
-		  GRUB_AS_LIST (route));
-}
-
-#define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)
 
 static int
 parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
@@ -524,6 +501,8 @@ match_net (const grub_net_network_level_netaddress_t *net,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
 	grub_uint64_t mask[2];
+	if (net->ipv6.masksize == 0)
+	  return 1;
 	if (net->ipv6.masksize <= 64)
 	  {
 	    mask[0] = 0xffffffffffffffffULL << (64 - net->ipv6.masksize);
@@ -687,7 +666,14 @@ grub_net_route_address (grub_net_network_level_address_t addr,
 	  return GRUB_ERR_NONE;
 	}
       if (depth == 0)
-	*gateway = bestroute->gw;
+	{
+	  *gateway = bestroute->gw;
+	  if (bestroute->interface != NULL)
+	    {
+	      *interf = bestroute->interface;
+	      return GRUB_ERR_NONE;
+	    }
+	}
       curtarget = bestroute->gw;
     }
 
@@ -1109,7 +1095,8 @@ grub_net_add_route (const char *name,
 grub_err_t
 grub_net_add_route_gw (const char *name,
 		       grub_net_network_level_netaddress_t target,
-		       grub_net_network_level_address_t gw)
+		       grub_net_network_level_address_t gw,
+		       struct grub_net_network_level_interface *inter)
 {
   struct grub_net_route *route;
 
@@ -1127,6 +1114,7 @@ grub_net_add_route_gw (const char *name,
   route->target = target;
   route->is_gateway = 1;
   route->gw = gw;
+  route->interface = inter;
 
   grub_net_route_register (route);
 
@@ -1152,7 +1140,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
       err = grub_net_resolve_address (args[3], &gw);
       if (err)
 	return err;
-      return grub_net_add_route_gw (args[0], target, gw);
+      return grub_net_add_route_gw (args[0], target, gw, NULL);
     }
   else
     {

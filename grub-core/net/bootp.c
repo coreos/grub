@@ -82,7 +82,7 @@ parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
 	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
 	      rname = grub_xasprintf ("%s:default", name);
 	      if (rname)
-		grub_net_add_route_gw (rname, target, gw);
+		grub_net_add_route_gw (rname, target, gw, NULL);
 	      grub_free (rname);
 	    }
 	  break;
