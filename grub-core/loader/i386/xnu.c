@@ -1103,7 +1103,7 @@ grub_xnu_boot (void)
   bootparams_common->efi_mmap = memory_map_target;
   bootparams_common->efi_mmap_size = memory_map_size;
   bootparams_common->heap_start = grub_xnu_heap_target_start;
-  bootparams_common->heap_size = grub_xnu_heap_size;
+  bootparams_common->heap_size = curruntimepage * GRUB_XNU_PAGESIZE - grub_xnu_heap_target_start;
 
   /* Parameters for asm helper. */
   grub_xnu_stack = bootparams_common->heap_start
