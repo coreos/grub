@@ -897,6 +897,28 @@ grub_xnu_set_video (struct grub_xnu_boot_params_common *params)
   return GRUB_ERR_NONE;
 }
 
+static int
+total_ram_hook (grub_uint64_t addr __attribute__ ((unused)), grub_uint64_t size,
+		grub_memory_type_t type,
+		void *data)
+{
+  grub_uint64_t *result = data;
+
+  if (type != GRUB_MEMORY_AVAILABLE)
+    return 0;
+  *result += size;
+  return 0;
+}
+
+static grub_uint64_t
+get_total_ram (void)
+{
+  grub_uint64_t result = 0;
+
+  grub_mmap_iterate (total_ram_hook, &result);
+  return result;
+}
+
 /* Boot xnu. */
 grub_err_t
 grub_xnu_boot (void)
@@ -973,6 +995,7 @@ grub_xnu_boot (void)
     {
       bootparams_common = &bootparams->v2.common;
       bootparams->v2.fsbfreq = fsbfreq;
+      bootparams->v2.ram_size = get_total_ram();
     }
   else
     bootparams_common = &bootparams->v1.common;
