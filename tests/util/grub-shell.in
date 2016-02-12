@@ -82,6 +82,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	serial_port=escc-ch-b
 	serial_null="-serial null"
 	netbootext=elf
+	trim=1
 	;;
 
     sparc64-ieee1275)
