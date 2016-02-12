@@ -165,7 +165,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	boot=cd
 	console=console
 	trim=1
-	qemuopts="-bios OVMF32.fd $qemuopts"
+	qemuopts="-bios OVMF-ia32.fd $qemuopts"
 	;;
     x86_64-efi)
 	qemu=qemu-system-x86_64
