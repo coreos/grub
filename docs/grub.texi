@@ -2538,6 +2538,8 @@ team are:
 85:3
 @item Asus EeePC 1005PE 
 84:1 (unconfirmed)
+@item LENOVO ThinkPad T410s (2912W1C)
+101:3
 @end table
 
 To take full advantage of this function, install GRUB into the MBR
