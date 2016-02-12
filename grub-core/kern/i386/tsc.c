@@ -43,22 +43,6 @@ grub_tsc_get_time_ms (void)
   return ((al * grub_tsc_rate) >> 32) + ah * grub_tsc_rate;
 }
 
-static __inline int
-grub_cpu_is_tsc_supported (void)
-{
-#ifndef GRUB_MACHINE_XEN
-  grub_uint32_t a,b,c,d;
-  if (! grub_cpu_is_cpuid_supported ())
-    return 0;
-
-  grub_cpuid(1,a,b,c,d);
-
-  return (d & (1 << 4)) != 0;
-#else
-  return 1;
-#endif
-}
-
 static int
 calibrate_tsc_hardcode (void)
 {
