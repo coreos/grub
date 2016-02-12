@@ -201,7 +201,7 @@ main (int argc, char *argv[])
   volatile int hold = 0;
   size_t total_module_size = sizeof (struct grub_module_info), memdisk_size = 0;
   struct grub_module_info *modinfo;
-  char *mods;
+  void *mods;
 
   grub_util_host_init (&argc, &argv);
 
@@ -232,10 +232,10 @@ main (int argc, char *argv[])
       struct grub_module_header *header = (struct grub_module_header *) mods;
       header->type = OBJ_TYPE_MEMDISK;
       header->size = memdisk_size + sizeof (*header);
-      mods += sizeof (*header);
+      mods = header + 1;
 
       grub_util_load_image (arguments.mem_disk, mods);
-      mods += memdisk_size;
+      mods = (char *) mods + memdisk_size;
     }
 
   grub_modbase = (grub_addr_t) modinfo;
