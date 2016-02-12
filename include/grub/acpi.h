@@ -242,6 +242,6 @@ enum
   };
 
 struct grub_acpi_fadt *
-grub_acpi_find_fadt (void);
+EXPORT_FUNC(grub_acpi_find_fadt) (void);
 
 #endif /* ! GRUB_ACPI_HEADER */
