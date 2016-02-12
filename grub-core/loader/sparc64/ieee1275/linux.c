@@ -203,19 +203,19 @@ alloc_phys_choose (grub_uint64_t addr, grub_uint64_t len,
   if (addr + ctx->size >= end)
     return 0;
 
-  if (addr >= grub_phys_start && addr < grub_phys_end)
+  /* OBP available region contains grub. Start at grub_phys_end. */
+  /* grub_phys_start does not start at the beginning of the memory region */
+  if ((grub_phys_start >= addr && grub_phys_end < end) ||
+      (addr > grub_phys_start && addr < grub_phys_end))
     {
       addr = ALIGN_UP (grub_phys_end, FOUR_MB);
       if (addr + ctx->size >= end)
 	return 0;
     }
-  if ((addr + ctx->size) >= grub_phys_start
-      && (addr + ctx->size) < grub_phys_end)
-    {
-      addr = ALIGN_UP (grub_phys_end, FOUR_MB);
-      if (addr + ctx->size >= end)
-	return 0;
-    }
+
+  grub_dprintf("loader",
+    "addr = 0x%lx grub_phys_start = 0x%lx grub_phys_end = 0x%lx\n",
+    addr, grub_phys_start, grub_phys_end);
 
   if (loaded)
     {
