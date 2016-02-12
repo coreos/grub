@@ -35,6 +35,7 @@
 #include <grub/i18n.h>
 #include <grub/bitmap_scale.h>
 #include <grub/cpu/io.h>
+#include <grub/random.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -577,11 +578,31 @@ static grub_err_t
 grub_cpu_xnu_fill_devicetree (grub_uint64_t *fsbfreq_out)
 {
   struct grub_xnu_devtree_key *efikey;
+  struct grub_xnu_devtree_key *chosenkey;
   struct grub_xnu_devtree_key *cfgtablekey;
   struct grub_xnu_devtree_key *curval;
   struct grub_xnu_devtree_key *runtimesrvkey;
   struct grub_xnu_devtree_key *platformkey;
   unsigned i, j;
+  grub_err_t err;
+
+  chosenkey = grub_xnu_create_key (&grub_xnu_devtree_root, "chosen");
+  if (! chosenkey)
+    return grub_errno;
+
+  /* Random seed. */
+  curval = grub_xnu_create_value (&(chosenkey->first_child), "random-seed");
+  if (! curval)
+    return grub_errno;
+  curval->datasize = 64;
+  curval->data = grub_malloc (curval->datasize);
+  if (! curval->data)
+    return grub_errno;
+  /* Our random is not peer-reviewed but xnu uses this seed only for
+     ASLR in kernel.  */
+  err = grub_crypto_get_random (curval->data, curval->datasize);
+  if (err)
+    return err;
 
   /* The value "model". */
   /* FIXME: may this value be sometimes different? */

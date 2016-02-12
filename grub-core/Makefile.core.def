@@ -1685,8 +1685,17 @@ module = {
   x86 = loader/i386/xnu.c;
   x86 = loader/xnu.c;
 
-  enable = x86;
-}
+  /* Code is pretty generic but relies on RNG which
+     is available only on few platforms. It's not a
+     big deal as xnu needs ACPI anyway and we have
+     RNG on all platforms with ACPI.
+   */
+  enable = i386_multiboot;
+  enable = i386_coreboot;
+  enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
+};
 
 module = {
   name = random;
