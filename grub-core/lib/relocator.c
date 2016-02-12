@@ -736,26 +736,36 @@ malloc_in_range (struct grub_relocator *rel,
 	  }
 	isinsideafter = (!ncollisions && (nstarted || ((nlefto || nstartedfw) 
 						       && !nblockfw)));
-	if (!isinsidebefore && isinsideafter)
-	  starta = from_low_priv ? ALIGN_UP (events[j].pos, align)
-	    : ALIGN_DOWN (events[j].pos - size, align) + size;
-	if (isinsidebefore && !isinsideafter && from_low_priv)
-	  {
-	    target = starta;
-	    if (target < start)
-	      target = start;
-	    if (target + size <= end && target + size <= events[j].pos)
-	      /* Found an usable address.  */
-	      goto found;
-	  }
-	if (isinsidebefore && !isinsideafter && !from_low_priv)
-	  {
-	    target = starta - size;
-	    if (target > end - size)
-	      target = end - size;
-	    if (target >= start && target >= events[j].pos)
-	      goto found;
-	  }
+	if (from_low_priv) {
+	  if (!isinsidebefore && isinsideafter)
+	    starta = ALIGN_UP (events[j].pos, align);
+
+	  if (isinsidebefore && !isinsideafter)
+	    {
+	      target = starta;
+	      if (target < start)
+		target = start;
+	      if (target + size <= end && target + size <= events[j].pos)
+		/* Found an usable address.  */
+		goto found;
+	    }
+	} else {
+	  if (!isinsidebefore && isinsideafter)
+	    {
+	      if (events[j].pos >= size)
+		starta = ALIGN_DOWN (events[j].pos - size, align) + size;
+	      else
+		starta = 0;
+	    }
+	  if (isinsidebefore && !isinsideafter && starta >= size)
+	    {
+	      target = starta - size;
+	      if (target > end - size)
+		target = end - size;
+	      if (target >= start && target >= events[j].pos)
+		goto found;
+	    }
+	}
       }
   }
 
