@@ -104,7 +104,7 @@ decomp_block (struct grub_ntfs_comp *cc, grub_uint8_t *dest)
 	      if (tag & 1)
 		{
 		  grub_uint32_t i, len, delta, code, lmask, dshift;
-		  grub_uint16_t word;
+		  grub_uint16_t word = 0;
 
 		  if (decomp_get16 (cc, &word))
 		    return grub_errno;
