@@ -410,7 +410,7 @@ bootcheck: $(BOOTCHECKS)
 
 if COND_i386_coreboot
 default_payload.elf: grub-mkstandalone grub-mkimage
-	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci pata ehci uhci ohci usb_keyboard usbms part_msdos ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump regexp setpci lsacpi chain test serial multiboot cbmemc linux16 gzio echo help syslinuxcfg xnu $(shell cat grub-core/fs.lst)' --fonts= --themes= --locales= -d grub-core/ /boot/grub/grub.cfg=$(srcdir)/coreboot.cfg
+	pkgdatadir=. ./grub-mkstandalone --grub-mkimage=./grub-mkimage -O i386-coreboot -o $@ --modules='ahci pata ehci uhci ohci usb_keyboard usbms part_msdos ext2 fat at_keyboard part_gpt usbserial_usbdebug cbfs' --install-modules='ls linux search configfile normal cbtime cbls memrw iorw minicmd lsmmap lspci halt reboot hexdump pcidump regexp setpci lsacpi chain test serial multiboot cbmemc linux16 gzio echo help syslinuxcfg xnu $(shell cat grub-core/fs.lst) $(EXTRA_PAYLOAD_MODULES)' --fonts= --themes= --locales= -d grub-core/ /boot/grub/grub.cfg=$(srcdir)/coreboot.cfg
 endif
 
 endif
