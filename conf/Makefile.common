@@ -65,7 +65,7 @@ grubconfdir = $(sysconfdir)/grub.d
 platformdir = $(pkglibdir)/$(target_cpu)-$(platform)
 starfielddir = $(pkgdatadir)/themes/starfield
 
-CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter -Wno-redundant-decls -Wno-unreachable-code -Wno-conversion -Wno-maybe-uninitialized
+CFLAGS_GNULIB = -Wno-undef -Wno-sign-compare -Wno-unused -Wno-unused-parameter -Wno-redundant-decls -Wno-unreachable-code -Wno-conversion
 CPPFLAGS_GNULIB = -I$(top_builddir)/grub-core/gnulib -I$(top_srcdir)/grub-core/gnulib
 
 CFLAGS_POSIX = -fno-builtin
