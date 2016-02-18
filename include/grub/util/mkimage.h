@@ -33,6 +33,8 @@ struct grub_mkimage_layout
   grub_size_t ia64_got_off;
   grub_size_t got_size;
   unsigned ia64jmpnum;
+  Elf_Addr bss_start;
+  Elf_Addr end;
 };
 
 /* Private header. Use only in mkimage-related sources.  */
