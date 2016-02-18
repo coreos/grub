@@ -495,7 +495,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 {
   Elf_Word symtab_size, sym_size, num_syms;
   Elf_Off symtab_offset;
-  Elf_Addr start_address = 0;
+  Elf_Addr start_address = (Elf_Addr) -1;
   Elf_Sym *sym;
   Elf_Word i;
   Elf_Shdr *strtab_section;
@@ -560,7 +560,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
 		      (unsigned long long) sym->st_value,
 		      (unsigned long long) section_addresses[cur_index]);
 
-      if (! start_address)
+      if (start_address == (Elf_Addr)-1)
 	if (strcmp (name, "_start") == 0 || strcmp (name, "start") == 0)
 	  start_address = sym->st_value;
     }
@@ -1797,7 +1797,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 					  layout->ia64jmp_off 
 					  + image_target->vaddr_offset,
 					  image_target);
-      if (layout->start_address == 0)
+      if (layout->start_address == (Elf_Addr) -1)
 	grub_util_error ("start symbol is not defined");
 
       SUFFIX (entry_point) = (Elf_Addr) layout->start_address;
