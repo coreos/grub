@@ -33,8 +33,8 @@ struct grub_mkimage_layout
   grub_size_t ia64_got_off;
   grub_size_t got_size;
   unsigned ia64jmpnum;
-  Elf_Addr bss_start;
-  Elf_Addr end;
+  grub_uint32_t bss_start;
+  grub_uint32_t end;
 };
 
 /* Private header. Use only in mkimage-related sources.  */
@@ -83,6 +83,7 @@ struct grub_install_image_target_desc
   unsigned decompressor_compressed_size;
   unsigned decompressor_uncompressed_size;
   unsigned decompressor_uncompressed_addr;
+  unsigned reloc_table_offset;
   unsigned link_align;
   grub_uint16_t elf_target;
   unsigned section_align;
