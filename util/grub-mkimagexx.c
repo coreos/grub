@@ -17,58 +17,172 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#undef ELF_R_SYM
-#undef ELF_R_TYPE
+#include <config.h>
+#include <grub/types.h>
+#include <grub/elf.h>
+#include <grub/aout.h>
+#include <grub/i18n.h>
+#include <grub/kernel.h>
+#include <grub/disk.h>
+#include <grub/emu/misc.h>
+#include <grub/util/misc.h>
+#include <grub/util/resolve.h>
+#include <grub/misc.h>
+#include <grub/offsets.h>
+#include <grub/crypto.h>
+#include <grub/dl.h>
+#include <time.h>
+#include <multiboot.h>
 
-#if defined(MKIMAGE_ELF32)
-# define SUFFIX(x)	x ## 32
-# define ELFCLASSXX	ELFCLASS32
-# define Elf_Ehdr	Elf32_Ehdr
-# define Elf_Phdr	Elf32_Phdr
-# define Elf_Nhdr	Elf32_Nhdr
-# define Elf_Addr	Elf32_Addr
-# define Elf_Sym	Elf32_Sym
-# define Elf_Off	Elf32_Off
-# define Elf_Shdr	Elf32_Shdr
-# define Elf_Rela       Elf32_Rela
-# define Elf_Rel        Elf32_Rel
-# define Elf_Word       Elf32_Word
-# define Elf_Half       Elf32_Half
-# define Elf_Section    Elf32_Section
-# define ELF_R_SYM(val)		ELF32_R_SYM(val)
-# define ELF_R_TYPE(val)		ELF32_R_TYPE(val)
-# define ELF_ST_TYPE(val)		ELF32_ST_TYPE(val)
-#define XEN_NOTE_SIZE 132
-#elif defined(MKIMAGE_ELF64)
-# define SUFFIX(x)	x ## 64
-# define ELFCLASSXX	ELFCLASS64
-# define Elf_Ehdr	Elf64_Ehdr
-# define Elf_Phdr	Elf64_Phdr
-# define Elf_Nhdr	Elf64_Nhdr
-# define Elf_Addr	Elf64_Addr
-# define Elf_Sym	Elf64_Sym
-# define Elf_Off	Elf64_Off
-# define Elf_Shdr	Elf64_Shdr
-# define Elf_Rela       Elf64_Rela
-# define Elf_Rel        Elf64_Rel
-# define Elf_Word       Elf64_Word
-# define Elf_Half       Elf64_Half
-# define Elf_Section    Elf64_Section
-# define ELF_R_SYM(val)		ELF64_R_SYM(val)
-# define ELF_R_TYPE(val)		ELF64_R_TYPE(val)
-# define ELF_ST_TYPE(val)		ELF64_ST_TYPE(val)
-#define XEN_NOTE_SIZE 120
-#else
-#error "I'm confused"
-#endif
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <grub/efi/pe32.h>
+#include <grub/uboot/image.h>
+#include <grub/arm/reloc.h>
+#include <grub/arm64/reloc.h>
+#include <grub/ia64/reloc.h>
+#include <grub/osdep/hostfile.h>
+#include <grub/util/install.h>
+#include <grub/util/mkimage.h>
+
+#pragma GCC diagnostic ignored "-Wcast-align"
 
 static Elf_Addr SUFFIX (entry_point);
 
-static void
-SUFFIX (generate_elf) (const struct grub_install_image_target_desc *image_target,
-		       int note, char **core_img, size_t *core_size,
-		       Elf_Addr target_addr, grub_size_t align,
-		       size_t kernel_size, size_t bss_size)
+/* These structures are defined according to the CHRP binding to IEEE1275,
+   "Client Program Format" section.  */
+
+struct grub_ieee1275_note_desc
+{
+  grub_uint32_t real_mode;
+  grub_uint32_t real_base;
+  grub_uint32_t real_size;
+  grub_uint32_t virt_base;
+  grub_uint32_t virt_size;
+  grub_uint32_t load_base;
+};
+
+#define GRUB_IEEE1275_NOTE_NAME "PowerPC"
+#define GRUB_IEEE1275_NOTE_TYPE 0x1275
+
+struct grub_ieee1275_note
+{
+  Elf32_Nhdr header;
+  char name[ALIGN_UP(sizeof (GRUB_IEEE1275_NOTE_NAME), 4)];
+  struct grub_ieee1275_note_desc descriptor;
+};
+
+#define GRUB_XEN_NOTE_NAME "Xen"
+
+struct fixup_block_list
+{
+  struct fixup_block_list *next;
+  int state;
+  struct grub_pe32_fixup_block b;
+};
+
+#define ALIGN_ADDR(x) (ALIGN_UP((x), image_target->voidp_sizeof))
+
+#ifdef MKIMAGE_ELF32
+
+/*
+ * R_ARM_THM_CALL/THM_JUMP24
+ *
+ * Relocate Thumb (T32) instruction set relative branches:
+ *   B.W, BL and BLX
+ */
+static grub_err_t
+grub_arm_reloc_thm_call (grub_uint16_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  offset = grub_arm_thm_call_get_offset (target);
+
+  grub_dprintf ("dl", "    sym_addr = 0x%08x", sym_addr);
+
+  offset += sym_addr;
+
+  grub_dprintf("dl", " BL*: target=%p, sym_addr=0x%08x, offset=%d\n",
+	       target, sym_addr, offset);
+
+  /* Keep traditional (pre-Thumb2) limits on blx. In any case if the kernel
+     is bigger than 2M  (currently under 150K) then we probably have a problem
+     somewhere else.  */
+  if (offset < -0x200000 || offset >= 0x200000)
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       "THM_CALL Relocation out of range.");
+
+  grub_dprintf ("dl", "    relative destination = %p",
+		(char *) target + offset);
+
+  return grub_arm_thm_call_set_offset (target, offset);
+}
+
+/*
+ * R_ARM_THM_JUMP19
+ *
+ * Relocate conditional Thumb (T32) B<c>.W
+ */
+static grub_err_t
+grub_arm_reloc_thm_jump19 (grub_uint16_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  if (!(sym_addr & 1))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       "Relocation targeting wrong execution state");
+
+  offset = grub_arm_thm_jump19_get_offset (target);
+
+  /* Adjust and re-truncate offset */
+  offset += sym_addr;
+
+  if (!grub_arm_thm_jump19_check_offset (offset))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       "THM_JUMP19 Relocation out of range.");
+
+  grub_arm_thm_jump19_set_offset (target, offset);
+
+  return GRUB_ERR_NONE;
+}
+
+/*
+ * R_ARM_JUMP24
+ *
+ * Relocate ARM (A32) B
+ */
+static grub_err_t
+grub_arm_reloc_jump24 (grub_uint32_t *target, Elf32_Addr sym_addr)
+{
+  grub_int32_t offset;
+
+  if (sym_addr & 1)
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       "Relocation targeting wrong execution state");
+
+  offset = grub_arm_jump24_get_offset (target);
+  offset += sym_addr;
+
+  if (!grub_arm_jump24_check_offset (offset))
+    return grub_error (GRUB_ERR_BAD_MODULE,
+		       "JUMP24 Relocation out of range.");
+
+
+  grub_arm_jump24_set_offset (target, offset);
+
+  return GRUB_ERR_NONE;
+}
+
+#endif
+
+void
+SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc *image_target,
+				    int note, char **core_img, size_t *core_size,
+				    Elf_Addr target_addr, grub_size_t align,
+				    size_t kernel_size, size_t bss_size)
 {
   char *elf_img;
   size_t program_size;
@@ -1457,13 +1571,13 @@ SUFFIX (locate_sections) (const char *kernel_path,
   return section_addresses;
 }
 
-static char *
-SUFFIX (load_image) (const char *kernel_path, size_t *exec_size, 
-		     size_t *kernel_sz, size_t *bss_size,
-		     size_t total_module_size, grub_uint64_t *start,
-		     void **reloc_section, size_t *reloc_size,
-		     size_t *align,
-		     const struct grub_install_image_target_desc *image_target)
+char *
+SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size, 
+				  size_t *kernel_sz, size_t *bss_size,
+				  size_t total_module_size, grub_uint64_t *start,
+				  void **reloc_section, size_t *reloc_size,
+				  size_t *align,
+				  const struct grub_install_image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
   const char *strtab;
@@ -1671,23 +1785,3 @@ SUFFIX (load_image) (const char *kernel_path, size_t *exec_size,
 
   return out_img;
 }
-
-
-#undef SUFFIX
-#undef ELFCLASSXX
-#undef Elf_Ehdr
-#undef Elf_Phdr
-#undef Elf_Nhdr
-#undef Elf_Shdr
-#undef Elf_Addr
-#undef Elf_Sym
-#undef Elf_Off
-#undef Elf_Rela
-#undef Elf_Rel
-#undef ELF_R_TYPE
-#undef ELF_R_SYM
-#undef Elf_Word
-#undef Elf_Half
-#undef Elf_Section
-#undef ELF_ST_TYPE
-#undef XEN_NOTE_SIZE
