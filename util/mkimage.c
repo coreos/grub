@@ -742,17 +742,14 @@ grub_install_generate_image (const char *dir, const char *prefix,
 			     grub_compression_t comp)
 {
   char *kernel_img, *core_img;
-  size_t kernel_size, total_module_size, core_size, exec_size;
+  size_t total_module_size, core_size;
   size_t memdisk_size = 0, config_size = 0;
   size_t prefix_size = 0;
   char *kernel_path;
   size_t offset;
   struct grub_util_path_list *path_list, *p;
-  size_t bss_size;
-  grub_uint64_t start_address;
-  void *rel_section = 0;
-  size_t reloc_size = 0, align;
   size_t decompress_size = 0;
+  struct grub_mkimage_layout layout;
 
   if (comp == GRUB_COMPRESSION_AUTO)
     comp = image_target->default_compression;
@@ -814,15 +811,13 @@ grub_install_generate_image (const char *dir, const char *prefix,
 		  (unsigned long long) total_module_size);
 
   if (image_target->voidp_sizeof == 4)
-    kernel_img = grub_mkimage_load_image32 (kernel_path, &exec_size, &kernel_size, &bss_size,
-					    total_module_size, &start_address, &rel_section,
-					    &reloc_size, &align, image_target);
+    kernel_img = grub_mkimage_load_image32 (kernel_path, total_module_size,
+					    &layout, image_target);
   else
-    kernel_img = grub_mkimage_load_image64 (kernel_path, &exec_size, &kernel_size, &bss_size,
-					    total_module_size, &start_address, &rel_section,
-					    &reloc_size, &align, image_target);
-  if (image_target->id == IMAGE_XEN && align < 4096)
-    align = 4096;
+    kernel_img = grub_mkimage_load_image64 (kernel_path, total_module_size,
+					    &layout, image_target);
+  if (image_target->id == IMAGE_XEN && layout.align < 4096)
+    layout.align = 4096;
 
   if ((image_target->flags & PLATFORM_FLAGS_DECOMPRESSORS)
       && (image_target->total_module_size != TARGET_NO_FIELD))
@@ -831,7 +826,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
   if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
     {
-      memmove (kernel_img + total_module_size, kernel_img, kernel_size);
+      memmove (kernel_img + total_module_size, kernel_img, layout.kernel_size);
       memset (kernel_img, 0, total_module_size);
     }
 
@@ -842,14 +837,14 @@ grub_install_generate_image (const char *dir, const char *prefix,
       if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
 	modinfo = (struct grub_module_info64 *) kernel_img;
       else
-	modinfo = (struct grub_module_info64 *) (kernel_img + kernel_size);
+	modinfo = (struct grub_module_info64 *) (kernel_img + layout.kernel_size);
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info64));
       modinfo->size = grub_host_to_target_addr (total_module_size);
       if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
 	offset = sizeof (struct grub_module_info64);
       else
-	offset = kernel_size + sizeof (struct grub_module_info64);
+	offset = layout.kernel_size + sizeof (struct grub_module_info64);
     }
   else
     {
@@ -858,14 +853,14 @@ grub_install_generate_image (const char *dir, const char *prefix,
       if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
 	modinfo = (struct grub_module_info32 *) kernel_img;
       else
-	modinfo = (struct grub_module_info32 *) (kernel_img + kernel_size);
+	modinfo = (struct grub_module_info32 *) (kernel_img + layout.kernel_size);
       modinfo->magic = grub_host_to_target32 (GRUB_MODULE_MAGIC);
       modinfo->offset = grub_host_to_target_addr (sizeof (struct grub_module_info32));
       modinfo->size = grub_host_to_target_addr (total_module_size);
       if (image_target->flags & PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)
 	offset = sizeof (struct grub_module_info32);
       else
-	offset = kernel_size + sizeof (struct grub_module_info32);
+	offset = layout.kernel_size + sizeof (struct grub_module_info32);
     }
 
   for (p = path_list; p; p = p->next)
@@ -944,8 +939,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
   grub_util_info ("kernel_img=%p, kernel_size=0x%" GRUB_HOST_PRIxLONG_LONG,
 		  kernel_img,
-		  (unsigned long long) kernel_size);
-  compress_kernel (image_target, kernel_img, kernel_size + total_module_size,
+		  (unsigned long long) layout.kernel_size);
+  compress_kernel (image_target, kernel_img, layout.kernel_size + total_module_size,
 		   &core_img, &core_size, comp);
   free (kernel_img);
 
@@ -997,7 +992,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
       if (image_target->decompressor_uncompressed_size != TARGET_NO_FIELD)
 	*((grub_uint32_t *) (decompress_img
 			     + image_target->decompressor_uncompressed_size))
-	  = grub_host_to_target32 (kernel_size + total_module_size);
+	  = grub_host_to_target32 (layout.kernel_size + total_module_size);
 
       if (image_target->decompressor_uncompressed_addr != TARGET_NO_FIELD)
 	{
@@ -1030,16 +1025,17 @@ grub_install_generate_image (const char *dir, const char *prefix,
     case IMAGE_I386_PC_ELTORITO:
 	if (GRUB_KERNEL_I386_PC_LINK_ADDR + core_size > 0x78000
 	    || (core_size > (0xffff << GRUB_DISK_SECTOR_BITS))
-	    || (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000))
+	    || (layout.kernel_size + layout.bss_size
+		+ GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000))
 	  grub_util_error (_("core image is too big (0x%x > 0x%x)"),
 			   GRUB_KERNEL_I386_PC_LINK_ADDR + (unsigned) core_size,
 			   0x78000);
 	/* fallthrough */
     case IMAGE_COREBOOT:
     case IMAGE_QEMU:
-	if (kernel_size + bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
+	if (layout.kernel_size + layout.bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
 	  grub_util_error (_("kernel image is too big (0x%x > 0x%x)"),
-			   (unsigned) kernel_size + (unsigned) bss_size
+			   (unsigned) layout.kernel_size + (unsigned) layout.bss_size
 			   + GRUB_KERNEL_I386_PC_LINK_ADDR,
 			   0x68000);
 	break;
@@ -1161,13 +1157,13 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	reloc_addr = ALIGN_UP (header_size + core_size,
 			       image_target->section_align);
 
-	pe_size = ALIGN_UP (reloc_addr + reloc_size,
+	pe_size = ALIGN_UP (reloc_addr + layout.reloc_size,
 			    image_target->section_align);
-	pe_img = xmalloc (reloc_addr + reloc_size);
+	pe_img = xmalloc (reloc_addr + layout.reloc_size);
 	memset (pe_img, 0, header_size);
 	memcpy ((char *) pe_img + header_size, core_img, core_size);
 	memset ((char *) pe_img + header_size + core_size, 0, reloc_addr - (header_size + core_size));
-	memcpy ((char *) pe_img + reloc_addr, rel_section, reloc_size);
+	memcpy ((char *) pe_img + reloc_addr, layout.reloc_section, layout.reloc_size);
 	header = pe_img;
 
 	/* The magic.  */
@@ -1201,14 +1197,14 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	      (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
 	       + sizeof (struct grub_pe32_coff_header));
 	    o->magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);
-	    o->code_size = grub_host_to_target32 (exec_size);
-	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size
+	    o->code_size = grub_host_to_target32 (layout.exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - layout.exec_size
 					     - header_size);
-	    o->bss_size = grub_cpu_to_le32 (bss_size);
-	    o->entry_addr = grub_cpu_to_le32 (start_address);
+	    o->bss_size = grub_cpu_to_le32 (layout.bss_size);
+	    o->entry_addr = grub_cpu_to_le32 (layout.start_address);
 	    o->code_base = grub_cpu_to_le32 (header_size);
 
-	    o->data_base = grub_host_to_target32 (header_size + exec_size);
+	    o->data_base = grub_host_to_target32 (header_size + layout.exec_size);
 
 	    o->image_base = 0;
 	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
@@ -1226,7 +1222,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	    o->num_data_directories = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
 
 	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
-	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	    o->base_relocation_table.size = grub_host_to_target32 (layout.reloc_size);
 	    sections = o + 1;
 	  }
 	else
@@ -1239,11 +1235,11 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	      (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE
 	       + sizeof (struct grub_pe32_coff_header));
 	    o->magic = grub_host_to_target16 (GRUB_PE32_PE64_MAGIC);
-	    o->code_size = grub_host_to_target32 (exec_size);
-	    o->data_size = grub_cpu_to_le32 (reloc_addr - exec_size
+	    o->code_size = grub_host_to_target32 (layout.exec_size);
+	    o->data_size = grub_cpu_to_le32 (reloc_addr - layout.exec_size
 					     - header_size);
-	    o->bss_size = grub_cpu_to_le32 (bss_size);
-	    o->entry_addr = grub_cpu_to_le32 (start_address);
+	    o->bss_size = grub_cpu_to_le32 (layout.bss_size);
+	    o->entry_addr = grub_cpu_to_le32 (layout.start_address);
 	    o->code_base = grub_cpu_to_le32 (header_size);
 	    o->image_base = 0;
 	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
@@ -1262,15 +1258,15 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	      = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);
 
 	    o->base_relocation_table.rva = grub_host_to_target32 (reloc_addr);
-	    o->base_relocation_table.size = grub_host_to_target32 (reloc_size);
+	    o->base_relocation_table.size = grub_host_to_target32 (layout.reloc_size);
 	    sections = o + 1;
 	  }
 	/* The sections.  */
 	text_section = sections;
 	strcpy (text_section->name, ".text");
-	text_section->virtual_size = grub_cpu_to_le32 (exec_size);
+	text_section->virtual_size = grub_cpu_to_le32 (layout.exec_size);
 	text_section->virtual_address = grub_cpu_to_le32 (header_size);
-	text_section->raw_data_size = grub_cpu_to_le32 (exec_size);
+	text_section->raw_data_size = grub_cpu_to_le32 (layout.exec_size);
 	text_section->raw_data_offset = grub_cpu_to_le32 (header_size);
 	text_section->characteristics = grub_cpu_to_le32_compile_time (
 						  GRUB_PE32_SCN_CNT_CODE
@@ -1279,10 +1275,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
 	data_section = text_section + 1;
 	strcpy (data_section->name, ".data");
-	data_section->virtual_size = grub_cpu_to_le32 (kernel_size - exec_size);
-	data_section->virtual_address = grub_cpu_to_le32 (header_size + exec_size);
-	data_section->raw_data_size = grub_cpu_to_le32 (kernel_size - exec_size);
-	data_section->raw_data_offset = grub_cpu_to_le32 (header_size + exec_size);
+	data_section->virtual_size = grub_cpu_to_le32 (layout.kernel_size - layout.exec_size);
+	data_section->virtual_address = grub_cpu_to_le32 (header_size + layout.exec_size);
+	data_section->raw_data_size = grub_cpu_to_le32 (layout.kernel_size - layout.exec_size);
+	data_section->raw_data_offset = grub_cpu_to_le32 (header_size + layout.exec_size);
 	data_section->characteristics
 	  = grub_cpu_to_le32_compile_time (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
 			      | GRUB_PE32_SCN_MEM_READ
@@ -1291,8 +1287,8 @@ grub_install_generate_image (const char *dir, const char *prefix,
 #if 0
 	bss_section = data_section + 1;
 	strcpy (bss_section->name, ".bss");
-	bss_section->virtual_size = grub_cpu_to_le32 (bss_size);
-	bss_section->virtual_address = grub_cpu_to_le32 (header_size + kernel_size);
+	bss_section->virtual_size = grub_cpu_to_le32 (layout.bss_size);
+	bss_section->virtual_address = grub_cpu_to_le32 (header_size + layout.kernel_size);
 	bss_section->raw_data_size = 0;
 	bss_section->raw_data_offset = 0;
 	bss_section->characteristics
@@ -1305,10 +1301,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
     
 	mods_section = data_section + 1;
 	strcpy (mods_section->name, "mods");
-	mods_section->virtual_size = grub_cpu_to_le32 (reloc_addr - kernel_size - header_size);
-	mods_section->virtual_address = grub_cpu_to_le32 (header_size + kernel_size + bss_size);
-	mods_section->raw_data_size = grub_cpu_to_le32 (reloc_addr - kernel_size - header_size);
-	mods_section->raw_data_offset = grub_cpu_to_le32 (header_size + kernel_size);
+	mods_section->virtual_size = grub_cpu_to_le32 (reloc_addr - layout.kernel_size - header_size);
+	mods_section->virtual_address = grub_cpu_to_le32 (header_size + layout.kernel_size + layout.bss_size);
+	mods_section->raw_data_size = grub_cpu_to_le32 (reloc_addr - layout.kernel_size - header_size);
+	mods_section->raw_data_offset = grub_cpu_to_le32 (header_size + layout.kernel_size);
 	mods_section->characteristics
 	  = grub_cpu_to_le32_compile_time (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
 			      | GRUB_PE32_SCN_MEM_READ
@@ -1316,9 +1312,9 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
 	reloc_section = mods_section + 1;
 	strcpy (reloc_section->name, ".reloc");
-	reloc_section->virtual_size = grub_cpu_to_le32 (reloc_size);
-	reloc_section->virtual_address = grub_cpu_to_le32 (reloc_addr + bss_size);
-	reloc_section->raw_data_size = grub_cpu_to_le32 (reloc_size);
+	reloc_section->virtual_size = grub_cpu_to_le32 (layout.reloc_size);
+	reloc_section->virtual_address = grub_cpu_to_le32 (reloc_addr + layout.bss_size);
+	reloc_section->raw_data_size = grub_cpu_to_le32 (layout.reloc_size);
 	reloc_section->raw_data_offset = grub_cpu_to_le32 (reloc_addr);
 	reloc_section->characteristics
 	  = grub_cpu_to_le32_compile_time (GRUB_PE32_SCN_CNT_INITIALIZED_DATA
@@ -1589,7 +1585,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	  target_addr = (image_target->link_addr - decompress_size);
 	else
 	  target_addr = ALIGN_UP (image_target->link_addr
-				  + kernel_size + total_module_size, 32);
+				  + layout.kernel_size + total_module_size, 32);
 
 	ecoff_img = xmalloc (program_size + sizeof (*head) + sizeof (*section));
 	grub_memset (ecoff_img, 0, program_size + sizeof (*head) + sizeof (*section));
@@ -1636,16 +1632,16 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	      target_addr = (image_target->link_addr - decompress_size);
 	    else
 	      target_addr = ALIGN_UP (image_target->link_addr
-				      + kernel_size + total_module_size, 32);
+				      + layout.kernel_size + total_module_size, 32);
 	  }
 	else
 	  target_addr = image_target->link_addr;
 	if (image_target->voidp_sizeof == 4)
 	  grub_mkimage_generate_elf32 (image_target, note, &core_img, &core_size,
-				       target_addr, align, kernel_size, bss_size);
+				       target_addr, layout.align, layout.kernel_size, layout.bss_size);
 	else
 	  grub_mkimage_generate_elf64 (image_target, note, &core_img, &core_size,
-				       target_addr, align, kernel_size, bss_size);
+				       target_addr, layout.align, layout.kernel_size, layout.bss_size);
       }
       break;
     }
@@ -1653,7 +1649,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
   grub_util_write_image (core_img, core_size, out, outname);
   free (core_img);
   free (kernel_path);
-  free (rel_section);
+  free (layout.reloc_section);
 
   grub_util_free_path_list (path_list);
 }

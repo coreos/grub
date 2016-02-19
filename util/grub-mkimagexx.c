@@ -1346,22 +1346,23 @@ translate_relocation (struct translate_context *ctx,
     }
 }
 
-static Elf_Addr
-finish_reloc_translation (struct translate_context *ctx, void **out,
+static void
+finish_reloc_translation (struct translate_context *ctx,
+			  struct grub_mkimage_layout *layout,
 			  const struct grub_install_image_target_desc *image_target)
 {
   ctx->current_address = add_fixup_entry (&ctx->lst, 0, 0, 1, ctx->current_address, image_target);
 
   {
     grub_uint8_t *ptr;
-    ptr = *out = xmalloc (ctx->current_address);
+    layout->reloc_section = ptr = xmalloc (ctx->current_address);
     for (ctx->lst = ctx->lst0; ctx->lst; ctx->lst = ctx->lst->next)
       if (ctx->lst->state)
 	{
 	  memcpy (ptr, &ctx->lst->b, grub_target_to_host32 (ctx->lst->b.block_size));
 	  ptr += grub_target_to_host32 (ctx->lst->b.block_size);
 	}
-    assert ((ctx->current_address + (grub_uint8_t *) *out) == ptr);
+    assert ((ctx->current_address + (grub_uint8_t *) layout->reloc_section) == ptr);
   }
 
   for (ctx->lst = ctx->lst0; ctx->lst; )
@@ -1372,7 +1373,7 @@ finish_reloc_translation (struct translate_context *ctx, void **out,
       ctx->lst = next;
     }
 
-  return ctx->current_address;
+  layout->reloc_size = ctx->current_address;
 }
 
 static void
@@ -1390,8 +1391,8 @@ translate_reloc_jumpers (struct translate_context *ctx,
 }
 
 /* Make a .reloc section.  */
-static Elf_Addr
-make_reloc_section (Elf_Ehdr *e, void **out,
+static void
+make_reloc_section (Elf_Ehdr *e, struct grub_mkimage_layout *layout,
 		    Elf_Addr *section_addresses, Elf_Shdr *sections,
 		    Elf_Half section_entsize, Elf_Half num_sections,
 		    const char *strtab,
@@ -1446,7 +1447,7 @@ make_reloc_section (Elf_Ehdr *e, void **out,
     translate_reloc_jumpers (&ctx, jumpers, njumpers,
 			     image_target);
 
-  return finish_reloc_translation (&ctx, out, image_target);
+  finish_reloc_translation (&ctx, layout, image_target);
 }
 
 /* Determine if this section is a text section. Return false if this
@@ -1498,8 +1499,7 @@ static Elf_Addr *
 SUFFIX (locate_sections) (const char *kernel_path,
 			  Elf_Shdr *sections, Elf_Half section_entsize,
 			  Elf_Half num_sections, const char *strtab,
-			  size_t *exec_size, size_t *kernel_sz,
-			  size_t *all_align,
+			  struct grub_mkimage_layout *layout,
 			  const struct grub_install_image_target_desc *image_target)
 {
   int i;
@@ -1507,10 +1507,10 @@ SUFFIX (locate_sections) (const char *kernel_path,
   Elf_Addr *section_addresses;
   Elf_Shdr *s;
 
-  *all_align = 1;
+  layout->align = 1;
   /* Page-aligning simplifies relocation handling.  */
   if (image_target->elf_target == EM_AARCH64)
-    *all_align = 4096;
+    layout->align = 4096;
 
   section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
   memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
@@ -1521,8 +1521,8 @@ SUFFIX (locate_sections) (const char *kernel_path,
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
     if ((grub_target_to_host (s->sh_flags) & SHF_ALLOC) 
-	&& grub_host_to_target32 (s->sh_addralign) > *all_align)
-      *all_align = grub_host_to_target32 (s->sh_addralign);
+	&& grub_host_to_target32 (s->sh_addralign) > layout->align)
+      layout->align = grub_host_to_target32 (s->sh_addralign);
 
 
   /* .text */
@@ -1562,7 +1562,7 @@ SUFFIX (locate_sections) (const char *kernel_path,
   current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 			      image_target->section_align)
     - image_target->vaddr_offset;
-  *exec_size = current_address;
+  layout->exec_size = current_address;
 
   /* .data */
   for (i = 0, s = sections;
@@ -1590,16 +1590,14 @@ SUFFIX (locate_sections) (const char *kernel_path,
 
   current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 			      image_target->section_align) - image_target->vaddr_offset;
-  *kernel_sz = current_address;
+  layout->kernel_size = current_address;
   return section_addresses;
 }
 
 char *
-SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size, 
-				  size_t *kernel_sz, size_t *bss_size,
-				  size_t total_module_size, grub_uint64_t *start,
-				  void **reloc_section, size_t *reloc_size,
-				  size_t *align,
+SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
+				  size_t total_module_size,
+				  struct grub_mkimage_layout *layout,
 				  const struct grub_install_image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
@@ -1614,12 +1612,11 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
   Elf_Off section_offset;
   Elf_Half section_entsize;
   grub_size_t kernel_size;
-  grub_size_t ia64jmp_off = 0, tramp_off = 0, ia64_got_off = 0;
-  unsigned ia64jmpnum = 0;
   Elf_Shdr *symtab_section = 0;
-  grub_size_t got = 0;
 
-  *start = 0;
+  grub_memset (layout, 0, sizeof (*layout));
+
+  layout->start_address = 0;
 
   kernel_size = grub_util_get_image_size (kernel_path);
   kernel_img = xmalloc (kernel_size);
@@ -1646,7 +1643,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
   section_addresses = SUFFIX (locate_sections) (kernel_path,
 						sections, section_entsize,
 						num_sections, strtab,
-						exec_size, kernel_sz, align,
+						layout,
 						image_target);
 
   section_vaddresses = xmalloc (sizeof (*section_addresses) * num_sections);
@@ -1656,7 +1653,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
 
   if (image_target->id != IMAGE_EFI)
     {
-      Elf_Addr current_address = *kernel_sz;
+      Elf_Addr current_address = layout->kernel_size;
 
       for (i = 0, s = sections;
 	   i < num_sections;
@@ -1686,15 +1683,15 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
       current_address = ALIGN_UP (current_address + image_target->vaddr_offset,
 				  image_target->section_align)
 	- image_target->vaddr_offset;
-      *bss_size = current_address - *kernel_sz;
+      layout->bss_size = current_address - layout->kernel_size;
     }
   else
-    *bss_size = 0;
+    layout->bss_size = 0;
 
   if (image_target->id == IMAGE_SPARC64_AOUT
       || image_target->id == IMAGE_SPARC64_RAW
       || image_target->id == IMAGE_SPARC64_CDCORE)
-    *kernel_sz = ALIGN_UP (*kernel_sz, image_target->mod_align);
+    layout->kernel_size = ALIGN_UP (layout->kernel_size, image_target->mod_align);
 
   if (image_target->id == IMAGE_EFI)
     {
@@ -1715,13 +1712,13 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
 	{
 	  grub_size_t tramp;
 
-	  *kernel_sz = ALIGN_UP (*kernel_sz, 16);
+	  layout->kernel_size = ALIGN_UP (layout->kernel_size, 16);
 
 	  tramp = arm_get_trampoline_size (e, sections, section_entsize,
 					   num_sections, image_target);
 
-	  tramp_off = *kernel_sz;
-	  *kernel_sz += ALIGN_UP (tramp, 16);
+	  layout->tramp_off = layout->kernel_size;
+	  layout->kernel_size += ALIGN_UP (tramp, 16);
 	}
 #endif
 
@@ -1730,61 +1727,62 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path, size_t *exec_size,
 	{
 	  grub_size_t tramp;
 
-	  *kernel_sz = ALIGN_UP (*kernel_sz, 16);
+	  layout->kernel_size = ALIGN_UP (layout->kernel_size, 16);
 
-	  grub_ia64_dl_get_tramp_got_size (e, &tramp, &got);
+	  grub_ia64_dl_get_tramp_got_size (e, &tramp, &layout->got_size);
 
-	  tramp_off = *kernel_sz;
-	  *kernel_sz += ALIGN_UP (tramp, 16);
+	  layout->tramp_off = layout->kernel_size;
+	  layout->kernel_size += ALIGN_UP (tramp, 16);
 
-	  ia64jmp_off = *kernel_sz;
-	  ia64jmpnum = SUFFIX (count_funcs) (e, symtab_section,
+	  layout->ia64jmp_off = layout->kernel_size;
+	  layout->ia64jmpnum = SUFFIX (count_funcs) (e, symtab_section,
 					     image_target);
-	  *kernel_sz += 16 * ia64jmpnum;
+	  layout->kernel_size += 16 * layout->ia64jmpnum;
 
-	  ia64_got_off = *kernel_sz;
-	  *kernel_sz += ALIGN_UP (got, 16);
+	  layout->ia64_got_off = layout->kernel_size;
+	  layout->kernel_size += ALIGN_UP (layout->got_size, 16);
 	}
 #endif
 
     }
   else
     {
-      *reloc_size = 0;
-      *reloc_section = NULL;
+      layout->reloc_size = 0;
+      layout->reloc_section = NULL;
     }
 
-  out_img = xmalloc (*kernel_sz + total_module_size);
-  memset (out_img, 0, *kernel_sz + total_module_size);
+  out_img = xmalloc (layout->kernel_size + total_module_size);
+  memset (out_img, 0, layout->kernel_size + total_module_size);
 
   if (image_target->id == IMAGE_EFI)
     {
-      *start = SUFFIX (relocate_symbols) (e, sections, symtab_section,
+      layout->start_address = SUFFIX (relocate_symbols) (e, sections, symtab_section,
 					  section_vaddresses, section_entsize,
 					  num_sections, 
-					  (char *) out_img + ia64jmp_off, 
-					  ia64jmp_off 
+					  (char *) out_img + layout->ia64jmp_off, 
+					  layout->ia64jmp_off 
 					  + image_target->vaddr_offset,
 					  image_target);
-      if (*start == 0)
+      if (layout->start_address == 0)
 	grub_util_error ("start symbol is not defined");
 
-      SUFFIX (entry_point) = (Elf_Addr) *start;
+      SUFFIX (entry_point) = (Elf_Addr) layout->start_address;
 
       /* Resolve addresses in the virtual address space.  */
       SUFFIX (relocate_addresses) (e, sections, section_addresses, 
 				   section_entsize,
 				   num_sections, strtab,
-				   out_img, tramp_off, ia64_got_off,
+				   out_img, layout->tramp_off,
+				   layout->ia64_got_off,
 				   image_target);
 
-      *reloc_size = SUFFIX (make_reloc_section) (e, reloc_section,
-						 section_vaddresses, sections,
-						 section_entsize, num_sections,
-						 strtab, ia64jmp_off
-						 + image_target->vaddr_offset,
-						 2 * ia64jmpnum + (got / 8),
-						 image_target);
+      make_reloc_section (e, layout,
+			  section_vaddresses, sections,
+			  section_entsize, num_sections,
+			  strtab, layout->ia64jmp_off
+			  + image_target->vaddr_offset,
+			  2 * layout->ia64jmpnum + (layout->got_size / 8),
+			  image_target);
     }
 
   for (i = 0, s = sections;

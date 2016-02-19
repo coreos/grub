@@ -19,20 +19,32 @@
 #ifndef GRUB_UTIL_MKIMAGE_HEADER
 #define GRUB_UTIL_MKIMAGE_HEADER	1
 
+struct grub_mkimage_layout
+{
+  size_t exec_size;
+  size_t kernel_size;
+  size_t bss_size;
+  grub_uint64_t start_address;
+  void *reloc_section;
+  size_t reloc_size;
+  size_t align;
+  grub_size_t ia64jmp_off;
+  grub_size_t tramp_off;
+  grub_size_t ia64_got_off;
+  grub_size_t got_size;
+  unsigned ia64jmpnum;
+};
+
 /* Private header. Use only in mkimage-related sources.  */
 char *
-grub_mkimage_load_image32 (const char *kernel_path, size_t *exec_size, 
-			   size_t *kernel_sz, size_t *bss_size,
-			   size_t total_module_size, grub_uint64_t *start,
-			   void **reloc_section, size_t *reloc_size,
-			   size_t *align,
+grub_mkimage_load_image32 (const char *kernel_path,
+			   size_t total_module_size,
+			   struct grub_mkimage_layout *layout,
 			   const struct grub_install_image_target_desc *image_target);
 char *
-grub_mkimage_load_image64 (const char *kernel_path, size_t *exec_size, 
-			   size_t *kernel_sz, size_t *bss_size,
-			   size_t total_module_size, grub_uint64_t *start,
-			   void **reloc_section, size_t *reloc_size,
-			   size_t *align,
+grub_mkimage_load_image64 (const char *kernel_path,
+			   size_t total_module_size,
+			   struct grub_mkimage_layout *layout,
 			   const struct grub_install_image_target_desc *image_target);
 void
 grub_mkimage_generate_elf32 (const struct grub_install_image_target_desc *image_target,
