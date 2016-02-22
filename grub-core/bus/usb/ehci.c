@@ -1289,16 +1289,26 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
   grub_ehci_td_t td_prev = NULL;
   int i;
   struct grub_ehci_transfer_controller_data *cdata;
+  grub_uint32_t status;
 
   /* Check if EHCI is running and AL is enabled */
-  if ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
-       & GRUB_EHCI_ST_HC_HALTED) != 0)
+  status = grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS);
+  if ((status & GRUB_EHCI_ST_HC_HALTED) != 0)
     /* XXX: Fix it: Currently we don't do anything to restart EHCI */
-    return GRUB_USB_ERR_INTERNAL;
-  if ((grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS)
+    {
+      grub_dprintf ("ehci", "setup_transfer: halted, status = 0x%x\n",
+		    status);
+      return GRUB_USB_ERR_INTERNAL;
+    }
+  status = grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS);
+  if ((status
        & (GRUB_EHCI_ST_AS_STATUS | GRUB_EHCI_ST_PS_STATUS)) == 0)
     /* XXX: Fix it: Currently we don't do anything to restart EHCI */
-    return GRUB_USB_ERR_INTERNAL;
+    {
+      grub_dprintf ("ehci", "setup_transfer: no AS/PS, status = 0x%x\n",
+		    status);
+      return GRUB_USB_ERR_INTERNAL;
+    }
 
   /* Allocate memory for controller transfer data.  */
   cdata = grub_malloc (sizeof (*cdata));
@@ -1310,6 +1320,7 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
   cdata->qh_virt = grub_ehci_find_qh (e, transfer);
   if (!cdata->qh_virt)
     {
+      grub_dprintf ("ehci", "setup_transfer: no QH\n");
       grub_free (cdata);
       return GRUB_USB_ERR_INTERNAL;
     }
@@ -1319,6 +1330,7 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
   cdata->td_alt_virt = grub_ehci_alloc_td (e);
   if (!cdata->td_alt_virt)
     {
+      grub_dprintf ("ehci", "setup_transfer: no TDs\n");
       grub_free (cdata);
       return GRUB_USB_ERR_INTERNAL;
     }
@@ -1345,6 +1357,7 @@ grub_ehci_setup_transfer (grub_usb_controller_t dev,
 	    grub_ehci_free_tds (e, cdata->td_first_virt, NULL, &actual);
 
 	  grub_free (cdata);
+	  grub_dprintf ("ehci", "setup_transfer: no TD\n");
 	  return GRUB_USB_ERR_INTERNAL;
 	}
 
@@ -1776,11 +1789,6 @@ grub_ehci_detect_dev (grub_usb_controller_t dev, int port, int *changed)
   grub_uint32_t status, line_state;
 
   status = grub_ehci_port_read (e, port);
-
-  grub_dprintf ("ehci", "detect_dev: EHCI STATUS: %08x\n",
-		grub_ehci_oper_read32 (e, GRUB_EHCI_STATUS));
-  grub_dprintf ("ehci", "detect_dev: iobase=%p, port=%d, status=0x%02x\n",
-		e->iobase, port, status);
 
   /* Connect Status Change bit - it detects change of connection */
   if (status & GRUB_EHCI_PORT_CONNECT_CH)
