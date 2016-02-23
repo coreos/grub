@@ -420,6 +420,7 @@ grub_fill_multiboot_mmap_iter (grub_uint64_t addr, grub_uint64_t size,
   (*mmap_entry)->addr = addr;
   (*mmap_entry)->len = size;
   (*mmap_entry)->type = type;
+  (*mmap_entry)->zero = 0;
   (*mmap_entry)++;
 
   return 0;
