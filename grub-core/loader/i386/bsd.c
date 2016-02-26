@@ -1889,6 +1889,10 @@ grub_cmd_freebsd_module (grub_command_t cmd __attribute__ ((unused)),
   grub_err_t err;
   void *src;
 
+  if (! grub_loader_is_loaded ())
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("you need to load the kernel first"));
+
   if (kernel_type != KERNEL_TYPE_FREEBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no FreeBSD loaded");
 
@@ -1992,6 +1996,10 @@ grub_cmd_netbsd_module (grub_command_t cmd,
 {
   grub_uint32_t type;
 
+  if (! grub_loader_is_loaded ())
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("you need to load the kernel first"));
+
   if (kernel_type != KERNEL_TYPE_NETBSD)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no NetBSD loaded");
 
@@ -2069,6 +2077,10 @@ grub_cmd_openbsd_ramdisk (grub_command_t cmd __attribute__ ((unused)),
 
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
+
+  if (! grub_loader_is_loaded ())
+    return grub_error (GRUB_ERR_BAD_ARGUMENT,
+		       N_("you need to load the kernel first"));
 
   if (kernel_type != KERNEL_TYPE_OPENBSD)
     return grub_error (GRUB_ERR_BAD_OS, "no kOpenBSD loaded");
