@@ -547,7 +547,9 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 
   status = grub_efidisk_readwrite (disk, sector, size, buf, 0);
 
-  if (status != GRUB_EFI_SUCCESS)
+  if (status == GRUB_EFI_NO_MEDIA)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, N_("no media in `%s'", disk->name));
+  else if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       N_("failure reading sector 0x%llx from `%s'"),
 		       (unsigned long long) sector,
@@ -568,7 +570,9 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 
   status = grub_efidisk_readwrite (disk, sector, size, (char *) buf, 1);
 
-  if (status != GRUB_EFI_SUCCESS)
+  if (status == GRUB_EFI_NO_MEDIA)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, N_("no media in `%s'", disk->name));
+  else if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_WRITE_ERROR,
 		       N_("failure writing sector 0x%llx to `%s'"),
 		       (unsigned long long) sector, disk->name);
