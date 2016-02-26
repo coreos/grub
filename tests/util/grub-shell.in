@@ -74,6 +74,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	disk=0
 	# To skip "Welcome to GRUB" and color setttings
 	trim=1
+	serial_port=
 	;;
     powerpc-ieee1275)
 	boot=hd
@@ -181,7 +182,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	trim=1
 	qemuopts="-machine virt -cpu cortex-a57 -bios /usr/share/qemu-efi/QEMU_EFI.fd $qemuopts"
 	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
-	serial_port=efi0
+	serial_port=
 	;;
      arm-efi)
 	qemu=qemu-system-arm
@@ -322,7 +323,7 @@ fi
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
     echo insmod escc >>${cfgfile}
 fi
-if [ "${grub_modinfo_platform}" != emu ]; then
+if [ "${serial_port}" != "" ]; then
     echo "serial ${serial_port}" >>${cfgfile}
     term="serial_${serial_port}"
 else
