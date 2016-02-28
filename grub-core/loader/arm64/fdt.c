@@ -28,28 +28,6 @@
 static void *loaded_fdt;
 static void *fdt;
 
-static void *
-get_firmware_fdt (void)
-{
-  grub_efi_configuration_table_t *tables;
-  grub_efi_guid_t fdt_guid = GRUB_EFI_DEVICE_TREE_GUID;
-  void *firmware_fdt = NULL;
-  unsigned int i;
-
-  /* Look for FDT in UEFI config tables. */
-  tables = grub_efi_system_table->configuration_table;
-
-  for (i = 0; i < grub_efi_system_table->num_table_entries; i++)
-    if (grub_memcmp (&tables[i].vendor_guid, &fdt_guid, sizeof (fdt_guid)) == 0)
-      {
-	firmware_fdt = tables[i].vendor_table;
-	grub_dprintf ("linux", "found registered FDT @ %p\n", firmware_fdt);
-	break;
-      }
-
-  return firmware_fdt;
-}
-
 void *
 grub_fdt_load (grub_size_t additional_size)
 {
@@ -65,7 +43,7 @@ grub_fdt_load (grub_size_t additional_size)
   if (loaded_fdt)
     raw_fdt = loaded_fdt;
   else
-    raw_fdt = get_firmware_fdt();
+    raw_fdt = grub_efi_get_firmware_fdt();
 
   size =
     raw_fdt ? grub_fdt_get_totalsize (raw_fdt) : GRUB_FDT_EMPTY_TREE_SZ;
