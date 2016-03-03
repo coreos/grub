@@ -48,6 +48,8 @@ struct xen_loader_state {
   struct start_info next_start;
   struct grub_xen_file_info xen_inf;
   grub_xen_mfn_t *virt_mfn_list;
+  struct start_info *virt_start_info;
+  grub_xen_mfn_t console_pfn;
   grub_uint64_t max_addr;
   struct xen_multiboot_mod_list *module_info_page;
   grub_uint64_t modules_target_start;
@@ -240,11 +242,39 @@ grub_xen_p2m_alloc (void)
 }
 
 static grub_err_t
+grub_xen_special_alloc (void)
+{
+  grub_relocator_chunk_t ch;
+  grub_err_t err;
+
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr,
+					 sizeof (xen_state.next_start));
+  if (err)
+    return err;
+  xen_state.state.start_info = xen_state.max_addr + xen_state.xen_inf.virt_base;
+  xen_state.virt_start_info = get_virtual_current_address (ch);
+  xen_state.max_addr =
+    ALIGN_UP (xen_state.max_addr + sizeof (xen_state.next_start), PAGE_SIZE);
+  xen_state.console_pfn = xen_state.max_addr >> PAGE_SHIFT;
+  xen_state.max_addr += 2 * PAGE_SIZE;
+
+  xen_state.next_start.nr_pages = grub_xen_start_page_addr->nr_pages;
+  grub_memcpy (xen_state.next_start.magic, grub_xen_start_page_addr->magic,
+	       sizeof (xen_state.next_start.magic));
+  xen_state.next_start.store_mfn = grub_xen_start_page_addr->store_mfn;
+  xen_state.next_start.store_evtchn = grub_xen_start_page_addr->store_evtchn;
+  xen_state.next_start.console.domU = grub_xen_start_page_addr->console.domU;
+  xen_state.next_start.shared_info = grub_xen_start_page_addr->shared_info;
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_xen_boot (void)
 {
   grub_relocator_chunk_t ch;
   grub_err_t err;
-  struct start_info *nst;
   grub_uint64_t nr_info_pages;
   grub_uint64_t nr_pages, nr_pt_pages, nr_need_pages;
   struct gnttab_set_version gnttab_setver;
@@ -256,29 +286,9 @@ grub_xen_boot (void)
   err = grub_xen_p2m_alloc ();
   if (err)
     return err;
-
-  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
-					 xen_state.max_addr,
-					 sizeof (xen_state.next_start));
+  err = grub_xen_special_alloc ();
   if (err)
     return err;
-  xen_state.state.start_info = xen_state.max_addr + xen_state.xen_inf.virt_base;
-  nst = get_virtual_current_address (ch);
-  xen_state.max_addr =
-    ALIGN_UP (xen_state.max_addr + sizeof (xen_state.next_start), PAGE_SIZE);
-
-  xen_state.next_start.nr_pages = grub_xen_start_page_addr->nr_pages;
-  grub_memcpy (xen_state.next_start.magic, grub_xen_start_page_addr->magic,
-	       sizeof (xen_state.next_start.magic));
-  xen_state.next_start.store_mfn = grub_xen_start_page_addr->store_mfn;
-  xen_state.next_start.store_evtchn = grub_xen_start_page_addr->store_evtchn;
-  xen_state.next_start.console.domU = grub_xen_start_page_addr->console.domU;
-  xen_state.next_start.shared_info = grub_xen_start_page_addr->shared_info;
-
-  err = set_mfns (xen_state.max_addr >> PAGE_SHIFT);
-  if (err)
-    return err;
-  xen_state.max_addr += 2 * PAGE_SIZE;
 
   xen_state.next_start.pt_base =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
@@ -309,6 +319,10 @@ grub_xen_boot (void)
   if (err)
     return err;
 
+  err = set_mfns (xen_state.console_pfn);
+  if (err)
+    return err;
+
   generate_page_table (get_virtual_current_address (ch),
 		       xen_state.max_addr >> PAGE_SHIFT, nr_pages,
 		       xen_state.xen_inf.virt_base, xen_state.virt_mfn_list);
@@ -321,7 +335,7 @@ grub_xen_boot (void)
   xen_state.next_start.nr_pt_frames = nr_pt_pages;
   xen_state.state.paging_size = nr_pt_pages;
 
-  *nst = xen_state.next_start;
+  *xen_state.virt_start_info = xen_state.next_start;
 
   grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
 
