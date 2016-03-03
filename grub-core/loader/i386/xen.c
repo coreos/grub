@@ -313,24 +313,50 @@ static grub_err_t
 grub_xen_p2m_alloc (void)
 {
   grub_relocator_chunk_t ch;
-  grub_size_t p2msize;
+  grub_size_t p2msize, p2malloc;
   grub_err_t err;
+  struct grub_xen_mapping *map;
 
   if (xen_state.virt_mfn_list)
     return GRUB_ERR_NONE;
 
+  map = xen_state.mappings + xen_state.n_mappings;
+  p2msize = ALIGN_UP (sizeof (grub_xen_mfn_t) *
+		      grub_xen_start_page_addr->nr_pages, PAGE_SIZE);
+  if (xen_state.xen_inf.has_p2m_base)
+    {
+      err = get_pgtable_size (xen_state.xen_inf.p2m_base,
+			      xen_state.xen_inf.p2m_base + p2msize,
+			      (xen_state.max_addr + p2msize) >> PAGE_SHIFT);
+      if (err)
+	return err;
+
+      map->area.pfn_start = xen_state.max_addr >> PAGE_SHIFT;
+      p2malloc = p2msize + page2offset (map->area.n_pt_pages);
+      xen_state.n_mappings++;
+      xen_state.next_start.mfn_list = xen_state.xen_inf.p2m_base;
+      xen_state.next_start.first_p2m_pfn = map->area.pfn_start;
+      xen_state.next_start.nr_p2m_frames = p2malloc >> PAGE_SHIFT;
+    }
+  else
+    {
+      xen_state.next_start.mfn_list =
+	xen_state.max_addr + xen_state.xen_inf.virt_base;
+      p2malloc = p2msize;
+    }
+
   xen_state.state.mfn_list = xen_state.max_addr;
-  xen_state.next_start.mfn_list =
-    xen_state.max_addr + xen_state.xen_inf.virt_base;
-  p2msize = sizeof (grub_xen_mfn_t) * grub_xen_start_page_addr->nr_pages;
   err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
-					 xen_state.max_addr, p2msize);
+					 xen_state.max_addr, p2malloc);
   if (err)
     return err;
   xen_state.virt_mfn_list = get_virtual_current_address (ch);
+  if (xen_state.xen_inf.has_p2m_base)
+    map->where = (grub_uint64_t *) xen_state.virt_mfn_list +
+		 p2msize / sizeof (grub_uint64_t);
   grub_memcpy (xen_state.virt_mfn_list,
 	       (void *) grub_xen_start_page_addr->mfn_list, p2msize);
-  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + p2msize, PAGE_SIZE);
+  xen_state.max_addr += p2malloc;
 
   return GRUB_ERR_NONE;
 }
@@ -448,9 +474,12 @@ grub_xen_alloc_boot_data (void)
 {
   grub_err_t err;
 
-  err = grub_xen_p2m_alloc ();
-  if (err)
-    return err;
+  if (!xen_state.xen_inf.has_p2m_base)
+    {
+      err = grub_xen_p2m_alloc ();
+      if (err)
+	return err;
+    }
   err = grub_xen_special_alloc ();
   if (err)
     return err;
@@ -475,6 +504,12 @@ grub_xen_boot (void)
   err = grub_xen_alloc_boot_data ();
   if (err)
     return err;
+  if (xen_state.xen_inf.has_p2m_base)
+    {
+      err = grub_xen_p2m_alloc ();
+      if (err)
+	return err;
+    }
 
   err = set_mfns (xen_state.console_pfn);
   if (err)

@@ -261,6 +261,10 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
 					  descsz == 2 ? 2 : 3) == 0)
 	    xi->arch = GRUB_XEN_FILE_I386;
 	  break;
+	case XEN_ELFNOTE_INIT_P2M:
+	  xi->p2m_base = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
+	  xi->has_p2m_base = 1;
+	  break;
 	case XEN_ELFNOTE_MOD_START_PFN:
 	  xi->unmapped_initrd = !!grub_le_to_cpu32(*(grub_uint32_t *) desc);
 	  break;
