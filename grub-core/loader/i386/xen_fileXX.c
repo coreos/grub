@@ -18,6 +18,7 @@
 
 #include <grub/xen_file.h>
 #include <grub/misc.h>
+#include <xen/elfnote.h>
 
 static grub_err_t
 parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
@@ -203,35 +204,35 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
       xi->has_note = 1;
       switch (nh->n_type)
 	{
-	case 1:
+	case XEN_ELFNOTE_ENTRY:
 	  xi->entry_point = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 2:
+	case XEN_ELFNOTE_HYPERCALL_PAGE:
 	  xi->hypercall_page = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  xi->has_hypercall_page = 1;
 	  break;
-	case 3:
+	case XEN_ELFNOTE_VIRT_BASE:
 	  xi->virt_base = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 4:
+	case XEN_ELFNOTE_PADDR_OFFSET:
 	  xi->paddr_offset = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 5:
+	case XEN_ELFNOTE_XEN_VERSION:
 	  grub_dprintf ("xen", "xenversion = `%s'\n", (char *) desc);
 	  break;
-	case 6:
+	case XEN_ELFNOTE_GUEST_OS:
 	  grub_dprintf ("xen", "name = `%s'\n", (char *) desc);
 	  break;
-	case 7:
+	case XEN_ELFNOTE_GUEST_VERSION:
 	  grub_dprintf ("xen", "version = `%s'\n", (char *) desc);
 	  break;
-	case 8:
+	case XEN_ELFNOTE_LOADER:
 	  if (descsz < 7
 	      || grub_memcmp (desc, "generic", descsz == 7 ? 7 : 8) != 0)
 	    return grub_error (GRUB_ERR_BAD_OS, "invalid loader");
 	  break;
 	  /* PAE */
-	case 9:
+	case XEN_ELFNOTE_PAE_MODE:
 	  grub_dprintf ("xen", "pae = `%s', %d, %d\n", (char *) desc,
 			xi->arch, descsz);
 	  if (xi->arch != GRUB_XEN_FILE_I386
