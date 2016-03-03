@@ -20,6 +20,8 @@
 #ifndef GRUB_MEMORY_CPU_HEADER
 #define GRUB_MEMORY_CPU_HEADER	1
 
+#define PAGE_SHIFT		12
+
 /* The flag for protected mode.  */
 #define GRUB_MEMORY_CPU_CR0_PE_ON		0x1
 #define GRUB_MEMORY_CPU_CR4_PAE_ON		0x00000020
@@ -30,6 +32,11 @@
 
 #define GRUB_MEMORY_MACHINE_UPPER_START			0x100000	/* 1 MiB */
 #define GRUB_MEMORY_MACHINE_LOWER_SIZE			GRUB_MEMORY_MACHINE_UPPER_START
+
+/* Some PTE definitions. */
+#define GRUB_PAGE_PRESENT			0x00000001
+#define GRUB_PAGE_RW				0x00000002
+#define GRUB_PAGE_USER				0x00000004
 
 #ifndef ASM_FILE
 

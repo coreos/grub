@@ -39,8 +39,33 @@
 #include <grub/xen.h>
 #include <grub/xen_file.h>
 #include <grub/linux.h>
+#include <grub/i386/memory.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
+
+#ifdef __x86_64__
+#define NUMBER_OF_LEVELS	4
+#define INTERMEDIATE_OR		(GRUB_PAGE_PRESENT | GRUB_PAGE_RW | GRUB_PAGE_USER)
+#define VIRT_MASK		0x0000ffffffffffffULL
+#else
+#define NUMBER_OF_LEVELS	3
+#define INTERMEDIATE_OR		(GRUB_PAGE_PRESENT | GRUB_PAGE_RW)
+#define VIRT_MASK		0x00000000ffffffffULL
+#define HYPERVISOR_PUD_ADDRESS	0xc0000000ULL
+#endif
+
+struct grub_xen_mapping_lvl {
+  grub_uint64_t virt_start;
+  grub_uint64_t virt_end;
+  grub_uint64_t pfn_start;
+  grub_uint64_t n_pt_pages;
+};
+
+struct grub_xen_mapping {
+  grub_uint64_t *where;
+  struct grub_xen_mapping_lvl area;
+  struct grub_xen_mapping_lvl lvls[NUMBER_OF_LEVELS];
+};
 
 struct xen_loader_state {
   struct grub_relocator *relocator;
@@ -51,12 +76,13 @@ struct xen_loader_state {
   struct start_info *virt_start_info;
   grub_xen_mfn_t console_pfn;
   grub_uint64_t max_addr;
-  grub_uint64_t *virt_pgtable;
-  grub_uint64_t pgtbl_start;
   grub_uint64_t pgtbl_end;
   struct xen_multiboot_mod_list *module_info_page;
   grub_uint64_t modules_target_start;
   grub_size_t n_modules;
+  struct grub_xen_mapping *map_reloc;
+  struct grub_xen_mapping mappings[XEN_MAX_MAPPINGS];
+  int n_mappings;
   int loaded;
 };
 
@@ -64,9 +90,8 @@ static struct xen_loader_state xen_state;
 
 static grub_dl_t my_mod;
 
-#define PAGE_SIZE 4096
+#define PAGE_SIZE (1UL << PAGE_SHIFT)
 #define MAX_MODULES (PAGE_SIZE / sizeof (struct xen_multiboot_mod_list))
-#define PAGE_SHIFT 12
 #define STACK_SIZE 1048576
 #define ADDITIONAL_SIZE (1 << 19)
 #define ALIGN_SIZE (1 << 22)
@@ -79,100 +104,163 @@ page2offset (grub_uint64_t page)
   return page << PAGE_SHIFT;
 }
 
-#ifdef __x86_64__
-#define NUMBER_OF_LEVELS 4
-#define INTERMEDIATE_OR 7
-#else
-#define NUMBER_OF_LEVELS 3
-#define INTERMEDIATE_OR 3
+static grub_err_t
+get_pgtable_size (grub_uint64_t from, grub_uint64_t to, grub_uint64_t pfn)
+{
+  struct grub_xen_mapping *map, *map_cmp;
+  grub_uint64_t mask, bits;
+  int i, m;
+
+  if (xen_state.n_mappings == XEN_MAX_MAPPINGS)
+    return grub_error (GRUB_ERR_BUG, "too many mapped areas");
+
+  grub_dprintf ("xen", "get_pgtable_size %d from=%llx, to=%llx, pfn=%llx\n",
+		xen_state.n_mappings, (unsigned long long) from,
+		(unsigned long long) to, (unsigned long long) pfn);
+
+  map = xen_state.mappings + xen_state.n_mappings;
+  grub_memset (map, 0, sizeof (*map));
+
+  map->area.virt_start = from & VIRT_MASK;
+  map->area.virt_end = (to - 1) & VIRT_MASK;
+  map->area.n_pt_pages = 0;
+
+  for (i = NUMBER_OF_LEVELS - 1; i >= 0; i--)
+    {
+      map->lvls[i].pfn_start = pfn + map->area.n_pt_pages;
+      if (i == NUMBER_OF_LEVELS - 1)
+	{
+	  if (xen_state.n_mappings == 0)
+	    {
+	      map->lvls[i].virt_start = 0;
+	      map->lvls[i].virt_end = VIRT_MASK;
+	      map->lvls[i].n_pt_pages = 1;
+	      map->area.n_pt_pages++;
+	    }
+	  continue;
+	}
+
+      bits = PAGE_SHIFT + (i + 1) * LOG_POINTERS_PER_PAGE;
+      mask = (1ULL << bits) - 1;
+      map->lvls[i].virt_start = map->area.virt_start & ~mask;
+      map->lvls[i].virt_end = map->area.virt_end | mask;
+#ifdef __i386__
+      /* PAE wants last root directory present. */
+      if (i == 1 && to <= HYPERVISOR_PUD_ADDRESS && xen_state.n_mappings == 0)
+	map->lvls[i].virt_end = VIRT_MASK;
 #endif
+      for (m = 0; m < xen_state.n_mappings; m++)
+	{
+	  map_cmp = xen_state.mappings + m;
+	  if (map_cmp->lvls[i].virt_start == map_cmp->lvls[i].virt_end)
+	    continue;
+	  if (map->lvls[i].virt_start >= map_cmp->lvls[i].virt_start &&
+	      map->lvls[i].virt_end <= map_cmp->lvls[i].virt_end)
+	   {
+	     map->lvls[i].virt_start = 0;
+	     map->lvls[i].virt_end = 0;
+	     break;
+	   }
+	   if (map->lvls[i].virt_start >= map_cmp->lvls[i].virt_start &&
+	       map->lvls[i].virt_start <= map_cmp->lvls[i].virt_end)
+	     map->lvls[i].virt_start = map_cmp->lvls[i].virt_end + 1;
+	   if (map->lvls[i].virt_end >= map_cmp->lvls[i].virt_start &&
+	       map->lvls[i].virt_end <= map_cmp->lvls[i].virt_end)
+	     map->lvls[i].virt_end = map_cmp->lvls[i].virt_start - 1;
+	}
+      if (map->lvls[i].virt_start < map->lvls[i].virt_end)
+	map->lvls[i].n_pt_pages =
+	  ((map->lvls[i].virt_end - map->lvls[i].virt_start) >> bits) + 1;
+      map->area.n_pt_pages += map->lvls[i].n_pt_pages;
+      grub_dprintf ("xen", "get_pgtable_size level %d: virt %llx-%llx %d pts\n",
+		    i, (unsigned long long)  map->lvls[i].virt_start,
+		    (unsigned long long)  map->lvls[i].virt_end,
+		    (int) map->lvls[i].n_pt_pages);
+    }
+
+  grub_dprintf ("xen", "get_pgtable_size return: %d page tables\n",
+		(int) map->area.n_pt_pages);
+
+  xen_state.state.paging_start[xen_state.n_mappings] = pfn;
+  xen_state.state.paging_size[xen_state.n_mappings] = map->area.n_pt_pages;
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_uint64_t *
+get_pg_table_virt (int mapping, int level)
+{
+  grub_uint64_t pfn;
+  struct grub_xen_mapping *map;
+
+  map = xen_state.mappings + mapping;
+  pfn = map->lvls[level].pfn_start - map->lvls[NUMBER_OF_LEVELS - 1].pfn_start;
+  return map->where + pfn * POINTERS_PER_PAGE;
+}
 
 static grub_uint64_t
-get_pgtable_size (grub_uint64_t total_pages, grub_uint64_t virt_base)
+get_pg_table_prot (int level, grub_uint64_t pfn)
 {
-  if (!virt_base)
-    total_pages++;
-  grub_uint64_t ret = 0;
-  grub_uint64_t ll = total_pages;
-  int i;
-  for (i = 0; i < NUMBER_OF_LEVELS; i++)
+  int m;
+  grub_uint64_t pfn_s, pfn_e;
+
+  if (level > 0)
+    return INTERMEDIATE_OR;
+  for (m = 0; m < xen_state.n_mappings; m++)
     {
-      ll = (ll + POINTERS_PER_PAGE - 1) >> LOG_POINTERS_PER_PAGE;
-      /* PAE wants all 4 root directories present.  */
-#ifdef __i386__
-      if (i == 1)
-	ll = 4;
-#endif
-      ret += ll;
+      pfn_s = xen_state.mappings[m].lvls[NUMBER_OF_LEVELS - 1].pfn_start;
+      pfn_e = xen_state.mappings[m].area.n_pt_pages + pfn_s;
+      if (pfn >= pfn_s && pfn < pfn_e)
+	return GRUB_PAGE_PRESENT | GRUB_PAGE_USER;
     }
-  for (i = 1; i < NUMBER_OF_LEVELS; i++)
-    if (virt_base >> (PAGE_SHIFT + i * LOG_POINTERS_PER_PAGE))
-      ret++;
-  return ret;
+  return GRUB_PAGE_PRESENT | GRUB_PAGE_RW | GRUB_PAGE_USER;
 }
 
 static void
-generate_page_table (grub_uint64_t *where, grub_uint64_t paging_start,
-		     grub_uint64_t paging_end, grub_uint64_t total_pages,
-		     grub_uint64_t virt_base, grub_xen_mfn_t *mfn_list)
+generate_page_table (grub_xen_mfn_t *mfn_list)
 {
-  if (!virt_base)
-    paging_end++;
+  int l, m1, m2;
+  long p, p_s, p_e;
+  grub_uint64_t start, end, pfn;
+  grub_uint64_t *pg;
+  struct grub_xen_mapping_lvl *lvl;
 
-  grub_uint64_t lx[NUMBER_OF_LEVELS], lxs[NUMBER_OF_LEVELS];
-  grub_uint64_t nlx, nls, sz = 0;
-  int l;
+  for (m1 = 0; m1 < xen_state.n_mappings; m1++)
+    grub_memset (xen_state.mappings[m1].where, 0,
+		 xen_state.mappings[m1].area.n_pt_pages * PAGE_SIZE);
 
-  nlx = paging_end;
-  nls = virt_base >> PAGE_SHIFT;
-  for (l = 0; l < NUMBER_OF_LEVELS; l++)
+  for (l = NUMBER_OF_LEVELS - 1; l >= 0; l--)
     {
-      nlx = (nlx + POINTERS_PER_PAGE - 1) >> LOG_POINTERS_PER_PAGE;
-      /* PAE wants all 4 root directories present.  */
-#ifdef __i386__
-      if (l == 1)
-	nlx = 4;
-#endif
-      lx[l] = nlx;
-      sz += lx[l];
-      lxs[l] = nls & (POINTERS_PER_PAGE - 1);
-      if (nls && l != 0)
-	sz++;
-      nls >>= LOG_POINTERS_PER_PAGE;
-    }
-
-  grub_uint64_t lp;
-  grub_uint64_t j;
-  grub_uint64_t *pg = (grub_uint64_t *) where;
-  int pr = 0;
-
-  grub_memset (pg, 0, sz * PAGE_SIZE);
-
-  lp = paging_start + lx[NUMBER_OF_LEVELS - 1];
-  for (l = NUMBER_OF_LEVELS - 1; l >= 1; l--)
-    {
-      if (lxs[l] || pr)
-	pg[0] = page2offset (mfn_list[lp++]) | INTERMEDIATE_OR;
-      if (pr)
-	pg += POINTERS_PER_PAGE;
-      for (j = 0; j < lx[l - 1]; j++)
-	pg[j + lxs[l]] = page2offset (mfn_list[lp++]) | INTERMEDIATE_OR;
-      pg += lx[l] * POINTERS_PER_PAGE;
-      if (lxs[l])
-	pr = 1;
-    }
-
-  if (lxs[0] || pr)
-    pg[0] = page2offset (mfn_list[total_pages]) | 5;
-  if (pr)
-    pg += POINTERS_PER_PAGE;
-
-  for (j = 0; j < paging_end; j++)
-    {
-      if (j >= paging_start && j < lp)
-	pg[j + lxs[0]] = page2offset (mfn_list[j]) | 5;
-      else
-	pg[j + lxs[0]] = page2offset (mfn_list[j]) | 7;
+      for (m1 = 0; m1 < xen_state.n_mappings; m1++)
+	{
+	  start = xen_state.mappings[m1].lvls[l].virt_start;
+	  end = xen_state.mappings[m1].lvls[l].virt_end;
+	  pg = get_pg_table_virt(m1, l);
+	  for (m2 = 0; m2 < xen_state.n_mappings; m2++)
+	    {
+	      lvl = (l > 0) ? xen_state.mappings[m2].lvls + l - 1
+			    : &xen_state.mappings[m2].area;
+	      if (l > 0 && lvl->n_pt_pages == 0)
+		continue;
+	      if (lvl->virt_start >= end || lvl->virt_end <= start)
+		continue;
+	      p_s = (grub_max (start, lvl->virt_start) - start) >>
+		    (PAGE_SHIFT + l * LOG_POINTERS_PER_PAGE);
+	      p_e = (grub_min (end, lvl->virt_end) - start) >>
+		    (PAGE_SHIFT + l * LOG_POINTERS_PER_PAGE);
+	      pfn = ((grub_max (start, lvl->virt_start) - lvl->virt_start) >>
+		     (PAGE_SHIFT + l * LOG_POINTERS_PER_PAGE)) + lvl->pfn_start;
+	      grub_dprintf ("xen", "write page table entries level %d pg %p "
+			    "mapping %d/%d index %lx-%lx pfn %llx\n",
+			    l, pg, m1, m2, p_s, p_e, (unsigned long long) pfn);
+	      for (p = p_s; p <= p_e; p++)
+		{
+		  pg[p] = page2offset (mfn_list[pfn]) |
+			  get_pg_table_prot (l, pfn);
+		  pfn++;
+		}
+	    }
+	}
     }
 }
 
@@ -285,45 +373,71 @@ grub_xen_pt_alloc (void)
   grub_relocator_chunk_t ch;
   grub_err_t err;
   grub_uint64_t nr_info_pages;
-  grub_uint64_t nr_pages, nr_pt_pages, nr_need_pages;
+  grub_uint64_t nr_need_pages;
+  grub_uint64_t try_virt_end;
+  struct grub_xen_mapping *map;
 
-  if (xen_state.virt_pgtable)
+  if (xen_state.pgtbl_end)
     return GRUB_ERR_NONE;
+
+  map = xen_state.mappings + xen_state.n_mappings;
+  xen_state.map_reloc = map + 1;
 
   xen_state.next_start.pt_base =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
-  xen_state.state.paging_start = xen_state.max_addr >> PAGE_SHIFT;
-
   nr_info_pages = xen_state.max_addr >> PAGE_SHIFT;
-  nr_pages = nr_info_pages;
+  nr_need_pages = nr_info_pages;
 
   while (1)
     {
-      nr_pages = ALIGN_UP (nr_pages, (ALIGN_SIZE >> PAGE_SHIFT));
-      nr_pt_pages = get_pgtable_size (nr_pages, xen_state.xen_inf.virt_base);
-      nr_need_pages =
-	nr_info_pages + nr_pt_pages +
-	((ADDITIONAL_SIZE + STACK_SIZE) >> PAGE_SHIFT);
-      if (nr_pages >= nr_need_pages)
+      try_virt_end = ALIGN_UP (xen_state.xen_inf.virt_base +
+			       page2offset (nr_need_pages) +
+			       ADDITIONAL_SIZE + STACK_SIZE, ALIGN_SIZE);
+      if (!xen_state.xen_inf.virt_base)
+	try_virt_end += PAGE_SIZE;
+
+      err = get_pgtable_size (xen_state.xen_inf.virt_base, try_virt_end,
+			      nr_info_pages);
+      if (err)
+	return err;
+      xen_state.n_mappings++;
+
+      /* Map the relocator page either at virtual 0 or after end of area. */
+      nr_need_pages = nr_info_pages + map->area.n_pt_pages;
+      if (xen_state.xen_inf.virt_base)
+	err = get_pgtable_size (0, PAGE_SIZE, nr_need_pages);
+      else
+	err = get_pgtable_size (try_virt_end - PAGE_SIZE, try_virt_end,
+				nr_need_pages);
+      if (err)
+	return err;
+      nr_need_pages += xen_state.map_reloc->area.n_pt_pages;
+
+      if (xen_state.xen_inf.virt_base + page2offset (nr_need_pages) <=
+	  try_virt_end)
 	break;
-      nr_pages = nr_need_pages;
+
+      xen_state.n_mappings--;
     }
 
+  xen_state.n_mappings++;
+  nr_need_pages = map->area.n_pt_pages + xen_state.map_reloc->area.n_pt_pages;
   err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
 					 xen_state.max_addr,
-					 page2offset (nr_pt_pages));
+					 page2offset (nr_need_pages));
   if (err)
     return err;
 
-  xen_state.virt_pgtable = get_virtual_current_address (ch);
-  xen_state.pgtbl_start = xen_state.max_addr >> PAGE_SHIFT;
-  xen_state.max_addr += page2offset (nr_pt_pages);
+  map->where = get_virtual_current_address (ch);
+  map->area.pfn_start = 0;
+  xen_state.max_addr += page2offset (nr_need_pages);
   xen_state.state.stack =
     xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
-  xen_state.state.paging_size = nr_pt_pages;
-  xen_state.next_start.nr_pt_frames = nr_pt_pages;
-  xen_state.max_addr = page2offset (nr_pages);
-  xen_state.pgtbl_end = nr_pages;
+  xen_state.next_start.nr_pt_frames = nr_need_pages;
+  xen_state.max_addr = try_virt_end - xen_state.xen_inf.virt_base;
+  xen_state.pgtbl_end = xen_state.max_addr >> PAGE_SHIFT;
+  xen_state.map_reloc->where = (grub_uint64_t *) ((char *) map->where +
+					page2offset (map->area.n_pt_pages));
 
   return GRUB_ERR_NONE;
 }
@@ -372,9 +486,8 @@ grub_xen_boot (void)
 		(unsigned long long) xen_state.xen_inf.virt_base,
 		(unsigned long long) page2offset (nr_pages));
 
-  generate_page_table (xen_state.virt_pgtable, xen_state.pgtbl_start,
-		       xen_state.pgtbl_end, nr_pages,
-		       xen_state.xen_inf.virt_base, xen_state.virt_mfn_list);
+  xen_state.map_reloc->area.pfn_start = nr_pages;
+  generate_page_table (xen_state.virt_mfn_list);
 
   xen_state.state.entry_point = xen_state.xen_inf.entry_point;
 
