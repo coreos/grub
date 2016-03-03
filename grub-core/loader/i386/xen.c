@@ -316,11 +316,23 @@ grub_xen_boot (void)
 				  xen_inf.virt_base);
 }
 
+static void
+grub_xen_reset (void)
+{
+  grub_memset (&next_start, 0, sizeof (next_start));
+  xen_module_info_page = NULL;
+  n_modules = 0;
+
+  grub_relocator_unload (relocator);
+  relocator = NULL;
+  loaded = 0;
+}
+
 static grub_err_t
 grub_xen_unload (void)
 {
+  grub_xen_reset ();
   grub_dl_unref (my_mod);
-  loaded = 0;
   return GRUB_ERR_NONE;
 }
 
@@ -403,10 +415,7 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
 
   grub_loader_unset ();
 
-  grub_memset (&next_start, 0, sizeof (next_start));
-
-  xen_module_info_page = NULL;
-  n_modules = 0;
+  grub_xen_reset ();
 
   grub_create_loader_cmdline (argc - 1, argv + 1,
 			      (char *) next_start.cmd_line,
@@ -503,16 +512,18 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
   goto fail;
 
 fail:
+  /* grub_errno might be clobbered by further calls, save the error reason. */
+  err = grub_errno;
 
   if (elf)
     grub_elf_close (elf);
   else if (file)
     grub_file_close (file);
 
-  if (grub_errno != GRUB_ERR_NONE)
-    loaded = 0;
+  if (err != GRUB_ERR_NONE)
+    grub_xen_reset ();
 
-  return grub_errno;
+  return err;
 }
 
 static grub_err_t
