@@ -51,6 +51,9 @@ struct xen_loader_state {
   struct start_info *virt_start_info;
   grub_xen_mfn_t console_pfn;
   grub_uint64_t max_addr;
+  grub_uint64_t *virt_pgtable;
+  grub_uint64_t pgtbl_start;
+  grub_uint64_t pgtbl_end;
   struct xen_multiboot_mod_list *module_info_page;
   grub_uint64_t modules_target_start;
   grub_size_t n_modules;
@@ -110,17 +113,17 @@ get_pgtable_size (grub_uint64_t total_pages, grub_uint64_t virt_base)
 
 static void
 generate_page_table (grub_uint64_t *where, grub_uint64_t paging_start,
-		     grub_uint64_t total_pages, grub_uint64_t virt_base,
-		     grub_xen_mfn_t *mfn_list)
+		     grub_uint64_t paging_end, grub_uint64_t total_pages,
+		     grub_uint64_t virt_base, grub_xen_mfn_t *mfn_list)
 {
   if (!virt_base)
-    total_pages++;
+    paging_end++;
 
   grub_uint64_t lx[NUMBER_OF_LEVELS], lxs[NUMBER_OF_LEVELS];
   grub_uint64_t nlx, nls, sz = 0;
   int l;
 
-  nlx = total_pages;
+  nlx = paging_end;
   nls = virt_base >> PAGE_SHIFT;
   for (l = 0; l < NUMBER_OF_LEVELS; l++)
     {
@@ -164,7 +167,7 @@ generate_page_table (grub_uint64_t *where, grub_uint64_t paging_start,
   if (pr)
     pg += POINTERS_PER_PAGE;
 
-  for (j = 0; j < total_pages; j++)
+  for (j = 0; j < paging_end; j++)
     {
       if (j >= paging_start && j < lp)
 	pg[j + lxs[0]] = page2offset (mfn_list[j]) | 5;
@@ -271,24 +274,12 @@ grub_xen_special_alloc (void)
 }
 
 static grub_err_t
-grub_xen_boot (void)
+grub_xen_pt_alloc (void)
 {
   grub_relocator_chunk_t ch;
   grub_err_t err;
   grub_uint64_t nr_info_pages;
   grub_uint64_t nr_pages, nr_pt_pages, nr_need_pages;
-  struct gnttab_set_version gnttab_setver;
-  grub_size_t i;
-
-  if (grub_xen_n_allocated_shared_pages)
-    return grub_error (GRUB_ERR_BUG, "active grants");
-
-  err = grub_xen_p2m_alloc ();
-  if (err)
-    return err;
-  err = grub_xen_special_alloc ();
-  if (err)
-    return err;
 
   xen_state.next_start.pt_base =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
@@ -309,13 +300,43 @@ grub_xen_boot (void)
       nr_pages = nr_need_pages;
     }
 
-  grub_dprintf ("xen", "bootstrap domain %llx+%llx\n",
-		(unsigned long long) xen_state.xen_inf.virt_base,
-		(unsigned long long) page2offset (nr_pages));
-
   err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
 					 xen_state.max_addr,
 					 page2offset (nr_pt_pages));
+  if (err)
+    return err;
+
+  xen_state.virt_pgtable = get_virtual_current_address (ch);
+  xen_state.pgtbl_start = xen_state.max_addr >> PAGE_SHIFT;
+  xen_state.max_addr += page2offset (nr_pt_pages);
+  xen_state.state.stack =
+    xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
+  xen_state.state.paging_size = nr_pt_pages;
+  xen_state.next_start.nr_pt_frames = nr_pt_pages;
+  xen_state.max_addr = page2offset (nr_pages);
+  xen_state.pgtbl_end = nr_pages;
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
+grub_xen_boot (void)
+{
+  grub_err_t err;
+  grub_uint64_t nr_pages;
+  struct gnttab_set_version gnttab_setver;
+  grub_size_t i;
+
+  if (grub_xen_n_allocated_shared_pages)
+    return grub_error (GRUB_ERR_BUG, "active grants");
+
+  err = grub_xen_p2m_alloc ();
+  if (err)
+    return err;
+  err = grub_xen_special_alloc ();
+  if (err)
+    return err;
+  err = grub_xen_pt_alloc ();
   if (err)
     return err;
 
@@ -323,17 +344,17 @@ grub_xen_boot (void)
   if (err)
     return err;
 
-  generate_page_table (get_virtual_current_address (ch),
-		       xen_state.max_addr >> PAGE_SHIFT, nr_pages,
+  nr_pages = xen_state.max_addr >> PAGE_SHIFT;
+
+  grub_dprintf ("xen", "bootstrap domain %llx+%llx\n",
+		(unsigned long long) xen_state.xen_inf.virt_base,
+		(unsigned long long) page2offset (nr_pages));
+
+  generate_page_table (xen_state.virt_pgtable, xen_state.pgtbl_start,
+		       xen_state.pgtbl_end, nr_pages,
 		       xen_state.xen_inf.virt_base, xen_state.virt_mfn_list);
 
-  xen_state.max_addr += page2offset (nr_pt_pages);
-  xen_state.state.stack =
-    xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
   xen_state.state.entry_point = xen_state.xen_inf.entry_point;
-
-  xen_state.next_start.nr_pt_frames = nr_pt_pages;
-  xen_state.state.paging_size = nr_pt_pages;
 
   *xen_state.virt_start_info = xen_state.next_start;
 
@@ -348,8 +369,8 @@ grub_xen_boot (void)
   return grub_relocator_xen_boot (xen_state.relocator, xen_state.state, nr_pages,
 				  xen_state.xen_inf.virt_base <
 				  PAGE_SIZE ? page2offset (nr_pages) : 0,
-				  nr_pages - 1,
-				  page2offset (nr_pages - 1) +
+				  xen_state.pgtbl_end - 1,
+				  page2offset (xen_state.pgtbl_end - 1) +
 				  xen_state.xen_inf.virt_base);
 }
 
