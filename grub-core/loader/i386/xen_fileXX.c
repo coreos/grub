@@ -26,6 +26,8 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
   char *buf;
   char *ptr;
   int has_paddr = 0;
+
+  grub_errno = GRUB_ERR_NONE;
   if (grub_file_seek (elf->file, off) == (grub_off_t) -1)
     return grub_errno;
   buf = grub_malloc (sz);
@@ -35,7 +37,8 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
   if (grub_file_read (elf->file, buf, sz) != (grub_ssize_t) sz)
     {
       if (grub_errno)
-	return grub_errno;
+	goto out;
+      grub_free (buf);
       return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 			 elf->file->name);
     }
@@ -123,14 +126,14 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	{
 	  xi->virt_base = grub_strtoull (ptr + sizeof ("VIRT_BASE=") - 1, &ptr, 16);
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "VIRT_ENTRY=", sizeof ("VIRT_ENTRY=") - 1) == 0)
 	{
 	  xi->entry_point = grub_strtoull (ptr + sizeof ("VIRT_ENTRY=") - 1, &ptr, 16);
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "HYPERCALL_PAGE=", sizeof ("HYPERCALL_PAGE=") - 1) == 0)
@@ -138,7 +141,7 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	  xi->hypercall_page = grub_strtoull (ptr + sizeof ("HYPERCALL_PAGE=") - 1, &ptr, 16);
 	  xi->has_hypercall_page = 1;
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "ELF_PADDR_OFFSET=", sizeof ("ELF_PADDR_OFFSET=") - 1) == 0)
@@ -146,7 +149,7 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	  xi->paddr_offset = grub_strtoull (ptr + sizeof ("ELF_PADDR_OFFSET=") - 1, &ptr, 16);
 	  has_paddr = 1;
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
     }
@@ -154,7 +157,11 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
     xi->hypercall_page = (xi->hypercall_page << 12) + xi->virt_base;
   if (!has_paddr)
     xi->paddr_offset = xi->virt_base;
-  return GRUB_ERR_NONE;
+
+out:
+  grub_free (buf);
+
+  return grub_errno;
 }
 
 #pragma GCC diagnostic ignored "-Wcast-align"
