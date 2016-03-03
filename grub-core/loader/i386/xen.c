@@ -42,16 +42,20 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-static struct grub_relocator *relocator = NULL;
-static grub_uint64_t max_addr;
+struct xen_loader_state {
+  struct grub_relocator *relocator;
+  struct start_info next_start;
+  struct grub_xen_file_info xen_inf;
+  grub_uint64_t max_addr;
+  struct xen_multiboot_mod_list *module_info_page;
+  grub_uint64_t modules_target_start;
+  grub_size_t n_modules;
+  int loaded;
+};
+
+static struct xen_loader_state xen_state;
+
 static grub_dl_t my_mod;
-static int loaded = 0;
-static struct start_info next_start;
-static void *kern_chunk_src;
-static struct grub_xen_file_info xen_inf;
-static struct xen_multiboot_mod_list *xen_module_info_page;
-static grub_uint64_t modules_target_start;
-static grub_size_t n_modules;
 
 #define PAGE_SIZE 4096
 #define MAX_MODULES (PAGE_SIZE / sizeof (struct xen_multiboot_mod_list))
@@ -225,50 +229,55 @@ grub_xen_boot (void)
   if (grub_xen_n_allocated_shared_pages)
     return grub_error (GRUB_ERR_BUG, "active grants");
 
-  state.mfn_list = max_addr;
-  next_start.mfn_list = max_addr + xen_inf.virt_base;
-  next_start.first_p2m_pfn = max_addr >> PAGE_SHIFT;	/* Is this right? */
+  state.mfn_list = xen_state.max_addr;
+  xen_state.next_start.mfn_list =
+    xen_state.max_addr + xen_state.xen_inf.virt_base;
+  xen_state.next_start.first_p2m_pfn = xen_state.max_addr >> PAGE_SHIFT;
   pgtsize = sizeof (grub_xen_mfn_t) * grub_xen_start_page_addr->nr_pages;
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch, max_addr, pgtsize);
-  next_start.nr_p2m_frames = (pgtsize + PAGE_SIZE - 1) >> PAGE_SHIFT;
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr, pgtsize);
+  xen_state.next_start.nr_p2m_frames = (pgtsize + PAGE_SIZE - 1) >> PAGE_SHIFT;
   if (err)
     return err;
   new_mfn_list = get_virtual_current_address (ch);
   grub_memcpy (new_mfn_list,
 	       (void *) grub_xen_start_page_addr->mfn_list, pgtsize);
-  max_addr = ALIGN_UP (max_addr + pgtsize, PAGE_SIZE);
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + pgtsize, PAGE_SIZE);
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					 max_addr, sizeof (next_start));
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr,
+					 sizeof (xen_state.next_start));
   if (err)
     return err;
-  state.start_info = max_addr + xen_inf.virt_base;
+  state.start_info = xen_state.max_addr + xen_state.xen_inf.virt_base;
   nst = get_virtual_current_address (ch);
-  max_addr = ALIGN_UP (max_addr + sizeof (next_start), PAGE_SIZE);
+  xen_state.max_addr =
+    ALIGN_UP (xen_state.max_addr + sizeof (xen_state.next_start), PAGE_SIZE);
 
-  next_start.nr_pages = grub_xen_start_page_addr->nr_pages;
-  grub_memcpy (next_start.magic, grub_xen_start_page_addr->magic,
-	       sizeof (next_start.magic));
-  next_start.store_mfn = grub_xen_start_page_addr->store_mfn;
-  next_start.store_evtchn = grub_xen_start_page_addr->store_evtchn;
-  next_start.console.domU = grub_xen_start_page_addr->console.domU;
-  next_start.shared_info = grub_xen_start_page_addr->shared_info;
+  xen_state.next_start.nr_pages = grub_xen_start_page_addr->nr_pages;
+  grub_memcpy (xen_state.next_start.magic, grub_xen_start_page_addr->magic,
+	       sizeof (xen_state.next_start.magic));
+  xen_state.next_start.store_mfn = grub_xen_start_page_addr->store_mfn;
+  xen_state.next_start.store_evtchn = grub_xen_start_page_addr->store_evtchn;
+  xen_state.next_start.console.domU = grub_xen_start_page_addr->console.domU;
+  xen_state.next_start.shared_info = grub_xen_start_page_addr->shared_info;
 
-  err = set_mfns (new_mfn_list, max_addr >> PAGE_SHIFT);
+  err = set_mfns (new_mfn_list, xen_state.max_addr >> PAGE_SHIFT);
   if (err)
     return err;
-  max_addr += 2 * PAGE_SIZE;
+  xen_state.max_addr += 2 * PAGE_SIZE;
 
-  next_start.pt_base = max_addr + xen_inf.virt_base;
-  state.paging_start = max_addr >> PAGE_SHIFT;
+  xen_state.next_start.pt_base =
+    xen_state.max_addr + xen_state.xen_inf.virt_base;
+  state.paging_start = xen_state.max_addr >> PAGE_SHIFT;
 
-  nr_info_pages = max_addr >> PAGE_SHIFT;
+  nr_info_pages = xen_state.max_addr >> PAGE_SHIFT;
   nr_pages = nr_info_pages;
 
   while (1)
     {
       nr_pages = ALIGN_UP (nr_pages, (ALIGN_SIZE >> PAGE_SHIFT));
-      nr_pt_pages = get_pgtable_size (nr_pages, xen_inf.virt_base);
+      nr_pt_pages = get_pgtable_size (nr_pages, xen_state.xen_inf.virt_base);
       nr_need_pages =
 	nr_info_pages + nr_pt_pages +
 	((ADDITIONAL_SIZE + STACK_SIZE) >> PAGE_SHIFT);
@@ -278,27 +287,28 @@ grub_xen_boot (void)
     }
 
   grub_dprintf ("xen", "bootstrap domain %llx+%llx\n",
-		(unsigned long long) xen_inf.virt_base,
+		(unsigned long long) xen_state.xen_inf.virt_base,
 		(unsigned long long) page2offset (nr_pages));
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					 max_addr, page2offset (nr_pt_pages));
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr,
+					 page2offset (nr_pt_pages));
   if (err)
     return err;
 
   generate_page_table (get_virtual_current_address (ch),
-		       max_addr >> PAGE_SHIFT, nr_pages,
-		       xen_inf.virt_base, new_mfn_list);
+		       xen_state.max_addr >> PAGE_SHIFT, nr_pages,
+		       xen_state.xen_inf.virt_base, new_mfn_list);
 
-  max_addr += page2offset (nr_pt_pages);
-  state.stack = max_addr + STACK_SIZE + xen_inf.virt_base;
-  state.entry_point = xen_inf.entry_point;
+  xen_state.max_addr += page2offset (nr_pt_pages);
+  state.stack = xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
+  state.entry_point = xen_state.xen_inf.entry_point;
 
-  next_start.nr_p2m_frames += nr_pt_pages;
-  next_start.nr_pt_frames = nr_pt_pages;
+  xen_state.next_start.nr_p2m_frames += nr_pt_pages;
+  xen_state.next_start.nr_pt_frames = nr_pt_pages;
   state.paging_size = nr_pt_pages;
 
-  *nst = next_start;
+  *nst = xen_state.next_start;
 
   grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
 
@@ -308,24 +318,20 @@ grub_xen_boot (void)
   for (i = 0; i < ARRAY_SIZE (grub_xen_shared_info->evtchn_pending); i++)
     grub_xen_shared_info->evtchn_pending[i] = 0;
 
-  return grub_relocator_xen_boot (relocator, state, nr_pages,
-				  xen_inf.virt_base <
+  return grub_relocator_xen_boot (xen_state.relocator, state, nr_pages,
+				  xen_state.xen_inf.virt_base <
 				  PAGE_SIZE ? page2offset (nr_pages) : 0,
 				  nr_pages - 1,
 				  page2offset (nr_pages - 1) +
-				  xen_inf.virt_base);
+				  xen_state.xen_inf.virt_base);
 }
 
 static void
 grub_xen_reset (void)
 {
-  grub_memset (&next_start, 0, sizeof (next_start));
-  xen_module_info_page = NULL;
-  n_modules = 0;
+  grub_relocator_unload (xen_state.relocator);
 
-  grub_relocator_unload (relocator);
-  relocator = NULL;
-  loaded = 0;
+  grub_memset (&xen_state, 0, sizeof (xen_state));
 }
 
 static grub_err_t
@@ -409,17 +415,22 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file;
   grub_elf_t elf;
   grub_err_t err;
+  void *kern_chunk_src;
+  grub_relocator_chunk_t ch;
+  grub_addr_t kern_start;
+  grub_addr_t kern_end;
 
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
+  /* Call grub_loader_unset early to avoid it being called by grub_loader_set */
   grub_loader_unset ();
 
   grub_xen_reset ();
 
   grub_create_loader_cmdline (argc - 1, argv + 1,
-			      (char *) next_start.cmd_line,
-			      sizeof (next_start.cmd_line) - 1);
+			      (char *) xen_state.next_start.cmd_line,
+			      sizeof (xen_state.next_start.cmd_line) - 1);
 
   file = grub_file_open (argv[0]);
   if (!file)
@@ -429,85 +440,82 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
   if (!elf)
     goto fail;
 
-  err = grub_xen_get_info (elf, &xen_inf);
+  err = grub_xen_get_info (elf, &xen_state.xen_inf);
   if (err)
     goto fail;
 #ifdef __x86_64__
-  if (xen_inf.arch != GRUB_XEN_FILE_X86_64)
+  if (xen_state.xen_inf.arch != GRUB_XEN_FILE_X86_64)
 #else
-  if (xen_inf.arch != GRUB_XEN_FILE_I386_PAE
-      && xen_inf.arch != GRUB_XEN_FILE_I386_PAE_BIMODE)
+  if (xen_state.xen_inf.arch != GRUB_XEN_FILE_I386_PAE
+      && xen_state.xen_inf.arch != GRUB_XEN_FILE_I386_PAE_BIMODE)
 #endif
     {
       grub_error (GRUB_ERR_BAD_OS, "incompatible architecture: %d",
-		  xen_inf.arch);
+		  xen_state.xen_inf.arch);
       goto fail;
     }
 
-  if (xen_inf.virt_base & (PAGE_SIZE - 1))
+  if (xen_state.xen_inf.virt_base & (PAGE_SIZE - 1))
     {
       grub_error (GRUB_ERR_BAD_OS, "unaligned virt_base");
       goto fail;
     }
   grub_dprintf ("xen", "virt_base = %llx, entry = %llx\n",
-		(unsigned long long) xen_inf.virt_base,
-		(unsigned long long) xen_inf.entry_point);
+		(unsigned long long) xen_state.xen_inf.virt_base,
+		(unsigned long long) xen_state.xen_inf.entry_point);
 
-  relocator = grub_relocator_new ();
-  if (!relocator)
+  xen_state.relocator = grub_relocator_new ();
+  if (!xen_state.relocator)
     goto fail;
 
-  grub_relocator_chunk_t ch;
-  grub_addr_t kern_start = xen_inf.kern_start - xen_inf.paddr_offset;
-  grub_addr_t kern_end = xen_inf.kern_end - xen_inf.paddr_offset;
+  kern_start = xen_state.xen_inf.kern_start - xen_state.xen_inf.paddr_offset;
+  kern_end = xen_state.xen_inf.kern_end - xen_state.xen_inf.paddr_offset;
 
-  if (xen_inf.has_hypercall_page)
+  if (xen_state.xen_inf.has_hypercall_page)
     {
       grub_dprintf ("xen", "hypercall page at 0x%llx\n",
-		    (unsigned long long) xen_inf.hypercall_page);
-      if (xen_inf.hypercall_page - xen_inf.virt_base < kern_start)
-	kern_start = xen_inf.hypercall_page - xen_inf.virt_base;
-
-      if (xen_inf.hypercall_page - xen_inf.virt_base + PAGE_SIZE > kern_end)
-	kern_end = xen_inf.hypercall_page - xen_inf.virt_base + PAGE_SIZE;
+		    (unsigned long long) xen_state.xen_inf.hypercall_page);
+      kern_start = grub_min (kern_start, xen_state.xen_inf.hypercall_page -
+					 xen_state.xen_inf.virt_base);
+      kern_end = grub_max (kern_end, xen_state.xen_inf.hypercall_page -
+				     xen_state.xen_inf.virt_base + PAGE_SIZE);
     }
 
-  max_addr = ALIGN_UP (kern_end, PAGE_SIZE);
+  xen_state.max_addr = ALIGN_UP (kern_end, PAGE_SIZE);
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch, kern_start,
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch, kern_start,
 					 kern_end - kern_start);
   if (err)
     goto fail;
   kern_chunk_src = get_virtual_current_address (ch);
 
   grub_dprintf ("xen", "paddr_offset = 0x%llx\n",
-		(unsigned long long) xen_inf.paddr_offset);
+		(unsigned long long) xen_state.xen_inf.paddr_offset);
   grub_dprintf ("xen", "kern_start = 0x%llx, kern_end = 0x%llx\n",
-		(unsigned long long) xen_inf.kern_start,
-		(unsigned long long) xen_inf.kern_end);
+		(unsigned long long) xen_state.xen_inf.kern_start,
+		(unsigned long long) xen_state.xen_inf.kern_end);
 
   err = grub_elfXX_load (elf, argv[0],
 			 (grub_uint8_t *) kern_chunk_src - kern_start
-			 - xen_inf.paddr_offset, 0, 0, 0);
+			 - xen_state.xen_inf.paddr_offset, 0, 0, 0);
 
-  if (xen_inf.has_hypercall_page)
+  if (xen_state.xen_inf.has_hypercall_page)
     {
       unsigned i;
       for (i = 0; i < PAGE_SIZE / HYPERCALL_INTERFACE_SIZE; i++)
 	set_hypercall_interface ((grub_uint8_t *) kern_chunk_src +
 				 i * HYPERCALL_INTERFACE_SIZE +
-				 xen_inf.hypercall_page - xen_inf.virt_base -
-				 kern_start, i);
+				 xen_state.xen_inf.hypercall_page -
+				 xen_state.xen_inf.virt_base - kern_start, i);
     }
 
   if (err)
     goto fail;
 
   grub_dl_ref (my_mod);
-  loaded = 1;
+  xen_state.loaded = 1;
 
   grub_loader_set (grub_xen_boot, grub_xen_unload, 0);
-  loaded = 1;
 
   goto fail;
 
@@ -541,14 +549,14 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (!loaded)
+  if (!xen_state.loaded)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT,
 		  N_("you need to load the kernel first"));
       goto fail;
     }
 
-  if (next_start.mod_start || next_start.mod_len)
+  if (xen_state.next_start.mod_start || xen_state.next_start.mod_len)
     {
       grub_error (GRUB_ERR_BAD_ARGUMENT, N_("initrd already loaded"));
       goto fail;
@@ -561,7 +569,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   if (size)
     {
-      err = grub_relocator_alloc_chunk_addr (relocator, &ch, max_addr, size);
+      err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					     xen_state.max_addr, size);
       if (err)
 	goto fail;
 
@@ -570,13 +579,14 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	goto fail;
     }
 
-  next_start.mod_start = max_addr + xen_inf.virt_base;
-  next_start.mod_len = size;
+  xen_state.next_start.mod_start =
+    xen_state.max_addr + xen_state.xen_inf.virt_base;
+  xen_state.next_start.mod_len = size;
 
-  max_addr = ALIGN_UP (max_addr + size, PAGE_SIZE);
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + size, PAGE_SIZE);
 
   grub_dprintf ("xen", "Initrd, addr=0x%x, size=0x%x\n",
-		(unsigned) next_start.mod_start, (unsigned) size);
+		(unsigned) xen_state.next_start.mod_start, (unsigned) size);
 
 fail:
   grub_initrd_close (&initrd_ctx);
@@ -608,45 +618,48 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  if (!loaded)
+  if (!xen_state.loaded)
     {
       return grub_error (GRUB_ERR_BAD_ARGUMENT,
 			 N_("you need to load the kernel first"));
     }
 
-  if ((next_start.mod_start || next_start.mod_len) && !xen_module_info_page)
+  if ((xen_state.next_start.mod_start || xen_state.next_start.mod_len) &&
+      !xen_state.module_info_page)
     {
       return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("initrd already loaded"));
     }
 
   /* Leave one space for terminator.  */
-  if (n_modules >= MAX_MODULES - 1)
+  if (xen_state.n_modules >= MAX_MODULES - 1)
     {
       return grub_error (GRUB_ERR_BAD_ARGUMENT, "too many modules");
     }
 
-  if (!xen_module_info_page)
+  if (!xen_state.module_info_page)
     {
-      n_modules = 0;
-      max_addr = ALIGN_UP (max_addr, PAGE_SIZE);
-      modules_target_start = max_addr;
-      next_start.mod_start = max_addr + xen_inf.virt_base;
-      next_start.flags |= SIF_MULTIBOOT_MOD;
+      xen_state.n_modules = 0;
+      xen_state.max_addr = ALIGN_UP (xen_state.max_addr, PAGE_SIZE);
+      xen_state.modules_target_start = xen_state.max_addr;
+      xen_state.next_start.mod_start =
+	xen_state.max_addr + xen_state.xen_inf.virt_base;
+      xen_state.next_start.flags |= SIF_MULTIBOOT_MOD;
 
-      err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					     max_addr, MAX_MODULES
+      err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					     xen_state.max_addr, MAX_MODULES
 					     *
-					     sizeof (xen_module_info_page
+					     sizeof (xen_state.module_info_page
 						     [0]));
       if (err)
 	return err;
-      xen_module_info_page = get_virtual_current_address (ch);
-      grub_memset (xen_module_info_page, 0, MAX_MODULES
-		   * sizeof (xen_module_info_page[0]));
-      max_addr += MAX_MODULES * sizeof (xen_module_info_page[0]);
+      xen_state.module_info_page = get_virtual_current_address (ch);
+      grub_memset (xen_state.module_info_page, 0, MAX_MODULES
+		   * sizeof (xen_state.module_info_page[0]));
+      xen_state.max_addr +=
+	MAX_MODULES * sizeof (xen_state.module_info_page[0]);
     }
 
-  max_addr = ALIGN_UP (max_addr, PAGE_SIZE);
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr, PAGE_SIZE);
 
   if (nounzip)
     grub_file_filter_disable_compression ();
@@ -657,20 +670,22 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 
   cmdline_len = grub_loader_cmdline_size (argc - 1, argv + 1);
 
-  err = grub_relocator_alloc_chunk_addr (relocator, &ch,
-					 max_addr, cmdline_len);
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr, cmdline_len);
   if (err)
     goto fail;
 
   grub_create_loader_cmdline (argc - 1, argv + 1,
 			      get_virtual_current_address (ch), cmdline_len);
 
-  xen_module_info_page[n_modules].cmdline = max_addr - modules_target_start;
-  max_addr = ALIGN_UP (max_addr + cmdline_len, PAGE_SIZE);
+  xen_state.module_info_page[xen_state.n_modules].cmdline =
+    xen_state.max_addr - xen_state.modules_target_start;
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + cmdline_len, PAGE_SIZE);
 
   if (size)
     {
-      err = grub_relocator_alloc_chunk_addr (relocator, &ch, max_addr, size);
+      err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					     xen_state.max_addr, size);
       if (err)
 	goto fail;
       if (grub_file_read (file, get_virtual_current_address (ch), size)
@@ -682,15 +697,17 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 	  goto fail;
 	}
     }
-  next_start.mod_len = max_addr + size - modules_target_start;
-  xen_module_info_page[n_modules].mod_start = max_addr - modules_target_start;
-  xen_module_info_page[n_modules].mod_end =
-    max_addr + size - modules_target_start;
+  xen_state.next_start.mod_len =
+    xen_state.max_addr + size - xen_state.modules_target_start;
+  xen_state.module_info_page[xen_state.n_modules].mod_start =
+    xen_state.max_addr - xen_state.modules_target_start;
+  xen_state.module_info_page[xen_state.n_modules].mod_end =
+    xen_state.max_addr + size - xen_state.modules_target_start;
 
-  n_modules++;
+  xen_state.n_modules++;
   grub_dprintf ("xen", "module, addr=0x%x, size=0x%x\n",
-		(unsigned) max_addr, (unsigned) size);
-  max_addr = ALIGN_UP (max_addr + size, PAGE_SIZE);
+		(unsigned) xen_state.max_addr, (unsigned) size);
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + size, PAGE_SIZE);
 
 
 fail:
