@@ -44,8 +44,10 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 struct xen_loader_state {
   struct grub_relocator *relocator;
+  struct grub_relocator_xen_state state;
   struct start_info next_start;
   struct grub_xen_file_info xen_inf;
+  grub_xen_mfn_t *virt_mfn_list;
   grub_uint64_t max_addr;
   struct xen_multiboot_mod_list *module_info_page;
   grub_uint64_t modules_target_start;
@@ -170,7 +172,7 @@ generate_page_table (grub_uint64_t *where, grub_uint64_t paging_start,
 }
 
 static grub_err_t
-set_mfns (grub_xen_mfn_t * new_mfn_list, grub_xen_mfn_t pfn)
+set_mfns (grub_xen_mfn_t pfn)
 {
   grub_xen_mfn_t i, t;
   grub_xen_mfn_t cn_pfn = -1, st_pfn = -1;
@@ -179,32 +181,34 @@ set_mfns (grub_xen_mfn_t * new_mfn_list, grub_xen_mfn_t pfn)
 
   for (i = 0; i < grub_xen_start_page_addr->nr_pages; i++)
     {
-      if (new_mfn_list[i] == grub_xen_start_page_addr->console.domU.mfn)
+      if (xen_state.virt_mfn_list[i] ==
+	  grub_xen_start_page_addr->console.domU.mfn)
 	cn_pfn = i;
-      if (new_mfn_list[i] == grub_xen_start_page_addr->store_mfn)
+      if (xen_state.virt_mfn_list[i] == grub_xen_start_page_addr->store_mfn)
 	st_pfn = i;
     }
   if (cn_pfn == (grub_xen_mfn_t)-1)
     return grub_error (GRUB_ERR_BUG, "no console");
   if (st_pfn == (grub_xen_mfn_t)-1)
     return grub_error (GRUB_ERR_BUG, "no store");
-  t = new_mfn_list[pfn];
-  new_mfn_list[pfn] = new_mfn_list[cn_pfn];
-  new_mfn_list[cn_pfn] = t;
-  t = new_mfn_list[pfn + 1];
-  new_mfn_list[pfn + 1] = new_mfn_list[st_pfn];
-  new_mfn_list[st_pfn] = t;
+  t = xen_state.virt_mfn_list[pfn];
+  xen_state.virt_mfn_list[pfn] = xen_state.virt_mfn_list[cn_pfn];
+  xen_state.virt_mfn_list[cn_pfn] = t;
+  t = xen_state.virt_mfn_list[pfn + 1];
+  xen_state.virt_mfn_list[pfn + 1] = xen_state.virt_mfn_list[st_pfn];
+  xen_state.virt_mfn_list[st_pfn] = t;
 
-  m2p_updates[0].ptr = page2offset (new_mfn_list[pfn]) | MMU_MACHPHYS_UPDATE;
+  m2p_updates[0].ptr =
+    page2offset (xen_state.virt_mfn_list[pfn]) | MMU_MACHPHYS_UPDATE;
   m2p_updates[0].val = pfn;
   m2p_updates[1].ptr =
-    page2offset (new_mfn_list[pfn + 1]) | MMU_MACHPHYS_UPDATE;
+    page2offset (xen_state.virt_mfn_list[pfn + 1]) | MMU_MACHPHYS_UPDATE;
   m2p_updates[1].val = pfn + 1;
   m2p_updates[2].ptr =
-    page2offset (new_mfn_list[cn_pfn]) | MMU_MACHPHYS_UPDATE;
+    page2offset (xen_state.virt_mfn_list[cn_pfn]) | MMU_MACHPHYS_UPDATE;
   m2p_updates[2].val = cn_pfn;
   m2p_updates[3].ptr =
-    page2offset (new_mfn_list[st_pfn]) | MMU_MACHPHYS_UPDATE;
+    page2offset (xen_state.virt_mfn_list[st_pfn]) | MMU_MACHPHYS_UPDATE;
   m2p_updates[3].val = st_pfn;
 
   grub_xen_mmu_update (m2p_updates, 4, NULL, DOMID_SELF);
@@ -213,43 +217,52 @@ set_mfns (grub_xen_mfn_t * new_mfn_list, grub_xen_mfn_t pfn)
 }
 
 static grub_err_t
+grub_xen_p2m_alloc (void)
+{
+  grub_relocator_chunk_t ch;
+  grub_size_t p2msize;
+  grub_err_t err;
+
+  xen_state.state.mfn_list = xen_state.max_addr;
+  xen_state.next_start.mfn_list =
+    xen_state.max_addr + xen_state.xen_inf.virt_base;
+  p2msize = sizeof (grub_xen_mfn_t) * grub_xen_start_page_addr->nr_pages;
+  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
+					 xen_state.max_addr, p2msize);
+  if (err)
+    return err;
+  xen_state.virt_mfn_list = get_virtual_current_address (ch);
+  grub_memcpy (xen_state.virt_mfn_list,
+	       (void *) grub_xen_start_page_addr->mfn_list, p2msize);
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + p2msize, PAGE_SIZE);
+
+  return GRUB_ERR_NONE;
+}
+
+static grub_err_t
 grub_xen_boot (void)
 {
-  struct grub_relocator_xen_state state;
   grub_relocator_chunk_t ch;
   grub_err_t err;
-  grub_size_t pgtsize;
   struct start_info *nst;
   grub_uint64_t nr_info_pages;
   grub_uint64_t nr_pages, nr_pt_pages, nr_need_pages;
   struct gnttab_set_version gnttab_setver;
-  grub_xen_mfn_t *new_mfn_list;
   grub_size_t i;
 
   if (grub_xen_n_allocated_shared_pages)
     return grub_error (GRUB_ERR_BUG, "active grants");
 
-  state.mfn_list = xen_state.max_addr;
-  xen_state.next_start.mfn_list =
-    xen_state.max_addr + xen_state.xen_inf.virt_base;
-  xen_state.next_start.first_p2m_pfn = xen_state.max_addr >> PAGE_SHIFT;
-  pgtsize = sizeof (grub_xen_mfn_t) * grub_xen_start_page_addr->nr_pages;
-  err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
-					 xen_state.max_addr, pgtsize);
-  xen_state.next_start.nr_p2m_frames = (pgtsize + PAGE_SIZE - 1) >> PAGE_SHIFT;
+  err = grub_xen_p2m_alloc ();
   if (err)
     return err;
-  new_mfn_list = get_virtual_current_address (ch);
-  grub_memcpy (new_mfn_list,
-	       (void *) grub_xen_start_page_addr->mfn_list, pgtsize);
-  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + pgtsize, PAGE_SIZE);
 
   err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
 					 xen_state.max_addr,
 					 sizeof (xen_state.next_start));
   if (err)
     return err;
-  state.start_info = xen_state.max_addr + xen_state.xen_inf.virt_base;
+  xen_state.state.start_info = xen_state.max_addr + xen_state.xen_inf.virt_base;
   nst = get_virtual_current_address (ch);
   xen_state.max_addr =
     ALIGN_UP (xen_state.max_addr + sizeof (xen_state.next_start), PAGE_SIZE);
@@ -262,14 +275,14 @@ grub_xen_boot (void)
   xen_state.next_start.console.domU = grub_xen_start_page_addr->console.domU;
   xen_state.next_start.shared_info = grub_xen_start_page_addr->shared_info;
 
-  err = set_mfns (new_mfn_list, xen_state.max_addr >> PAGE_SHIFT);
+  err = set_mfns (xen_state.max_addr >> PAGE_SHIFT);
   if (err)
     return err;
   xen_state.max_addr += 2 * PAGE_SIZE;
 
   xen_state.next_start.pt_base =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
-  state.paging_start = xen_state.max_addr >> PAGE_SHIFT;
+  xen_state.state.paging_start = xen_state.max_addr >> PAGE_SHIFT;
 
   nr_info_pages = xen_state.max_addr >> PAGE_SHIFT;
   nr_pages = nr_info_pages;
@@ -298,15 +311,15 @@ grub_xen_boot (void)
 
   generate_page_table (get_virtual_current_address (ch),
 		       xen_state.max_addr >> PAGE_SHIFT, nr_pages,
-		       xen_state.xen_inf.virt_base, new_mfn_list);
+		       xen_state.xen_inf.virt_base, xen_state.virt_mfn_list);
 
   xen_state.max_addr += page2offset (nr_pt_pages);
-  state.stack = xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
-  state.entry_point = xen_state.xen_inf.entry_point;
+  xen_state.state.stack =
+    xen_state.max_addr + STACK_SIZE + xen_state.xen_inf.virt_base;
+  xen_state.state.entry_point = xen_state.xen_inf.entry_point;
 
-  xen_state.next_start.nr_p2m_frames += nr_pt_pages;
   xen_state.next_start.nr_pt_frames = nr_pt_pages;
-  state.paging_size = nr_pt_pages;
+  xen_state.state.paging_size = nr_pt_pages;
 
   *nst = xen_state.next_start;
 
@@ -318,7 +331,7 @@ grub_xen_boot (void)
   for (i = 0; i < ARRAY_SIZE (grub_xen_shared_info->evtchn_pending); i++)
     grub_xen_shared_info->evtchn_pending[i] = 0;
 
-  return grub_relocator_xen_boot (xen_state.relocator, state, nr_pages,
+  return grub_relocator_xen_boot (xen_state.relocator, xen_state.state, nr_pages,
 				  xen_state.xen_inf.virt_base <
 				  PAGE_SIZE ? page2offset (nr_pages) : 0,
 				  nr_pages - 1,
