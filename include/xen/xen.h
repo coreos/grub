@@ -52,6 +52,19 @@ DEFINE_XEN_GUEST_HANDLE(void);
 DEFINE_XEN_GUEST_HANDLE(uint64_t);
 DEFINE_XEN_GUEST_HANDLE(xen_pfn_t);
 DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
+
+/* Turn a plain number into a C unsigned (long) constant. */
+#define __xen_mk_uint(x)  x ## U
+#define __xen_mk_ulong(x) x ## UL
+#define xen_mk_uint(x)    __xen_mk_uint(x)
+#define xen_mk_ulong(x)   __xen_mk_ulong(x)
+
+#else
+
+/* In assembly code we cannot use C numeric constant suffixes. */
+#define xen_mk_uint(x)  x
+#define xen_mk_ulong(x) x
+
 #endif
 
 /*
@@ -101,6 +114,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
 #define __HYPERVISOR_kexec_op             37
 #define __HYPERVISOR_tmem_op              38
 #define __HYPERVISOR_xc_reserved_op       39 /* reserved for XenClient */
+#define __HYPERVISOR_xenpmu_op            40
 
 /* Architecture-specific hypercall definitions. */
 #define __HYPERVISOR_arch_0               48
@@ -160,6 +174,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
 #define VIRQ_MEM_EVENT  10 /* G. (DOM0) A memory event has occured           */
 #define VIRQ_XC_RESERVED 11 /* G. Reserved for XenClient                     */
 #define VIRQ_ENOMEM     12 /* G. (DOM0) Low on heap memory       */
+#define VIRQ_XENPMU     13 /* V.  PMC interrupt                              */
 
 /* Architecture-specific VIRQ definitions. */
 #define VIRQ_ARCH_0    16
@@ -449,13 +464,13 @@ DEFINE_XEN_GUEST_HANDLE(mmuext_op_t);
 /* When specifying UVMF_MULTI, also OR in a pointer to a CPU bitmap.   */
 /* UVMF_LOCAL is merely UVMF_MULTI with a NULL bitmap pointer.         */
 /* ` enum uvm_flags { */
-#define UVMF_NONE               (0UL<<0) /* No flushing at all.   */
-#define UVMF_TLB_FLUSH          (1UL<<0) /* Flush entire TLB(s).  */
-#define UVMF_INVLPG             (2UL<<0) /* Flush only one entry. */
-#define UVMF_FLUSHTYPE_MASK     (3UL<<0)
-#define UVMF_MULTI              (0UL<<2) /* Flush subset of TLBs. */
-#define UVMF_LOCAL              (0UL<<2) /* Flush local TLB.      */
-#define UVMF_ALL                (1UL<<2) /* Flush all TLBs.       */
+#define UVMF_NONE           (xen_mk_ulong(0)<<0) /* No flushing at all.   */
+#define UVMF_TLB_FLUSH      (xen_mk_ulong(1)<<0) /* Flush entire TLB(s).  */
+#define UVMF_INVLPG         (xen_mk_ulong(2)<<0) /* Flush only one entry. */
+#define UVMF_FLUSHTYPE_MASK (xen_mk_ulong(3)<<0)
+#define UVMF_MULTI          (xen_mk_ulong(0)<<2) /* Flush subset of TLBs. */
+#define UVMF_LOCAL          (xen_mk_ulong(0)<<2) /* Flush local TLB.      */
+#define UVMF_ALL            (xen_mk_ulong(1)<<2) /* Flush all TLBs.       */
 /* ` } */
 
 /*
@@ -486,17 +501,27 @@ DEFINE_XEN_GUEST_HANDLE(mmuext_op_t);
 /* x86/PAE guests: support PDPTs above 4GB. */
 #define VMASST_TYPE_pae_extended_cr3     3
 
+/*
+ * x86/64 guests: strictly hide M2P from user mode.
+ * This allows the guest to control respective hypervisor behavior:
+ * - when not set, L4 tables get created with the respective slot blank,
+ *   and whenever the L4 table gets used as a kernel one the missing
+ *   mapping gets inserted,
+ * - when set, L4 tables get created with the respective slot initialized
+ *   as before, and whenever the L4 table gets used as a user one the
+ *   mapping gets zapped.
+ */
+#define VMASST_TYPE_m2p_strict           32
+
+#if __XEN_INTERFACE_VERSION__ < 0x00040600
 #define MAX_VMASST_TYPE                  3
-
-#ifndef __ASSEMBLY__
-
-typedef uint16_t domid_t;
+#endif
 
 /* Domain ids >= DOMID_FIRST_RESERVED cannot be used for ordinary domains. */
-#define DOMID_FIRST_RESERVED (0x7FF0U)
+#define DOMID_FIRST_RESERVED xen_mk_uint(0x7FF0)
 
 /* DOMID_SELF is used in certain contexts to refer to oneself. */
-#define DOMID_SELF (0x7FF0U)
+#define DOMID_SELF           xen_mk_uint(0x7FF0)
 
 /*
  * DOMID_IO is used to restrict page-table updates to mapping I/O memory.
@@ -507,7 +532,7 @@ typedef uint16_t domid_t;
  * This only makes sense in MMUEXT_SET_FOREIGNDOM, but in that context can
  * be specified by any calling domain.
  */
-#define DOMID_IO   (0x7FF1U)
+#define DOMID_IO             xen_mk_uint(0x7FF1)
 
 /*
  * DOMID_XEN is used to allow privileged domains to map restricted parts of
@@ -515,17 +540,21 @@ typedef uint16_t domid_t;
  * This only makes sense in MMUEXT_SET_FOREIGNDOM, and is only permitted if
  * the caller is privileged.
  */
-#define DOMID_XEN  (0x7FF2U)
+#define DOMID_XEN            xen_mk_uint(0x7FF2)
 
 /*
  * DOMID_COW is used as the owner of sharable pages */
-#define DOMID_COW  (0x7FF3U)
+#define DOMID_COW            xen_mk_uint(0x7FF3)
 
 /* DOMID_INVALID is used to identify pages with unknown owner. */
-#define DOMID_INVALID (0x7FF4U)
+#define DOMID_INVALID        xen_mk_uint(0x7FF4)
 
 /* Idle domain. */
-#define DOMID_IDLE (0x7FFFU)
+#define DOMID_IDLE           xen_mk_uint(0x7FFF)
+
+#ifndef __ASSEMBLY__
+
+typedef uint16_t domid_t;
 
 /*
  * Send an array of these to HYPERVISOR_mmu_update().
@@ -682,6 +711,12 @@ struct shared_info {
     uint32_t wc_version;      /* Version counter: see vcpu_time_info_t. */
     uint32_t wc_sec;          /* Secs  00:00:00 UTC, Jan 1, 1970.  */
     uint32_t wc_nsec;         /* Nsecs 00:00:00 UTC, Jan 1, 1970.  */
+#if !defined(__i386__)
+    uint32_t wc_sec_hi;
+# define xen_wc_sec_hi wc_sec_hi
+#elif !defined(__XEN__) && !defined(__XEN_TOOLS__)
+# define xen_wc_sec_hi arch.wc_sec_hi
+#endif
 
     struct arch_shared_info arch;
 
@@ -698,24 +733,27 @@ typedef struct shared_info shared_info_t;
  *  3. This the order of bootstrap elements in the initial virtual region:
  *      a. relocated kernel image
  *      b. initial ram disk              [mod_start, mod_len]
+ *         (may be omitted)
  *      c. list of allocated page frames [mfn_list, nr_pages]
  *         (unless relocated due to XEN_ELFNOTE_INIT_P2M)
  *      d. start_info_t structure        [register ESI (x86)]
- *      e. bootstrap page tables         [pt_base and CR3 (x86)]
- *      f. bootstrap stack               [register ESP (x86)]
+ *         in case of dom0 this page contains the console info, too
+ *      e. unless dom0: xenstore ring page
+ *      f. unless dom0: console ring page
+ *      g. bootstrap page tables         [pt_base and CR3 (x86)]
+ *      h. bootstrap stack               [register ESP (x86)]
  *  4. Bootstrap elements are packed together, but each is 4kB-aligned.
- *  5. The initial ram disk may be omitted.
- *  6. The list of page frames forms a contiguous 'pseudo-physical' memory
+ *  5. The list of page frames forms a contiguous 'pseudo-physical' memory
  *     layout for the domain. In particular, the bootstrap virtual-memory
  *     region is a 1:1 mapping to the first section of the pseudo-physical map.
- *  7. All bootstrap elements are mapped read-writable for the guest OS. The
+ *  6. All bootstrap elements are mapped read-writable for the guest OS. The
  *     only exception is the bootstrap page table, which is mapped read-only.
- *  8. There is guaranteed to be at least 512kB padding after the final
+ *  7. There is guaranteed to be at least 512kB padding after the final
  *     bootstrap element. If necessary, the bootstrap virtual region is
  *     extended by an extra 4MB to ensure this.
  *
  * Note: Prior to 25833:bb85bbccb1c9. ("x86/32-on-64 adjust Dom0 initial page
- * table layout") a bug caused the pt_base (3.e above) and cr3 to not point
+ * table layout") a bug caused the pt_base (3.g above) and cr3 to not point
  * to the start of the guest page tables (it was offset by two pages).
  * This only manifested itself on 32-on-64 dom0 kernels and not 32-on-64 domU
  * or 64-bit kernels of any colour. The page tables for a 32-on-64 dom0 got
@@ -759,6 +797,29 @@ struct start_info {
 };
 typedef struct start_info start_info_t;
 
+/*
+ * Start of day structure passed to PVH guests in %ebx.
+ *
+ * NOTE: nothing will be loaded at physical address 0, so
+ * a 0 value in any of the address fields should be treated
+ * as not present.
+ */
+struct hvm_start_info {
+#define HVM_START_MAGIC_VALUE 0x336ec578
+    uint32_t magic;             /* Contains the magic value 0x336ec578       */
+                                /* ("xEn3" with the 0x80 bit of the "E" set).*/
+    uint32_t flags;             /* SIF_xxx flags.                            */
+    uint32_t cmdline_paddr;     /* Physical address of the command line.     */
+    uint32_t nr_modules;        /* Number of modules passed to the kernel.   */
+    uint32_t modlist_paddr;     /* Physical address of an array of           */
+                                /* hvm_modlist_entry.                        */
+};
+
+struct hvm_modlist_entry {
+    uint32_t paddr;             /* Physical address of the module.           */
+    uint32_t size;              /* Size of the module in bytes.              */
+};
+
 /* New console union for dom0 introduced in 0x00030203. */
 #if __XEN_INTERFACE_VERSION__ < 0x00030203
 #define console_mfn    console.domU.mfn
@@ -771,6 +832,8 @@ typedef struct start_info start_info_t;
 #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
 #define SIF_MULTIBOOT_MOD (1<<2)  /* Is mod_start a multiboot module? */
 #define SIF_MOD_START_PFN (1<<3)  /* Is mod_start a PFN? */
+#define SIF_VIRT_P2M_4TOOLS (1<<4) /* Do Xen tools understand a virt. mapped */
+                                   /* P->M making the 3 level tree obsolete? */
 #define SIF_PM_MASK       (0xFF<<8) /* reserve 1 byte for xen-pm options */
 
 /*
@@ -851,25 +914,19 @@ typedef struct dom0_vga_console_info {
 
 typedef uint8_t xen_domain_handle_t[16];
 
-/* Turn a plain number into a C unsigned long constant. */
-#define __mk_unsigned_long(x) x ## UL
-#define mk_unsigned_long(x) __mk_unsigned_long(x)
-
 __DEFINE_XEN_GUEST_HANDLE(uint8,  uint8_t);
 __DEFINE_XEN_GUEST_HANDLE(uint16, uint16_t);
 __DEFINE_XEN_GUEST_HANDLE(uint32, uint32_t);
 __DEFINE_XEN_GUEST_HANDLE(uint64, uint64_t);
-
-#else /* __ASSEMBLY__ */
-
-/* In assembly code we cannot use C numeric constant suffixes. */
-#define mk_unsigned_long(x) x
 
 #endif /* !__ASSEMBLY__ */
 
 /* Default definitions for macros used by domctl/sysctl. */
 #if defined(__XEN__) || defined(__XEN_TOOLS__)
 
+#ifndef int64_aligned_t
+#define int64_aligned_t int64_t
+#endif
 #ifndef uint64_aligned_t
 #define uint64_aligned_t uint64_t
 #endif

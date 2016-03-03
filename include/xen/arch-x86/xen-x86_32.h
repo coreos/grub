@@ -58,34 +58,31 @@
 #define __HYPERVISOR_VIRT_START_PAE    0xF5800000
 #define __MACH2PHYS_VIRT_START_PAE     0xF5800000
 #define __MACH2PHYS_VIRT_END_PAE       0xF6800000
-#define HYPERVISOR_VIRT_START_PAE      \
-    mk_unsigned_long(__HYPERVISOR_VIRT_START_PAE)
-#define MACH2PHYS_VIRT_START_PAE       \
-    mk_unsigned_long(__MACH2PHYS_VIRT_START_PAE)
-#define MACH2PHYS_VIRT_END_PAE         \
-    mk_unsigned_long(__MACH2PHYS_VIRT_END_PAE)
+#define HYPERVISOR_VIRT_START_PAE      xen_mk_ulong(__HYPERVISOR_VIRT_START_PAE)
+#define MACH2PHYS_VIRT_START_PAE       xen_mk_ulong(__MACH2PHYS_VIRT_START_PAE)
+#define MACH2PHYS_VIRT_END_PAE         xen_mk_ulong(__MACH2PHYS_VIRT_END_PAE)
 
 /* Non-PAE bounds are obsolete. */
 #define __HYPERVISOR_VIRT_START_NONPAE 0xFC000000
 #define __MACH2PHYS_VIRT_START_NONPAE  0xFC000000
 #define __MACH2PHYS_VIRT_END_NONPAE    0xFC400000
 #define HYPERVISOR_VIRT_START_NONPAE   \
-    mk_unsigned_long(__HYPERVISOR_VIRT_START_NONPAE)
+    xen_mk_ulong(__HYPERVISOR_VIRT_START_NONPAE)
 #define MACH2PHYS_VIRT_START_NONPAE    \
-    mk_unsigned_long(__MACH2PHYS_VIRT_START_NONPAE)
+    xen_mk_ulong(__MACH2PHYS_VIRT_START_NONPAE)
 #define MACH2PHYS_VIRT_END_NONPAE      \
-    mk_unsigned_long(__MACH2PHYS_VIRT_END_NONPAE)
+    xen_mk_ulong(__MACH2PHYS_VIRT_END_NONPAE)
 
 #define __HYPERVISOR_VIRT_START __HYPERVISOR_VIRT_START_PAE
 #define __MACH2PHYS_VIRT_START  __MACH2PHYS_VIRT_START_PAE
 #define __MACH2PHYS_VIRT_END    __MACH2PHYS_VIRT_END_PAE
 
 #ifndef HYPERVISOR_VIRT_START
-#define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+#define HYPERVISOR_VIRT_START xen_mk_ulong(__HYPERVISOR_VIRT_START)
 #endif
 
-#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
-#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
+#define MACH2PHYS_VIRT_START  xen_mk_ulong(__MACH2PHYS_VIRT_START)
+#define MACH2PHYS_VIRT_END    xen_mk_ulong(__MACH2PHYS_VIRT_END)
 #define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>2)
 #ifndef machine_to_phys_mapping
 #define machine_to_phys_mapping ((unsigned long *)MACH2PHYS_VIRT_START)
@@ -104,6 +101,7 @@
     do { if ( sizeof(hnd) == 8 ) *(uint64_t *)&(hnd) = 0;   \
          (hnd).p = val;                                     \
     } while ( 0 )
+#define  int64_aligned_t  int64_t __attribute__((aligned(8)))
 #define uint64_aligned_t uint64_t __attribute__((aligned(8)))
 #define __XEN_GUEST_HANDLE_64(name) __guest_handle_64_ ## name
 #define XEN_GUEST_HANDLE_64(name) __XEN_GUEST_HANDLE_64(name)
