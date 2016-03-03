@@ -25,11 +25,14 @@
 #include <grub/net/udp.h>
 #include <grub/datetime.h>
 
-static grub_uint8_t grub_userclass[] = {GRUB_NET_BOOTP_RFC1048_MAGIC_0,
-					GRUB_NET_BOOTP_RFC1048_MAGIC_1,
-					GRUB_NET_BOOTP_RFC1048_MAGIC_2,
-					GRUB_NET_BOOTP_RFC1048_MAGIC_3,
-					0x4D, 0x05, 'G', 'R', 'U', 'B', '2'};
+static grub_uint8_t dhcp_option_header[] = {GRUB_NET_BOOTP_RFC1048_MAGIC_0,
+					    GRUB_NET_BOOTP_RFC1048_MAGIC_1,
+					    GRUB_NET_BOOTP_RFC1048_MAGIC_2,
+					    GRUB_NET_BOOTP_RFC1048_MAGIC_3};
+static grub_uint8_t grub_userclass[] = {0x4D, 0x05, 'G', 'R', 'U', 'B', '2'};
+static grub_uint8_t grub_dhcpdiscover[] = {0x35, 0x01, 0x01};
+static grub_uint8_t grub_dhcptime[] = {0x33, 0x04, 0x00, 0x00, 0x0e, 0x10};
+
 static void
 parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
 {
@@ -504,10 +507,14 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  struct udphdr *udph;
 	  grub_net_network_level_address_t target;
 	  grub_net_link_level_address_t ll_target;
+	  grub_uint8_t *offset;
 
 	  if (!ifaces[j].prev)
 	    continue;
-	  nb = grub_netbuff_alloc (sizeof (*pack) + 64 + 128);
+	  nb = grub_netbuff_alloc (sizeof (*pack) + sizeof(dhcp_option_header)
+				   + sizeof(grub_userclass)
+				   + sizeof(grub_dhcpdiscover)
+				   + sizeof(grub_dhcptime) + 64 + 128);
 	  if (!nb)
 	    {
 	      grub_netbuff_free (nb);
@@ -541,7 +548,14 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
 	  pack->seconds = grub_cpu_to_be16 (t);
 
 	  grub_memcpy (&pack->mac_addr, &ifaces[j].hwaddress.mac, 6); 
-	  grub_memcpy (&pack->vendor, grub_userclass, sizeof(grub_userclass));
+	  offset = (grub_uint8_t *)&pack->vendor;
+	  grub_memcpy (offset, dhcp_option_header, sizeof(dhcp_option_header));
+	  offset += sizeof(dhcp_option_header);
+	  grub_memcpy (offset, grub_dhcpdiscover, sizeof(grub_dhcpdiscover));
+	  offset += sizeof(grub_dhcpdiscover);
+	  grub_memcpy (offset, grub_userclass, sizeof(grub_userclass));
+	  offset += sizeof(grub_userclass);
+	  grub_memcpy (offset, grub_dhcptime, sizeof(grub_dhcptime));
 
 	  grub_netbuff_push (nb, sizeof (*udph));
 
