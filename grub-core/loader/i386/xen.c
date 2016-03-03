@@ -228,6 +228,9 @@ grub_xen_p2m_alloc (void)
   grub_size_t p2msize;
   grub_err_t err;
 
+  if (xen_state.virt_mfn_list)
+    return GRUB_ERR_NONE;
+
   xen_state.state.mfn_list = xen_state.max_addr;
   xen_state.next_start.mfn_list =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
@@ -249,6 +252,9 @@ grub_xen_special_alloc (void)
 {
   grub_relocator_chunk_t ch;
   grub_err_t err;
+
+  if (xen_state.virt_start_info)
+    return GRUB_ERR_NONE;
 
   err = grub_relocator_alloc_chunk_addr (xen_state.relocator, &ch,
 					 xen_state.max_addr,
@@ -280,6 +286,9 @@ grub_xen_pt_alloc (void)
   grub_err_t err;
   grub_uint64_t nr_info_pages;
   grub_uint64_t nr_pages, nr_pt_pages, nr_need_pages;
+
+  if (xen_state.virt_pgtable)
+    return GRUB_ERR_NONE;
 
   xen_state.next_start.pt_base =
     xen_state.max_addr + xen_state.xen_inf.virt_base;
@@ -319,6 +328,25 @@ grub_xen_pt_alloc (void)
   return GRUB_ERR_NONE;
 }
 
+/* Allocate all not yet allocated areas mapped by initial page tables. */
+static grub_err_t
+grub_xen_alloc_boot_data (void)
+{
+  grub_err_t err;
+
+  err = grub_xen_p2m_alloc ();
+  if (err)
+    return err;
+  err = grub_xen_special_alloc ();
+  if (err)
+    return err;
+  err = grub_xen_pt_alloc ();
+  if (err)
+    return err;
+
+  return GRUB_ERR_NONE;
+}
+
 static grub_err_t
 grub_xen_boot (void)
 {
@@ -330,13 +358,7 @@ grub_xen_boot (void)
   if (grub_xen_n_allocated_shared_pages)
     return grub_error (GRUB_ERR_BUG, "active grants");
 
-  err = grub_xen_p2m_alloc ();
-  if (err)
-    return err;
-  err = grub_xen_special_alloc ();
-  if (err)
-    return err;
-  err = grub_xen_pt_alloc ();
+  err = grub_xen_alloc_boot_data ();
   if (err)
     return err;
 
@@ -610,6 +632,13 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
+  if (xen_state.xen_inf.unmapped_initrd)
+    {
+      err = grub_xen_alloc_boot_data ();
+      if (err)
+	goto fail;
+    }
+
   if (grub_initrd_init (argc, argv, &initrd_ctx))
     goto fail;
 
@@ -627,14 +656,22 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 	goto fail;
     }
 
-  xen_state.next_start.mod_start =
-    xen_state.max_addr + xen_state.xen_inf.virt_base;
   xen_state.next_start.mod_len = size;
 
-  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + size, PAGE_SIZE);
+  if (xen_state.xen_inf.unmapped_initrd)
+    {
+      xen_state.next_start.flags |= SIF_MOD_START_PFN;
+      xen_state.next_start.mod_start = xen_state.max_addr >> PAGE_SHIFT;
+    }
+  else
+    xen_state.next_start.mod_start =
+      xen_state.max_addr + xen_state.xen_inf.virt_base;
 
   grub_dprintf ("xen", "Initrd, addr=0x%x, size=0x%x\n",
-		(unsigned) xen_state.next_start.mod_start, (unsigned) size);
+		(unsigned) (xen_state.max_addr + xen_state.xen_inf.virt_base),
+		(unsigned) size);
+
+  xen_state.max_addr = ALIGN_UP (xen_state.max_addr + size, PAGE_SIZE);
 
 fail:
   grub_initrd_close (&initrd_ctx);
@@ -686,6 +723,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 
   if (!xen_state.module_info_page)
     {
+      xen_state.xen_inf.unmapped_initrd = 0;
       xen_state.n_modules = 0;
       xen_state.max_addr = ALIGN_UP (xen_state.max_addr, PAGE_SIZE);
       xen_state.modules_target_start = xen_state.max_addr;

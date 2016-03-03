@@ -261,6 +261,9 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
 					  descsz == 2 ? 2 : 3) == 0)
 	    xi->arch = GRUB_XEN_FILE_I386;
 	  break;
+	case XEN_ELFNOTE_MOD_START_PFN:
+	  xi->unmapped_initrd = !!grub_le_to_cpu32(*(grub_uint32_t *) desc);
+	  break;
 	default:
 	  grub_dprintf ("xen", "unknown note type %d\n", nh->n_type);
 	  break;

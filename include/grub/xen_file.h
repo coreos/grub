@@ -36,6 +36,7 @@ struct grub_xen_file_info
   int has_note;
   int has_xen_guest;
   int extended_cr3;
+  int unmapped_initrd;
   enum
   {
     GRUB_XEN_FILE_I386 = 1,
