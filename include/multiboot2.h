@@ -176,7 +176,7 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_BADRAM                 5
   multiboot_uint32_t type;
   multiboot_uint32_t zero;
-} GRUB_PACKED;
+};
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
 struct multiboot_tag
