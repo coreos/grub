@@ -55,11 +55,11 @@ grub_xen_file (grub_file_t file)
   grub_dprintf ("xen", "found bzimage payload 0x%llx-0x%llx\n",
 		(unsigned long long) (lh.setup_sects + 1) * 512
 		+ lh.payload_offset,
-		(unsigned long long) lh.payload_length - 4);
+		(unsigned long long) lh.payload_length);
 
   off_file = grub_file_offset_open (file, (lh.setup_sects + 1) * 512
 				    + lh.payload_offset,
-				    lh.payload_length - 4);
+				    lh.payload_length);
   if (!off_file)
     goto fail;
 
