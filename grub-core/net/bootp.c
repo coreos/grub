@@ -368,6 +368,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (grub_strcmp (args[3], "string") == 0)
     {
+      grub_err_t err = GRUB_ERR_NONE;
       char *val = grub_malloc (taglength + 1);
       if (!val)
 	return grub_errno;
@@ -376,8 +377,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
       if (args[0][0] == '-' && args[0][1] == 0)
 	grub_printf ("%s\n", val);
       else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
+	err = grub_env_set (args[0], val);
+      grub_free (val);
+      return err;
     }
 
   if (grub_strcmp (args[3], "number") == 0)
@@ -399,6 +401,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (grub_strcmp (args[3], "hex") == 0)
     {
+      grub_err_t err = GRUB_ERR_NONE;
       char *val = grub_malloc (2 * taglength + 1);
       int i;
       if (!val)
@@ -412,8 +415,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
       if (args[0][0] == '-' && args[0][1] == 0)
 	grub_printf ("%s\n", val);
       else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
+	err = grub_env_set (args[0], val);
+      grub_free (val);
+      return err;
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,
