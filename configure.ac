@@ -1185,9 +1185,9 @@ CFLAGS="$TARGET_CFLAGS"
 # Position independent executable.
 grub_CHECK_PIE
 [# Need that, because some distributions ship compilers that include
-# `-fPIE' in the default specs.
+# `-fPIE' or '-fpie' in the default specs.
 if [ x"$pie_possible" = xyes ]; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE"
+  TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE -fno-pie"
 fi]
 
 CFLAGS="$TARGET_CFLAGS"
