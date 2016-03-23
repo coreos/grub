@@ -476,9 +476,9 @@ LOCAL(copy_buffer):
 	movl	$0x8, %edx		/* PCR 8 */
 	int	$0x1A
 
+boot:
 	popa
 #endif
-boot:
 	/* boot kernel */
 	jmp	*(LOCAL(kernel_address))
 
