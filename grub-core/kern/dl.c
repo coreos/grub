@@ -724,7 +724,7 @@ grub_dl_load_file (const char *filename)
      opens of the same device.  */
   grub_file_close (file);
 
-  grub_tpm_measure(core, size, GRUB_TPM_PCR, filename);
+  grub_tpm_measure(core, size, GRUB_BINARY_PCR, "grub_module", filename);
 
   mod = grub_dl_load_core (core, size);
   grub_free (core);
