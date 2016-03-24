@@ -105,8 +105,8 @@ int grub_create_loader_cmdline (int argc, char *argv[], char *buf,
 
   *buf = 0;
 
-  grub_tpm_measure ((void *)orig, grub_strlen (orig), GRUB_CMDLINE_PCR,
-		    "Kernel Commandline");
+  grub_tpm_measure ((void *)orig, grub_strlen (orig), GRUB_ASCII_PCR,
+		    "grub_kernel_cmdline", orig);
 
   return i;
 }

@@ -26,11 +26,8 @@
 #define TPM_AUTHFAIL (TPM_BASE + 0x1)
 #define TPM_BADINDEX (TPM_BASE + 0x2)
 
-#define GRUB_TPM_PCR 9
-#define GRUB_KERNEL_PCR 10
-#define GRUB_INITRD_PCR 11
-#define GRUB_CMDLINE_PCR 12
-#define GRUB_COMMAND_PCR 13
+#define GRUB_ASCII_PCR 8
+#define GRUB_BINARY_PCR 9
 
 #define TPM_TAG_RQU_COMMAND 0x00C1
 #define TPM_ORD_Extend 0x14
@@ -70,7 +67,7 @@ typedef struct {
 } GRUB_PACKED ExtendOutgoing;
 
 grub_err_t EXPORT_FUNC(grub_tpm_measure) (unsigned char *buf, grub_size_t size,
-					  grub_uint8_t pcr,
+					  grub_uint8_t pcr, const char *kind,
 					  const char *description);
 #if defined (GRUB_MACHINE_EFI) || defined (GRUB_MACHINE_PCBIOS)
 grub_err_t grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,

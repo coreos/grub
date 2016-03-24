@@ -385,7 +385,7 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_file_close (file);
-  grub_tpm_measure (module, size, GRUB_KERNEL_PCR, argv[0]);
+  grub_tpm_measure (module, size, GRUB_BINARY_PCR, "grub_multiboot", argv[0]);
   return GRUB_ERR_NONE;
 }
 

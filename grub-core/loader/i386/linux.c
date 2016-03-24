@@ -718,7 +718,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  grub_tpm_measure (kernel, len, GRUB_KERNEL_PCR, "Linux Kernel");
+  grub_tpm_measure (kernel, len, GRUB_BINARY_PCR, "grub_linux", "Kernel");
 
   grub_memcpy (&lh, kernel, sizeof (lh));
 
