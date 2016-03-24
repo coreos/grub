@@ -174,7 +174,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       return grub_errno;
     }
 
-  grub_tpm_measure((unsigned char*)buffer, len, GRUB_KERNEL_PCR, filename);
+  grub_tpm_measure((unsigned char*)buffer, len, GRUB_BINARY_PCR, "grub_multiboot", filename);
 
   header = find_header (buffer, len);
 
