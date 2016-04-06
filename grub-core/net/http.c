@@ -381,9 +381,8 @@ http_establish (struct grub_file *file, grub_off_t offset, int initial)
       ptr = nb->tail;
       grub_snprintf ((char *) ptr,
 		     sizeof ("Range: bytes=XXXXXXXXXXXXXXXXXXXX-"
-			     "\r\n"
 			     "\r\n"),
-		     "Range: bytes=%" PRIuGRUB_UINT64_T "-\r\n\r\n",
+		     "Range: bytes=%" PRIuGRUB_UINT64_T "-\r\n",
 		     offset);
       grub_netbuff_put (nb, grub_strlen ((char *) ptr));
     }
