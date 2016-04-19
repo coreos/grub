@@ -388,7 +388,8 @@ fi
 
 # Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign getextmntent)
-AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/mnttab.h sys/mkdev.h limits.h)
+AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/mnttab.h limits.h)
+AC_HEADER_MAJOR
 
 AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
 #include <sys/param.h>

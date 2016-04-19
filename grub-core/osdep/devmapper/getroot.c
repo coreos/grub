@@ -40,6 +40,12 @@
 #include <limits.h>
 #endif
 
+#if defined(MAJOR_IN_MKDEV)
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
+
 #include <libdevmapper.h>
 
 #include <grub/types.h>

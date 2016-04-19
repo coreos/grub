@@ -24,6 +24,11 @@
 #include <errno.h>
 #include <limits.h>
 
+#if defined(MAJOR_IN_MKDEV)
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
 
 #ifdef HAVE_DEVICE_MAPPER
 # include <libdevmapper.h>
