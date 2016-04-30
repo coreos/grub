@@ -1672,6 +1672,7 @@ grub_net_seek_real (struct grub_file *file, grub_off_t offset)
     file->device->net->packs.last = NULL;
     file->device->net->offset = 0;
     file->device->net->eof = 0;
+    file->device->net->stall = 0;
     err = file->device->net->protocol->open (file, file->device->net->name);
     if (err)
       return err;
