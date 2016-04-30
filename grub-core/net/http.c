@@ -449,6 +449,7 @@ http_seek (struct grub_file *file, grub_off_t off)
     }
 
   file->device->net->stall = 0;
+  file->device->net->eof = 0;
   file->device->net->offset = off;
 
   data = grub_zalloc (sizeof (*data));
