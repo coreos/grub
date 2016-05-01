@@ -43,6 +43,7 @@
 #include <grub/dl.h>
 #include <grub/deflate.h>
 #include <grub/i18n.h>
+#include <grub/crypto.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -94,6 +95,14 @@ struct grub_gzio
   struct huft *tl;
   /* The distance code table.  */
   struct huft *td;
+  /* The checksum algorithm */
+  const gcry_md_spec_t *hdesc;
+  /* The wanted checksum */
+  grub_uint32_t orig_checksum;
+  /* The uncompressed length */
+  grub_size_t orig_len;
+  /* Context for checksum calculation */
+  grub_uint8_t *hcontext;
   /* The lookup bits for the literal/length code table. */
   int bl;
   /* The lookup bits for the distance code table.  */
@@ -180,7 +189,7 @@ test_gzip_header (grub_file_t file)
     grub_uint8_t os_type;
   } hdr;
   grub_uint16_t extra_len;
-  grub_uint32_t orig_len;
+  grub_uint32_t crc32;
   grub_gzio_t gzio = file->data;
 
   if (grub_file_tell (gzio->file) != 0)
@@ -215,12 +224,15 @@ test_gzip_header (grub_file_t file)
 
   /* FIXME: don't do this on not easily seekable files.  */
   {
-    grub_file_seek (gzio->file, grub_file_size (gzio->file) - 4);
-    if (grub_file_read (gzio->file, &orig_len, 4) != 4)
+    grub_file_seek (gzio->file, grub_file_size (gzio->file) - 8);
+    if (grub_file_read (gzio->file, &crc32, 4) != 4)
+      return 0;
+    gzio->orig_checksum = grub_le_to_cpu32 (crc32);
+    if (grub_file_read (gzio->file, &gzio->orig_len, 4) != 4)
       return 0;
     /* FIXME: this does not handle files whose original size is over 4GB.
        But how can we know the real original size?  */
-    file->size = grub_le_to_cpu32 (orig_len);
+    file->size = grub_le_to_cpu32 (gzio->orig_len);
   }
 
   initialize_tables (gzio);
@@ -1095,7 +1107,23 @@ inflate_window (grub_gzio_t gzio)
 
   gzio->saved_offset += gzio->wp;
 
-  /* XXX do CRC calculation here! */
+  if (gzio->hcontext)
+    {
+      gzio->hdesc->write (gzio->hcontext, gzio->slide, gzio->wp);
+
+      if (gzio->saved_offset == gzio->orig_len)
+	{
+	  grub_uint32_t csum;
+
+	  gzio->hdesc->final (gzio->hcontext);
+	  csum = *(grub_uint32_t *)gzio->hdesc->read (gzio->hcontext);
+	  csum = grub_be_to_cpu32 (csum);
+	  if (csum != gzio->orig_checksum)
+	    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
+			"checksum mismatch %08x/%08x",
+			gzio->orig_checksum, csum);
+	}
+    }
 }
 
 
@@ -1118,6 +1146,9 @@ initialize_tables (grub_gzio_t gzio)
   huft_free (gzio->td);
   gzio->tl = NULL;
   gzio->td = NULL;
+
+  if (gzio->hcontext)
+    gzio->hdesc->init(gzio->hcontext);
 }
 
 
@@ -1143,6 +1174,9 @@ grub_gzio_open (grub_file_t io, const char *name __attribute__ ((unused)))
 
   gzio->file = io;
 
+  gzio->hdesc = GRUB_MD_CRC32;
+  gzio->hcontext = grub_malloc(gzio->hdesc->contextsize);
+
   file->device = io->device;
   file->data = gzio;
   file->fs = &grub_gzio_fs;
@@ -1151,6 +1185,7 @@ grub_gzio_open (grub_file_t io, const char *name __attribute__ ((unused)))
   if (! test_gzip_header (file))
     {
       grub_errno = GRUB_ERR_NONE;
+      grub_free (gzio->hcontext);
       grub_free (gzio);
       grub_free (file);
       grub_file_seek (io, 0);
@@ -1287,6 +1322,7 @@ grub_gzio_close (grub_file_t file)
   grub_file_close (gzio->file);
   huft_free (gzio->tl);
   huft_free (gzio->td);
+  grub_free (gzio->hcontext);
   grub_free (gzio);
 
   /* No need to close the same device twice.  */
