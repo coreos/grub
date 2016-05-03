@@ -1346,6 +1346,15 @@ grub_net_open_real (const char *name)
 		continue;
 	    }
 
+	  if (grub_strncmp (prefdev, "pxe", sizeof ("pxe") - 1) == 0 &&
+	      (!prefdev[sizeof ("pxe") - 1] || (prefdev[sizeof("pxe") - 1] == ':')))
+	    {
+	      grub_free (prefdev);
+	      prefdev = grub_strdup ("tftp");
+	      if (!prefdev)
+		continue;
+	    }
+
 	  comma = grub_strchr (prefdev, ',');
 	  if (comma)
 	    *comma = '\0';
