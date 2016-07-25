@@ -143,6 +143,28 @@ grub_gpt_size_to_sectors (grub_gpt_t gpt, grub_size_t size)
   return sectors;
 }
 
+/* Copied from grub-core/kern/disk_common.c grub_disk_adjust_range so we can
+ * avoid attempting to use disk->total_sectors when GRUB won't let us.
+ * TODO: Why is disk->total_sectors not set to GRUB_DISK_SIZE_UNKNOWN?  */
+static int
+grub_gpt_disk_size_valid (grub_disk_t disk)
+{
+  grub_disk_addr_t total_sectors;
+
+  /* Transform total_sectors to number of 512B blocks.  */
+  total_sectors = disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
+
+  /* Some drivers have problems with disks above reasonable.
+     Treat unknown as 1EiB disk. While on it, clamp the size to 1EiB.
+     Just one condition is enough since GRUB_DISK_UNKNOWN_SIZE << ls is always
+     above 9EiB.
+  */
+  if (total_sectors > (1ULL << 51))
+    return 0;
+
+  return 1;
+}
+
 static void
 grub_gpt_lecrc32 (grub_uint32_t *crc, const void *data, grub_size_t len)
 {
@@ -242,7 +264,7 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   grub_disk_addr_t addr;
 
   /* Assumes gpt->log_sector_size == disk->log_sector_size  */
-  if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN)
+  if (grub_gpt_disk_size_valid(disk))
     sector = disk->total_sectors - 1;
   else if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
     sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
@@ -394,7 +416,7 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
     return grub_error (GRUB_ERR_BUG, "No valid GPT header");
 
   /* Relocate backup to end if disk whenever possible.  */
-  if (disk->total_sectors != GRUB_DISK_SIZE_UNKNOWN)
+  if (grub_gpt_disk_size_valid(disk))
     backup_header = disk->total_sectors - 1;
 
   backup_entries = backup_header -
