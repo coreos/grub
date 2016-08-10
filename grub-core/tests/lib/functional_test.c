@@ -26,14 +26,23 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_err_t
 grub_functional_test (grub_extcmd_context_t ctxt __attribute__ ((unused)),
-		      int argc __attribute__ ((unused)),
-		      char **args __attribute__ ((unused)))
+		      int argc,
+		      char **args)
 {
   grub_test_t test;
   int ok = 1;
+  int i;
 
   FOR_LIST_ELEMENTS (test, grub_test_list)
     {
+      if (argc != 0)
+	{
+	  for (i = 0; i < argc; i++)
+	    if (grub_strcmp(args[i], test->name) == 0)
+	      break;
+	  if (i == argc)
+	    continue;
+	}
       grub_errno = 0;
       ok = ok && !grub_test_run (test);
       grub_errno = 0;

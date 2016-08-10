@@ -391,12 +391,13 @@ grub_strtoull (const char *str, char **end, int base)
       unsigned long digit;
 
       digit = grub_tolower (*str) - '0';
-      if (digit > 9)
-	{
-	  digit += '0' - 'a' + 10;
-	  if (digit >= (unsigned long) base)
-	    break;
-	}
+      if (digit >= 'a' - '0')
+	digit += '0' - 'a' + 10;
+      else if (digit > 9)
+	break;
+
+      if (digit >= (unsigned long) base)
+	break;
 
       found = 1;
 
