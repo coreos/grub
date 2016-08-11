@@ -278,10 +278,14 @@ grub_biosdisk_call_hook (grub_disk_dev_iterate_hook_t hook, void *hook_data,
   char name[10];
 
   if (cd_drive && drive == cd_drive)
-    return hook ("cd", hook_data);
+    {
+      grub_dprintf ("biosdisk", "iterating cd\n");
+      return hook ("cd", hook_data);
+    }
 
   grub_snprintf (name, sizeof (name),
 		 (drive & 0x80) ? "hd%d" : "fd%d", drive & (~0x80));
+  grub_dprintf ("biosdisk", "iterating %s\n", name);
   return hook (name, hook_data);
 }
 
@@ -301,7 +305,7 @@ grub_biosdisk_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 	  if (grub_biosdisk_rw_standard (0x02, drive, 0, 0, 1, 1,
 					 GRUB_MEMORY_MACHINE_SCRATCH_SEG) != 0)
 	    {
-	      grub_dprintf ("disk", "Read error when probing drive 0x%2x\n", drive);
+	      grub_dprintf ("biosdisk", "Read error when probing drive 0x%2x\n", drive);
 	      break;
 	    }
 
@@ -335,6 +339,8 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
   grub_uint64_t total_sectors = 0;
   int drive;
   struct grub_biosdisk_data *data;
+
+  grub_dprintf ("biosdisk", "opening %s\n", name);
 
   drive = grub_biosdisk_get_drive (name);
   if (drive < 0)
@@ -393,6 +399,11 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 		       (1 << disk->log_sector_size) < drp->bytes_per_sector;
 		       disk->log_sector_size++);
 		}
+
+	      grub_dprintf ("biosdisk",
+			    "LBA total = 0x%llx block size = 0x%lx\n",
+			    (unsigned long long) total_sectors,
+			    1L << disk->log_sector_size);
 	    }
 	}
     }
@@ -428,6 +439,9 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
       if (! total_sectors)
         total_sectors = ((grub_uint64_t) data->cylinders)
 	  * data->heads * data->sectors;
+
+      grub_dprintf ("biosdisk", "C/H/S %lu/%lu/%lu\n",
+		    data->cylinders, data->heads, data->sectors);
     }
 
   disk->total_sectors = total_sectors;
@@ -440,12 +454,15 @@ grub_biosdisk_open (const char *name, grub_disk_t disk)
 
   disk->data = data;
 
+  grub_dprintf ("biosdisk", "opening %s succeeded\n", name);
+
   return GRUB_ERR_NONE;
 }
 
 static void
 grub_biosdisk_close (grub_disk_t disk)
 {
+  grub_dprintf ("biosdisk", "closing %s\n", disk->name);
   grub_free (disk->data);
 }
 
@@ -577,6 +594,9 @@ static grub_err_t
 grub_biosdisk_read (grub_disk_t disk, grub_disk_addr_t sector,
 		    grub_size_t size, char *buf)
 {
+  grub_dprintf ("biosdisk", "reading 0x%lx sectors at 0x%llx from %s\n",
+		(unsigned long) size, (unsigned long long) sector, disk->name);
+
   while (size)
     {
       grub_size_t len;
@@ -606,6 +626,9 @@ grub_biosdisk_write (grub_disk_t disk, grub_disk_addr_t sector,
 		     grub_size_t size, const char *buf)
 {
   struct grub_biosdisk_data *data = disk->data;
+
+  grub_dprintf ("biosdisk", "writing 0x%lx sectors at 0x%llx to %s\n",
+		(unsigned long) size, (unsigned long long) sector, disk->name);
 
   if (data->flags & GRUB_BIOSDISK_FLAG_CDROM)
     return grub_error (GRUB_ERR_IO, N_("cannot write to CD-ROM"));
