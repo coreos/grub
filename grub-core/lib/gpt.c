@@ -626,10 +626,17 @@ grub_gpt_write_table (grub_disk_t disk, grub_gpt_t gpt,
 		       sizeof (*header));
 
   addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->header_lba));
+  if (addr == 0)
+    return grub_error (GRUB_ERR_BUG,
+		       "Refusing to write GPT header to address 0x0");
   if (grub_disk_write (disk, addr, 0, sizeof (*header), header))
     return grub_errno;
 
   addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->partitions));
+  if (addr < 2)
+    return grub_error (GRUB_ERR_BUG,
+		       "Refusing to write GPT entries to address 0x%llx",
+		       (unsigned long long) addr);
   if (grub_disk_write (disk, addr, 0, gpt->entries_size, gpt->entries))
     return grub_errno;
 
