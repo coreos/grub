@@ -50,7 +50,8 @@ static const struct grub_arg_option options[] =
   };
 
 static grub_err_t
-grub_cmd_fwconfig (grub_extcmd_context_t ctxt, int argc, char **argv)
+grub_cmd_fwconfig (grub_extcmd_context_t ctxt __attribute__ ((unused)),
+                   int argc, char **argv)
 {
   grub_uint32_t i, j, value = 0;
   struct grub_qemu_fwcfgfile file;
