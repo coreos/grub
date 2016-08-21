@@ -91,7 +91,7 @@ grub_find_next (const char *disk_name,
   if (!gpt)
     goto done;
 
-  if (!(gpt->status & GRUB_GPT_BOTH_VALID))
+  if ((gpt->status & GRUB_GPT_BOTH_VALID) != GRUB_GPT_BOTH_VALID)
     if (grub_gpt_repair (dev->disk, gpt))
       goto done;
 

@@ -593,7 +593,7 @@ grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt)
 {
   /* TODO: update/repair protective MBRs too.  */
 
-  if (!(gpt->status & GRUB_GPT_BOTH_VALID))
+  if ((gpt->status & GRUB_GPT_BOTH_VALID) != GRUB_GPT_BOTH_VALID)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "Invalid GPT data");
 
   grub_dprintf ("gpt", "writing primary GPT to %s\n", disk->name);
