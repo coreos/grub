@@ -75,12 +75,17 @@ grub_err_t grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,
 grub_err_t grub_tpm_log_event(unsigned char *buf, grub_size_t size,
 			      grub_uint8_t pcr, const char *description);
 #else
-static inline grub_err_t grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,
-					  PassThroughToTPM_OutputParamBlock *outbuf) { return 0; };
-static inline grub_err_t grub_tpm_log_event(unsigned char *buf,
-					    grub_size_t size,
-					    grub_uint8_t pcr,
-					    const char *description)
+static inline grub_err_t grub_tpm_execute(
+	PassThroughToTPM_InputParamBlock *inbuf __attribute__ ((unused)),
+	PassThroughToTPM_OutputParamBlock *outbuf __attribute__ ((unused)))
+{
+	return 0;
+};
+static inline grub_err_t grub_tpm_log_event(
+	unsigned char *buf __attribute__ ((unused)),
+	grub_size_t size __attribute__ ((unused)),
+	grub_uint8_t pcr __attribute__ ((unused)),
+	const char *description __attribute__ ((unused)))
 {
 	return 0;
 };
