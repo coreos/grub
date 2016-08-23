@@ -264,6 +264,7 @@ grub_gpt_headers_equal (grub_gpt_t gpt)
 
   if (gpt->primary.headersize != gpt->backup.headersize ||
       gpt->primary.header_lba != gpt->backup.alternate_lba ||
+      gpt->primary.alternate_lba != gpt->backup.header_lba ||
       gpt->primary.start != gpt->backup.start ||
       gpt->primary.end != gpt->backup.end ||
       gpt->primary.maxpart != gpt->backup.maxpart ||
