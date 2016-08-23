@@ -425,13 +425,21 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   grub_disk_addr_t addr;
 
   /* Assumes gpt->log_sector_size == disk->log_sector_size  */
-  if (grub_gpt_disk_size_valid(disk))
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+    {
+      sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
+      if (grub_gpt_disk_size_valid (disk) && sector >= disk->total_sectors)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   "backup GPT located at 0x%llx, "
+			   "beyond last disk sector at 0x%llx",
+			   (unsigned long long) sector,
+			   (unsigned long long) disk->total_sectors - 1);
+    }
+  else if (grub_gpt_disk_size_valid (disk))
     sector = disk->total_sectors - 1;
-  else if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
   else
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unable to locate backup GPT");
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "size of disk unknown, cannot locate backup GPT");
 
   grub_dprintf ("gpt", "reading backup GPT from sector 0x%llx\n",
 		(unsigned long long) sector);
