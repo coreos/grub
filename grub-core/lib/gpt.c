@@ -224,6 +224,7 @@ grub_gpt_header_check (struct grub_gpt_header *gpt,
 		       unsigned int log_sector_size)
 {
   grub_uint32_t crc = 0, size;
+  grub_uint64_t start, end;
 
   if (grub_memcmp (gpt->magic, grub_gpt_magic, sizeof (grub_gpt_magic)) != 0)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT signature");
@@ -245,7 +246,34 @@ grub_gpt_header_check (struct grub_gpt_header *gpt,
   if (size < 128 || size % 128)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT entry size");
 
+  /* And of course there better be some space for partitions!  */
+  start = grub_le_to_cpu64 (gpt->start);
+  end = grub_le_to_cpu64 (gpt->end);
+  if (start > end)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid usable sectors");
+
   return GRUB_ERR_NONE;
+}
+
+static int
+grub_gpt_headers_equal (grub_gpt_t gpt)
+{
+  /* Assume headers passed grub_gpt_header_check so skip magic and version.
+   * Individual fields must be checked instead of just using memcmp because
+   * crc32, header, alternate, and partitions will all normally differ.  */
+
+  if (gpt->primary.headersize != gpt->backup.headersize ||
+      gpt->primary.header_lba != gpt->backup.alternate_lba ||
+      gpt->primary.alternate_lba != gpt->backup.header_lba ||
+      gpt->primary.start != gpt->backup.start ||
+      gpt->primary.end != gpt->backup.end ||
+      gpt->primary.maxpart != gpt->backup.maxpart ||
+      gpt->primary.partentry_size != gpt->backup.partentry_size ||
+      gpt->primary.partentry_crc32 != gpt->backup.partentry_crc32)
+    return 0;
+
+  return grub_memcmp(&gpt->primary.guid, &gpt->backup.guid,
+                     sizeof(grub_gpt_guid_t)) == 0;
 }
 
 static grub_err_t
@@ -273,6 +301,12 @@ grub_gpt_check_primary (grub_gpt_t gpt)
 
   if (grub_gpt_header_check (&gpt->primary, gpt->log_sector_size))
     return grub_errno;
+  if (primary != 1)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid primary GPT LBA");
+  if (entries <= 1 || entries+entries_len > start)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid entries location");
+  if (backup <= end)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
 
   return GRUB_ERR_NONE;
 }
@@ -302,6 +336,12 @@ grub_gpt_check_backup (grub_gpt_t gpt)
 
   if (grub_gpt_header_check (&gpt->backup, gpt->log_sector_size))
     return grub_errno;
+  if (primary != 1)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid primary GPT LBA");
+  if (entries <= end || entries+entries_len > backup)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid entries location");
+  if (backup <= end)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
 
   return GRUB_ERR_NONE;
 }
@@ -353,6 +393,15 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
 
   if (grub_gpt_check_backup (gpt))
     return grub_errno;
+
+  /* Ensure the backup header thinks it is located where we found it.  */
+  if (grub_le_to_cpu64 (gpt->backup.header_lba) != sector)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
+
+  /* If both primary and backup are valid but differ prefer the primary.  */
+  if ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
+      !grub_gpt_headers_equal(gpt))
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT of of sync");
 
   gpt->status |= GRUB_GPT_BACKUP_HEADER_VALID;
   return GRUB_ERR_NONE;
@@ -578,10 +627,17 @@ grub_gpt_write_table (grub_disk_t disk, grub_gpt_t gpt,
 		       sizeof (*header));
 
   addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->header_lba));
+  if (addr == 0)
+    return grub_error (GRUB_ERR_BUG,
+		       "Refusing to write GPT header to address 0x0");
   if (grub_disk_write (disk, addr, 0, sizeof (*header), header))
     return grub_errno;
 
   addr = grub_gpt_sector_to_addr (gpt, grub_le_to_cpu64 (header->partitions));
+  if (addr < 2)
+    return grub_error (GRUB_ERR_BUG,
+		       "Refusing to write GPT entries to address 0x%llx",
+		       (unsigned long long) addr);
   if (grub_disk_write (disk, addr, 0, gpt->entries_size, gpt->entries))
     return grub_errno;
 
