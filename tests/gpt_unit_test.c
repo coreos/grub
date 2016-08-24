@@ -40,6 +40,13 @@
 /* from gnulib */
 #include <verify.h>
 
+/* Confirm that the GPT structures conform to the sizes in the spec:
+ * The header size "must be greater than or equal to 92 and must be less
+ * than or equal to the logical block size."
+ * The partition entry size must be "a value of 128*(2^n) where n is an
+ * integer greater than or equal to zero (e.g., 128, 256, 512, etc.)."  */
+verify (sizeof (struct grub_gpt_header) == 92);
+verify (sizeof (struct grub_gpt_partentry) == 128);
 
 /* GPT section sizes.  */
 #define HEADER_SIZE   (sizeof (struct grub_gpt_header))
@@ -538,6 +545,113 @@ repair_test (void)
 }
 
 static void
+iterate_partitions_test (void)
+{
+  struct test_data data;
+  struct grub_gpt_partentry *p;
+  grub_gpt_t gpt;
+  grub_uint32_t n;
+
+  open_disk (&data);
+  gpt = read_disk (&data);
+
+  for (n = 0; (p = grub_gpt_get_partentry (gpt, n)) != NULL; n++)
+    grub_test_assert (memcmp (p, &example_entries[n], sizeof (*p)) == 0,
+		      "unexpected partition %d data", n);
+
+  grub_test_assert (n == TABLE_ENTRIES, "unexpected partition limit: %d", n);
+
+  grub_gpt_free (gpt);
+  close_disk (&data);
+}
+
+static void
+large_partitions_test (void)
+{
+  struct test_data data;
+  struct grub_gpt_partentry *p;
+  grub_gpt_t gpt;
+  grub_uint32_t n;
+
+  open_disk (&data);
+
+  /* Double the entry size, cut the number of entries in half.  */
+  data.raw->primary_header.maxpart =
+    data.raw->backup_header.maxpart =
+    grub_cpu_to_le32_compile_time (TABLE_ENTRIES/2);
+  data.raw->primary_header.partentry_size =
+    data.raw->backup_header.partentry_size =
+    grub_cpu_to_le32_compile_time (ENTRY_SIZE*2);
+  data.raw->primary_header.partentry_crc32 =
+    data.raw->backup_header.partentry_crc32 =
+    grub_cpu_to_le32_compile_time (0xf2c45af8);
+  data.raw->primary_header.crc32 = grub_cpu_to_le32_compile_time (0xde00cc8f);
+  data.raw->backup_header.crc32 = grub_cpu_to_le32_compile_time (0x6d72e284);
+
+  memset (&data.raw->primary_entries, 0,
+	  sizeof (data.raw->primary_entries));
+  for (n = 0; n < TABLE_ENTRIES/2; n++)
+    memcpy (&data.raw->primary_entries[n*2], &example_entries[n],
+	    sizeof (data.raw->primary_entries[0]));
+  memcpy (&data.raw->backup_entries, &data.raw->primary_entries,
+	  sizeof (data.raw->backup_entries));
+
+  sync_disk(&data);
+  gpt = read_disk (&data);
+
+  for (n = 0; (p = grub_gpt_get_partentry (gpt, n)) != NULL; n++)
+    grub_test_assert (memcmp (p, &example_entries[n], sizeof (*p)) == 0,
+		      "unexpected partition %d data", n);
+
+  grub_test_assert (n == TABLE_ENTRIES/2, "unexpected partition limit: %d", n);
+
+  grub_gpt_free (gpt);
+
+  /* Editing memory beyond the entry structure should still change the crc.  */
+  data.raw->primary_entries[1].attrib = 0xff;
+
+  sync_disk(&data);
+  gpt = read_disk (&data);
+  grub_test_assert (gpt->status == (GRUB_GPT_PROTECTIVE_MBR |
+				    GRUB_GPT_PRIMARY_HEADER_VALID |
+				    GRUB_GPT_BACKUP_HEADER_VALID |
+				    GRUB_GPT_BACKUP_ENTRIES_VALID),
+		    "unexpected status: 0x%02x", gpt->status);
+  grub_gpt_free (gpt);
+
+  close_disk (&data);
+}
+
+static void
+invalid_partsize_test (void)
+{
+  struct grub_gpt_header header = {
+    .magic = GRUB_GPT_HEADER_MAGIC,
+    .version = GRUB_GPT_HEADER_VERSION,
+    .headersize = sizeof (struct grub_gpt_header),
+    .crc32 = grub_cpu_to_le32_compile_time (0x1ff2a054),
+    .header_lba = grub_cpu_to_le64_compile_time (PRIMARY_HEADER_SECTOR),
+    .alternate_lba = grub_cpu_to_le64_compile_time (BACKUP_HEADER_SECTOR),
+    .start = grub_cpu_to_le64_compile_time (DATA_START_SECTOR),
+    .end = grub_cpu_to_le64_compile_time (DATA_END_SECTOR),
+    .guid = GRUB_GPT_GUID_INIT(0x69c131ad, 0x67d6, 0x46c6,
+			       0x93, 0xc4, 0x12, 0x4c, 0x75, 0x52, 0x56, 0xac),
+    .partitions = grub_cpu_to_le64_compile_time (PRIMARY_TABLE_SECTOR),
+    .maxpart = grub_cpu_to_le32_compile_time (TABLE_ENTRIES),
+    /* Triple the entry size, which is not valid.  */
+    .partentry_size = grub_cpu_to_le32_compile_time (ENTRY_SIZE*3),
+    .partentry_crc32 = grub_cpu_to_le32_compile_time (0x074e052c),
+  };
+
+  grub_gpt_header_check(&header, GRUB_DISK_SECTOR_BITS);
+  grub_test_assert (grub_errno == GRUB_ERR_BAD_PART_TABLE,
+		    "unexpected error: %s", grub_errmsg);
+  grub_test_assert (strcmp(grub_errmsg, "invalid GPT entry size") == 0,
+		    "unexpected error: %s", grub_errmsg);
+  grub_errno = GRUB_ERR_NONE;
+}
+
+static void
 search_part_label_test (void)
 {
   struct test_data data;
@@ -657,6 +771,9 @@ grub_unit_test_init (void)
   grub_test_register ("gpt_read_invalid_test", read_invalid_entries_test);
   grub_test_register ("gpt_read_fallback_test", read_fallback_test);
   grub_test_register ("gpt_repair_test", repair_test);
+  grub_test_register ("gpt_iterate_partitions_test", iterate_partitions_test);
+  grub_test_register ("gpt_large_partitions_test", large_partitions_test);
+  grub_test_register ("gpt_invalid_partsize_test", invalid_partsize_test);
   grub_test_register ("gpt_search_part_label_test", search_part_label_test);
   grub_test_register ("gpt_search_uuid_test", search_part_uuid_test);
   grub_test_register ("gpt_search_disk_uuid_test", search_disk_uuid_test);
@@ -671,6 +788,9 @@ grub_unit_test_fini (void)
   grub_test_unregister ("gpt_read_invalid_test");
   grub_test_unregister ("gpt_read_fallback_test");
   grub_test_unregister ("gpt_repair_test");
+  grub_test_unregister ("gpt_iterate_partitions_test");
+  grub_test_unregister ("gpt_large_partitions_test");
+  grub_test_unregister ("gpt_invalid_partsize_test");
   grub_test_unregister ("gpt_search_part_label_test");
   grub_test_unregister ("gpt_search_part_uuid_test");
   grub_test_unregister ("gpt_search_disk_uuid_test");

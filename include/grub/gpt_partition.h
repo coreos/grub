@@ -186,8 +186,10 @@ struct grub_gpt
   struct grub_gpt_header primary;
   struct grub_gpt_header backup;
 
-  /* Only need one entries table, on disk both copies are identical.  */
-  struct grub_gpt_partentry *entries;
+  /* Only need one entries table, on disk both copies are identical.
+   * The on disk entry size may be larger than our partentry struct so
+   * the table cannot be indexed directly.  */
+  void *entries;
   grub_size_t entries_size;
 
   /* Logarithm of sector size, in case GPT and disk driver disagree.  */
@@ -204,6 +206,11 @@ grub_gpt_sector_to_addr (grub_gpt_t gpt, grub_uint64_t sector)
 
 /* Allocates and fills new grub_gpt structure, free with grub_gpt_free.  */
 grub_gpt_t grub_gpt_read (grub_disk_t disk);
+
+/* Helper for indexing into the entries table.
+ * Returns NULL when the end of the table has been reached.  */
+struct grub_gpt_partentry * grub_gpt_get_partentry (grub_gpt_t gpt,
+						    grub_uint32_t n);
 
 /* Sync up primary and backup headers, recompute checksums.  */
 grub_err_t grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt);
