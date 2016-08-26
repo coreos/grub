@@ -108,21 +108,32 @@ grub_gpt_part_uuid (grub_device_t device, char **uuid)
   return GRUB_ERR_NONE;
 }
 
+static struct grub_gpt_header *
+grub_gpt_get_header (grub_gpt_t gpt)
+{
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+    return &gpt->primary;
+  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
+    return &gpt->backup;
+
+  grub_error (GRUB_ERR_BUG, "No valid GPT header");
+  return NULL;
+}
+
 grub_err_t
 grub_gpt_disk_uuid (grub_device_t device, char **uuid)
 {
+  struct grub_gpt_header *header;
+
   grub_gpt_t gpt = grub_gpt_read (device->disk);
   if (!gpt)
     goto done;
 
-  grub_errno = GRUB_ERR_NONE;
+  header = grub_gpt_get_header (gpt);
+  if (!header)
+    goto done;
 
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    *uuid = grub_gpt_guid_to_str (&gpt->primary.guid);
-  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
-    *uuid = grub_gpt_guid_to_str (&gpt->backup.guid);
-  else
-    grub_errno = grub_error (GRUB_ERR_BUG, "No valid GPT header");
+  *uuid = grub_gpt_guid_to_str (&header->guid);
 
 done:
   grub_gpt_free (gpt);
@@ -560,11 +571,8 @@ grub_gpt_get_partentry (grub_gpt_t gpt, grub_uint32_t n)
   struct grub_gpt_header *header;
   grub_size_t offset;
 
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    header = &gpt->primary;
-  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
-    header = &gpt->backup;
-  else
+  header = grub_gpt_get_header (gpt);
+  if (!header)
     return NULL;
 
   if (n >= grub_le_to_cpu32 (header->maxpart))
