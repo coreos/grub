@@ -108,21 +108,32 @@ grub_gpt_part_uuid (grub_device_t device, char **uuid)
   return GRUB_ERR_NONE;
 }
 
+static struct grub_gpt_header *
+grub_gpt_get_header (grub_gpt_t gpt)
+{
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+    return &gpt->primary;
+  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
+    return &gpt->backup;
+
+  grub_error (GRUB_ERR_BUG, "No valid GPT header");
+  return NULL;
+}
+
 grub_err_t
 grub_gpt_disk_uuid (grub_device_t device, char **uuid)
 {
+  struct grub_gpt_header *header;
+
   grub_gpt_t gpt = grub_gpt_read (device->disk);
   if (!gpt)
     goto done;
 
-  grub_errno = GRUB_ERR_NONE;
+  header = grub_gpt_get_header (gpt);
+  if (!header)
+    goto done;
 
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    *uuid = grub_gpt_guid_to_str (&gpt->primary.guid);
-  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
-    *uuid = grub_gpt_guid_to_str (&gpt->backup.guid);
-  else
-    grub_errno = grub_error (GRUB_ERR_BUG, "No valid GPT header");
+  *uuid = grub_gpt_guid_to_str (&header->guid);
 
 done:
   grub_gpt_free (gpt);
@@ -208,15 +219,27 @@ grub_gpt_pmbr_check (struct grub_msdos_partition_mbr *mbr)
 }
 
 static grub_uint64_t
+grub_gpt_entries_size (struct grub_gpt_header *gpt)
+{
+  return (grub_uint64_t) grub_le_to_cpu32 (gpt->maxpart) *
+         (grub_uint64_t) grub_le_to_cpu32 (gpt->partentry_size);
+}
+
+static grub_uint64_t
 grub_gpt_entries_sectors (struct grub_gpt_header *gpt,
 			  unsigned int log_sector_size)
 {
   grub_uint64_t sector_bytes, entries_bytes;
 
   sector_bytes = 1ULL << log_sector_size;
-  entries_bytes = (grub_uint64_t) grub_le_to_cpu32 (gpt->maxpart) *
-		  (grub_uint64_t) grub_le_to_cpu32 (gpt->partentry_size);
+  entries_bytes = grub_gpt_entries_size (gpt);
   return grub_divmod64(entries_bytes + sector_bytes - 1, sector_bytes, NULL);
+}
+
+static int
+is_pow2 (grub_uint32_t n)
+{
+  return (n & (n - 1)) == 0;
 }
 
 grub_err_t
@@ -236,15 +259,22 @@ grub_gpt_header_check (struct grub_gpt_header *gpt,
   if (gpt->crc32 != crc)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT header crc32");
 
-  /* The header size must be between 92 and the sector size.  */
+  /* The header size "must be greater than or equal to 92 and must be less
+   * than or equal to the logical block size."  */
   size = grub_le_to_cpu32 (gpt->headersize);
   if (size < 92U || size > (1U << log_sector_size))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT header size");
 
-  /* The partition entry size must be a multiple of 128.  */
+  /* The partition entry size must be "a value of 128*(2^n) where n is an
+   * integer greater than or equal to zero (e.g., 128, 256, 512, etc.)."  */
   size = grub_le_to_cpu32 (gpt->partentry_size);
-  if (size < 128 || size % 128)
+  if (size < 128U || size % 128U || !is_pow2 (size / 128U))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT entry size");
+
+  /* The minimum entries table size is specified in terms of bytes,
+   * regardless of how large the individual entry size is.  */
+  if (grub_gpt_entries_size (gpt) < GRUB_GPT_DEFAULT_ENTRIES_SIZE)
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid GPT entry table size");
 
   /* And of course there better be some space for partitions!  */
   start = grub_le_to_cpu64 (gpt->start);
@@ -411,7 +441,7 @@ static grub_err_t
 grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
 		       struct grub_gpt_header *header)
 {
-  struct grub_gpt_partentry *entries = NULL;
+  void *entries = NULL;
   grub_uint32_t count, size, crc;
   grub_uint64_t sector;
   grub_disk_addr_t addr;
@@ -525,6 +555,23 @@ grub_gpt_read (grub_disk_t disk)
 fail:
   grub_gpt_free (gpt);
   return NULL;
+}
+
+struct grub_gpt_partentry *
+grub_gpt_get_partentry (grub_gpt_t gpt, grub_uint32_t n)
+{
+  struct grub_gpt_header *header;
+  grub_size_t offset;
+
+  header = grub_gpt_get_header (gpt);
+  if (!header)
+    return NULL;
+
+  if (n >= grub_le_to_cpu32 (header->maxpart))
+    return NULL;
+
+  offset = (grub_size_t) grub_le_to_cpu32 (header->partentry_size) * n;
+  return (struct grub_gpt_partentry *) ((char *) gpt->entries + offset);
 }
 
 grub_err_t
