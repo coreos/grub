@@ -631,10 +631,15 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   if (grub_gpt_check_primary (gpt))
     return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
 
+  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
+		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
+
   if (grub_gpt_check_backup (gpt))
     return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
 
-  gpt->status |= GRUB_GPT_BOTH_VALID;
+  gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
+		  GRUB_GPT_BACKUP_ENTRIES_VALID);
+
   grub_dprintf ("gpt", "repairing GPT for %s successful\n", disk->name);
 
   return GRUB_ERR_NONE;
@@ -696,7 +701,7 @@ grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt)
 {
   /* TODO: update/repair protective MBRs too.  */
 
-  if ((gpt->status & GRUB_GPT_BOTH_VALID) != GRUB_GPT_BOTH_VALID)
+  if (!grub_gpt_both_valid (gpt))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "Invalid GPT data");
 
   grub_dprintf ("gpt", "writing primary GPT to %s\n", disk->name);
