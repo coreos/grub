@@ -579,6 +579,10 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 {
   grub_uint64_t backup_header, backup_entries;
 
+  /* Skip if there is nothing to do.  */
+  if (grub_gpt_both_valid (gpt))
+    return GRUB_ERR_NONE;
+
   grub_dprintf ("gpt", "repairing GPT for %s\n", disk->name);
 
   if (disk->log_sector_size != gpt->log_sector_size)
