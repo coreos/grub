@@ -65,16 +65,16 @@ grub_cmd_gptrepair (grub_command_t cmd __attribute__ ((unused)),
   if (!gpt)
     goto done;
 
-  if ((gpt->status & GRUB_GPT_BOTH_VALID) == GRUB_GPT_BOTH_VALID)
+  if (grub_gpt_both_valid (gpt))
     {
       grub_printf_ (N_("GPT already valid, %s unmodified.\n"), dev_name);
       goto done;
     }
 
-  if ((gpt->status & GRUB_GPT_PRIMARY_VALID) != GRUB_GPT_PRIMARY_VALID)
+  if (!grub_gpt_primary_valid (gpt))
     grub_printf_ (N_("Found invalid primary GPT on %s\n"), dev_name);
 
-  if ((gpt->status & GRUB_GPT_BACKUP_VALID) != GRUB_GPT_BACKUP_VALID)
+  if (!grub_gpt_backup_valid (gpt))
     grub_printf_ (N_("Found invalid backup GPT on %s\n"), dev_name);
 
   if (grub_gpt_repair (dev->disk, gpt))
