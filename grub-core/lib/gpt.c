@@ -597,24 +597,20 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "GPT sector size must match disk sector size");
 
-  if (!(gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID ||
-	gpt->status & GRUB_GPT_BACKUP_ENTRIES_VALID))
-    return grub_error (GRUB_ERR_BUG, "No valid GPT entries");
-
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+  if (grub_gpt_primary_valid (gpt))
     {
-      grub_dprintf ("gpt", "primary GPT header is valid\n");
+      grub_dprintf ("gpt", "primary GPT is valid\n");
       backup_header = grub_le_to_cpu64 (gpt->primary.alternate_lba);
       grub_memcpy (&gpt->backup, &gpt->primary, sizeof (gpt->backup));
     }
-  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
+  else if (grub_gpt_backup_valid (gpt))
     {
-      grub_dprintf ("gpt", "backup GPT header is valid\n");
+      grub_dprintf ("gpt", "backup GPT is valid\n");
       backup_header = grub_le_to_cpu64 (gpt->backup.header_lba);
       grub_memcpy (&gpt->primary, &gpt->backup, sizeof (gpt->primary));
     }
   else
-    return grub_error (GRUB_ERR_BUG, "No valid GPT header");
+    return grub_error (GRUB_ERR_BUG, "No valid GPT");
 
   /* Relocate backup to end if disk whenever possible.  */
   if (grub_gpt_disk_size_valid(disk))
