@@ -677,13 +677,19 @@ grub_gpt_update_checksums (grub_gpt_t gpt)
   grub_gpt_header_lecrc32 (&gpt->backup.crc32, &gpt->backup);
 
   if (grub_gpt_check_primary (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
+    }
 
   gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
 		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
 
   if (grub_gpt_check_backup (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
+    }
 
   gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
 		  GRUB_GPT_BACKUP_ENTRIES_VALID);
