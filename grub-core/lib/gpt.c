@@ -623,22 +623,8 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   else
     return grub_error (GRUB_ERR_BUG, "No valid GPT");
 
-  /* Recompute checksums.  */
   if (grub_gpt_update_checksums (gpt))
     return grub_errno;
-
-  /* Sanity check.  */
-  if (grub_gpt_check_primary (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
-
-  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
-		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
-
-  if (grub_gpt_check_backup (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
-
-  gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
-		  GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   grub_dprintf ("gpt", "repairing GPT for %s successful\n", disk->name);
 
@@ -649,6 +635,12 @@ grub_err_t
 grub_gpt_update_checksums (grub_gpt_t gpt)
 {
   grub_uint32_t crc;
+
+  /* Clear status bits, require revalidation of everything.  */
+  gpt->status &= ~(GRUB_GPT_PRIMARY_HEADER_VALID |
+		   GRUB_GPT_PRIMARY_ENTRIES_VALID |
+		   GRUB_GPT_BACKUP_HEADER_VALID |
+		   GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   /* Writing headers larger than our header structure are unsupported.  */
   gpt->primary.headersize =
@@ -662,6 +654,18 @@ grub_gpt_update_checksums (grub_gpt_t gpt)
 
   grub_gpt_header_lecrc32 (&gpt->primary.crc32, &gpt->primary);
   grub_gpt_header_lecrc32 (&gpt->backup.crc32, &gpt->backup);
+
+  if (grub_gpt_check_primary (gpt))
+    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
+
+  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
+		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
+
+  if (grub_gpt_check_backup (gpt))
+    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
+
+  gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
+		  GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   return GRUB_ERR_NONE;
 }
