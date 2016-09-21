@@ -592,7 +592,17 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   if (grub_gpt_primary_valid (gpt))
     {
       grub_dprintf ("gpt", "primary GPT is valid\n");
+
+      /* Relocate backup to end if disk if the disk has grown.  */
       backup_header = grub_le_to_cpu64 (gpt->primary.alternate_lba);
+      if (grub_gpt_disk_size_valid (disk) &&
+	  disk->total_sectors - 1 > backup_header)
+	{
+	  backup_header = disk->total_sectors - 1;
+	  grub_dprintf ("gpt", "backup GPT header relocated to 0x%llx\n",
+			(unsigned long long) backup_header);
+	}
+
       grub_memcpy (&gpt->backup, &gpt->primary, sizeof (gpt->backup));
     }
   else if (grub_gpt_backup_valid (gpt))
@@ -603,12 +613,6 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
     }
   else
     return grub_error (GRUB_ERR_BUG, "No valid GPT");
-
-  /* Relocate backup to end if disk whenever possible.  */
-  if (grub_gpt_disk_size_valid(disk))
-    backup_header = disk->total_sectors - 1;
-  grub_dprintf ("gpt", "backup GPT header will be located at 0x%llx\n",
-		(unsigned long long) backup_header);
 
   backup_entries = backup_header -
     grub_gpt_size_to_sectors (gpt, gpt->entries_size);
