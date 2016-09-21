@@ -151,15 +151,14 @@ grub_gpt_partition_map_iterate (grub_disk_t disk,
 				void *hook_data);
 
 /* Advanced GPT library.  */
-typedef enum grub_gpt_status
-  {
-    GRUB_GPT_PROTECTIVE_MBR         = 0x01,
-    GRUB_GPT_HYBRID_MBR             = 0x02,
-    GRUB_GPT_PRIMARY_HEADER_VALID   = 0x04,
-    GRUB_GPT_PRIMARY_ENTRIES_VALID  = 0x08,
-    GRUB_GPT_BACKUP_HEADER_VALID    = 0x10,
-    GRUB_GPT_BACKUP_ENTRIES_VALID   = 0x20,
-  } grub_gpt_status_t;
+
+/* Status bits for the grub_gpt.status field.  */
+#define GRUB_GPT_PROTECTIVE_MBR		0x01
+#define GRUB_GPT_HYBRID_MBR		0x02
+#define GRUB_GPT_PRIMARY_HEADER_VALID	0x04
+#define GRUB_GPT_PRIMARY_ENTRIES_VALID	0x08
+#define GRUB_GPT_BACKUP_HEADER_VALID	0x10
+#define GRUB_GPT_BACKUP_ENTRIES_VALID	0x20
 
 /* UEFI requires the entries table to be at least 16384 bytes for a
  * total of 128 entries given the standard 128 byte entry size.  */
@@ -170,7 +169,7 @@ typedef enum grub_gpt_status
 struct grub_gpt
 {
   /* Bit field indicating which structures on disk are valid.  */
-  grub_gpt_status_t status;
+  unsigned status;
 
   /* Protective or hybrid MBR.  */
   struct grub_msdos_partition_mbr mbr;
