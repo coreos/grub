@@ -46,8 +46,6 @@ grub_cmd_gptrepair (grub_command_t cmd __attribute__ ((unused)),
   grub_device_t dev = NULL;
   grub_gpt_t gpt = NULL;
   char *dev_name;
-  grub_uint32_t primary_crc, backup_crc;
-  enum grub_gpt_status old_status;
 
   if (argc != 1 || !grub_strlen(args[0]))
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "device name required");
@@ -67,29 +65,25 @@ grub_cmd_gptrepair (grub_command_t cmd __attribute__ ((unused)),
   if (!gpt)
     goto done;
 
-  primary_crc = gpt->primary.crc32;
-  backup_crc = gpt->backup.crc32;
-  old_status = gpt->status;
-
-  if (grub_gpt_repair (dev->disk, gpt))
-    goto done;
-
-  if (primary_crc == gpt->primary.crc32 &&
-      backup_crc == gpt->backup.crc32 &&
-      old_status && gpt->status)
+  if (grub_gpt_both_valid (gpt))
     {
       grub_printf_ (N_("GPT already valid, %s unmodified.\n"), dev_name);
       goto done;
     }
 
+  if (!grub_gpt_primary_valid (gpt))
+    grub_printf_ (N_("Found invalid primary GPT on %s\n"), dev_name);
+
+  if (!grub_gpt_backup_valid (gpt))
+    grub_printf_ (N_("Found invalid backup GPT on %s\n"), dev_name);
+
+  if (grub_gpt_repair (dev->disk, gpt))
+    goto done;
+
   if (grub_gpt_write (dev->disk, gpt))
     goto done;
 
-  if (!(old_status & GRUB_GPT_PRIMARY_VALID))
-    grub_printf_ (N_("Primary GPT for %s repaired.\n"), dev_name);
-
-  if (!(old_status & GRUB_GPT_BACKUP_VALID))
-    grub_printf_ (N_("Backup GPT for %s repaired.\n"), dev_name);
+  grub_printf_ (N_("Repaired GPT on %s\n"), dev_name);
 
 done:
   if (gpt)

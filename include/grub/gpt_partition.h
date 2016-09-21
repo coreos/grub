@@ -161,13 +161,6 @@ typedef enum grub_gpt_status
     GRUB_GPT_BACKUP_ENTRIES_VALID   = 0x20,
   } grub_gpt_status_t;
 
-#define GRUB_GPT_MBR_VALID (GRUB_GPT_PROTECTIVE_MBR|GRUB_GPT_HYBRID_MBR)
-#define GRUB_GPT_PRIMARY_VALID \
-  (GRUB_GPT_PRIMARY_HEADER_VALID|GRUB_GPT_PRIMARY_ENTRIES_VALID)
-#define GRUB_GPT_BACKUP_VALID \
-  (GRUB_GPT_BACKUP_HEADER_VALID|GRUB_GPT_BACKUP_ENTRIES_VALID)
-#define GRUB_GPT_BOTH_VALID (GRUB_GPT_PRIMARY_VALID|GRUB_GPT_BACKUP_VALID)
-
 /* UEFI requires the entries table to be at least 16384 bytes for a
  * total of 128 entries given the standard 128 byte entry size.  */
 #define GRUB_GPT_DEFAULT_ENTRIES_SIZE	16384
@@ -196,6 +189,34 @@ struct grub_gpt
   unsigned int log_sector_size;
 };
 typedef struct grub_gpt *grub_gpt_t;
+
+/* Helpers for checking the gpt status field.  */
+static inline int
+grub_gpt_mbr_valid (grub_gpt_t gpt)
+{
+  return ((gpt->status & GRUB_GPT_PROTECTIVE_MBR) ||
+	  (gpt->status & GRUB_GPT_HYBRID_MBR));
+}
+
+static inline int
+grub_gpt_primary_valid (grub_gpt_t gpt)
+{
+  return ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
+	  (gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID));
+}
+
+static inline int
+grub_gpt_backup_valid (grub_gpt_t gpt)
+{
+  return ((gpt->status & GRUB_GPT_BACKUP_HEADER_VALID) &&
+	  (gpt->status & GRUB_GPT_BACKUP_ENTRIES_VALID));
+}
+
+static inline int
+grub_gpt_both_valid (grub_gpt_t gpt)
+{
+  return grub_gpt_primary_valid (gpt) && grub_gpt_backup_valid (gpt);
+}
 
 /* Translate GPT sectors to GRUB's 512 byte block addresses.  */
 static inline grub_disk_addr_t
