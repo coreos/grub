@@ -585,8 +585,6 @@ grub_gpt_get_partentry (grub_gpt_t gpt, grub_uint32_t n)
 grub_err_t
 grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 {
-  grub_uint64_t backup_header, backup_entries;
-
   /* Skip if there is nothing to do.  */
   if (grub_gpt_both_valid (gpt))
     return GRUB_ERR_NONE;
@@ -599,6 +597,8 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 
   if (grub_gpt_primary_valid (gpt))
     {
+      grub_uint64_t backup_header;
+
       grub_dprintf ("gpt", "primary GPT is valid\n");
 
       /* Relocate backup to end if disk if the disk has grown.  */
@@ -609,31 +609,27 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 	  backup_header = disk->total_sectors - 1;
 	  grub_dprintf ("gpt", "backup GPT header relocated to 0x%llx\n",
 			(unsigned long long) backup_header);
+
+	  gpt->primary.alternate_lba = grub_cpu_to_le64 (backup_header);
 	}
 
       grub_memcpy (&gpt->backup, &gpt->primary, sizeof (gpt->backup));
+      gpt->backup.header_lba = gpt->primary.alternate_lba;
+      gpt->backup.alternate_lba = gpt->primary.header_lba;
+      gpt->backup.partitions = grub_cpu_to_le64 (backup_header -
+	  grub_gpt_size_to_sectors (gpt, gpt->entries_size));
     }
   else if (grub_gpt_backup_valid (gpt))
     {
       grub_dprintf ("gpt", "backup GPT is valid\n");
-      backup_header = grub_le_to_cpu64 (gpt->backup.header_lba);
+
       grub_memcpy (&gpt->primary, &gpt->backup, sizeof (gpt->primary));
+      gpt->primary.header_lba = gpt->backup.alternate_lba;
+      gpt->primary.alternate_lba = gpt->backup.header_lba;
+      gpt->primary.partitions = grub_cpu_to_le64_compile_time (2);
     }
   else
     return grub_error (GRUB_ERR_BUG, "No valid GPT");
-
-  backup_entries = backup_header -
-    grub_gpt_size_to_sectors (gpt, gpt->entries_size);
-  grub_dprintf ("gpt", "backup GPT entries will be located at 0x%llx\n",
-		(unsigned long long) backup_entries);
-
-  /* Update/fixup header and partition table locations.  */
-  gpt->primary.header_lba = grub_cpu_to_le64_compile_time (1);
-  gpt->primary.alternate_lba = grub_cpu_to_le64 (backup_header);
-  gpt->primary.partitions = grub_cpu_to_le64_compile_time (2);
-  gpt->backup.header_lba = gpt->primary.alternate_lba;
-  gpt->backup.alternate_lba = gpt->primary.header_lba;
-  gpt->backup.partitions = grub_cpu_to_le64 (backup_entries);
 
   /* Recompute checksums.  */
   if (grub_gpt_update_checksums (gpt))
