@@ -373,6 +373,11 @@ grub_gpt_check_backup (grub_gpt_t gpt)
   if (backup <= end)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
 
+  /* If both primary and backup are valid but differ prefer the primary.  */
+  if ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
+      !grub_gpt_headers_equal (gpt))
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT out of sync");
+
   return GRUB_ERR_NONE;
 }
 
@@ -427,11 +432,6 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   /* Ensure the backup header thinks it is located where we found it.  */
   if (grub_le_to_cpu64 (gpt->backup.header_lba) != sector)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
-
-  /* If both primary and backup are valid but differ prefer the primary.  */
-  if ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
-      !grub_gpt_headers_equal(gpt))
-    return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT of of sync");
 
   gpt->status |= GRUB_GPT_BACKUP_HEADER_VALID;
   return GRUB_ERR_NONE;
