@@ -644,7 +644,7 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
   else
     return grub_error (GRUB_ERR_BUG, "No valid GPT");
 
-  if (grub_gpt_update_checksums (gpt))
+  if (grub_gpt_update (gpt))
     return grub_errno;
 
   grub_dprintf ("gpt", "repairing GPT for %s successful\n", disk->name);
@@ -653,7 +653,7 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 }
 
 grub_err_t
-grub_gpt_update_checksums (grub_gpt_t gpt)
+grub_gpt_update (grub_gpt_t gpt)
 {
   grub_uint32_t crc;
 

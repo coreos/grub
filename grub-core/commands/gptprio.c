@@ -127,7 +127,7 @@ grub_find_next (const char *disk_name,
 
       grub_gptprio_set_tries_left (part_found, tries_left - 1);
 
-      if (grub_gpt_update_checksums (gpt))
+      if (grub_gpt_update (gpt))
 	goto done;
 
       if (grub_gpt_write (dev->disk, gpt))
