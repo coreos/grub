@@ -32,6 +32,11 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_uint8_t grub_gpt_magic[] = GRUB_GPT_HEADER_MAGIC;
 
+static grub_err_t
+grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
+		       struct grub_gpt_header *header,
+		       void **ret_entries,
+		       grub_size_t *ret_entries_size);
 
 char *
 grub_gpt_guid_to_str (grub_gpt_guid_t *guid)
@@ -373,6 +378,11 @@ grub_gpt_check_backup (grub_gpt_t gpt)
   if (backup <= end)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
 
+  /* If both primary and backup are valid but differ prefer the primary.  */
+  if ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
+      !grub_gpt_headers_equal (gpt))
+    return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT out of sync");
+
   return GRUB_ERR_NONE;
 }
 
@@ -396,12 +406,21 @@ grub_gpt_read_primary (grub_disk_t disk, grub_gpt_t gpt)
     return grub_errno;
 
   gpt->status |= GRUB_GPT_PRIMARY_HEADER_VALID;
+
+  if (grub_gpt_read_entries (disk, gpt, &gpt->primary,
+			     &gpt->entries, &gpt->entries_size))
+    return grub_errno;
+
+  gpt->status |= GRUB_GPT_PRIMARY_ENTRIES_VALID;
+
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
 grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
 {
+  void *entries = NULL;
+  grub_size_t entries_size;
   grub_uint64_t sector;
   grub_disk_addr_t addr;
 
@@ -428,18 +447,36 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   if (grub_le_to_cpu64 (gpt->backup.header_lba) != sector)
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "invalid backup GPT LBA");
 
-  /* If both primary and backup are valid but differ prefer the primary.  */
-  if ((gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID) &&
-      !grub_gpt_headers_equal(gpt))
-    return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT of of sync");
-
   gpt->status |= GRUB_GPT_BACKUP_HEADER_VALID;
+
+  if (grub_gpt_read_entries (disk, gpt, &gpt->backup,
+			     &entries, &entries_size))
+    return grub_errno;
+
+  if (gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID)
+    {
+      if (entries_size != gpt->entries_size ||
+	  grub_memcmp (entries, gpt->entries, entries_size) != 0)
+	return grub_error (GRUB_ERR_BAD_PART_TABLE, "backup GPT out of sync");
+
+      grub_free (entries);
+    }
+  else
+    {
+      gpt->entries = entries;
+      gpt->entries_size = entries_size;
+    }
+
+  gpt->status |= GRUB_GPT_BACKUP_ENTRIES_VALID;
+
   return GRUB_ERR_NONE;
 }
 
 static grub_err_t
 grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
-		       struct grub_gpt_header *header)
+		       struct grub_gpt_header *header,
+		       void **ret_entries,
+		       grub_size_t *ret_entries_size)
 {
   void *entries = NULL;
   grub_uint32_t count, size, crc;
@@ -481,9 +518,8 @@ grub_gpt_read_entries (grub_disk_t disk, grub_gpt_t gpt,
       goto fail;
     }
 
-  grub_free (gpt->entries);
-  gpt->entries = entries;
-  gpt->entries_size = entries_size;
+  *ret_entries = entries;
+  *ret_entries_size = entries_size;
   return GRUB_ERR_NONE;
 
 fail:
@@ -522,30 +558,7 @@ grub_gpt_read (grub_disk_t disk)
     grub_gpt_read_backup (disk, gpt);
 
   /* If either succeeded clear any possible error from the other.  */
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID ||
-      gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
-    grub_errno = GRUB_ERR_NONE;
-  else
-    goto fail;
-
-  /* Similarly, favor the value or error from the primary table.  */
-  if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID &&
-      !grub_gpt_read_entries (disk, gpt, &gpt->backup))
-    {
-      grub_dprintf ("gpt", "read valid backup GPT from %s\n", disk->name);
-      gpt->status |= GRUB_GPT_BACKUP_ENTRIES_VALID;
-    }
-
-  grub_errno = GRUB_ERR_NONE;
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID &&
-      !grub_gpt_read_entries (disk, gpt, &gpt->primary))
-    {
-      grub_dprintf ("gpt", "read valid primary GPT from %s\n", disk->name);
-      gpt->status |= GRUB_GPT_PRIMARY_ENTRIES_VALID;
-    }
-
-  if (gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID ||
-      gpt->status & GRUB_GPT_BACKUP_ENTRIES_VALID)
+  if (grub_gpt_primary_valid (gpt) || grub_gpt_backup_valid (gpt))
     grub_errno = GRUB_ERR_NONE;
   else
     goto fail;
@@ -577,8 +590,6 @@ grub_gpt_get_partentry (grub_gpt_t gpt, grub_uint32_t n)
 grub_err_t
 grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 {
-  grub_uint64_t backup_header, backup_entries;
-
   /* Skip if there is nothing to do.  */
   if (grub_gpt_both_valid (gpt))
     return GRUB_ERR_NONE;
@@ -589,60 +600,44 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       "GPT sector size must match disk sector size");
 
-  if (!(gpt->status & GRUB_GPT_PRIMARY_ENTRIES_VALID ||
-	gpt->status & GRUB_GPT_BACKUP_ENTRIES_VALID))
-    return grub_error (GRUB_ERR_BUG, "No valid GPT entries");
+  if (grub_gpt_primary_valid (gpt))
+    {
+      grub_uint64_t backup_header;
 
-  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    {
-      grub_dprintf ("gpt", "primary GPT header is valid\n");
+      grub_dprintf ("gpt", "primary GPT is valid\n");
+
+      /* Relocate backup to end if disk if the disk has grown.  */
       backup_header = grub_le_to_cpu64 (gpt->primary.alternate_lba);
+      if (grub_gpt_disk_size_valid (disk) &&
+	  disk->total_sectors - 1 > backup_header)
+	{
+	  backup_header = disk->total_sectors - 1;
+	  grub_dprintf ("gpt", "backup GPT header relocated to 0x%llx\n",
+			(unsigned long long) backup_header);
+
+	  gpt->primary.alternate_lba = grub_cpu_to_le64 (backup_header);
+	}
+
       grub_memcpy (&gpt->backup, &gpt->primary, sizeof (gpt->backup));
+      gpt->backup.header_lba = gpt->primary.alternate_lba;
+      gpt->backup.alternate_lba = gpt->primary.header_lba;
+      gpt->backup.partitions = grub_cpu_to_le64 (backup_header -
+	  grub_gpt_size_to_sectors (gpt, gpt->entries_size));
     }
-  else if (gpt->status & GRUB_GPT_BACKUP_HEADER_VALID)
+  else if (grub_gpt_backup_valid (gpt))
     {
-      grub_dprintf ("gpt", "backup GPT header is valid\n");
-      backup_header = grub_le_to_cpu64 (gpt->backup.header_lba);
+      grub_dprintf ("gpt", "backup GPT is valid\n");
+
       grub_memcpy (&gpt->primary, &gpt->backup, sizeof (gpt->primary));
+      gpt->primary.header_lba = gpt->backup.alternate_lba;
+      gpt->primary.alternate_lba = gpt->backup.header_lba;
+      gpt->primary.partitions = grub_cpu_to_le64_compile_time (2);
     }
   else
-    return grub_error (GRUB_ERR_BUG, "No valid GPT header");
+    return grub_error (GRUB_ERR_BUG, "No valid GPT");
 
-  /* Relocate backup to end if disk whenever possible.  */
-  if (grub_gpt_disk_size_valid(disk))
-    backup_header = disk->total_sectors - 1;
-  grub_dprintf ("gpt", "backup GPT header will be located at 0x%llx\n",
-		(unsigned long long) backup_header);
-
-  backup_entries = backup_header -
-    grub_gpt_size_to_sectors (gpt, gpt->entries_size);
-  grub_dprintf ("gpt", "backup GPT entries will be located at 0x%llx\n",
-		(unsigned long long) backup_entries);
-
-  /* Update/fixup header and partition table locations.  */
-  gpt->primary.header_lba = grub_cpu_to_le64_compile_time (1);
-  gpt->primary.alternate_lba = grub_cpu_to_le64 (backup_header);
-  gpt->primary.partitions = grub_cpu_to_le64_compile_time (2);
-  gpt->backup.header_lba = gpt->primary.alternate_lba;
-  gpt->backup.alternate_lba = gpt->primary.header_lba;
-  gpt->backup.partitions = grub_cpu_to_le64 (backup_entries);
-
-  /* Recompute checksums.  */
-  if (grub_gpt_update_checksums (gpt))
+  if (grub_gpt_update (gpt))
     return grub_errno;
-
-  /* Sanity check.  */
-  if (grub_gpt_check_primary (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
-
-  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
-		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
-
-  if (grub_gpt_check_backup (gpt))
-    return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
-
-  gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
-		  GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   grub_dprintf ("gpt", "repairing GPT for %s successful\n", disk->name);
 
@@ -650,9 +645,15 @@ grub_gpt_repair (grub_disk_t disk, grub_gpt_t gpt)
 }
 
 grub_err_t
-grub_gpt_update_checksums (grub_gpt_t gpt)
+grub_gpt_update (grub_gpt_t gpt)
 {
   grub_uint32_t crc;
+
+  /* Clear status bits, require revalidation of everything.  */
+  gpt->status &= ~(GRUB_GPT_PRIMARY_HEADER_VALID |
+		   GRUB_GPT_PRIMARY_ENTRIES_VALID |
+		   GRUB_GPT_BACKUP_HEADER_VALID |
+		   GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   /* Writing headers larger than our header structure are unsupported.  */
   gpt->primary.headersize =
@@ -666,6 +667,24 @@ grub_gpt_update_checksums (grub_gpt_t gpt)
 
   grub_gpt_header_lecrc32 (&gpt->primary.crc32, &gpt->primary);
   grub_gpt_header_lecrc32 (&gpt->backup.crc32, &gpt->backup);
+
+  if (grub_gpt_check_primary (gpt))
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_BUG, "Generated invalid GPT primary header");
+    }
+
+  gpt->status |= (GRUB_GPT_PRIMARY_HEADER_VALID |
+		  GRUB_GPT_PRIMARY_ENTRIES_VALID);
+
+  if (grub_gpt_check_backup (gpt))
+    {
+      grub_error_push ();
+      return grub_error (GRUB_ERR_BUG, "Generated invalid GPT backup header");
+    }
+
+  gpt->status |= (GRUB_GPT_BACKUP_HEADER_VALID |
+		  GRUB_GPT_BACKUP_ENTRIES_VALID);
 
   return GRUB_ERR_NONE;
 }
