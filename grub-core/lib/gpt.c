@@ -425,13 +425,21 @@ grub_gpt_read_backup (grub_disk_t disk, grub_gpt_t gpt)
   grub_disk_addr_t addr;
 
   /* Assumes gpt->log_sector_size == disk->log_sector_size  */
-  if (grub_gpt_disk_size_valid(disk))
+  if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
+    {
+      sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
+      if (grub_gpt_disk_size_valid (disk) && sector >= disk->total_sectors)
+	return grub_error (GRUB_ERR_OUT_OF_RANGE,
+			   "backup GPT located at 0x%llx, "
+			   "beyond last disk sector at 0x%llx",
+			   (unsigned long long) sector,
+			   (unsigned long long) disk->total_sectors - 1);
+    }
+  else if (grub_gpt_disk_size_valid (disk))
     sector = disk->total_sectors - 1;
-  else if (gpt->status & GRUB_GPT_PRIMARY_HEADER_VALID)
-    sector = grub_le_to_cpu64 (gpt->primary.alternate_lba);
   else
-    return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		       "Unable to locate backup GPT");
+    return grub_error (GRUB_ERR_OUT_OF_RANGE,
+		       "size of disk unknown, cannot locate backup GPT");
 
   grub_dprintf ("gpt", "reading backup GPT from sector 0x%llx\n",
 		(unsigned long long) sector);
@@ -722,17 +730,37 @@ grub_gpt_write_table (grub_disk_t disk, grub_gpt_t gpt,
 grub_err_t
 grub_gpt_write (grub_disk_t disk, grub_gpt_t gpt)
 {
+  grub_uint64_t backup_header;
+
   /* TODO: update/repair protective MBRs too.  */
 
   if (!grub_gpt_both_valid (gpt))
     return grub_error (GRUB_ERR_BAD_PART_TABLE, "Invalid GPT data");
 
+  /* Write the backup GPT first so if writing fails the update is aborted
+   * and the primary is left intact.  However if the backup location is
+   * inaccessible we have to just skip and hope for the best, the backup
+   * will need to be repaired in the OS.  */
+  backup_header = grub_le_to_cpu64 (gpt->backup.header_lba);
+  if (grub_gpt_disk_size_valid (disk) &&
+      backup_header >= disk->total_sectors)
+    {
+      grub_printf ("warning: backup GPT located at 0x%llx, "
+		   "beyond last disk sector at 0x%llx\n",
+		   (unsigned long long) backup_header,
+		   (unsigned long long) disk->total_sectors - 1);
+      grub_printf ("warning: only writing primary GPT, "
+	           "the backup GPT must be repaired from the OS\n");
+    }
+  else
+    {
+      grub_dprintf ("gpt", "writing backup GPT to %s\n", disk->name);
+      if (grub_gpt_write_table (disk, gpt, &gpt->backup))
+	return grub_errno;
+    }
+
   grub_dprintf ("gpt", "writing primary GPT to %s\n", disk->name);
   if (grub_gpt_write_table (disk, gpt, &gpt->primary))
-    return grub_errno;
-
-  grub_dprintf ("gpt", "writing backup GPT to %s\n", disk->name);
-  if (grub_gpt_write_table (disk, gpt, &gpt->backup))
     return grub_errno;
 
   return GRUB_ERR_NONE;

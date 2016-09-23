@@ -544,6 +544,46 @@ repair_test (void)
   close_disk (&data);
 }
 
+/* Finding/reading/writing the backup GPT may be difficult if the OS and
+ * BIOS report different sizes for the same disk.  We need to gracefully
+ * recognize this and avoid causing trouble for the OS.  */
+static void
+weird_disk_size_test (void)
+{
+  struct test_data data;
+  grub_gpt_t gpt;
+
+  open_disk (&data);
+
+  /* Chop off 65536 bytes (128 512B sectors) which may happen when the
+   * BIOS thinks you are using a software RAID system that reserves that
+   * area for metadata when in fact you are not and using the bare disk.  */
+  grub_test_assert(data.dev->disk->total_sectors == DISK_SECTORS,
+		   "unexpected disk size: 0x%llx",
+		   (unsigned long long) data.dev->disk->total_sectors);
+  data.dev->disk->total_sectors -= 128;
+
+  gpt = read_disk (&data);
+  assert_error_stack_empty ();
+  /* Reading the alternate_lba should have been blocked and reading
+   * the (new) end of disk should have found no useful data.  */
+  grub_test_assert ((gpt->status & GRUB_GPT_BACKUP_HEADER_VALID) == 0,
+		    "unreported missing backup header");
+
+  /* We should be able to reconstruct the backup header and the location
+   * of the backup should remain unchanged, trusting the GPT data over
+   * what the BIOS is telling us.  Further changes are left to the OS.  */
+  grub_gpt_repair (data.dev->disk, gpt);
+  grub_test_assert (grub_errno == GRUB_ERR_NONE,
+		    "repair failed: %s", grub_errmsg);
+  grub_test_assert (memcmp (&gpt->primary, &example_primary,
+	                    sizeof (gpt->primary)) == 0,
+		    "repair corrupted primary header");
+
+  grub_gpt_free (gpt);
+  close_disk (&data);
+}
+
 static void
 iterate_partitions_test (void)
 {
@@ -774,6 +814,7 @@ grub_unit_test_init (void)
   grub_test_register ("gpt_iterate_partitions_test", iterate_partitions_test);
   grub_test_register ("gpt_large_partitions_test", large_partitions_test);
   grub_test_register ("gpt_invalid_partsize_test", invalid_partsize_test);
+  grub_test_register ("gpt_weird_disk_size_test", weird_disk_size_test);
   grub_test_register ("gpt_search_part_label_test", search_part_label_test);
   grub_test_register ("gpt_search_uuid_test", search_part_uuid_test);
   grub_test_register ("gpt_search_disk_uuid_test", search_disk_uuid_test);
@@ -791,6 +832,7 @@ grub_unit_test_fini (void)
   grub_test_unregister ("gpt_iterate_partitions_test");
   grub_test_unregister ("gpt_large_partitions_test");
   grub_test_unregister ("gpt_invalid_partsize_test");
+  grub_test_unregister ("gpt_weird_disk_size_test");
   grub_test_unregister ("gpt_search_part_label_test");
   grub_test_unregister ("gpt_search_part_uuid_test");
   grub_test_unregister ("gpt_search_disk_uuid_test");
