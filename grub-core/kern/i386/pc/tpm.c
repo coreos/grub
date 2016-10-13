@@ -7,11 +7,16 @@
 
 #define TCPA_MAGIC 0x41504354
 
+static int tpm_presence = -1;
+
 int tpm_present(void);
 
 int tpm_present(void)
 {
   struct grub_bios_int_registers regs;
+
+  if (tpm_presence != -1)
+    return tpm_presence;
 
   regs.flags = GRUB_CPU_INT_FLAGS_DEFAULT;
   regs.eax = 0xbb00;
@@ -19,9 +24,11 @@ int tpm_present(void)
   grub_bios_interrupt (0x1a, &regs);
 
   if (regs.eax == 0)
-    return 1;
+    tpm_presence = 1;
+  else
+    tpm_presence = 0;
 
-  return 0;
+  return tpm_presence;
 }
 
 grub_err_t
@@ -49,7 +56,10 @@ grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,
   grub_bios_interrupt (0x1a, &regs);
 
   if (regs.eax)
-    return grub_error (GRUB_ERR_IO, N_("TPM error %x\n"), regs.eax);
+    {
+	tpm_presence = 0;
+	return grub_error (GRUB_ERR_IO, N_("TPM error %x, disabling TPM"), regs.eax);
+    }
 
   return 0;
 }
@@ -126,7 +136,10 @@ grub_tpm_log_event(unsigned char *buf, grub_size_t size, grub_uint8_t pcr,
 	grub_free(event);
 
 	if (regs.eax)
-		return grub_error (GRUB_ERR_IO, N_("TPM error %x\n"), regs.eax);
+	  {
+		tpm_presence = 0;
+		return grub_error (GRUB_ERR_IO, N_("TPM error %x, disabling TPM"), regs.eax);
+	  }
 
 	return 0;
 }
