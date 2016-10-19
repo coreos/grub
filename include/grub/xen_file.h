@@ -24,6 +24,9 @@
 #include <grub/elfload.h>
 
 grub_elf_t grub_xen_file (grub_file_t file);
+grub_elf_t grub_xen_file_and_cmdline (grub_file_t file,
+				      char *cmdline,
+				      grub_size_t cmdline_max_len);
 
 struct grub_xen_file_info
 {
