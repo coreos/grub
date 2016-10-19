@@ -20,10 +20,20 @@
 #include <grub/i386/linux.h>
 #include <grub/misc.h>
 
+#include "verity-hash.h"
+
 #define XZ_MAGIC "\3757zXZ\0"
 
 grub_elf_t
 grub_xen_file (grub_file_t file)
+{
+  return grub_xen_file_and_cmdline (file, NULL, 0);
+}
+
+grub_elf_t
+grub_xen_file_and_cmdline (grub_file_t file,
+			   char *cmdline,
+			   grub_size_t cmdline_max_len)
 {
   grub_elf_t elf;
   struct linux_kernel_header lh;
@@ -63,6 +73,9 @@ grub_xen_file (grub_file_t file)
   grub_dprintf ("xen", "found bzimage payload 0x%llx-0x%llx\n",
 		(unsigned long long) payload_offset,
 		(unsigned long long) lh.payload_length);
+
+  if (cmdline)
+    grub_pass_verity_hash (&lh, cmdline, cmdline_max_len);
 
   grub_file_seek (file, payload_offset);
 

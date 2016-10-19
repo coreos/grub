@@ -652,7 +652,9 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
   if (!file)
     return grub_errno;
 
-  elf = grub_xen_file (file);
+  elf = grub_xen_file_and_cmdline (file,
+		                   (char *) xen_state.next_start.cmd_line,
+		                   sizeof (xen_state.next_start.cmd_line) - 1);
   if (!elf)
     goto fail;
 
