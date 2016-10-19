@@ -1032,7 +1032,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 			      maximal_cmdline_size
 			      - (sizeof (LINUX_IMAGE) - 1));
 
-  grub_pass_verity_hash(&lh, linux_cmdline);
+  grub_pass_verity_hash(&lh, linux_cmdline, maximal_cmdline_size);
   len = prot_file_size;
   grub_memcpy (prot_mode_mem, kernel + kernel_offset, len);
   kernel_offset += len;

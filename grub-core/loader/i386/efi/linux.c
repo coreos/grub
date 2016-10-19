@@ -286,7 +286,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
                               linux_cmdline + sizeof (LINUX_IMAGE) - 1,
 			      lh.cmdline_size - (sizeof (LINUX_IMAGE) - 1));
 
-  grub_pass_verity_hash(&lh, linux_cmdline);
+  grub_pass_verity_hash(&lh, linux_cmdline, lh.cmdline_size);
   lh.cmd_line_ptr = (grub_uint32_t)(grub_uint64_t)linux_cmdline;
 
   handover_offset = lh.handover_offset;
