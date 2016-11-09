@@ -1555,11 +1555,11 @@ if test x"$grub_build_mkfont_excuse" = x ; then
 else
   enable_build_grub_mkfont=no
 fi
-if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$target_cpu"-"$platform" = xpowerpc-ieee1275 || test "x$platform" = xcoreboot ); then
+if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$platform" = xcoreboot ); then
   if test x"$grub_build_mkfont_excuse" = x ; then
-    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports needs build-time grub-mkfont])
+    AC_MSG_ERROR([qemu, coreboot and loongson ports need build-time grub-mkfont])
   else
-    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports needs build-time grub-mkfont ($grub_build_mkfont_excuse)])
+    AC_MSG_ERROR([qemu, coreboot and loongson ports need build-time grub-mkfont ($grub_build_mkfont_excuse)])
   fi
 fi
 
@@ -1629,11 +1629,11 @@ if test x"$enable_build_grub_mkfont" = xno ; then
   FONT_SOURCE=
 fi
 
-if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$target_cpu"-"$platform" = xpowerpc-ieee1275 || test "x$platform" = xcoreboot ); then
+if test "x$FONT_SOURCE" = x && ( test "x$platform" = xqemu || test "x$platform" = xloongson || test "x$platform" = xqemu_mips || test "x$platform" = xcoreboot ); then
   if test x"$grub_build_mkfont_excuse" = x ; then
-    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports need unifont])
+    AC_MSG_ERROR([qemu, coreboot and loongson ports need unifont])
   else
-    AC_MSG_ERROR([qemu, powerpc-ieee1275, coreboot and loongson ports need unifont ($grub_build_mkfont_excuse)])
+    AC_MSG_ERROR([qemu, coreboot and loongson ports need unifont ($grub_build_mkfont_excuse)])
   fi
 fi
 
