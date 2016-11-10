@@ -246,3 +246,4 @@ build-aux/test-driver
 /garbage-gen
 /garbage-gen.exe
 /grub-fs-tester
+grub-core/build-grub-module-verifier
