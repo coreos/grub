@@ -212,8 +212,10 @@ kernel = {
 
   arm_efi = kern/arm/efi/init.c;
   arm_efi = kern/arm/efi/misc.c;
+  arm_efi = kern/efi/fdt.c;
 
   arm64_efi = kern/arm64/efi/init.c;
+  arm64_efi = kern/efi/fdt.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
