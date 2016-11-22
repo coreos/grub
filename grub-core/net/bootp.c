@@ -142,6 +142,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
   grub_net_link_level_address_t hwaddr;
   struct grub_net_network_level_interface *inter;
   int mask = -1;
+  char server_ip[sizeof ("xxx.xxx.xxx.xxx")];
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
@@ -192,15 +193,22 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (size > OFFSET_OF (boot_file, bp))
     grub_env_set_net_property (name, "boot_file", bp->boot_file,
                                sizeof (bp->boot_file));
+  if (bp->server_ip)
+    {
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->server_ip)[0],
+		     ((grub_uint8_t *) &bp->server_ip)[1],
+		     ((grub_uint8_t *) &bp->server_ip)[2],
+		     ((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_env_set_net_property (name, "next_server", server_ip, sizeof (server_ip));
+      grub_print_error ();
+    }
+
   if (is_def)
     grub_net_default_server = 0;
   if (is_def && !grub_net_default_server && bp->server_ip)
     {
-      grub_net_default_server = grub_xasprintf ("%d.%d.%d.%d",
-						((grub_uint8_t *) &bp->server_ip)[0],
-						((grub_uint8_t *) &bp->server_ip)[1],
-						((grub_uint8_t *) &bp->server_ip)[2],
-						((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_net_default_server = grub_strdup (server_ip);
       grub_print_error ();
     }
 
@@ -212,11 +220,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 
   if (device && !*device && bp->server_ip)
     {
-      *device = grub_xasprintf ("tftp,%d.%d.%d.%d",
-				((grub_uint8_t *) &bp->server_ip)[0],
-				((grub_uint8_t *) &bp->server_ip)[1],
-				((grub_uint8_t *) &bp->server_ip)[2],
-				((grub_uint8_t *) &bp->server_ip)[3]);
+      *device = grub_xasprintf ("tftp,%s", server_ip);
       grub_print_error ();
     }
   if (size > OFFSET_OF (server_name, bp)

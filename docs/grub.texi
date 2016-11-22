@@ -2446,6 +2446,10 @@ The boot file name provided by DHCP.  Read-only.
 The name of the DHCP server responsible for these boot parameters.
 Read-only.
 
+@item net_@var{<interface>}_next_server
+The IP address of the next (usually, TFTP) server provided by DHCP.
+Read-only.
+
 @item net_default_interface
 Initially set to name of network interface that was used to load grub.
 Read-write, although setting it affects only interpretation of
@@ -3062,6 +3066,7 @@ These variables have special meaning to GRUB.
 * net_@var{<interface>}_hostname::
 * net_@var{<interface>}_ip::
 * net_@var{<interface>}_mac::
+* net_@var{<interface>}_next_server::
 * net_@var{<interface>}_rootpath::
 * net_default_interface::
 * net_default_ip::
@@ -3418,6 +3423,12 @@ The default is the value of @samp{color_normal} (@pxref{color_normal}).
 
 @node net_@var{<interface>}_mac
 @subsection net_@var{<interface>}_mac
+
+@xref{Network}.
+
+
+@node net_@var{<interface>}_next_server
+@subsection net_@var{<interface>}_next_server
 
 @xref{Network}.
 
