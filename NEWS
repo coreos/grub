@@ -51,6 +51,8 @@ New in 2.02:
   * Parse `nd' disk names in GRUB Legacy configuration files.
   * Issue separate DNS queries for IPv4 and IPv6.
   * Support IPv6 Router Advertisement to configure default router.
+  * New variable net_<interface>_next_server containing next server
+    from BOOTP reply.
 
 * Coreboot improvements:
   * CBFS support both in on-disk images (loopback) and flash.
@@ -171,6 +173,7 @@ New in 2.02:
   * Use fixed timestamp when generating GRUB image for reproducible builds.
   * Verify at build time that modules contain only supported relocations and their
     structure matches what boot-time module loader expects.
+  * Do not require fonts on powerpc-ieee1275.
 
 * Revision control moved to git.
 
