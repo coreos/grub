@@ -294,6 +294,48 @@ grub_ieee1275_net_config_real (const char *devpath, char **device, char **path,
   }
 }
 
+/* Allocate memory with alloc-mem */
+static void *
+grub_ieee1275_alloc_mem (grub_size_t len)
+{
+  struct alloc_args
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t len;
+    grub_ieee1275_cell_t catch;
+    grub_ieee1275_cell_t result;
+  }
+  args;
+
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_CANNOT_INTERPRET))
+    {
+      grub_error (GRUB_ERR_UNKNOWN_COMMAND, N_("interpret is not supported"));
+      return NULL;
+    }
+
+  INIT_IEEE1275_COMMON (&args.common, "interpret", 2, 2);
+  args.len = len;
+  args.method = (grub_ieee1275_cell_t) "alloc-mem";
+
+  if (IEEE1275_CALL_ENTRY_FN (&args) == -1 || args.catch)
+    {
+      grub_error (GRUB_ERR_INVALID_COMMAND, N_("alloc-mem failed"));
+      return NULL;
+    }
+  else
+    return (void *)args.result;
+}
+
+static void *
+ofnet_alloc_netbuf (grub_size_t len)
+{
+  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN))
+    return grub_ieee1275_alloc_mem (len);
+  else
+    return grub_zalloc (len);
+}
+
 static int
 search_net_devices (struct grub_ieee1275_devalias *alias)
 {
@@ -410,32 +452,7 @@ search_net_devices (struct grub_ieee1275_devalias *alias)
 
   card->txbufsize = ALIGN_UP (card->mtu, 64) + 256;
 
-  if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_VIRT_TO_REAL_BROKEN))
-    {
-      struct alloc_args
-      {
-	struct grub_ieee1275_common_hdr common;
-	grub_ieee1275_cell_t method;
-	grub_ieee1275_cell_t len;
-	grub_ieee1275_cell_t catch;
-	grub_ieee1275_cell_t result;
-      }
-      args;
-      INIT_IEEE1275_COMMON (&args.common, "interpret", 2, 2);
-      args.len = card->txbufsize;
-      args.method = (grub_ieee1275_cell_t) "alloc-mem";
-
-      if (IEEE1275_CALL_ENTRY_FN (&args) == -1
-	  || args.catch)
-	{
-	  card->txbuf = 0;
-	  grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
-	}
-      else
-	card->txbuf = (void *) args.result;
-    }
-  else
-    card->txbuf = grub_zalloc (card->txbufsize);
+  card->txbuf = ofnet_alloc_netbuf (card->txbufsize);
   if (!card->txbuf)
     {
       grub_free (ofdata->path);
