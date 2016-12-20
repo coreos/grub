@@ -31,6 +31,8 @@
 #define GRUB_NET_BOOTP_ARCH 0x0007
 #elif defined(GRUB_MACHINE_EFI) && defined(__aarch64__)
 #define GRUB_NET_BOOTP_ARCH 0x000B
+#elif defined(__powerpc__)
+#define GRUB_NET_BOOTP_ARCH 0x000E
 #else
 #error "unknown bootp architecture"
 #endif
