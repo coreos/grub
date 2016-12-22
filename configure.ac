@@ -389,7 +389,14 @@ fi
 # Check for functions and headers.
 AC_CHECK_FUNCS(posix_memalign memalign getextmntent)
 AC_CHECK_HEADERS(sys/param.h sys/mount.h sys/mnttab.h limits.h)
+
+# glibc 2.25 still includes sys/sysmacros.h in sys/types.h but emits deprecation
+# warning which causes compilation failure later with -Werror. So use -Werror here
+# as well to force proper sys/sysmacros.h detection.
+SAVED_CFLAGS="$CFLAGS"
+CFLAGS="$HOST_CFLAGS -Werror"
 AC_HEADER_MAJOR
+CFLAGS="$SAVED_CFLAGS"
 
 AC_CHECK_MEMBERS([struct statfs.f_fstypename],,,[$ac_includes_default
 #include <sys/param.h>
