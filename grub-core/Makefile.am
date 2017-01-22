@@ -278,7 +278,7 @@ BUILT_SOURCES += symlist.h
 
 symlist.c: symlist.h gensymlist.sh
 	$(TARGET_CPP) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS_KERNEL) $(CPPFLAGS) -DGRUB_SYMBOL_GENERATOR=1 symlist.h > symlist.p || (rm -f symlist.p; exit 1)
-	cat symlist.p | /bin/sh $(srcdir)/gensymlist.sh $(top_builddir)/config.h $(KERNEL_HEADER_FILES) >$@ || (rm -f $@; exit 1)
+	cat symlist.p | $(SHELL) $(srcdir)/gensymlist.sh $(top_builddir)/config.h $(KERNEL_HEADER_FILES) >$@ || (rm -f $@; exit 1)
 	rm -f symlist.p
 CLEANFILES += symlist.c
 BUILT_SOURCES += symlist.c
