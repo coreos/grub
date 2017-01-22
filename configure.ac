@@ -1152,6 +1152,16 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 fi
 
 if test "x$target_cpu" = xarm; then
+  AC_CACHE_CHECK([whether option -mllvm -arm-use-movt=0 works], grub_cv_cc_mllvm_arm_use_movt, [
+    CPPFLAGS="$TARGET_CPPFLAGS -mllvm -arm-use-movt=0 -Werror"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		      [grub_cv_cc_mllvm_arm_use_movt=yes],
+		      [grub_cv_cc_mllvm_arm_use_movt=no])
+  ])
+  if test "x$grub_cv_cc_mllvm_arm_use_movt" = xyes; then
+    # A trick so that clang doesn't see it on link stage
+    TARGET_CPPFLAGS="$TARGET_CPPFLAGS -mllvm -arm-use-movt=0"
+  fi
   AC_CACHE_CHECK([whether option -mlong-calls works], grub_cv_cc_mlong_calls, [
     CFLAGS="$TARGET_CFLAGS -mlong-calls -Werror"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
