@@ -1,4 +1,4 @@
-#! /bin/sh
+#! @BUILD_SHEBANG@
 set -e
 
 # Copyright (C) 2010 Free Software Foundation, Inc.

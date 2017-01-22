@@ -1,4 +1,4 @@
-#! /bin/sh
+#! @BUILD_SHEBANG@
 set -e
 
 # Compares GRUB script output with BASH output.

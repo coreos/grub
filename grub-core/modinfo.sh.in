@@ -1,4 +1,4 @@
-#!/bin/sh
+#!@BUILD_SHEBANG@
 
 # User-controllable options
 grub_modinfo_target_cpu=@target_cpu@

@@ -459,6 +459,16 @@ case "$build_os" in
 esac
 AC_SUBST(BUILD_EXEEXT)
 
+# In some build environments like termux /bin/sh is not a valid
+# shebang. Use $SHELL instead if it's executable and /bin/sh isn't
+BUILD_SHEBANG=/bin/sh
+for she in /bin/sh "$SHELL"; do
+  if test -x "$she" ; then
+    BUILD_SHEBANG="$she"
+  fi
+done
+AC_SUBST(BUILD_SHEBANG)
+
 # For gnulib.
 gl_INIT
 

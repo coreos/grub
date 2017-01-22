@@ -1,4 +1,4 @@
-#! /bin/sh
+#! @BUILD_SHEBANG@
 set -e
 
 # grub-script-check refuses to pass a file with no commands; this usually

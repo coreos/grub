@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#! @BUILD_SHEBANG@ -e
 
 # Run GRUB script in a Qemu instance
 # Copyright (C) 2010  Free Software Foundation, Inc.
