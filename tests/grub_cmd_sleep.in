@@ -11,8 +11,8 @@ fi
 # Compare RTC with interval timer.
 # Not 100% proper but should check that timer is running ok
 dt=`echo 'date; sleep 10; date' | @builddir@/grub-shell`
-dt1="$(date -u -d "$(echo "$dt" | head -n 1)" +%s)"
-dt2="$(date -u -d "$(echo "$dt" | tail -n 1)" +%s)"
+dt1="$(date -u -d "$(echo "$dt" | head -n 1 | sed 's, [A-Z][a-z]*$,,')" +%s)"
+dt2="$(date -u -d "$(echo "$dt" | tail -n 1 | sed 's, [A-Z][a-z]*$,,')" +%s)"
 
 # Ignore QEMU bug
 if [ "${grub_modinfo_target_cpu}" = arm ] && [ $((dt2 - dt1)) -ge 15 ] && [ $((dt2 - dt1)) -le 17 ]; then

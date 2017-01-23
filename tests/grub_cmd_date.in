@@ -9,7 +9,7 @@ if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = sparc64-ieee1275 ];
 fi
 
 pdt="$(date -u +%s)"
-dt=`echo date | @builddir@/grub-shell`
+dt=`echo date | @builddir@/grub-shell | sed 's, [A-Z][a-z]*$,,'`
 dtg="$(date -u -d "$dt" +%s)"
 ndt="$(date -u +%s)"
 
