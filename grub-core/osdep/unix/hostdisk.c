@@ -77,11 +77,19 @@ grub_util_get_fd_size (grub_util_fd_t fd, const char *name, unsigned *log_secsiz
 int
 grub_util_fd_seek (grub_util_fd_t fd, grub_uint64_t off)
 {
+#if SIZEOF_OFF_T == 8
   off_t offset = (off_t) off;
 
   if (lseek (fd, offset, SEEK_SET) != offset)
     return -1;
+#elif SIZEOF_OFF64_T == 8
+  off64_t offset = (off64_t) off;
 
+  if (lseek64 (fd, offset, SEEK_SET) != offset)
+    return -1;
+#else
+#error "No large file support"
+#endif
   return 0;
 }
 

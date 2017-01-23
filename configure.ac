@@ -373,7 +373,10 @@ case "$host_os" in
      ;;
   *)
      AC_CHECK_SIZEOF(off_t)
-     test x"$ac_cv_sizeof_off_t" = x8 || AC_MSG_ERROR([Large file support is required]);;
+     if test x"$ac_cv_sizeof_off_t" != x8 ; then
+       AC_CHECK_SIZEOF(off64_t)
+       test x"$ac_cv_sizeof_off64_t" = x8 || AC_MSG_ERROR([Large file support is required])
+     fi;;
 esac
 
 if test x$USE_NLS = xno; then
