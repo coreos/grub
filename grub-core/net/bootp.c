@@ -100,7 +100,7 @@ parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
 	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
 	      rname = grub_xasprintf ("%s:default", name);
 	      if (rname)
-		grub_net_add_route_gw (rname, target, gw);
+		grub_net_add_route_gw (rname, target, gw, NULL);
 	      grub_free (rname);
 	    }
 	  break;
@@ -160,6 +160,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
   grub_net_link_level_address_t hwaddr;
   struct grub_net_network_level_interface *inter;
   int mask = -1;
+  char server_ip[sizeof ("xxx.xxx.xxx.xxx")];
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
@@ -175,6 +176,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
   hwaddr.type = GRUB_NET_LINK_LEVEL_PROTOCOL_ETHERNET;
 
   inter = grub_net_add_addr (name, card, &addr, &hwaddr, flags);
+  if (!inter)
+    return 0;
+
 #if 0
   /* This is likely based on misunderstanding. gateway_ip refers to
      address of BOOTP relay and should not be used after BOOTP transaction
@@ -207,15 +211,22 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (size > OFFSET_OF (boot_file, bp))
     grub_env_set_net_property (name, "boot_file", bp->boot_file,
                                sizeof (bp->boot_file));
+  if (bp->server_ip)
+    {
+      grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
+		     ((grub_uint8_t *) &bp->server_ip)[0],
+		     ((grub_uint8_t *) &bp->server_ip)[1],
+		     ((grub_uint8_t *) &bp->server_ip)[2],
+		     ((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_env_set_net_property (name, "next_server", server_ip, sizeof (server_ip));
+      grub_print_error ();
+    }
+
   if (is_def)
     grub_net_default_server = 0;
   if (is_def && !grub_net_default_server && bp->server_ip)
     {
-      grub_net_default_server = grub_xasprintf ("%d.%d.%d.%d",
-						((grub_uint8_t *) &bp->server_ip)[0],
-						((grub_uint8_t *) &bp->server_ip)[1],
-						((grub_uint8_t *) &bp->server_ip)[2],
-						((grub_uint8_t *) &bp->server_ip)[3]);
+      grub_net_default_server = grub_strdup (server_ip);
       grub_print_error ();
     }
 
@@ -227,11 +238,7 @@ grub_net_configure_by_dhcp_ack (const char *name,
 
   if (device && !*device && bp->server_ip)
     {
-      *device = grub_xasprintf ("tftp,%d.%d.%d.%d",
-				((grub_uint8_t *) &bp->server_ip)[0],
-				((grub_uint8_t *) &bp->server_ip)[1],
-				((grub_uint8_t *) &bp->server_ip)[2],
-				((grub_uint8_t *) &bp->server_ip)[3]);
+      *device = grub_xasprintf ("tftp,%s", server_ip);
       grub_print_error ();
     }
   if (size > OFFSET_OF (server_name, bp)
@@ -386,6 +393,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (grub_strcmp (args[3], "string") == 0)
     {
+      grub_err_t err = GRUB_ERR_NONE;
       char *val = grub_malloc (taglength + 1);
       if (!val)
 	return grub_errno;
@@ -394,8 +402,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
       if (args[0][0] == '-' && args[0][1] == 0)
 	grub_printf ("%s\n", val);
       else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
+	err = grub_env_set (args[0], val);
+      grub_free (val);
+      return err;
     }
 
   if (grub_strcmp (args[3], "number") == 0)
@@ -417,6 +426,7 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 
   if (grub_strcmp (args[3], "hex") == 0)
     {
+      grub_err_t err = GRUB_ERR_NONE;
       char *val = grub_malloc (2 * taglength + 1);
       int i;
       if (!val)
@@ -430,8 +440,9 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
       if (args[0][0] == '-' && args[0][1] == 0)
 	grub_printf ("%s\n", val);
       else
-	return grub_env_set (args[0], val);
-      return GRUB_ERR_NONE;
+	err = grub_env_set (args[0], val);
+      grub_free (val);
+      return err;
     }
 
   return grub_error (GRUB_ERR_BAD_ARGUMENT,

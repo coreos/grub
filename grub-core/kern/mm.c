@@ -325,6 +325,15 @@ grub_memalign (grub_size_t align, grub_size_t size)
   if (!grub_mm_base)
     goto fail;
 
+  if (size > ~(grub_size_t) align)
+    goto fail;
+
+  /* We currently assume at least a 32-bit grub_size_t,
+     so limiting allocations to <adress space size> - 1MiB
+     in name of sanity is beneficial. */
+  if ((size + align) > ~(grub_size_t) 0x100000)
+    goto fail;
+
   align = (align >> GRUB_MM_ALIGN_LOG2);
   if (align == 0)
     align = 1;

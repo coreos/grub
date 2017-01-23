@@ -253,6 +253,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
   struct grub_command *cmd;
   char **cutargs;
   int cutargc;
+  grub_err_t err = GRUB_ERR_NONE;
   
   for (i = 0; i < 2; i++)
     {
@@ -314,6 +315,8 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
   cutargs = grub_malloc (sizeof (cutargs[0]) * (argc - 1));
+  if (!cutargs)
+    return grub_errno;
   cutargc = argc - 1;
   grub_memcpy (cutargs + 1, args + 2, sizeof (cutargs[0]) * (argc - 2));
   cutargs[0] = args[0];
@@ -333,7 +336,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	      if (!(cmd->func) (cmd, cutargc, cutargs))
 		{
 		  kernel_type = LINUX;
-		  return GRUB_ERR_NONE;
+		  goto out;
 		}
 	    }
 	  grub_errno = GRUB_ERR_NONE;
@@ -348,7 +351,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	      if (!(cmd->func) (cmd, argc, args))
 		{
 		  kernel_type = MULTIBOOT;
-		  return GRUB_ERR_NONE;
+		  goto out;
 		}
 	    }
 	  grub_errno = GRUB_ERR_NONE;
@@ -413,7 +416,7 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 		if (!(cmd->func) (cmd, cutargc, cutargs))
 		  {
 		    kernel_type = KFREEBSD;
-		    return GRUB_ERR_NONE;
+		    goto out;
 		  }
 	      }
 	    grub_errno = GRUB_ERR_NONE;
@@ -422,6 +425,8 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	  char **bsdargs;
 	  int bsdargc;
 	  char bsddevname[sizeof ("wdXXXXXXXXXXXXY")];
+	  int found = 0;
+
 	  if (bsd_device == -1)
 	    {
 	      bsdargs = cutargs;
@@ -432,6 +437,11 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 	      char rbuf[3] = "-r";
 	      bsdargc = cutargc + 2;
 	      bsdargs = grub_malloc (sizeof (bsdargs[0]) * bsdargc);
+	      if (!bsdargs)
+		{
+		  err = grub_errno;
+		  goto out;
+		}
 	      grub_memcpy (bsdargs, args, argc * sizeof (bsdargs[0]));
 	      bsdargs[argc] = rbuf;
 	      bsdargs[argc + 1] = bsddevname;
@@ -447,7 +457,8 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 		  if (!(cmd->func) (cmd, bsdargc, bsdargs))
 		    {
 		      kernel_type = KNETBSD;
-		      return GRUB_ERR_NONE;
+		      found = 1;
+		      goto free_bsdargs;
 		    }
 		}
 	      grub_errno = GRUB_ERR_NONE;
@@ -460,20 +471,28 @@ grub_cmd_legacy_kernel (struct grub_command *mycmd __attribute__ ((unused)),
 		  if (!(cmd->func) (cmd, bsdargc, bsdargs))
 		    {
 		      kernel_type = KOPENBSD;
-		      return GRUB_ERR_NONE;
+		      found = 1;
+		      goto free_bsdargs;
 		    }
 		}
 	      grub_errno = GRUB_ERR_NONE;
 	    }
+
+free_bsdargs:
 	  if (bsdargs != cutargs)
 	    grub_free (bsdargs);
+	  if (found)
+	    goto out;
 	}
       }
     }
   while (0);
 
-  return grub_error (GRUB_ERR_BAD_OS, "couldn't load file %s",
-		     args[0]);
+  err = grub_error (GRUB_ERR_BAD_OS, "couldn't load file %s",
+		    args[0]);
+out:
+  grub_free (cutargs);
+  return err;
 }
 
 static grub_err_t
@@ -534,15 +553,17 @@ grub_cmd_legacy_initrdnounzip (struct grub_command *mycmd __attribute__ ((unused
       char **newargs;
       grub_err_t err;
       char nounzipbuf[10] = "--nounzip";
+
+      cmd = grub_command_find ("module");
+      if (!cmd)
+	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
+			   "module");
+
       newargs = grub_malloc ((argc + 1) * sizeof (newargs[0]));
       if (!newargs)
 	return grub_errno;
       grub_memcpy (newargs + 1, args, argc * sizeof (newargs[0]));
       newargs[0] = nounzipbuf;
-      cmd = grub_command_find ("module");
-      if (!cmd)
-	return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("can't find command `%s'"),
-			   "module");
 
       err = cmd->func (cmd, argc + 1, newargs);
       grub_free (newargs);

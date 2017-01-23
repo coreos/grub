@@ -18,6 +18,7 @@
 
 #include <grub/xen_file.h>
 #include <grub/misc.h>
+#include <xen/elfnote.h>
 
 static grub_err_t
 parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
@@ -26,6 +27,8 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
   char *buf;
   char *ptr;
   int has_paddr = 0;
+
+  grub_errno = GRUB_ERR_NONE;
   if (grub_file_seek (elf->file, off) == (grub_off_t) -1)
     return grub_errno;
   buf = grub_malloc (sz);
@@ -35,7 +38,8 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
   if (grub_file_read (elf->file, buf, sz) != (grub_ssize_t) sz)
     {
       if (grub_errno)
-	return grub_errno;
+	goto out;
+      grub_free (buf);
       return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 			 elf->file->name);
     }
@@ -123,14 +127,14 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	{
 	  xi->virt_base = grub_strtoull (ptr + sizeof ("VIRT_BASE=") - 1, &ptr, 16);
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "VIRT_ENTRY=", sizeof ("VIRT_ENTRY=") - 1) == 0)
 	{
 	  xi->entry_point = grub_strtoull (ptr + sizeof ("VIRT_ENTRY=") - 1, &ptr, 16);
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "HYPERCALL_PAGE=", sizeof ("HYPERCALL_PAGE=") - 1) == 0)
@@ -138,7 +142,7 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	  xi->hypercall_page = grub_strtoull (ptr + sizeof ("HYPERCALL_PAGE=") - 1, &ptr, 16);
 	  xi->has_hypercall_page = 1;
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
       if (grub_strncmp (ptr, "ELF_PADDR_OFFSET=", sizeof ("ELF_PADDR_OFFSET=") - 1) == 0)
@@ -146,7 +150,7 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
 	  xi->paddr_offset = grub_strtoull (ptr + sizeof ("ELF_PADDR_OFFSET=") - 1, &ptr, 16);
 	  has_paddr = 1;
 	  if (grub_errno)
-	    return grub_errno;
+	    goto out;
 	  continue;
 	}
     }
@@ -154,7 +158,11 @@ parse_xen_guest (grub_elf_t elf, struct grub_xen_file_info *xi,
     xi->hypercall_page = (xi->hypercall_page << 12) + xi->virt_base;
   if (!has_paddr)
     xi->paddr_offset = xi->virt_base;
-  return GRUB_ERR_NONE;
+
+out:
+  grub_free (buf);
+
+  return grub_errno;
 }
 
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -196,35 +204,35 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
       xi->has_note = 1;
       switch (nh->n_type)
 	{
-	case 1:
+	case XEN_ELFNOTE_ENTRY:
 	  xi->entry_point = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 2:
+	case XEN_ELFNOTE_HYPERCALL_PAGE:
 	  xi->hypercall_page = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  xi->has_hypercall_page = 1;
 	  break;
-	case 3:
+	case XEN_ELFNOTE_VIRT_BASE:
 	  xi->virt_base = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 4:
+	case XEN_ELFNOTE_PADDR_OFFSET:
 	  xi->paddr_offset = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
 	  break;
-	case 5:
+	case XEN_ELFNOTE_XEN_VERSION:
 	  grub_dprintf ("xen", "xenversion = `%s'\n", (char *) desc);
 	  break;
-	case 6:
+	case XEN_ELFNOTE_GUEST_OS:
 	  grub_dprintf ("xen", "name = `%s'\n", (char *) desc);
 	  break;
-	case 7:
+	case XEN_ELFNOTE_GUEST_VERSION:
 	  grub_dprintf ("xen", "version = `%s'\n", (char *) desc);
 	  break;
-	case 8:
+	case XEN_ELFNOTE_LOADER:
 	  if (descsz < 7
 	      || grub_memcmp (desc, "generic", descsz == 7 ? 7 : 8) != 0)
 	    return grub_error (GRUB_ERR_BAD_OS, "invalid loader");
 	  break;
 	  /* PAE */
-	case 9:
+	case XEN_ELFNOTE_PAE_MODE:
 	  grub_dprintf ("xen", "pae = `%s', %d, %d\n", (char *) desc,
 			xi->arch, descsz);
 	  if (xi->arch != GRUB_XEN_FILE_I386
@@ -252,6 +260,13 @@ parse_note (grub_elf_t elf, struct grub_xen_file_info *xi,
 	  if (descsz >= 2 && grub_memcmp (desc, "no",
 					  descsz == 2 ? 2 : 3) == 0)
 	    xi->arch = GRUB_XEN_FILE_I386;
+	  break;
+	case XEN_ELFNOTE_INIT_P2M:
+	  xi->p2m_base = grub_le_to_cpu_addr (*(Elf_Addr *) desc);
+	  xi->has_p2m_base = 1;
+	  break;
+	case XEN_ELFNOTE_MOD_START_PFN:
+	  xi->unmapped_initrd = !!grub_le_to_cpu32(*(grub_uint32_t *) desc);
 	  break;
 	default:
 	  grub_dprintf ("xen", "unknown note type %d\n", nh->n_type);

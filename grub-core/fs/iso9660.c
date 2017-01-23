@@ -750,18 +750,14 @@ grub_iso9660_iterate_dir (grub_fshelp_node_t dir,
 
         if (dir->data->joliet && !ctx.filename)
           {
-            char *oldname, *semicolon;
+            char *semicolon;
 
-            oldname = name;
             ctx.filename = grub_iso9660_convert_string
-                  ((grub_uint8_t *) oldname, dirent.namelen >> 1);
+                  ((grub_uint8_t *) name, dirent.namelen >> 1);
 
 	    semicolon = grub_strrchr (ctx.filename, ';');
 	    if (semicolon)
 	      *semicolon = '\0';
-
-            if (ctx.filename_alloc)
-              grub_free (oldname);
 
             ctx.filename_alloc = 1;
           }

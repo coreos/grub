@@ -12,7 +12,7 @@ grub_elfXX_load_phdrs (grub_elf_t elf)
   if (elf->phdrs)
     return GRUB_ERR_NONE;
 
-  phdrs_size = elf->ehdr.ehdrXX.e_phnum * elf->ehdr.ehdrXX.e_phentsize;
+  phdrs_size = (grub_uint32_t) elf->ehdr.ehdrXX.e_phnum * elf->ehdr.ehdrXX.e_phentsize;
 
   grub_dprintf ("elf", "Loading program headers at 0x%llx, size 0x%lx.\n",
 		(unsigned long long) elf->ehdr.ehdrXX.e_phoff,

@@ -3132,7 +3132,7 @@ make_mdn (dnode_end_t * mdn, struct grub_zfs_data *data)
 {
   void *osp;
   blkptr_t *bp;
-  grub_size_t ospsize;
+  grub_size_t ospsize = 0;
   grub_err_t err;
 
   grub_dprintf ("zfs", "endian = %d\n", mdn->endian);

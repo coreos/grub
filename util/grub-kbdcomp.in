@@ -25,7 +25,7 @@ usage () {
     gettext "Make GRUB keyboard layout file."; echo
     echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "-V, --version" "$(gettext "print the version information and exit")"
     print_option_help "-o, --output=$(gettext FILE)" "$(gettext "save output in FILE [required]")"
     echo
     gettext_printf "%s generates a keyboard layout for GRUB using ckbcomp\n" "$self"
@@ -54,7 +54,7 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
+    -V | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     -o | --output)

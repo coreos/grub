@@ -45,6 +45,7 @@ grub_font_draw_string (const char *str, grub_font_t font,
   grub_uint32_t *logical;
   grub_ssize_t logical_len, visual_len;
   struct grub_unicode_glyph *visual, *ptr;
+  grub_err_t err;
 
   logical_len = grub_utf8_to_ucs4_alloc (str, &logical, 0);
   if (logical_len < 0)
@@ -56,24 +57,28 @@ grub_font_draw_string (const char *str, grub_font_t font,
   if (visual_len < 0)
     return grub_errno;
 
+  err = GRUB_ERR_NONE;
   for (ptr = visual, x = left_x; ptr < visual + visual_len; ptr++)
     {
-      grub_err_t err;
       struct grub_font_glyph *glyph;
       glyph = grub_font_construct_glyph (font, ptr);
       if (!glyph)
-	return grub_errno;
+	{
+	  err = grub_errno;
+	  goto out;
+	}
       err = grub_font_draw_glyph (glyph, color, x, baseline_y);
-      x += glyph->device_width;
       if (err)
-	return err;
+	goto out;
+      x += glyph->device_width;
     }
 
+out:
   for (ptr = visual; ptr < visual + visual_len; ptr++)
     grub_unicode_destroy_glyph (ptr);
   grub_free (visual);
 
-  return GRUB_ERR_NONE;
+  return err;
 }
 
 /* Get the width in pixels of the specified UTF-8 string, when rendered in

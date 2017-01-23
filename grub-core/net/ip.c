@@ -363,7 +363,9 @@ static void
 free_old_fragments (void)
 {
   struct reassemble *rsm, **prev;
-  grub_uint64_t limit_time = grub_get_time_ms () - 90000;
+  grub_uint64_t limit_time = grub_get_time_ms ();
+
+  limit_time = (limit_time > 90000) ? limit_time - 90000 : 0;
 
   for (prev = &reassembles, rsm = *prev; rsm; rsm = *prev)
     if (rsm->last_time < limit_time)

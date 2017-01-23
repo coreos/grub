@@ -381,9 +381,8 @@ http_establish (struct grub_file *file, grub_off_t offset, int initial)
       ptr = nb->tail;
       grub_snprintf ((char *) ptr,
 		     sizeof ("Range: bytes=XXXXXXXXXXXXXXXXXXXX-"
-			     "\r\n"
 			     "\r\n"),
-		     "Range: bytes=%" PRIuGRUB_UINT64_T "-\r\n\r\n",
+		     "Range: bytes=%" PRIuGRUB_UINT64_T "-\r\n",
 		     offset);
       grub_netbuff_put (nb, grub_strlen ((char *) ptr));
     }
@@ -454,6 +453,7 @@ http_seek (struct grub_file *file, grub_off_t off)
     }
 
   file->device->net->stall = 0;
+  file->device->net->eof = 0;
   file->device->net->offset = off;
 
   data = grub_zalloc (sizeof (*data));

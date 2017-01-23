@@ -90,7 +90,7 @@ kernel = {
   i386_qemu_cppflags     = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   emu_cflags = '$(CFLAGS_GNULIB)';
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
-  arm_uboot_ldflags       = '-Wl,-Ttext=0x08000000';
+  arm_uboot_ldflags       = '-Wl,-r,-d';
   arm_uboot_stripflags    = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   i386_pc_startup = kern/i386/pc/startup.S;
@@ -214,8 +214,10 @@ kernel = {
 
   arm_efi = kern/arm/efi/init.c;
   arm_efi = kern/arm/efi/misc.c;
+  arm_efi = kern/efi/fdt.c;
 
-  arm64_efi = kern/arm/efi/init.c;
+  arm64_efi = kern/arm64/efi/init.c;
+  arm64_efi = kern/efi/fdt.c;
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
@@ -1585,6 +1587,7 @@ module = {
   i386_xen = lib/i386/xen/relocator.S;
   x86_64_xen = lib/x86_64/xen/relocator.S;
   xen = lib/i386/relocator_common_c.c;
+  x86_64_efi = lib/x86_64/efi/relocator.c;
 
   extra_dist = lib/i386/relocator_common.S;
   extra_dist = kern/powerpc/cache_flush.S;
@@ -1739,7 +1742,32 @@ module = {
   x86 = loader/i386/xnu.c;
   x86 = loader/xnu.c;
 
-  enable = x86;
+  /* Code is pretty generic but relies on RNG which
+     is available only on few platforms. It's not a
+     big deal as xnu needs ACPI anyway and we have
+     RNG on all platforms with ACPI.
+   */
+  enable = i386_multiboot;
+  enable = i386_coreboot;
+  enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
+};
+
+module = {
+  name = random;
+  x86 = lib/i386/random.c;
+  common = lib/random.c;
+
+  i386_multiboot = kern/i386/tsc_pmtimer.c;
+  i386_coreboot = kern/i386/tsc_pmtimer.c;
+  i386_pc = kern/i386/tsc_pmtimer.c;
+
+  enable = i386_multiboot;
+  enable = i386_coreboot;
+  enable = i386_pc;
+  enable = i386_efi;
+  enable = x86_64_efi;
 };
 
 module = {

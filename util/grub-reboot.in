@@ -47,7 +47,7 @@ usage () {
     gettext_printf "Usage: %s [OPTION] MENU_ENTRY\n" "$self"
     gettext "Set the default boot menu entry for GRUB, for the next boot only."; echo
     print_option_help "-h, --help" "$(gettext "print this message and exit")"
-    print_option_help "-v, --version" "$(gettext "print the version information and exit")"
+    print_option_help "-V, --version" "$(gettext "print the version information and exit")"
     dirmsg="$(gettext_printf "expect GRUB images under the directory DIR/%s instead of the %s directory" "@grubdirname@" "$grubdir")"
     print_option_help "--boot-directory=$(gettext "DIR")" "$dirmsg"
     echo
@@ -81,7 +81,7 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
+    -V | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
 

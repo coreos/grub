@@ -66,6 +66,12 @@ grub_reboot (void)
 }
 
 void
+grub_exit (void)
+{
+  grub_reboot ();
+}
+
+void
 grub_machine_init (void)
 {
 }
@@ -86,11 +92,16 @@ grub_machine_fini (int flags)
 
 
 
+#define OPT_MEMDISK 257
+
 static struct argp_option options[] = {
   {"root",      'r', N_("DEVICE_NAME"), 0, N_("Set root device."), 2},
   {"device-map",  'm', N_("FILE"), 0,
    /* TRANSLATORS: There are many devices in device map.  */
    N_("use FILE as the device map [default=%s]"), 0},
+  {"memdisk",  OPT_MEMDISK, N_("FILE"), 0,
+   /* TRANSLATORS: There are many devices in device map.  */
+   N_("use FILE as memdisk"), 0},
   {"directory",  'd', N_("DIR"), 0,
    N_("use GRUB files in the directory DIR [default=%s]"), 0},
   {"verbose",     'v', 0,      0, N_("print verbose messages."), 0},
@@ -119,6 +130,7 @@ help_filter (int key, const char *text, void *input __attribute__ ((unused)))
 struct arguments
 {
   const char *dev_map;
+  const char *mem_disk;
   int hold;
 };
 
@@ -131,6 +143,9 @@ argp_parser (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
+    case OPT_MEMDISK:
+      arguments->mem_disk = arg;
+      break;
     case 'r':
       free (root_dev);
       root_dev = xstrdup (arg);
@@ -180,9 +195,13 @@ main (int argc, char *argv[])
   struct arguments arguments =
     { 
       .dev_map = DEFAULT_DEVICE_MAP,
-      .hold = 0
+      .hold = 0,
+      .mem_disk = 0,
     };
   volatile int hold = 0;
+  size_t total_module_size = sizeof (struct grub_module_info), memdisk_size = 0;
+  struct grub_module_info *modinfo;
+  void *mods;
 
   grub_util_host_init (&argc, &argv);
 
@@ -193,6 +212,33 @@ main (int argc, char *argv[])
       fprintf (stderr, "%s", _("Error in parsing command line arguments\n"));
       exit(1);
     }
+
+  if (arguments.mem_disk)
+    {
+      memdisk_size = ALIGN_UP(grub_util_get_image_size (arguments.mem_disk), 512);
+      total_module_size += memdisk_size + sizeof (struct grub_module_header);
+    }
+
+  mods = xmalloc (total_module_size);
+  modinfo = grub_memset (mods, 0, total_module_size);
+  mods = (char *) (modinfo + 1);
+
+  modinfo->magic = GRUB_MODULE_MAGIC;
+  modinfo->offset = sizeof (struct grub_module_info);
+  modinfo->size = total_module_size;
+
+  if (arguments.mem_disk)
+    {
+      struct grub_module_header *header = (struct grub_module_header *) mods;
+      header->type = OBJ_TYPE_MEMDISK;
+      header->size = memdisk_size + sizeof (*header);
+      mods = header + 1;
+
+      grub_util_load_image (arguments.mem_disk, mods);
+      mods = (char *) mods + memdisk_size;
+    }
+
+  grub_modbase = (grub_addr_t) modinfo;
 
   hold = arguments.hold;
   /* Wait until the ARGS.HOLD variable is cleared by an attached debugger. */

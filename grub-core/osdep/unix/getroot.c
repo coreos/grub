@@ -51,8 +51,10 @@
 #endif
 
 #include <sys/types.h>
-#if defined(HAVE_SYS_MKDEV_H)
+#if defined(MAJOR_IN_MKDEV)
 #include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
 #endif
 
 #if defined(HAVE_LIBZFS) && defined(HAVE_LIBNVPAIR)

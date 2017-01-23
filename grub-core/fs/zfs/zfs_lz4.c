@@ -184,6 +184,8 @@ LZ4_uncompress_unknownOutputSize(const char *source,
 			}
 		}
 		/* copy literals */
+		if ((grub_addr_t) length > ~(grub_addr_t)op)
+		  goto _output_error;
 		cpy = op + length;
 		if ((cpy > oend - COPYLENGTH) ||
 		    (ip + length > iend - COPYLENGTH)) {

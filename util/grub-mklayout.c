@@ -384,6 +384,13 @@ write_keymaps (FILE *in, FILE *out, const char *out_filename)
 	  sscanf (line, "keycode %u = %60s %60s %60s %60s", &keycode_linux,
 		  normal, shift, normalalt, shiftalt);
 
+	  if (keycode_linux >= ARRAY_SIZE (linux_to_usb_map))
+	    {
+	      /* TRANSLATORS: scan code is keyboard key numeric identifier.  */
+	      fprintf (stderr, _("Unknown keyboard scan code 0x%02x\n"), keycode_linux);
+	      continue;
+	    }
+
 	  /* Not used.  */
 	  if (keycode_linux == 0x77 /* Pause */
 	      /* Some obscure keys */

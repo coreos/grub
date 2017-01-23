@@ -54,6 +54,7 @@
 
 /* The offset of GRUB_TOTAL_MODULE_SIZE.  */
 #define GRUB_KERNEL_SPARC64_IEEE1275_TOTAL_MODULE_SIZE	0x8
+#define GRUB_KERNEL_ARM_STACK_SIZE 0x40000
 
 #define GRUB_BOOT_SPARC64_IEEE1275_LIST_SIZE	12
 
@@ -120,7 +121,6 @@
 
 #define GRUB_KERNEL_ARM_UBOOT_MOD_ALIGN 	0x8
 #define GRUB_KERNEL_ARM_UBOOT_TOTAL_MODULE_SIZE	0x4
-#define GRUB_KERNEL_ARM_UBOOT_LINK_ADDR		0x08000000
 
 /* Minimal gap between _end and the start of the modules.  It's a hack
    for PowerMac to prevent "CLAIM failed" error.  The real fix is to

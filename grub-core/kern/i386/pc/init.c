@@ -32,6 +32,7 @@
 #include <grub/env.h>
 #include <grub/cache.h>
 #include <grub/time.h>
+#include <grub/cpu/cpuid.h>
 #include <grub/cpu/tsc.h>
 #include <grub/machine/time.h>
 
@@ -184,6 +185,26 @@ mmap_iterate_hook (grub_uint64_t addr, grub_uint64_t size,
   return 0;
 }
 
+extern grub_uint16_t grub_bios_via_workaround1, grub_bios_via_workaround2;
+
+/* Via needs additional wbinvd.  */
+static void
+grub_via_workaround_init (void)
+{
+  grub_uint32_t manufacturer[3], max_cpuid;
+  if (! grub_cpu_is_cpuid_supported ())
+    return;
+
+  grub_cpuid (0, max_cpuid, manufacturer[0], manufacturer[2], manufacturer[1]);
+
+  if (grub_memcmp (manufacturer, "CentaurHauls", 12) != 0)
+    return;
+
+  grub_bios_via_workaround1 = 0x090f;
+  grub_bios_via_workaround2 = 0x090f;
+  asm volatile ("wbinvd");
+}
+
 void
 grub_machine_init (void)
 {
@@ -192,6 +213,9 @@ grub_machine_init (void)
   int grub_lower_mem;
 #endif
   grub_addr_t modend;
+
+  /* This has to happen before any BIOS calls. */
+  grub_via_workaround_init ();
 
   grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR + (_edata - _start);
 

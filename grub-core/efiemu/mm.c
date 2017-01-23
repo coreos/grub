@@ -99,7 +99,8 @@ grub_efiemu_request_memalign (grub_size_t align, grub_size_t size,
   grub_size_t align_overhead;
   struct grub_efiemu_memrequest *ret, *cur, *prev;
   /* Check that the request is correct */
-  if (type >= GRUB_EFI_MAX_MEMORY_TYPE || type <= GRUB_EFI_LOADER_CODE)
+  if (type <= GRUB_EFI_LOADER_CODE || type == GRUB_EFI_PERSISTENT_MEMORY ||
+	type >= GRUB_EFI_MAX_MEMORY_TYPE)
     return -2;
 
   /* Add new size to requested size */
@@ -166,6 +167,13 @@ efiemu_alloc_requests (void)
       GRUB_EFI_MEMORY_MAPPED_IO,
       GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE,
       GRUB_EFI_PAL_CODE
+
+      /*
+       * These are not allocatable:
+       * GRUB_EFI_RESERVED_MEMORY_TYPE
+       * GRUB_EFI_PERSISTENT_MEMORY
+       * >= GRUB_EFI_MAX_MEMORY_TYPE
+       */
     };
 
   /* Compute total memory needed */
@@ -402,6 +410,10 @@ fill_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 	return grub_efiemu_add_to_mmap (addr, size,
 					GRUB_EFI_ACPI_MEMORY_NVS);
 
+      case GRUB_MEMORY_PERSISTENT:
+      case GRUB_MEMORY_PERSISTENT_LEGACY:
+	return grub_efiemu_add_to_mmap (addr, size,
+					GRUB_EFI_PERSISTENT_MEMORY);
       default:
 	grub_dprintf ("efiemu",
 		      "Unknown memory type %d. Assuming unusable\n", type);
@@ -445,7 +457,7 @@ grub_efiemu_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
       case GRUB_EFI_MEMORY_MAPPED_IO:
       case GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE:
       case GRUB_EFI_PAL_CODE:
-      case GRUB_EFI_MAX_MEMORY_TYPE:
+      default:
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_MEMORY_RESERVED, hook_data);
 	break;
@@ -468,6 +480,12 @@ grub_efiemu_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
 	      GRUB_MEMORY_NVS, hook_data);
 	break;
+
+      case GRUB_EFI_PERSISTENT_MEMORY:
+	hook (efiemu_mmap[i].physical_start, efiemu_mmap[i].num_pages * 4096,
+	      GRUB_MEMORY_PERSISTENT, hook_data);
+	break;
+
       }
 
   return 0;
@@ -503,7 +521,8 @@ grub_efiemu_mmap_sort_and_uniq (void)
       [GRUB_EFI_ACPI_MEMORY_NVS] = 3,
       [GRUB_EFI_MEMORY_MAPPED_IO] = 4,
       [GRUB_EFI_MEMORY_MAPPED_IO_PORT_SPACE] = 4,
-      [GRUB_EFI_PAL_CODE] = 4
+      [GRUB_EFI_PAL_CODE] = 4,
+      [GRUB_EFI_PERSISTENT_MEMORY] = 4
     };
 
   int i, j, k, done;

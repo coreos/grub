@@ -23,11 +23,13 @@
 #include <grub/err.h>
 #include <grub/relocator.h>
 
+#define XEN_MAX_MAPPINGS 3
+
 struct grub_relocator_xen_state
 {
   grub_addr_t start_info;
-  grub_addr_t paging_start;
-  grub_addr_t paging_size;
+  grub_addr_t paging_start[XEN_MAX_MAPPINGS];
+  grub_addr_t paging_size[XEN_MAX_MAPPINGS];
   grub_addr_t mfn_list;
   grub_addr_t stack;
   grub_addr_t entry_point;

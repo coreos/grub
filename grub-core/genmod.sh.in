@@ -15,12 +15,12 @@ set -e
 #
 # Example:
 #
-# genmod.sh moddep.lst normal.module normal.mod
+# genmod.sh moddep.lst normal.module build-grub-module-verifier normal.mod
 #
 
 moddep=$1
 infile=$2
-outfile=$3
+outfile=$4
 
 tmpfile=${outfile}.tmp
 modname=`echo $infile | sed -e 's@\.module.*$@@'`
@@ -58,7 +58,7 @@ if test x@TARGET_APPLE_LINKER@ != x1; then
 		-K grub_mod_init -K grub_mod_fini \
 		-K _grub_mod_init -K _grub_mod_fini \
 		-R .note.gnu.gold-version -R .note.GNU-stack \
-		-R .note -R .comment $tmpfile || exit 1
+		-R .note -R .comment -R .ARM.exidx $tmpfile || exit 1
 	fi
 	if ! test -z "${TARGET_OBJ2ELF}"; then
 	    "${TARGET_OBJ2ELF}" $tmpfile || exit 1
@@ -91,6 +91,9 @@ else
 	    -nr:_grub_mod_init:grub_mod_init \
 	    -nr:_grub_mod_fini:grub_mod_fini \
 	    -wd1106 -nu -nd $tmpfile.bin $tmpfile || exit 1
-	rm -f $name.bin
+	rm -f $tmpfile.bin
+fi
+if test x@platform@ != xemu; then
+    ./build-grub-module-verifier@BUILD_EXEEXT@ $tmpfile @target_cpu@
 fi
 mv $tmpfile $outfile

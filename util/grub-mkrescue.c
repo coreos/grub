@@ -310,6 +310,7 @@ make_image_fwdisk_abs (enum grub_install_plat plat,
   grub_install_make_image_wrap (source_dirs[plat], "()/boot/grub", output,
 				0, load_cfg, mkimage_target, 0);
   grub_install_pop_module ();
+  grub_util_unlink (load_cfg);
 }
 
 static int
@@ -647,6 +648,7 @@ main (int argc, char *argv[])
 	}
       grub_install_pop_module ();
       grub_install_pop_module ();
+      grub_util_unlink (load_cfg);
     }
 
   /** build multiboot core.img */
@@ -785,9 +787,14 @@ main (int argc, char *argv[])
       free (efidir_efi_boot);
 
       efiimgfat = grub_util_path_concat (2, iso9660_dir, "efi.img");
-      grub_util_exec ((const char * []) { "mformat", "-C", "-f", "2880", "-L", "16", "-i",
+      int rv;
+      rv = grub_util_exec ((const char * []) { "mformat", "-C", "-f", "2880", "-L", "16", "-i",
 	    efiimgfat, "::", NULL });
-      grub_util_exec ((const char * []) { "mcopy", "-s", "-i", efiimgfat, efidir_efi, "::/", NULL });
+      if (rv != 0)
+	grub_util_error ("`%s` invocation failed\n", "mformat");
+      rv = grub_util_exec ((const char * []) { "mcopy", "-s", "-i", efiimgfat, efidir_efi, "::/", NULL });
+      if (rv != 0)
+	grub_util_error ("`%s` invocation failed\n", "mformat");
       xorriso_push ("--efi-boot");
       xorriso_push ("efi.img");
       xorriso_push ("-efi-boot-part");

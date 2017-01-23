@@ -38,7 +38,7 @@ static void
 increment_timer (grub_efi_event_t event __attribute__ ((unused)),
 		 void *context __attribute__ ((unused)))
 {
-  tmr++;
+  tmr += 10;
 }
 
 void
@@ -52,7 +52,7 @@ grub_machine_init (void)
 
   efi_call_5 (b->create_event, GRUB_EFI_EVT_TIMER | GRUB_EFI_EVT_NOTIFY_SIGNAL,
 	      GRUB_EFI_TPL_CALLBACK, increment_timer, NULL, &tmr_evt);
-  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_PERIODIC, 10000);
+  efi_call_3 (b->set_timer, tmr_evt, GRUB_EFI_TIMER_PERIODIC, 100000);
 
   grub_install_get_time_ms (grub_efi_get_time_ms);
 }

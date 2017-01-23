@@ -279,7 +279,7 @@ probe (const char *path, char **device_names, char delim)
 	  printf ("%s", *curdev);
 	  putchar (delim);
 	}
-      return;
+      goto free_device_names;
     }
 
   if (print == PRINT_DISK)
@@ -297,7 +297,7 @@ probe (const char *path, char **device_names, char delim)
 	  putchar (delim);
 	  free (disk);
 	}
-      return;
+      goto free_device_names;
     }
 
   for (curdev = device_names; *curdev; curdev++)
@@ -668,6 +668,14 @@ probe (const char *path, char **device_names, char delim)
   for (curdrive = drives_names; *curdrive; curdrive++)
     free (*curdrive);
   free (drives_names);
+
+free_device_names:
+  if (path != NULL)
+    {
+      for (curdev = device_names; *curdev; curdev++)
+	free (*curdev);
+      free (device_names);
+    }
 }
 
 static struct argp_option options[] = {

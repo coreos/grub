@@ -89,7 +89,8 @@ struct grub_xnu_boot_params_v2
 
   grub_uint64_t efi_runtime_first_page_virtual;
   grub_uint32_t efi_system_table;
-  grub_uint32_t unused2[11];
+  grub_uint32_t unused2[9];
+  grub_uint64_t ram_size;
   grub_uint64_t fsbfreq;
   grub_uint32_t unused3[734];
 } GRUB_PACKED;

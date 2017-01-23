@@ -60,6 +60,9 @@
 #define MULTIBOOT_TAG_TYPE_NETWORK           16
 #define MULTIBOOT_TAG_TYPE_EFI_MMAP          17
 #define MULTIBOOT_TAG_TYPE_EFI_BS            18
+#define MULTIBOOT_TAG_TYPE_EFI32_IH          19
+#define MULTIBOOT_TAG_TYPE_EFI64_IH          20
+#define MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR    21
 
 #define MULTIBOOT_HEADER_TAG_END  0
 #define MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST  1
@@ -69,10 +72,16 @@
 #define MULTIBOOT_HEADER_TAG_FRAMEBUFFER  5
 #define MULTIBOOT_HEADER_TAG_MODULE_ALIGN  6
 #define MULTIBOOT_HEADER_TAG_EFI_BS  7
+#define MULTIBOOT_HEADER_TAG_ENTRY_ADDRESS_EFI64  9
+#define MULTIBOOT_HEADER_TAG_RELOCATABLE  10
 
 #define MULTIBOOT_ARCHITECTURE_I386  0
 #define MULTIBOOT_ARCHITECTURE_MIPS32  4
 #define MULTIBOOT_HEADER_TAG_OPTIONAL 1
+
+#define MULTIBOOT_LOAD_PREFERENCE_NONE 0
+#define MULTIBOOT_LOAD_PREFERENCE_LOW 1
+#define MULTIBOOT_LOAD_PREFERENCE_HIGH 2
 
 #define MULTIBOOT_CONSOLE_FLAGS_CONSOLE_REQUIRED 1
 #define MULTIBOOT_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED 2
@@ -158,6 +167,17 @@ struct multiboot_header_tag_module_align
   multiboot_uint32_t size;
 };
 
+struct multiboot_header_tag_relocatable
+{
+  multiboot_uint16_t type;
+  multiboot_uint16_t flags;
+  multiboot_uint32_t size;
+  multiboot_uint32_t min_addr;
+  multiboot_uint32_t max_addr;
+  multiboot_uint32_t align;
+  multiboot_uint32_t preference;
+};
+
 struct multiboot_color
 {
   multiboot_uint8_t red;
@@ -176,7 +196,7 @@ struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_BADRAM                 5
   multiboot_uint32_t type;
   multiboot_uint32_t zero;
-} GRUB_PACKED;
+};
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
 struct multiboot_tag
@@ -369,6 +389,27 @@ struct multiboot_tag_efi_mmap
   multiboot_uint32_t descr_vers;
   multiboot_uint8_t efi_mmap[0];
 }; 
+
+struct multiboot_tag_efi32_ih
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t pointer;
+};
+
+struct multiboot_tag_efi64_ih
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint64_t pointer;
+};
+
+struct multiboot_tag_load_base_addr
+{
+  multiboot_uint32_t type;
+  multiboot_uint32_t size;
+  multiboot_uint32_t load_base_addr;
+};
 
 #endif /* ! ASM_FILE */
 

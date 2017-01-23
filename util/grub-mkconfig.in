@@ -85,7 +85,7 @@ do
     -h | --help)
 	usage
 	exit 0 ;;
-    -v | --version)
+    -V | --version)
 	echo "$self (${PACKAGE_NAME}) ${PACKAGE_VERSION}"
 	exit 0 ;;
     -o | --output)
@@ -273,6 +273,7 @@ Ensure that there are no errors in /etc/default/grub
 and /etc/grub.d/* files or please file a bug report with
 %s file attached." "${grub_cfg}.new" >&2
     echo >&2
+    exit 1
   else
     # none of the children aborted with error, install the new grub.cfg
     mv -f ${grub_cfg}.new ${grub_cfg}

@@ -196,7 +196,7 @@ grub_efiemu_load_file (const char *filename)
     {
       grub_file_close (file);
       grub_efiemu_unload ();
-      return grub_errno;
+      return err;
     }
 
   grub_dprintf ("efiemu", "mm initialized\n");

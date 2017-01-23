@@ -338,19 +338,19 @@ grub_load_public_key (grub_file_t f)
 	  if (grub_file_read (f, &l, sizeof (l)) != sizeof (l))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
-	      goto fail;
+	      break;
 	    }
 	  
 	  lb = (grub_be_to_cpu16 (l) + GRUB_CHAR_BIT - 1) / GRUB_CHAR_BIT;
 	  if (lb > READBUF_SIZE - sizeof (grub_uint16_t))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
-	      goto fail;
+	      break;
 	    }
 	  if (grub_file_read (f, buffer + sizeof (grub_uint16_t), lb) != (grub_ssize_t) lb)
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
-	      goto fail;
+	      break;
 	    }
 	  grub_memcpy (buffer, &l, sizeof (l));
 
@@ -360,8 +360,14 @@ grub_load_public_key (grub_file_t f)
 			     buffer, lb + sizeof (grub_uint16_t), 0))
 	    {
 	      grub_error (GRUB_ERR_BAD_SIGNATURE, N_("bad signature"));
-	      goto fail;
+	      break;
 	    }
+	}
+
+      if (i < pkalgos[pk].nmpipub)
+	{
+	  grub_free (sk);
+	  goto fail;
 	}
 
       GRUB_MD_SHA1->final (fingerprint_context);

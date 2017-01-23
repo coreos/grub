@@ -304,8 +304,7 @@ main (int argc, char *argv[])
   grub_util_file_sync  (fp);
   fclose (fp);
 
-  if (arguments.dir)
-    free (arguments.dir);
+  free (arguments.dir);
 
   if (arguments.output)
     free (arguments.output);

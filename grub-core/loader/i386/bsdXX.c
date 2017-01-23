@@ -48,15 +48,15 @@ read_headers (grub_file_t file, const char *filename, Elf_Ehdr *e, char **shdr)
   if (e->e_ident[EI_CLASS] != SUFFIX (ELFCLASS))
     return grub_error (GRUB_ERR_BAD_OS, N_("invalid arch-dependent ELF magic"));
 
-  *shdr = grub_malloc (e->e_shnum * e->e_shentsize);
+  *shdr = grub_malloc ((grub_uint32_t) e->e_shnum * e->e_shentsize);
   if (! *shdr)
     return grub_errno;
 
   if (grub_file_seek (file, e->e_shoff) == (grub_off_t) -1)
     return grub_errno;
 
-  if (grub_file_read (file, *shdr, e->e_shnum * e->e_shentsize)
-      != e->e_shnum * e->e_shentsize)
+  if (grub_file_read (file, *shdr, (grub_uint32_t) e->e_shnum * e->e_shentsize)
+      != (grub_ssize_t) ((grub_uint32_t) e->e_shnum * e->e_shentsize))
     {
       if (grub_errno)
 	return grub_errno;
@@ -200,8 +200,8 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
 
   if (chunk_size < sizeof (e))
     chunk_size = sizeof (e);
-  chunk_size += e.e_phnum * e.e_phentsize;
-  chunk_size += e.e_shnum * e.e_shentsize;
+  chunk_size += (grub_uint32_t) e.e_phnum * e.e_phentsize;
+  chunk_size += (grub_uint32_t) e.e_shnum * e.e_shentsize;
 
   {
     grub_relocator_chunk_t ch;
@@ -253,14 +253,14 @@ SUFFIX (grub_freebsd_load_elfmodule) (struct grub_relocator *relocator,
     curload = module + sizeof (e);
 
   load (file, argv[0], (grub_uint8_t *) chunk_src + curload - *kern_end, e.e_shoff,
-	e.e_shnum * e.e_shentsize);
+	(grub_uint32_t) e.e_shnum * e.e_shentsize);
   e.e_shoff = curload - module;
-  curload +=  e.e_shnum * e.e_shentsize;
+  curload +=  (grub_uint32_t) e.e_shnum * e.e_shentsize;
 
   load (file, argv[0], (grub_uint8_t *) chunk_src + curload - *kern_end, e.e_phoff,
-	e.e_phnum * e.e_phentsize);
+	(grub_uint32_t) e.e_phnum * e.e_phentsize);
   e.e_phoff = curload - module;
-  curload +=  e.e_phnum * e.e_phentsize;
+  curload +=  (grub_uint32_t) e.e_phnum * e.e_phentsize;
 
   *kern_end = curload;
 
@@ -462,7 +462,7 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
 
   chunk_size = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
     + ALIGN_UP (strsize, sizeof (grub_freebsd_addr_t))
-    + sizeof (e) + e.e_shnum * e.e_shentsize;
+    + sizeof (e) + (grub_uint32_t) e.e_shnum * e.e_shentsize;
 
   symtarget = ALIGN_UP (*kern_end, sizeof (grub_freebsd_addr_t));
   {
@@ -498,10 +498,10 @@ SUFFIX (grub_netbsd_load_elf_meta) (struct grub_relocator *relocator,
       s2 = (Elf_Shdr *) curload;
       grub_memcpy (curload, s, e.e_shentsize);
       if (s == symsh)
-	s2->sh_offset = sizeof (e) + e.e_shnum * e.e_shentsize;
+	s2->sh_offset = sizeof (e) + (grub_uint32_t) e.e_shnum * e.e_shentsize;
       else if (s == strsh)
 	s2->sh_offset = ALIGN_UP (symsize, sizeof (grub_freebsd_addr_t))
-	  + sizeof (e) + e.e_shnum * e.e_shentsize;
+	  + sizeof (e) + (grub_uint32_t) e.e_shnum * e.e_shentsize;
       else
 	s2->sh_offset = 0;
       s2->sh_addr = s2->sh_offset;

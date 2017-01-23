@@ -65,6 +65,20 @@ struct grub_relocator64_state
   grub_addr_t cr3;
 };
 
+#ifdef GRUB_MACHINE_EFI
+#ifdef __x86_64__
+struct grub_relocator64_efi_state
+{
+  grub_uint64_t rax;
+  grub_uint64_t rbx;
+  grub_uint64_t rcx;
+  grub_uint64_t rdx;
+  grub_uint64_t rip;
+  grub_uint64_t rsi;
+};
+#endif
+#endif
+
 grub_err_t grub_relocator16_boot (struct grub_relocator *rel,
 				  struct grub_relocator16_state state);
 
@@ -75,5 +89,12 @@ grub_err_t grub_relocator32_boot (struct grub_relocator *rel,
 grub_err_t grub_relocator64_boot (struct grub_relocator *rel,
 				  struct grub_relocator64_state state,
 				  grub_addr_t min_addr, grub_addr_t max_addr);
+
+#ifdef GRUB_MACHINE_EFI
+#ifdef __x86_64__
+grub_err_t grub_relocator64_efi_boot (struct grub_relocator *rel,
+				      struct grub_relocator64_efi_state state);
+#endif
+#endif
 
 #endif /* ! GRUB_RELOCATOR_CPU_HEADER */

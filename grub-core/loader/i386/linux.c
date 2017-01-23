@@ -929,8 +929,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    grub_env_set ("gfxpayload", "text");
 	    grub_printf_ (N_("%s is deprecated. "
 			     "Use set gfxpayload=%s before "
-			     "linux command instead.\n"), "text",
-			  argv[i]);
+			     "linux command instead.\n"),
+			  argv[i], "text");
 	    break;
 
 	  case 1:
@@ -939,8 +939,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 	    grub_env_set ("gfxpayload", "text");
 	    grub_printf_ (N_("%s is deprecated. "
 			     "Use set gfxpayload=%s before "
-			     "linux command instead.\n"), "text",
-			  argv[i]);
+			     "linux command instead.\n"),
+			  argv[i], "text");
 	    break;
 	  default:
 	    /* Ignore invalid values.  */

@@ -19,7 +19,6 @@
 
 #include <grub/term.h>
 #include <grub/time.h>
-#include <grub/cpu/io.h>
 #include <grub/misc.h>
 #include <grub/term.h>
 #include <grub/usb.h>

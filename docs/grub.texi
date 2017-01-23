@@ -2446,6 +2446,10 @@ The boot file name provided by DHCP.  Read-only.
 The name of the DHCP server responsible for these boot parameters.
 Read-only.
 
+@item net_@var{<interface>}_next_server
+The IP address of the next (usually, TFTP) server provided by DHCP.
+Read-only.
+
 @item net_default_interface
 Initially set to name of network interface that was used to load grub.
 Read-write, although setting it affects only interpretation of
@@ -2538,6 +2542,8 @@ team are:
 85:3
 @item Asus EeePC 1005PE 
 84:1 (unconfirmed)
+@item LENOVO ThinkPad T410s (2912W1C)
+101:3
 @end table
 
 To take full advantage of this function, install GRUB into the MBR
@@ -3060,6 +3066,7 @@ These variables have special meaning to GRUB.
 * net_@var{<interface>}_hostname::
 * net_@var{<interface>}_ip::
 * net_@var{<interface>}_mac::
+* net_@var{<interface>}_next_server::
 * net_@var{<interface>}_rootpath::
 * net_default_interface::
 * net_default_ip::
@@ -3416,6 +3423,12 @@ The default is the value of @samp{color_normal} (@pxref{color_normal}).
 
 @node net_@var{<interface>}_mac
 @subsection net_@var{<interface>}_mac
+
+@xref{Network}.
+
+
+@node net_@var{<interface>}_next_server
+@subsection net_@var{<interface>}_next_server
 
 @xref{Network}.
 
@@ -4074,11 +4087,14 @@ after @command{configfile} returns.
 @node cpuid
 @subsection cpuid
 
-@deffn Command cpuid [-l]
+@deffn Command cpuid [-l] [-p]
 Check for CPU features.  This command is only available on x86 systems.
 
 With the @option{-l} option, return true if the CPU supports long mode
 (64-bit).
+
+With the @option{-p} option, return true if the CPU supports Physical
+Address Extension (PAE).
 
 If invoked without options, this command currently behaves as if it had been
 invoked with @option{-l}.  This may change in the future.
@@ -5111,6 +5127,8 @@ the length of @var{string} is zero
 @var{expression} is false
 @item @var{expression1} @code{-a} @var{expression2}
 both @var{expression1} and @var{expression2} are true
+@item @var{expression1} @var{expression2}
+both @var{expression1} and @var{expression2} are true. This syntax is not POSIX-compliant and is not recommended.
 @item @var{expression1} @code{-o} @var{expression2}
 either @var{expression1} or @var{expression2} is true
 @end table

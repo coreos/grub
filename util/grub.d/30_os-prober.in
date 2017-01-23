@@ -71,6 +71,9 @@ EOF
            fi
            if [ /kernelcache -nt /System/Library/Extensions ]; then
               $1 /kernelcache boot-uuid=\${uuid} rd=*uuid
+           elif [ -f /System/Library/Kernels/kernel ]; then
+              $1 /System/Library/Kernels/kernel boot-uuid=\${uuid} rd=*uuid
+              xnu_kextdir /System/Library/Extensions
            else
               $1 /mach_kernel boot-uuid=\${uuid} rd=*uuid
               if [ /System/Library/Extensions.mkext -nt /System/Library/Extensions ]; then
@@ -135,6 +138,9 @@ for OS in ${OSPROBED} ; do
     LONGNAME="${LABEL}"
   fi
 
+  # os-prober returns text string followed by optional counter
+  CLASS="--class $(echo "${LABEL}" | LC_ALL=C sed 's,[[:digit:]]*$,,' | cut -d' ' -f1 | tr 'A-Z' 'a-z' | LC_ALL=C sed 's,[^[:alnum:]_],_,g')"
+
   gettext_printf "Found %s on %s\n" "${LONGNAME}" "${DEVICE}" >&2
 
   case ${BOOT} in
@@ -142,7 +148,7 @@ for OS in ${OSPROBED} ; do
 
 	  onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry '$(echo "${LONGNAME} $onstr" | grub_quote)' --class windows --class os \$menuentry_id_option 'osprober-chain-$(grub_get_device_id "${DEVICE}")' {
+menuentry '$(echo "${LONGNAME} $onstr" | grub_quote)' $CLASS --class os \$menuentry_id_option 'osprober-chain-$(grub_get_device_id "${DEVICE}")' {
 EOF
       save_default_entry | grub_add_tab
       prepare_grub_to_access_device ${DEVICE} | grub_add_tab
@@ -174,7 +180,7 @@ EOF
 	DEVICE=${DEVICE%@*}
 	onstr="$(gettext_printf "(on %s)" "${DEVICE}")"
       cat << EOF
-menuentry '$(echo "${LONGNAME} $onstr" | grub_quote)' --class windows --class os \$menuentry_id_option 'osprober-efi-$(grub_get_device_id "${DEVICE}")' {
+menuentry '$(echo "${LONGNAME} $onstr" | grub_quote)' $CLASS --class os \$menuentry_id_option 'osprober-efi-$(grub_get_device_id "${DEVICE}")' {
 EOF
       save_default_entry | sed -e "s/^/\t/"
       prepare_grub_to_access_device ${DEVICE} | sed -e "s/^/\t/"
@@ -230,7 +236,7 @@ EOF
 
 	if [ "x$is_top_level" = xtrue ] && [ "x${GRUB_DISABLE_SUBMENU}" != xy ]; then
             cat << EOF
-menuentry '$(echo "$OS $onstr" | grub_quote)' --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
+menuentry '$(echo "$OS $onstr" | grub_quote)' $CLASS --class gnu-linux --class gnu --class os \$menuentry_id_option 'osprober-gnulinux-simple-$boot_device_id' {
 EOF
 	    save_default_entry | grub_add_tab
 	    printf '%s\n' "${prepare_boot_cache}"

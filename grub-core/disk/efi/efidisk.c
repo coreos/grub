@@ -85,6 +85,12 @@ make_devices (void)
 	{
 	  /* Uggh.  */
 	  grub_free (handles);
+	  while (devices)
+	    {
+	      d = devices->next;
+	      grub_free (devices);
+	      devices = d;
+	    }
 	  return 0;
 	}
 
@@ -487,8 +493,15 @@ grub_efidisk_open (const char *name, struct grub_disk *disk)
   m = d->block_io->media;
   /* FIXME: Probably it is better to store the block size in the disk,
      and total sectors should be replaced with total blocks.  */
-  grub_dprintf ("efidisk", "m = %p, last block = %llx, block size = %x\n",
-		m, (unsigned long long) m->last_block, m->block_size);
+  grub_dprintf ("efidisk",
+		"m = %p, last block = %llx, block size = %x, io align = %x\n",
+		m, (unsigned long long) m->last_block, m->block_size,
+		m->io_align);
+
+  /* Ensure required buffer alignment is a power of two (or is zero). */
+  if (m->io_align & (m->io_align - 1))
+    return grub_error (GRUB_ERR_IO, "invalid buffer alignment %d", m->io_align);
+
   disk->total_sectors = m->last_block + 1;
   /* Don't increase this value due to bug in some EFI.  */
   disk->max_agglomerate = 0xa0000 >> (GRUB_DISK_CACHE_BITS + GRUB_DISK_SECTOR_BITS);
@@ -518,15 +531,42 @@ grub_efidisk_readwrite (struct grub_disk *disk, grub_disk_addr_t sector,
 {
   struct grub_efidisk_data *d;
   grub_efi_block_io_t *bio;
+  grub_efi_status_t status;
+  grub_size_t io_align, num_bytes;
+  char *aligned_buf;
 
   d = disk->data;
   bio = d->block_io;
 
-  return efi_call_5 ((wr ? bio->write_blocks : bio->read_blocks), bio,
-		     bio->media->media_id,
-		     (grub_efi_uint64_t) sector,
-		     (grub_efi_uintn_t) size << disk->log_sector_size,
-		     buf);
+  /* Set alignment to 1 if 0 specified */
+  io_align = bio->media->io_align ? bio->media->io_align : 1;
+  num_bytes = size << disk->log_sector_size;
+
+  if ((grub_addr_t) buf & (io_align - 1))
+    {
+      aligned_buf = grub_memalign (io_align, num_bytes);
+      if (! aligned_buf)
+	return GRUB_EFI_OUT_OF_RESOURCES;
+      if (wr)
+	grub_memcpy (aligned_buf, buf, num_bytes);
+    }
+  else
+    {
+      aligned_buf = buf;
+    }
+
+  status =  efi_call_5 ((wr ? bio->write_blocks : bio->read_blocks), bio,
+			bio->media->media_id, (grub_efi_uint64_t) sector,
+			(grub_efi_uintn_t) num_bytes, aligned_buf);
+
+  if ((grub_addr_t) buf & (io_align - 1))
+    {
+      if (!wr)
+	grub_memcpy (buf, aligned_buf, num_bytes);
+      grub_free (aligned_buf);
+    }
+
+  return status;
 }
 
 static grub_err_t
@@ -541,7 +581,9 @@ grub_efidisk_read (struct grub_disk *disk, grub_disk_addr_t sector,
 
   status = grub_efidisk_readwrite (disk, sector, size, buf, 0);
 
-  if (status != GRUB_EFI_SUCCESS)
+  if (status == GRUB_EFI_NO_MEDIA)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, N_("no media in `%s'"), disk->name);
+  else if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_READ_ERROR,
 		       N_("failure reading sector 0x%llx from `%s'"),
 		       (unsigned long long) sector,
@@ -562,7 +604,9 @@ grub_efidisk_write (struct grub_disk *disk, grub_disk_addr_t sector,
 
   status = grub_efidisk_readwrite (disk, sector, size, (char *) buf, 1);
 
-  if (status != GRUB_EFI_SUCCESS)
+  if (status == GRUB_EFI_NO_MEDIA)
+    return grub_error (GRUB_ERR_OUT_OF_RANGE, N_("no media in `%s'"), disk->name);
+  else if (status != GRUB_EFI_SUCCESS)
     return grub_error (GRUB_ERR_WRITE_ERROR,
 		       N_("failure writing sector 0x%llx to `%s'"),
 		       (unsigned long long) sector, disk->name);

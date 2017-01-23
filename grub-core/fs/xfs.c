@@ -76,8 +76,13 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 /* incompat feature flags */
 #define XFS_SB_FEAT_INCOMPAT_FTYPE      (1 << 0)        /* filetype in dirent */
+#define XFS_SB_FEAT_INCOMPAT_SPINODES   (1 << 1)        /* sparse inode chunks */
+#define XFS_SB_FEAT_INCOMPAT_META_UUID  (1 << 2)        /* metadata UUID */
+
+/* We do not currently verify metadata UUID so it is safe to read such filesystem */
 #define XFS_SB_FEAT_INCOMPAT_SUPPORTED \
-	(XFS_SB_FEAT_INCOMPAT_FTYPE)
+	(XFS_SB_FEAT_INCOMPAT_FTYPE | \
+	 XFS_SB_FEAT_INCOMPAT_META_UUID)
 
 struct grub_xfs_sblock
 {
@@ -775,7 +780,10 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	    c = de->name[de->len];
 	    de->name[de->len] = '\0';
 	    if (iterate_dir_call_hook (ino, de->name, &ctx))
-	      return 1;
+	      {
+		de->name[de->len] = c;
+		return 1;
+	      }
 	    de->name[de->len] = c;
 
 	    de = grub_xfs_inline_next_de(dir->data, head, de);

@@ -593,6 +593,9 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
 	  if (! table->addr)
 	    {
 	      free_tables ();
+	      grub_free (exclude);
+	      grub_free (load_only);
+	      grub_free (table);
 	      return grub_errno;
 	    }
 	  table->next = acpi_tables;

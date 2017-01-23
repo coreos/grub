@@ -140,10 +140,13 @@ grub_cmd_cat (grub_extcmd_context_t ctxt, int argc, char **args)
       grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
     }
 
-  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
-  for (j = 0; j < utcount; j++)
-    grub_printf ("<%x>", (unsigned int) utbuf[j]);
-  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+  if (utcount)
+    {
+      grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);
+      for (j = 0; j < utcount; j++)
+	grub_printf ("<%x>", (unsigned int) utbuf[j]);
+      grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);
+    }
 
   grub_xputs ("\n");
   grub_refresh ();
