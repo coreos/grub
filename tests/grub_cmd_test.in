@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/sh
 
 # create a randome file
 empty="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
