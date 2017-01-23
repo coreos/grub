@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
@@ -13,8 +13,29 @@ run_it () {
     LC_ALL=C "$GRUBFSTEST" "$@"
 }
 
+range() {
+    range_counter="$1"
+    while test "$range_counter" -le "$2"; do
+	echo "$range_counter"
+	range_counter="$((range_counter + $3))"
+    done
+}
+
+powrange() {
+    range_counter="$1"
+    while test "$range_counter" -le "$2"; do
+	echo "$range_counter"
+	range_counter="$((range_counter * 2))"
+    done
+}
+
 run_grubfstest () {
-    run_it -c $NEED_IMAGES_N "${NEED_IMAGES[@]}"  "$@"
+    need_images=
+    for i in $(range 0 $((NEED_IMAGES_N-1)) 1); do
+	need_images="$need_images $FSIMAGEP${i}.img";
+    done
+
+    run_it -c $NEED_IMAGES_N $need_images  "$@"
 }
 
 # OS LIMITATION: GNU/Linux has no AFS support, so we use a premade image and a reference tar file. I.a. no multiblocksize test
@@ -51,7 +72,7 @@ case x"$fs" in
 	# OS limitation: zfs-fuse always uses ashift=9 with loop devices
 	MAXLOGSECSIZE=9;;
 esac
-for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE + 1)); do
+for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
     SECSIZE="$((1 << LOGSECSIZE))"
     MINBLKSIZE=512
     MAXBLKSIZE=512
@@ -169,7 +190,12 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    MINBLKSIZE=1024
 	    MAXBLKSIZE=4096;;
     esac
-    for ((BLKSIZE=MINBLKSIZE;BLKSIZE<=MAXBLKSIZE;BLKSIZE=BLKSTEP?BLKSIZE+BLKSTEP:2*BLKSIZE)); do
+    if test "$BLKSTEP" -eq 0; then
+	blksizes="$(powrange "$MINBLKSIZE" "$MAXBLKSIZE")"
+    else
+	blksizes="$(range "$MINBLKSIZE" "$MAXBLKSIZE" "$BLKSTEP")"
+    fi
+    for BLKSIZE in $blksizes; do
 	MAXDEVICES=1
 	MINDEVICES=1
 	export fs
@@ -199,13 +225,11 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		MAXDEVICES=7;;
 	esac
 
-	for ((NDEVICES=MINDEVICES; NDEVICES <= MAXDEVICES; NDEVICES++)); do
+	for NDEVICES in $(range "$MINDEVICES" "$MAXDEVICES" 1); do
 	    export NDEVICES
-	    unset FSIMAGES
-	    for ((i=0; i < NDEVICES; i++)); do
-		FSIMAGES[i]="${tempdir}/${fs}_${SECSIZE}_${BLKSIZE}_${NDEVICES}_$i.img"
-	    done
-	    export FSIMAGES
+	    unset FSIMAGEP
+	    FSIMAGEP="${tempdir}/${fs}_${SECSIZE}_${BLKSIZE}_${NDEVICES}_"
+	    export FSIMAGEP
 	    unset NEED_IMAGES;
 
 	    case x$fs in
@@ -226,11 +250,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		*)
 		    NEED_IMAGES_N=$NDEVICES;;
 	    esac
-	    for ((i=0;i < NEED_IMAGES_N; i++)); do
-		NEED_IMAGES[i]="${FSIMAGES[i]}";
-	    done
 	    export NEED_IMAGES_N
-	    export NEED_IMAGES
 
 	    MNTPOINTRO="${tempdir}/${fs}_ro"
 	    MNTPOINTRW="${tempdir}/${fs}_rw"
@@ -238,20 +258,25 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    MOUNTFS="$fs"
 	    MASTER="${tempdir}/master"
 	    FSLABEL="grub_;/testé莭莽茝😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoifoirefoireoifoijfoirereoireoivoioirevoinvoinreoinvnoieoinreoinveoinveoinreoinvoineoinoinoineoinernoiveoinvreoiioewdioewoirvnoireoivfoirewfewoifoijewoijfoijewfoijfewoijoijoijoijoijoijoijfewceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoifoirefoireoifoijfoirereoireoivoioirevoinvoinreoinvnoieoinreoinveoinveoinreoinvoineoinoinoineoinernoiveoinvreoiioewdioewoirvnoireoivfoirewfewoifoijewoijfoijewfoijfewoijoijoijoijoijoijoijfewrewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoifoirefoireoifoijfoirereoireoivoioirevoinvoinreoinvnoieoinreoinveoinveoinreoinvoineoinoinoineoinernoiveoinvreoiioewdioewoirvnoireoivfoirewfewoifoijewoijfoijewfoijfewoijoijoijoijoijoijoijfewceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoifoirefoireoifoijfoirereoireoivoioirevoinvoinreoinvnoieoinreoinveoinveoinreoinvoineoinoinoineoinernoiveoinvreoiioewdioewoirvnoireoivfoirewfewoifoijewoijfoijewfoijfewoijoijoijoijoijoijoijfew"
-	    CFILESN=1
-	    if test -f /usr/share/dict/american-english; then
-		CFILESSRC[0]="/usr/share/dict/american-english"
-	    else
-		CFILESSRC[0]="/usr/share/dict/linux.words"
+	    CFILESRC=
+	    for cand in /usr/share/dict/american-english /usr/share/dict/linux.words; do
+		if test -f "$cand" ; then
+		    CFILESRC="$cand"
+		    break
+		fi
+	    done
+	    if test "$CFILESRC" = "" ; then
+		echo "Couldn't find compressible file" >&2
+		exit 1
 	    fi
 	    case x"$fs" in
 		    # FS LIMITATION: 8.3 names
 		xmsdos*)
-		    CFILES[0]="american.eng";;
+		    CFILE="american.eng";;
 		xiso9660)
-		    CFILES[0]="american_english";;
+		    CFILE="american_english";;
 		*)
-		    CFILES[0]="american-english";;
+		    CFILE="american-english";;
 	    esac
         # OS LIMITATION: Limited by NAME_MAX (usually 255) in GNU/Linux
 	    LONGNAME="qwertzuiopasdfghjklyxcvbnm1234567890qwertzuiopasdfghjklyxcvbnm1234567890oiewqfiewioqoiqoiurqruewqoiuwoieoiiuewqroreqiufieiuwrnureweriuvceoiroiewqoiricdsalkcndsakfirefoiwqeoircorejwoijfreoijojoiewjfwnfcoirenfoirefnreoifenoiwfnoi"
@@ -388,8 +413,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    ;;
 		x"vfat16" | xmsdos16)
 		    BIGBLOCKCNT=$((25000 * BLKSIZE))
-		    if [ $BIGBLOCKCNT -gt $((16#ffffffff)) ]; then
-			BIGBLOCKCNT=$((16#ffffffff))
+		    if [ $BIGBLOCKCNT -gt 4294967295 ]; then
+			BIGBLOCKCNT=4294967295
 		    fi
 		    ;;
 		x"minix")
@@ -410,7 +435,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    BIGBLOCKCNT=$((4000 * 1048576));;
 		    # FS LIMITATION: These FS have uint32 as file size field
 		x"vfat"* | xmsdos* | x"cpio_crc" | x"cpio_newc" | x"cpio_bin" | x"cpio_hpbin" | xsfs*)
-		    BIGBLOCKCNT=$((16#ffffffff));;
+		    BIGBLOCKCNT=4294967295;;
 		    # FS LIMITATION: These FS have int32 as file size field
 		    # FIXME: not so sure about AFFS
 		    # OS LIMITATION: minix2/minix3 could be formatted in a way to permit more.
@@ -543,18 +568,18 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 
 	    PDIR=""
 		# OS LIMITATION: Limited by PATH_MAX (usually 1024)
-	    for ((i=0;i<PDIRCOMPNUM;i++)); do
+	    for i in $(range 0 $((PDIRCOMPNUM-1)) 1); do
 		PDIR="$PDIR/$i";
-		if [ $((i%3)) == 0 ]; then
+		if test $((i%3)) = 0; then
 		    PDIR="$PDIR/"
 		fi
 	    done
 
 	    PDIR2=""
 		# OS LIMITATION: Limited by PATH_MAX (usually 1024)
-	    for ((i=0;i<PDIR2COMPNUM;i++)); do
+	    for i in $(range 0 $((PDIR2COMPNUM-1)) 1); do
 		PDIR2="${PDIR2}/$i";
-		if [ $((i%3)) == 0 ]; then
+		if test $((i%3)) = 0; then
 		    PDIR2="${PDIR2}/"
 		fi
 	    done
@@ -563,7 +588,9 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 
 	    unset LODEVICES
 	    GENERATED=n
-
+	    LODEVICES=
+	    MOUNTDEVICE=
+	    
 	    case x"$fs" in
 		x"tarfs" | x"cpio_"*| x"ziso9660" | x"romfs" | x"squash4_"*\
                     | x"iso9660" | xjoliet | xrockridge | xrockridge_joliet \
@@ -577,62 +604,65 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		*)
 		    mkdir -p "$MNTPOINTRW"
 		    mkdir -p "$MNTPOINTRO"
-		    for ((i=0; i < NDEVICES; i++)); do
-			dd if=/dev/zero of="${FSIMAGES[i]}" count=1 bs=1 seek=$((DISKSIZE-1)) &> /dev/null
-			LODEVICES[i]=`losetup -f`
-			losetup "${LODEVICES[i]}" "${FSIMAGES[i]}"
+		    for i in $(range 0 $((NDEVICES-1)) 1); do
+			dd if=/dev/zero of="$FSIMAGEP${i}.img" count=1 bs=1 seek=$((DISKSIZE-1)) &> /dev/null
+			LODEVICE="$(losetup -f)"
+			LODEVICES="$LODEVICES $LODEVICE"
+			losetup "$LODEVICE" "$FSIMAGEP${i}.img"
+			if test "$i" = 0; then
+			    MOUNTDEVICE="$LODEVICE"
+			fi
 		    done ;;
 	    esac
 
-	    MOUNTDEVICE="${LODEVICES[0]}"
 	    case x"$fs" in
 		x"afs")
 		    ;;
 		x"btrfs")
-		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${LODEVICES[0]}" ;;
+		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${MOUNTDEVICE}" ;;
 		x"btrfs_zlib" | x"btrfs_lzo")
-		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${LODEVICES[0]}"
+		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${MOUNTDEVICE}"
 		    MOUNTOPTS="compress=${fs/btrfs_/},"
 		    MOUNTFS="btrfs"
 		    ;;
 		x"btrfs_raid0")
-		    "mkfs.btrfs" -s $SECSIZE -d raid0 -m raid0 -L "$FSLABEL" "${LODEVICES[@]}"
+		    "mkfs.btrfs" -s $SECSIZE -d raid0 -m raid0 -L "$FSLABEL" $LODEVICES
 		    MOUNTFS="btrfs"
 		    ;;
 		x"btrfs_raid1")
-		    "mkfs.btrfs" -s $SECSIZE -d raid1 -m raid1 -L "$FSLABEL" "${LODEVICES[@]}"
+		    "mkfs.btrfs" -s $SECSIZE -d raid1 -m raid1 -L "$FSLABEL" $LODEVICES
 		    MOUNTFS="btrfs"
 		    ;;
 		x"btrfs_raid10")
-		    "mkfs.btrfs" -s $SECSIZE -d raid10 -m raid10 -L "$FSLABEL" "${LODEVICES[@]}"
+		    "mkfs.btrfs" -s $SECSIZE -d raid10 -m raid10 -L "$FSLABEL" $LODEVICES
 		    MOUNTFS="btrfs"
 		    ;;
 		x"btrfs_single")
-		    "mkfs.btrfs" -s $SECSIZE -d single -L "$FSLABEL" "${LODEVICES[@]}"
+		    "mkfs.btrfs" -s $SECSIZE -d single -L "$FSLABEL" $LODEVICES
 		    MOUNTFS="btrfs"
 		    ;;
 		x"exfat")
-		    "mkfs.$fs" -s $((BLKSIZE/512)) -n "$FSLABEL" "${LODEVICES[0]}"
+		    "mkfs.$fs" -s $((BLKSIZE/512)) -n "$FSLABEL" "${MOUNTDEVICE}"
 		    MOUNTOPTS="iocharset=utf8,"
 		    MOUNTFS="exfat-fuse";;
 		x"minix")
-		    "mkfs.minix" "${LODEVICES[0]}"
+		    "mkfs.minix" "${MOUNTDEVICE}"
 		    ;;
 	# mkfs.hfs and mkfs.hfsplus don't fill UUID.
 		x"hfsplus")
-		    "mkfs.hfsplus" -b $BLKSIZE -v "$FSLABEL" "${LODEVICES[0]}"
-		    dd if=/dev/urandom of="${LODEVICES[0]}" bs=1 seek=$((16#468)) conv=notrunc count=8 ;;
+		    "mkfs.hfsplus" -b $BLKSIZE -v "$FSLABEL" "${MOUNTDEVICE}"
+		    dd if=/dev/urandom of="${MOUNTDEVICE}" bs=1 seek=$((16#468)) conv=notrunc count=8 ;;
 		x"hfsplus_wrap")
-		    "mkfs.hfsplus" -w -b $BLKSIZE -v "$FSLABEL" "${LODEVICES[0]}"
-		    dd if=/dev/urandom of="${LODEVICES[0]}" bs=1 seek=$((16#468)) conv=notrunc count=8
+		    "mkfs.hfsplus" -w -b $BLKSIZE -v "$FSLABEL" "${MOUNTDEVICE}"
+		    dd if=/dev/urandom of="${MOUNTDEVICE}" bs=1 seek=$((16#468)) conv=notrunc count=8
 		    MOUNTFS="hfsplus";;
 		x"hfsplus_casesens")
-		    "mkfs.hfsplus" -s -b $BLKSIZE -v "$FSLABEL" "${LODEVICES[0]}"
-		    dd if=/dev/urandom of="${LODEVICES[0]}" bs=1 seek=$((16#468)) conv=notrunc count=8
+		    "mkfs.hfsplus" -s -b $BLKSIZE -v "$FSLABEL" "${MOUNTDEVICE}"
+		    dd if=/dev/urandom of="${MOUNTDEVICE}" bs=1 seek=$((16#468)) conv=notrunc count=8
 		    MOUNTFS="hfsplus";;
 		x"hfs")
-		    "mkfs.hfs" -b $BLKSIZE -v "`echo $FSLABEL |recode utf8..macroman`" -h "${LODEVICES[0]}"
-		    dd if=/dev/urandom of="${LODEVICES[0]}" bs=1 seek=$((16#474)) conv=notrunc count=8
+		    "mkfs.hfs" -b $BLKSIZE -v "`echo $FSLABEL |recode utf8..macroman`" -h "${MOUNTDEVICE}"
+		    dd if=/dev/urandom of="${MOUNTDEVICE}" bs=1 seek=$((16#474)) conv=notrunc count=8
 		    MOUNTOPTS="iocharset=utf8,codepage=macroman,"
 		    ;;
 		x"vfat"*|xmsdos*)
@@ -643,98 +673,98 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    else
 			A=
 		    fi
-		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${FSIMAGES[0]}"
+		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${MOUNTDEVICE}"
 		    MOUNTOPTS="iocharset=utf8,codepage=437,"
 		    MOUNTFS="$(echo "$fs"|sed 's,[0-9]*a\?$,,')";;
 		x"minix2")
-		    "mkfs.minix" -v "${LODEVICES[0]}"
+		    "mkfs.minix" -v "${MOUNTDEVICE}"
 		    MOUNTFS="minix";;
 		x"minix3")
-		    "mkfs.minix" -B $BLKSIZE -3 "${LODEVICES[0]}"
+		    "mkfs.minix" -B $BLKSIZE -3 "${MOUNTDEVICE}"
 		    MOUNTFS="minix";;
 		x"ntfs"*)
-		    "mkfs.ntfs" -s "$SECSIZE" -c "$BLKSIZE" -L "$FSLABEL" -Q -q "${LODEVICES[0]}"
+		    "mkfs.ntfs" -s "$SECSIZE" -c "$BLKSIZE" -L "$FSLABEL" -Q -q "${MOUNTDEVICE}"
 		    MOUNTOPTS="iocharset=utf8,compression,"
 		    MOUNTFS="ntfs-3g";;
 		x"udf")
-		    "mkudffs" --utf8 -b $BLKSIZE --lvid="$FSLABEL" "${LODEVICES[0]}"
+		    "mkudffs" --utf8 -b $BLKSIZE --lvid="$FSLABEL" "${MOUNTDEVICE}"
 		    MOUNTOPTS="iocharset=utf8,bs=$BLKSIZE,";;
 		x"ufs2")
-		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 2 "${LODEVICES[0]}"
+		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 2 "${MOUNTDEVICE}"
 		    MOUNTOPTS="ufstype=ufs2,"
 		    MOUNTFS="ufs";;
 		x"ufs1")
-		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 1 "${LODEVICES[0]}"
+		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 1 "${MOUNTDEVICE}"
 		    MOUNTOPTS="ufstype=44bsd,"
 		    MOUNTFS="ufs";;
 		x"ufs1_sun")
-		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 1 "${LODEVICES[0]}"
+		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 1 "${MOUNTDEVICE}"
 		    MOUNTOPTS="ufstype=sun,"
 		    MOUNTFS="ufs";;
 		x"zfs")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" "${LODEVICES[0]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" "${MOUNTDEVICE}"
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_caseins")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" "${LODEVICES[0]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" "${MOUNTDEVICE}"
 		    sleep 1
 		    "zfs" create -o casesensitivity=insensitive "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_lzjb" | xzfs_gzip | xzfs_zle)
-		    "zpool" create -O compression=${fs/zfs_/} -R "$MNTPOINTRW" "$FSLABEL" "${LODEVICES[0]}"
+		    "zpool" create -O compression=${fs/zfs_/} -R "$MNTPOINTRW" "$FSLABEL" "${MOUNTDEVICE}"
 		    sleep 1
 		    "zfs" create -o compression=${fs/zfs_/} "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_raidz")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz1 "${LODEVICES[@]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz1 $LODEVICES
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_raidz2")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz2 "${LODEVICES[@]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz2 $LODEVICES
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_raidz3")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz3 "${LODEVICES[@]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" raidz3 $LODEVICES
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_mirror")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" mirror "${LODEVICES[@]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" mirror $LODEVICES
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"zfs_stripe")
-		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" "${LODEVICES[@]}"
+		    "zpool" create -R "$MNTPOINTRW" "$FSLABEL" $LODEVICES
 		    sleep 1
 		    "zfs" create "$FSLABEL"/"grub fs"
 		    sleep 1;;
 		x"tarfs" | x"cpio_"* | x"iso9660" | xjoliet | xrockridge | xrockridge_joliet | x"iso9660_1999" | xjoliet_1999 | xrockridge_1999 | xrockridge_joliet_1999 | x"ziso9660" | x"romfs" | x"squash4_"*)
 		    INSTDEVICE=/dev/null;;
 		x"reiserfs")
-		    "mkfs.reiserfs" --format=3.6 -b $BLKSIZE -l "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		    "mkfs.reiserfs" --format=3.6 -b $BLKSIZE -l "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		x"reiserfs_old")
-		    "mkfs.reiserfs" --format=3.5 -b $BLKSIZE -l "$FSLABEL" -q "${LODEVICES[0]}"
+		    "mkfs.reiserfs" --format=3.5 -b $BLKSIZE -l "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTFS=reiserfs;;
 		x"jfs")
-		    "mkfs.jfs" -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    "mkfs.jfs" -L "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTOPTS="iocharset=utf8,";;
 		x"jfs_caseins")
-		    "mkfs.jfs" -O -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    "mkfs.jfs" -O -L "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTFS=jfs
 		    MOUNTOPTS="iocharset=utf8,";;
 		x"mdraid"*)
-		    mdadm -C --chunk=$((BLKSIZE/1024)) --force -e "${fs:6:1}.${fs:7:1}" "/dev/md/${fs}_${NDEVICES}" --level="${fs:13}" --raid-devices="$NDEVICES" "${LODEVICES[@]}"
+		    mdadm -C --chunk=$((BLKSIZE/1024)) --force -e "${fs:6:1}.${fs:7:1}" "/dev/md/${fs}_${NDEVICES}" --level="${fs:13}" --raid-devices="$NDEVICES" $LODEVICES
 		    MOUNTDEVICE="/dev/md/${fs}_${NDEVICES}"
 		    MOUNTFS=ext2
 		    "mkfs.ext2" -L "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		x"lvm"*)
-		    for ((i=0;i<NDEVICES;i++)); do
-			pvcreate "${LODEVICES[i]}"
+		    for lodev in $LODEVICES; do
+			pvcreate "$lodev"
 		    done
-		    vgcreate -s $((BLKSIZE/1024))K grub_test "${LODEVICES[@]}"
+		    vgcreate -s $((BLKSIZE/1024))K grub_test $LODEVICES
 		    if [ x$fs = xlvm ] ; then
 			lvcreate -l "$((NDEVICES*7*LVMBLKMUL))" -n testvol grub_test
 		    elif [ x$fs = xlvm_stripe ] ; then
@@ -757,22 +787,22 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    MOUNTFS=ext2
 		    "mkfs.ext2" -L "$FSLABEL" -q "${MOUNTDEVICE}"  ;;
 		xnilfs2)
-		    "mkfs.nilfs2" -L "$FSLABEL" -b $BLKSIZE  -q "${LODEVICES[0]}" ;;
+		    "mkfs.nilfs2" -L "$FSLABEL" -b $BLKSIZE  -q "${MOUNTDEVICE}" ;;
 		xext2_old)
-		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext2" -r 0 -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext2" -r 0 -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTFS=ext2
 		    ;;
 		xext4_metabg)
-		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O meta_bg,^resize_inode -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}"
+		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O meta_bg,^resize_inode -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTFS=ext4
 		    ;;
 		xext*)
-		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		xxfs)
-		    "mkfs.xfs" -m crc=0 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		    "mkfs.xfs" -m crc=0 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		xxfs_crc)
 		    MOUNTFS="xfs"
-		    "mkfs.xfs" -m crc=1 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${LODEVICES[0]}" ;;
+		    "mkfs.xfs" -m crc=1 -b size=$BLKSIZE -s size=$SECSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		*)
 		    echo "Add appropriate mkfs command here"
 		    exit 1
@@ -873,11 +903,13 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		*)
 		    if ! mount -t "$MOUNTFS" "${MOUNTDEVICE}" "$MNTPOINTRW" -o ${MOUNTOPTS}${SELINUXOPTS}rw  ; then
 			echo "MOUNT FAILED."
-			for ((i=0; i < NDEVICES; i++)); do
-			    while ! losetup -d "${LODEVICES[i]}"; do
+			for lodev in $LODEVICES; do
+			    while ! losetup -d "$lodev"; do
 				sleep 1
 			    done
-			    rm "${FSIMAGES[i]}"
+			done
+			for i in $(range 0 $((NDEVICES-1)) 1); do
+			    rm "$FSIMAGEP${i}.img"
 			done
 			exit 1;
 		    fi
@@ -939,11 +971,11 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    if (test x$fs = xvfat12a || test x$fs = xmsdos12a) && test x$BLKSIZE = x131072; then
 		    # With this config there isn't enough space for full copy.
 		    # Copy as much as we can
-		cp "${CFILESSRC[0]}" "$MNTPOINTRW/$OSDIR/${CFILES[0]}" &> /dev/null;
+		cp "${CFILESRC}" "$MNTPOINTRW/$OSDIR/${CFILE}" &> /dev/null;
 	    else
-		for ((i=0;i<$CFILESN;i++)); do
-		    cp "${CFILESSRC[i]}" "$MNTPOINTRW/$OSDIR/${CFILES[i]}";
-		done
+
+		cp "${CFILESRC}" "$MNTPOINTRW/$OSDIR/${CFILE}";
+
 	    fi
 
 	    if [ x$NOSYMLINK != xy ]; then
@@ -968,48 +1000,48 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    sleep 2
 		    ;;
 		x"tarfs")
-		    (cd "$MASTER"; tar cf "${FSIMAGES[0]}" .) ;;
+		    (cd "$MASTER"; tar cf "${FSIMAGEP}0.img" .) ;;
 		x"cpio_"*)
-		    (cd "$MASTER"; find . | cpio -o -H "${fs/cpio_/}" > "${FSIMAGES[0]}" ) ;;
+		    (cd "$MASTER"; find . | cpio -o -H "$(echo ${fs} | sed 's@^cpio_@@')" > "${FSIMAGEP}0.img" ) ;;
 		x"ziso9660")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso -compliance rec_mtime -set_filter_r --zisofs -- -zisofs default -as mkisofs -iso-level 3 -graft-points -R -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}"  -- -set_filter_r --zisofs -- -zisofs default -add /="$MASTER" ;;
+		    xorriso -compliance rec_mtime -set_filter_r --zisofs -- -zisofs default -as mkisofs -iso-level 3 -graft-points -R -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img"  -- -set_filter_r --zisofs -- -zisofs default -add /="$MASTER" ;;
 		x"iso9660")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"joliet")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"rockridge")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"rockridge_joliet")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 3 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"iso9660_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"joliet_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge off  -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"rockridge_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"rockridge_joliet_1999")
 		    FSUUID=$(date -u +%Y-%m-%d-%H-%M-%S-00);
-		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGES[0]}" /="$MASTER"  ;;
+		    xorriso --rockridge on -compliance rec_mtime -as mkisofs -iso-level 4 -graft-points -J -joliet-long -V "$FSLABEL" --modification-date=$(echo ${FSUUID} | sed 's/-//g;') -o "${FSIMAGEP}0.img" /="$MASTER"  ;;
 		x"romfs")
-		    genromfs -V "$FSLABEL" -f "${FSIMAGES[0]}" -d "$MASTER" ;;
+		    genromfs -V "$FSLABEL" -f "${FSIMAGEP}0.img" -d "$MASTER" ;;
 		xsquash4_*)
-		    echo mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE
-		    mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE ;;
+		    echo mksquashfs "$MASTER" "${FSIMAGEP}0.img" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE
+		    mksquashfs "$MASTER" "${FSIMAGEP}0.img" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE ;;
 		x"bfs")
 		    sleep 1
 		    fusermount -u "$MNTPOINTRW"
 		    ;;
 		xlvm*)
 		    sleep 1
-		    for ((try=0;try < 20; try++)); do
+		    for try in $(range 0 20 1); do
 			if umount "$MNTPOINTRW" ; then
 			    break;
 			fi
@@ -1021,7 +1053,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    ;;
 		xmdraid*)
 		    sleep 1
-		    for ((try=0;try < 20; try++)); do
+		    for try in $(range 0 20 1); do
 			if umount "$MNTPOINTRW" ; then
 			    break;
 			fi
@@ -1033,7 +1065,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    ;;
 		*)
 		    sleep 1
-		    for ((try=0;try < 20; try++)); do
+		    for try in $(range 0 20 1); do
 			if umount "$MNTPOINTRW" ; then
 			    break;
 			fi
@@ -1066,7 +1098,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    sleep 1
 		    mount -t "$MOUNTFS" "${MOUNTDEVICE}" "$MNTPOINTRO" -o ${MOUNTOPTS}${SELINUXOPTS}ro ;;
 		xmdraid*)
-		    mdadm --assemble /dev/md/"${fs}_$NDEVICES" "${LODEVICES[@]}"
+		    mdadm --assemble /dev/md/"${fs}_$NDEVICES" $LODEVICES
 		    sleep 1
 		    mount -t "$MOUNTFS" "${MOUNTDEVICE}" "$MNTPOINTRO" -o ${MOUNTOPTS}${SELINUXOPTS}ro ;;
 		*)
@@ -1085,7 +1117,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo LIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		TZ=UTC ls -l "$MNTPOINTRO"
 		exit 1
 	    fi
 
@@ -1094,7 +1126,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo NLIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -lA "$MNTPOINTRO"
+		TZ=UTC ls -lA "$MNTPOINTRO"
 		exit 1
 	    fi
 
@@ -1103,7 +1135,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo ILIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		TZ=UTC ls -l "$MNTPOINTRO"
 		exit 1
 	    fi
 
@@ -1112,7 +1144,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo LONG LIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		TZ=UTC ls -l "$MNTPOINTRO"
 		exit 1
 	    fi
 
@@ -1123,7 +1155,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		else
 		    echo TIME FAIL
 		    echo "$LSROUT"
-		    TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		    TZ=UTC ls -l "$MNTPOINTRO"
 		    exit 1
 		fi
 
@@ -1133,7 +1165,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		else
 		    echo LONG TIME FAIL
 		    echo "$LSROUT"
-		    TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		    TZ=UTC ls -l "$MNTPOINTRO"
 		    exit 1
 		fi
 	    fi
@@ -1149,7 +1181,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo DOT IN ROOTDIR FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+		TZ=UTC ls -l "$MNTPOINTRO"
 		exit 1
 	    fi
 
@@ -1163,7 +1195,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    else
 			echo DOTDOT IN ROOTDIR FAIL
 			echo "$LSROUT"
-			TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO"
+			TZ=UTC ls -l "$MNTPOINTRO"
 			exit 1
 		    fi
 		    ;;
@@ -1180,7 +1212,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo SLIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO/sdir"
+		TZ=UTC ls -l "$MNTPOINTRO/sdir"
 		exit 1
 	    fi
 
@@ -1195,7 +1227,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo PLIST FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO/$PDIR"
+		TZ=UTC ls -l "$MNTPOINTRO/$PDIR"
 		exit 1
 	    fi
 
@@ -1210,7 +1242,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo DOT IN SUBDIR FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO/$OSDIR/sdir"
+		TZ=UTC ls -l "$MNTPOINTRO/$OSDIR/sdir"
 		exit 1
 	    fi
 
@@ -1225,7 +1257,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    else
 		echo DOTDOT IN SUBDIR FAIL
 		echo "$LSROUT"
-		TZ=UTC ls --time-style=+%Y%m%d%H%M%S.%N -l "$MNTPOINTRO/$OSDIR/ssdir"
+		TZ=UTC ls -l "$MNTPOINTRO/$OSDIR/ssdir"
 		exit 1
 	    fi
 
@@ -1245,8 +1277,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    case x"$fs" in
 		x"iso9660" | x"ziso9660" | xrockridge | xjoliet | xrockridge_joliet | x"iso9660_1999" | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999) ;;
 		x"zfs"*)
-		    for ((i=0;i<NDEVICES;i++)); do
-			FSUUID=$(printf "%016x\n" $(blkid -o export "${LODEVICES[i]}" |grep -F UUID=|sed s,UUID=,,g))
+		    for lodev in $LODEVICES; do
+			FSUUID=$(printf "%016x\n" $(blkid -o export "$lodev" |grep -F UUID=|sed s,UUID=,,g))
 			if [ "$FSUUID" != 0000000000000000 ]; then
 			    break;
 			fi
@@ -1264,8 +1296,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			echo UUID FAIL
 			echo "$LSOUT"
 			echo "$GRUBUUID"
-			for ((i=0;i<NDEVICES;i++)); do
-			    blkid "${LODEVICES[i]}"
+			for lodev in $LODEVICES; do
+			    blkid "$lodev"
 			done
 			exit 1
 		    fi
@@ -1290,7 +1322,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 			echo UUID FAIL
 			echo "$FSUUID"
 			echo "$LSOUT"
-			blkid "${LODEVICES[0]}"
+			blkid "${MOUNTDEVICE}"
 			exit 1
 		    fi
 		    ;;
@@ -1304,7 +1336,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    # may be delayed for a long time.
 		    FSTIME="$UMOUNT_TIME";;
 		*)
-		    FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGES[0]}"|awk '{print $6; }'|sed 's,_, ,g')";;
+		    FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGEP}0.img"|awk '{print $6; }'|sed 's,_, ,g')";;
 	    esac
 	    # With some abstractions like mdraid computing of UMOUNT_TIME
 	    # is not precise. Account for small difference here.
@@ -1410,11 +1442,9 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		exit 1
 	    fi
 	    ok=true
-	    for ((i=0;i<$CFILESN;i++)); do
-		if ! run_grubfstest cmp "$GRUBDIR/${CFILES[i]}" "$MNTPOINTRO/$OSDIR/${CFILES[i]}"  ; then
-		    ok=false;
-		fi
-	    done
+	    if ! run_grubfstest cmp "$GRUBDIR/${CFILE}" "$MNTPOINTRO/$OSDIR/${CFILE}"  ; then
+		ok=false;
+	    fi
 	    if  test x$ok = xtrue; then
 		:
 	    else
@@ -1503,15 +1533,17 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    sleep 1
 		    ;;
 	    esac
-	    for ((i=0; i < NDEVICES; i++)); do
-		case x"$fs" in
-		    x"tarfs" | x"cpio_"* | x"iso9660" | xrockridge | xjoliet | xrockridge_joliet | x"ziso9660" | x"romfs" | x"squash4_"* | x"iso9660_1999" | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999) ;;
-		    *)
-			while ! losetup -d "${LODEVICES[i]}"; do
+	    case x"$fs" in
+		x"tarfs" | x"cpio_"* | x"iso9660" | xrockridge | xjoliet | xrockridge_joliet | x"ziso9660" | x"romfs" | x"squash4_"* | x"iso9660_1999" | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999) ;;
+		*)
+		    for lodev in $LODEVICES; do
+			while ! losetup -d "$lodev"; do
 			    sleep 1
-			done;;
-		esac
-		rm "${FSIMAGES[i]}"
+			done
+		    done;;
+	    esac
+	    for i in $(range 0 $((NDEVICES-1)) 1); do
+		rm "$FSIMAGEP${i}.img"
 	    done
 	    if [ x"$fs" = x"zfs" ]; then
 		rmdir "$MNTPOINTRW"/"grub fs"  || true
