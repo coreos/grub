@@ -1162,15 +1162,6 @@ if test "x$target_cpu" = xarm; then
     # A trick so that clang doesn't see it on link stage
     TARGET_CPPFLAGS="$TARGET_CPPFLAGS -mllvm -arm-use-movt=0"
   fi
-  AC_CACHE_CHECK([whether option -mlong-calls works], grub_cv_cc_mlong_calls, [
-    CFLAGS="$TARGET_CFLAGS -mlong-calls -Werror"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_mlong_calls=yes],
-		      [grub_cv_cc_mlong_calls=no])
-  ])
-  if test "x$grub_cv_cc_mlong_calls" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -mlong-calls"
-  fi
   AC_CACHE_CHECK([whether option -mthumb-interwork works], grub_cv_cc_mthumb_interwork, [
     CFLAGS="$TARGET_CFLAGS -mthumb-interwork -Werror"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
