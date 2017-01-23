@@ -1328,31 +1328,31 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		    ;;
 	    esac
 
-	    case x$fs in
-		xiso9660 | xziso9660 | xrockridge | xjoliet | xrockridge_joliet | xiso9660_1999 | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999)
-		    FSTIME="$(date -d "$(echo ${FSUUID} | awk -F - '{ print $1"-"$2"-"$3" "$4":"$5":"$6 ;}')" '+%Y-%m-%d %H:%M:%S')";;
-		xlvm*|xmdraid*)
-		    # With some abstractions like mdraid flushing to disk
-		    # may be delayed for a long time.
-		    FSTIME="$UMOUNT_TIME";;
-		*)
-		    FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGEP}0.img"|awk '{print $6; }'|sed 's,_, ,g')";;
-	    esac
-	    # With some abstractions like mdraid computing of UMOUNT_TIME
-	    # is not precise. Account for small difference here.
-	    FSTIMEM1="$(date -d "$FSTIME UTC -1 second" -u "+%Y-%m-%d %H:%M:%S")"
-	    FSTIMEM2="$(date -d "$FSTIME UTC -2 second" -u "+%Y-%m-%d %H:%M:%S")"
-	    FSTIMEM3="$(date -d "$FSTIME UTC -3 second" -u "+%Y-%m-%d %H:%M:%S")"
+	    if [ x$NOFSTIME != xy ]; then
+		case x$fs in
+		    xiso9660 | xziso9660 | xrockridge | xjoliet | xrockridge_joliet | xiso9660_1999 | xrockridge_1999 | xjoliet_1999 | xrockridge_joliet_1999)
+			FSTIME="$(date -d "$(echo ${FSUUID} | awk -F - '{ print $1"-"$2"-"$3" "$4":"$5":"$6 ;}')" '+%Y-%m-%d %H:%M:%S')";;
+		    xlvm*|xmdraid*)
+			# With some abstractions like mdraid flushing to disk
+			# may be delayed for a long time.
+			FSTIME="$UMOUNT_TIME";;
+		    *)
+			FSTIME="$(TZ=UTC ls --time-style="+%Y-%m-%d_%H:%M:%S" -l -d "${FSIMAGEP}0.img"|awk '{print $6; }'|sed 's,_, ,g')";;
+		esac
+		# With some abstractions like mdraid computing of UMOUNT_TIME
+		# is not precise. Account for small difference here.
+		FSTIMEM1="$(date -d "$FSTIME UTC -1 second" -u "+%Y-%m-%d %H:%M:%S")"
+		FSTIMEM2="$(date -d "$FSTIME UTC -2 second" -u "+%Y-%m-%d %H:%M:%S")"
+		FSTIMEM3="$(date -d "$FSTIME UTC -3 second" -u "+%Y-%m-%d %H:%M:%S")"
 
-	    if [ x$NOFSTIME = xy ]; then
-		:
-	    elif echo "$LSOUT" | grep -F 'Last modification time '"$FSTIME" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM1" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM2" || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM3" > /dev/null; then
-		:
-	    else
-		echo FSTIME FAIL
-		echo "$FSTIME"
-		echo "$LSOUT"
-		exit 1
+		if echo "$LSOUT" | grep -F 'Last modification time '"$FSTIME" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM1" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM2" || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM3" > /dev/null; then
+		    :
+		else
+		    echo FSTIME FAIL
+		    echo "$FSTIME"
+		    echo "$LSOUT"
+		    exit 1
+		fi
 	    fi
 
 	    if [ x$NOHARDLINK != xy ]; then
