@@ -65,7 +65,7 @@ serial_port=com0
 serial_null=
 halt_cmd=halt
 pseries=n
-disk=hda
+disk="hda "
 case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     *-emu)
 	device_map=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
@@ -74,6 +74,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	disk=0
 	# To skip "Welcome to GRUB" and color setttings
 	trim=1
+	serial_port=
 	;;
     powerpc-ieee1275)
 	boot=hd
@@ -82,6 +83,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	serial_port=escc-ch-b
 	serial_null="-serial null"
 	netbootext=elf
+	trim=1
 	;;
 
     sparc64-ieee1275)
@@ -97,13 +99,13 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mips-qemu_mips)
 	boot=mips_qemu
 	qemu=qemu-system-mips
-	qemuopts="$qemuopts -M mips"
+	qemuopts="-M mips $qemuopts"
 	console=vga_text
 	;;
     mips-arc)
 	boot=cd
 	qemu=qemu-system-mips64
-	qemuopts="$qemuopts -M indy"
+	qemuopts="-M indy $qemuopts"
 	serial_port=arc/serial0/line0
 	console=
 	trim=1
@@ -111,7 +113,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mipsel-arc)
 	boot=cd
 	qemu=qemu-system-mips64el
-	qemuopts="$qemuopts -M magnum -no-reboot"
+	qemuopts="-M magnum $qemuopts -no-reboot"
 	serial_port=arc/multi0/serial0
 	console=console
 	halt_cmd=reboot
@@ -120,13 +122,13 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     mipsel-qemu_mips)
 	boot=mipsel_qemu
 	qemu=qemu-system-mipsel
-	qemuopts="$qemuopts -M mips"
+	qemuopts="-M mips $qemuopts"
 	console=vga_text
 	;;
     mipsel-loongson)
 	boot=mipsel_fulong2e
 	qemu=qemu-system-mips64el
-	qemuopts="$qemuopts -M fulong2e"
+	qemuopts="-M fulong2e $qemuopts"
 	console=
 	trim=1
 	;;
@@ -145,7 +147,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	qemu=qemu-system-i386
 	console=console
 	trim=1
-	disk=hdb
+	disk="hdb "
 	;;
     i386-qemu)
 	boot=qemu
@@ -164,12 +166,32 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
 	boot=cd
 	console=console
 	trim=1
+	qemuopts="-bios OVMF-ia32.fd $qemuopts"
 	;;
     x86_64-efi)
 	qemu=qemu-system-x86_64
 	boot=cd
 	console=console
 	trim=1
+	qemuopts="-bios OVMF.fd $qemuopts"
+	;;
+    arm64-efi)
+	qemu=qemu-system-aarch64
+	boot=hd
+	console=console
+	trim=1
+	qemuopts="-machine virt -cpu cortex-a57 -bios /usr/share/qemu-efi/QEMU_EFI.fd $qemuopts"
+	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
+	serial_port=
+	;;
+     arm-efi)
+	qemu=qemu-system-arm
+	boot=hd
+	console=console
+	trim=1
+	qemuopts="-machine virt -bios /usr/share/ovmf-arm/QEMU_EFI.fd $qemuopts"
+	disk="device virtio-blk-device,drive=hd1 -drive if=none,id=hd1,file="
+	serial_port=efi0
 	;;
     *)
 	boot=hd
@@ -222,17 +244,17 @@ for option in "$@"; do
 	    echo "(hd$disk)  $dsk" >> "$device_map"
 	    disk="$((disk+1))"
 	else
-	    if [ $disk = error ]; then
+	    if [ "$disk" = error ]; then
 		echo "Too many disks" 1>&2
 		exit 1;
 	    fi
-            qemuopts="$qemuopts -$disk $dsk"
-	    if [ "$disk" = hda ]; then
-		disk=hdb;
-	    elif [ "$disk" = hdb ]; then
+            qemuopts="$qemuopts -$disk$dsk"
+	    if [ "$disk" = "hda " ]; then
+		disk="hdb ";
+	    elif [ "$disk" = "hdb " ]; then
 		# CDROM is hdc
-		disk=hdd
-	    elif [ "$disk" = hdd ]; then
+		disk="hdd "
+	    elif [ "$disk" = "hdd " ]; then
 		# CDROM is hdc
 		disk=error
 	    fi
@@ -289,6 +311,8 @@ fi
 cfgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
 cat <<EOF >${cfgfile}
 grubshell=yes
+enable_progress_indicator=0
+export enable_progress_indicator
 EOF
 
 
@@ -299,7 +323,7 @@ fi
 if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ]; then
     echo insmod escc >>${cfgfile}
 fi
-if [ "${grub_modinfo_platform}" != emu ]; then
+if [ "${serial_port}" != "" ]; then
     echo "serial ${serial_port}" >>${cfgfile}
     term="serial_${serial_port}"
 else
@@ -329,7 +353,8 @@ cat <<EOF >>${cfgfile}
 source "\$prefix/testcase.cfg"
 # Stop serial output to suppress "ACPI shutdown failed" error.
 EOF
-if [ x$console != x ]; then
+# Attempt to switch to console on i386-ieee1275 causes "screen not found" message
+if [ x$console != x ] && [ x"${grub_modinfo_target_cpu}-${grub_modinfo_platform}" != xi386-ieee1275 ]; then
     echo "terminal_output $console" >>${cfgfile}
 fi
 echo "${halt_cmd}" >>${cfgfile}
@@ -356,7 +381,9 @@ if [ x$boot != xnet ] && [ x$boot != xemu ]; then
 	${files} >/dev/null 2>&1
 fi
 if [ x$boot = xhd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm-efi ]; then
+	device="device virtio-blk-device,drive=hd0 -drive if=none,id=hd0,file="
+    elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = mips-arc ]; then
 	device="hdb "
     else
 	device="hda "
@@ -364,7 +391,9 @@ if [ x$boot = xhd ]; then
     bootdev="-boot c"
 fi
 if [ x$boot = xcd ]; then
-    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
+    if [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm64-efi ] || [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = arm-efi ]; then
+	device="device virtio-blk-device,drive=cd0 -drive if=none,id=cd0,media=cdrom,file="
+    elif [ "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" = powerpc-ieee1275 ] && [ x$pseries != xy ] ; then
 	device="-drive if=ide,media=cdrom,file="
     else
 	device="cdrom "
@@ -399,7 +428,7 @@ fi
 if [ x$boot = xcoreboot ]; then
     imgfile=`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` || exit 1
     cp "${GRUB_COREBOOT_ROM}" "${imgfile}"
-    "${GRUB_CBFSTOOL}" "${imgfile}" add-payload "${rom_directory}/coreboot.elf" fallback/payload
+    "${GRUB_CBFSTOOL}" "${imgfile}" add-payload -f "${rom_directory}/coreboot.elf" -n fallback/payload
     bootdev="-bios ${imgfile}"
     device="cdrom "
     test -z "$debug" || echo "Coreboot image: ${imgfile}" >&2
@@ -447,7 +476,8 @@ if [ x$boot = xnet ]; then
     [ -z "$files" ] || copy_extra_files "$netdir" $files
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -boot n -net "user,tftp=$netdir,bootfile=/boot/grub/${grub_modinfo_target_cpu}-${grub_modinfo_platform}/core.$netbootext"  -net nic  | cat | tr -d "\r" | do_trim
 elif [ x$boot = xemu ]; then
-    grubdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    rootdir="$(mktemp -d "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    grubdir="$rootdir/boot/grub"
     mkdir -p "$grubdir/fonts"
     mkdir -p "$grubdir/themes"
     mkdir -p "$grubdir/locale"
@@ -460,8 +490,12 @@ elif [ x$boot = xemu ]; then
     done
     cp "${cfgfile}" "$grubdir/grub.cfg"
     cp "${source}" "$grubdir/testcase.cfg"
-    @builddir@/grub-core/grub-emu -m "$device_map" -d "$grubdir" | tr -d "\r" | do_trim
-    rm -rf "$grubdir"
+    [ -z "$files" ] || copy_extra_files "$rootdir" $files
+    roottar="$(mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX")"
+    (cd "$rootdir"; tar cf "$roottar" .)
+    @builddir@/grub-core/grub-emu -m "$device_map" --memdisk "$roottar" -r memdisk -d "/boot/grub" | tr -d "\r" | do_trim
+    test -n "$debug" || rm -rf "$rootdir"
+    test -n "$debug" || rm -f "$roottar"
 else
     timeout -s KILL $timeout "${qemu}" ${qemuopts} ${serial_null} -serial file:/dev/stdout -${device}"${isofile}" ${bootdev} | cat | tr -d "\r" | do_trim
 fi

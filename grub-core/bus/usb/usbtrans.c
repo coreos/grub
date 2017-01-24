@@ -24,6 +24,7 @@
 #include <grub/usb.h>
 #include <grub/usbtrans.h>
 #include <grub/time.h>
+#include <grub/cache.h>
 
 
 static inline unsigned int
@@ -101,6 +102,8 @@ grub_usb_control_msg (grub_usb_device_t dev,
   data_addr = grub_dma_get_phys (data_chunk);
   grub_memcpy ((char *) data, data_in, size);
 
+  grub_arch_sync_dma_caches (data, size);
+
   grub_dprintf ("usb",
 		"control: reqtype=0x%02x req=0x%02x val=0x%02x idx=0x%02x size=%lu\n",
 		reqtype, request,  value, index, (unsigned long)size);
@@ -161,6 +164,8 @@ grub_usb_control_msg (grub_usb_device_t dev,
   setupdata->value = value;
   setupdata->index = index;
   setupdata->length = size;
+  grub_arch_sync_dma_caches (setupdata, sizeof (*setupdata));
+
   transfer->transactions[0].size = sizeof (*setupdata);
   transfer->transactions[0].pid = GRUB_USB_TRANSFER_TYPE_SETUP;
   transfer->transactions[0].data = setupdata_addr;
@@ -202,10 +207,12 @@ grub_usb_control_msg (grub_usb_device_t dev,
   grub_free (transfer->transactions);
   
   grub_free (transfer);
-  grub_dma_free (data_chunk);
   grub_dma_free (setupdata_chunk);
 
+  grub_arch_sync_dma_caches (data, size0);
   grub_memcpy (data_in, (char *) data, size0);
+
+  grub_dma_free (data_chunk);
 
   return err;
 }
@@ -236,7 +243,10 @@ grub_usb_bulk_setup_readwrite (grub_usb_device_t dev,
   data = grub_dma_get_virt (data_chunk);
   data_addr = grub_dma_get_phys (data_chunk);
   if (type == GRUB_USB_TRANSFER_TYPE_OUT)
-    grub_memcpy ((char *) data, data_in, size);
+    {
+      grub_memcpy ((char *) data, data_in, size);
+      grub_arch_sync_dma_caches (data, size);
+    }
 
   /* Create a transfer.  */
   transfer = grub_malloc (sizeof (struct grub_usb_transfer));
@@ -306,9 +316,13 @@ grub_usb_bulk_finish_readwrite (grub_usb_transfer_t transfer)
   dev->toggle[transfer->endpoint] = toggle;
 
   if (transfer->dir == GRUB_USB_TRANSFER_TYPE_IN)
-    grub_memcpy (transfer->data, (void *)
-		 grub_dma_get_virt (transfer->data_chunk),
-		 transfer->size + 1);
+    {
+      grub_arch_sync_dma_caches (grub_dma_get_virt (transfer->data_chunk),
+				 transfer->size + 1);
+      grub_memcpy (transfer->data, (void *)
+		   grub_dma_get_virt (transfer->data_chunk),
+		   transfer->size + 1);
+    }
 
   grub_free (transfer->transactions);
   grub_dma_free (transfer->data_chunk);

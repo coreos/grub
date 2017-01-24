@@ -85,6 +85,10 @@ extern void (*EXPORT_VAR(grub_efi_net_config)) (grub_efi_handle_t hnd,
 						char **device,
 						char **path);
 
+#if defined(__arm__) || defined(__aarch64__)
+void *EXPORT_FUNC(grub_efi_get_firmware_fdt)(void);
+#endif
+
 grub_addr_t grub_efi_modules_addr (void);
 
 void grub_efi_mm_init (void);

@@ -35,6 +35,7 @@
 #include <grub/i18n.h>
 #include <grub/bitmap_scale.h>
 #include <grub/cpu/io.h>
+#include <grub/random.h>
 
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
@@ -338,7 +339,7 @@ grub_xnu_devprop_add_property_utf16 (struct grub_xnu_devprop_device_descriptor *
   utf8 = grub_malloc (namelen * 4 + 1);
   if (!utf8)
     {
-      grub_free (utf8);
+      grub_free (utf16);
       return grub_errno;
     }
 
@@ -577,11 +578,31 @@ static grub_err_t
 grub_cpu_xnu_fill_devicetree (grub_uint64_t *fsbfreq_out)
 {
   struct grub_xnu_devtree_key *efikey;
+  struct grub_xnu_devtree_key *chosenkey;
   struct grub_xnu_devtree_key *cfgtablekey;
   struct grub_xnu_devtree_key *curval;
   struct grub_xnu_devtree_key *runtimesrvkey;
   struct grub_xnu_devtree_key *platformkey;
   unsigned i, j;
+  grub_err_t err;
+
+  chosenkey = grub_xnu_create_key (&grub_xnu_devtree_root, "chosen");
+  if (! chosenkey)
+    return grub_errno;
+
+  /* Random seed. */
+  curval = grub_xnu_create_value (&(chosenkey->first_child), "random-seed");
+  if (! curval)
+    return grub_errno;
+  curval->datasize = 64;
+  curval->data = grub_malloc (curval->datasize);
+  if (! curval->data)
+    return grub_errno;
+  /* Our random is not peer-reviewed but xnu uses this seed only for
+     ASLR in kernel.  */
+  err = grub_crypto_get_random (curval->data, curval->datasize);
+  if (err)
+    return err;
 
   /* The value "model". */
   /* FIXME: may this value be sometimes different? */
@@ -897,6 +918,28 @@ grub_xnu_set_video (struct grub_xnu_boot_params_common *params)
   return GRUB_ERR_NONE;
 }
 
+static int
+total_ram_hook (grub_uint64_t addr __attribute__ ((unused)), grub_uint64_t size,
+		grub_memory_type_t type,
+		void *data)
+{
+  grub_uint64_t *result = data;
+
+  if (type != GRUB_MEMORY_AVAILABLE)
+    return 0;
+  *result += size;
+  return 0;
+}
+
+static grub_uint64_t
+get_total_ram (void)
+{
+  grub_uint64_t result = 0;
+
+  grub_mmap_iterate (total_ram_hook, &result);
+  return result;
+}
+
 /* Boot xnu. */
 grub_err_t
 grub_xnu_boot (void)
@@ -973,6 +1016,7 @@ grub_xnu_boot (void)
     {
       bootparams_common = &bootparams->v2.common;
       bootparams->v2.fsbfreq = fsbfreq;
+      bootparams->v2.ram_size = get_total_ram();
     }
   else
     bootparams_common = &bootparams->v1.common;
@@ -1080,7 +1124,7 @@ grub_xnu_boot (void)
   bootparams_common->efi_mmap = memory_map_target;
   bootparams_common->efi_mmap_size = memory_map_size;
   bootparams_common->heap_start = grub_xnu_heap_target_start;
-  bootparams_common->heap_size = grub_xnu_heap_size;
+  bootparams_common->heap_size = curruntimepage * GRUB_XNU_PAGESIZE - grub_xnu_heap_target_start;
 
   /* Parameters for asm helper. */
   grub_xnu_stack = bootparams_common->heap_start

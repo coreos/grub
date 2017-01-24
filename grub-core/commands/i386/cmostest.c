@@ -45,7 +45,7 @@ static grub_err_t
 grub_cmd_cmostest (struct grub_command *cmd __attribute__ ((unused)),
 		   int argc, char *argv[])
 {
-  int byte, bit;
+  int byte = 0, bit = 0;
   grub_err_t err;
   grub_uint8_t value;
 
@@ -67,7 +67,7 @@ static grub_err_t
 grub_cmd_cmosclean (struct grub_command *cmd __attribute__ ((unused)),
 		    int argc, char *argv[])
 {
-  int byte, bit;
+  int byte = 0, bit = 0;
   grub_err_t err;
   grub_uint8_t value;
 
@@ -85,7 +85,7 @@ static grub_err_t
 grub_cmd_cmosset (struct grub_command *cmd __attribute__ ((unused)),
 		    int argc, char *argv[])
 {
-  int byte, bit;
+  int byte = 0, bit = 0;
   grub_err_t err;
   grub_uint8_t value;
 

@@ -66,6 +66,9 @@ printf_test (void)
   grub_snprintf (real, sizeof (real), "%3$d %2$lld %1$d", 1, 2LL, 3);
   snprintf (expected, sizeof (expected), "%3$d %2$lld %1$d", 1, 2LL, 3);
   grub_test_assert (strcmp (real, expected) == 0, MSG);
+  grub_snprintf (real, sizeof (real), "%%0%dd ", 1);
+  snprintf (expected, sizeof (expected), "%%0%dd ", 1);
+  grub_test_assert (strcmp (real, expected) == 0, MSG);
 }
 
 GRUB_UNIT_TEST ("printf_unit_test", printf_test);

@@ -154,7 +154,10 @@ grub_efiemu_init_segments (grub_efiemu_segment_t *segs, const Elf_Ehdr *e)
 		 s->sh_flags & SHF_EXECINSTR ? GRUB_EFI_RUNTIME_SERVICES_CODE
 		 : GRUB_EFI_RUNTIME_SERVICES_DATA);
 	      if (seg->handle < 0)
-		return grub_errno;
+		{
+		  grub_free (seg);
+		  return grub_errno;
+		}
 	      seg->off = 0;
 	    }
 
@@ -343,7 +346,7 @@ SUFFIX (grub_efiemu_loadcore_init) (void *core, const char *filename,
     return grub_error (GRUB_ERR_BAD_MODULE, N_("this ELF file is not of the right type"));
 
   /* Make sure that every section is within the core.  */
-  if ((grub_size_t) core_size < e->e_shoff + e->e_shentsize * e->e_shnum)
+  if ((grub_size_t) core_size < e->e_shoff + (grub_uint32_t) e->e_shentsize * e->e_shnum)
     return grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		       filename);
 

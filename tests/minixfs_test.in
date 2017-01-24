@@ -16,7 +16,17 @@ if ! which mkfs.minix >/dev/null 2>&1; then
 fi
 
 if ! mkfs.minix -h | grep -- -v > /dev/null; then
+    echo "mkfs.minix doesn't support minix2fs; cannot test minix*fs."
+   exit 77
+fi
+
+if ! mkfs.minix -h | grep -- -3 > /dev/null; then
     echo "mkfs.minix doesn't support minix3fs; cannot test minix*fs."
+   exit 77
+fi
+
+if ! mkfs.minix -h | grep -- -B > /dev/null; then
+    echo "mkfs.minix doesn't support variable block size; cannot test minix*fs."
    exit 77
 fi
 

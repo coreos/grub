@@ -606,10 +606,15 @@ grub_net_tcp_open (char *server,
 
   nb = grub_netbuff_alloc (sizeof (*tcph) + 128);
   if (!nb)
-    return NULL;
+    {
+      grub_free (socket);
+      return NULL;
+    }
+
   err = grub_netbuff_reserve (nb, 128);
   if (err)
     {
+      grub_free (socket);
       grub_netbuff_free (nb);
       return NULL;
     }
@@ -617,12 +622,14 @@ grub_net_tcp_open (char *server,
   err = grub_netbuff_put (nb, sizeof (*tcph));
   if (err)
     {
+      grub_free (socket);
       grub_netbuff_free (nb);
       return NULL;
     }
   socket->pq = grub_priority_queue_new (sizeof (struct grub_net_buff *), cmp);
   if (!socket->pq)
     {
+      grub_free (socket);
       grub_netbuff_free (nb);
       return NULL;
     }
@@ -978,6 +985,7 @@ grub_net_recv_tcp_packet (struct grub_net_buff *nb,
 					    cmp);
 	if (!sock->pq)
 	  {
+	    grub_free (sock);
 	    grub_netbuff_free (nb);
 	    return grub_errno;
 	  }

@@ -55,10 +55,6 @@ FUNCTION(_start)
 VARIABLE(grub_total_module_size)
 	.long 	0
 
-VARIABLE(grub_uboot_machine_type)
-	.long   0
-VARIABLE(grub_uboot_boot_data)
-	.long   0
 VARIABLE(grub_modbase)
 	.long 0
 bss_start_ptr:
@@ -66,29 +62,66 @@ bss_start_ptr:
 end_ptr:
 	.long   EXT_C(_end)
 
+	@ Memory map at start:
+	@ * text+data
+	@ * list relocations
+	@ * modules
+	@ Before we enter C, we need to apply the relocations
+	@ and get following map:
+	@ * text+data
+	@ * BSS (cleared)
+	@ * stack
+	@ * modules
+	@
+	@ To make things easier we ensure
+	@ that BSS+stack is larger than list of relocations
+	@ by increasing stack if necessarry.
+	@ This allows us to always unconditionally copy backwards
+	@ Currently list of relocations is ~5K and stack is set
+	@ to be at least 256K
+
 FUNCTION(codestart)
 	@ Store context: Machine ID, atags/dtb, ...
 	@ U-Boot API signature is stored on the U-Boot heap
 	@ Stack pointer used as start address for signature probing
 	mov	r12, sp
 	adr	sp, entry_state
-	push	{r4-r12,lr}	@ store U-Boot context (sp in r12)
+	push	{r1-r12,lr}	@ store U-Boot context (sp in r12)
 
-	str     r1, EXT_C(grub_uboot_machine_type)
-	str     r2, EXT_C(grub_uboot_boot_data)
-
-	@ Modules have been stored as a blob in BSS,
-	@ they need to be manually relocated to _end
+	adr     r1, _start
 	ldr	r0, bss_start_ptr		@ src
+	add     r0, r0, r1
+
+	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	mvn	r2, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
+	and	r0, r0, r2
+1:	
+        ldr     r3, [r0], #4  @load next offset
+	@ both -2 and -1 are treated the same as we have only one type of relocs
+	@ -2 means "end of this type of relocs" and -1 means "end of all relocs"
+        add     r2, r3, #2
+        cmp     r2, #1
+        bls     reloc_done
+	@ Adjust next offset
+        ldr     r2, [r3, r1]
+        add     r2, r2, r1
+        str     r2, [r3, r1]
+	b 1b
+
+reloc_done:
+
+	@ Modules have been stored as a blob
+	@ they need to be manually relocated to _end
 	add	r0, r0, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
 	mvn	r1, #(GRUB_KERNEL_MACHINE_MOD_ALIGN - 1)
-	and	r0, r0, r1
+	and	r0, r0, r1	@ src = aligned end of relocations
 
 	ldr	r1, end_ptr		@ dst = End of BSS
 	ldr	r2, grub_total_module_size	@ blob size
 
 	add     r1, r1, #GRUB_KERNEL_MACHINE_STACK_SIZE
 	and	r1, r1, #~0x7	@ Ensure 8-byte alignment
+	
 	sub	sp, r1, #8
 	add     r1, r1, #1024
 
@@ -157,6 +190,11 @@ FUNCTION(grub_uboot_return)
 	.align	3
 @ U-boot context stack space
 entry_state_end:
+VARIABLE(grub_uboot_machine_type)
+	.long	0	@ r1
+VARIABLE(grub_uboot_boot_data)
+	.long	0	@ r2
+	.long	0	@ r3
 	.long	0	@ r4
 	.long	0	@ r5
 	.long	0	@ r6

@@ -22,6 +22,8 @@
 #ifndef GRUB_DSDT_TEST
 #include <grub/types.h>
 #include <grub/err.h>
+#else
+#define GRUB_PACKED __attribute__ ((packed))
 #endif
 
 #define GRUB_RSDP_SIGNATURE "RSD PTR "
@@ -219,9 +221,10 @@ enum
     GRUB_ACPI_OPCODE_CONCATRES = 0x84,
     GRUB_ACPI_OPCODE_MOD = 0x85,
     GRUB_ACPI_OPCODE_INDEX = 0x88,
-    GRUB_ACPI_OPCODE_TOSTRING = 0x9c,
+    GRUB_ACPI_OPCODE_CREATE_DWORD_FIELD = 0x8a,
     GRUB_ACPI_OPCODE_CREATE_WORD_FIELD = 0x8b,
     GRUB_ACPI_OPCODE_CREATE_BYTE_FIELD = 0x8c,
+    GRUB_ACPI_OPCODE_TOSTRING = 0x9c,
     GRUB_ACPI_OPCODE_IF = 0xa0, GRUB_ACPI_OPCODE_ONES = 0xff
   };
 enum
@@ -239,6 +242,6 @@ enum
   };
 
 struct grub_acpi_fadt *
-grub_acpi_find_fadt (void);
+EXPORT_FUNC(grub_acpi_find_fadt) (void);
 
 #endif /* ! GRUB_ACPI_HEADER */

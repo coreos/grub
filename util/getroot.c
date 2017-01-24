@@ -383,9 +383,6 @@ grub_util_biosdisk_get_grub_dev (const char *os_dev)
     grub_util_info ("%s starts from %" GRUB_HOST_PRIuLONG_LONG,
 		    os_dev, (unsigned long long) ctx.start);
 
-    if (ctx.start == 0 && !is_part)
-      return name;
-
     grub_util_info ("opening the device %s", name);
     disk = grub_disk_open (name);
     free (name);

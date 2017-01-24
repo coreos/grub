@@ -25,7 +25,7 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
   grub_ieee1275_phandle_t root;
   grub_ieee1275_phandle_t memory;
-  grub_uint32_t available[32];
+  grub_uint32_t available[128];
   grub_ssize_t available_size;
   grub_uint32_t address_cells = 1;
   grub_uint32_t size_cells = 1;
@@ -49,6 +49,9 @@ grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 					  sizeof available, &available_size))
     return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
 		       "couldn't examine /memory/available property");
+  if (available_size < 0 || (grub_size_t) available_size > sizeof (available))
+    return grub_error (GRUB_ERR_UNKNOWN_DEVICE,
+                       "/memory response buffer exceeded");
 
   if (grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_ADDRESS_CELLS))
     {

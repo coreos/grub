@@ -40,6 +40,12 @@
 #include <limits.h>
 #endif
 
+#if defined(MAJOR_IN_MKDEV)
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
+
 #include <libdevmapper.h>
 
 #include <grub/types.h>
@@ -137,7 +143,7 @@ grub_util_get_dm_abstraction (const char *os_dev)
       grub_free (uuid);
       return GRUB_DEV_ABSTRACTION_LVM;
     }
-  if (strncmp (uuid, "CRYPT-LUKS1-", 4) == 0)
+  if (strncmp (uuid, "CRYPT-LUKS1-", 12) == 0)
     {
       grub_free (uuid);
       return GRUB_DEV_ABSTRACTION_LUKS;
@@ -223,11 +229,14 @@ grub_util_get_devmapper_grub_dev (const char *os_dev)
   uuid = get_dm_uuid (os_dev);
   if (!uuid)
     return NULL;
-  
-  if (strncmp (uuid, "LVM-", sizeof ("LVM-") - 1) == 0)
+
+  switch (grub_util_get_dev_abstraction (os_dev))
     {
+    case GRUB_DEV_ABSTRACTION_LVM:
+      {
 	unsigned i;
 	int dashes[] = { 0, 6, 10, 14, 18, 22, 26, 32, 38, 42, 46, 50, 54, 58};
+
 	grub_dev = xmalloc (grub_strlen (uuid) + 40);
 	optr = grub_stpcpy (grub_dev, "lvmid/");
 	for (i = 0; i < ARRAY_SIZE (dashes) - 1; i++)
@@ -245,19 +254,23 @@ grub_util_get_devmapper_grub_dev (const char *os_dev)
 	return grub_dev;
       }
 
-  if (strncmp (uuid, "CRYPT-LUKS1-", sizeof ("CRYPT-LUKS1-") - 1) == 0)
-    {
-      char *dash;
-      dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
-      if (dash)
-	*dash = 0;
-      grub_dev = grub_xasprintf ("cryptouuid/%s",
-				 uuid + sizeof ("CRYPT-LUKS1-") - 1);
+    case GRUB_DEV_ABSTRACTION_LUKS:
+      {
+	char *dash;
+
+	dash = grub_strchr (uuid + sizeof ("CRYPT-LUKS1-") - 1, '-');
+	if (dash)
+	  *dash = 0;
+	grub_dev = grub_xasprintf ("cryptouuid/%s",
+				   uuid + sizeof ("CRYPT-LUKS1-") - 1);
+	grub_free (uuid);
+	return grub_dev;
+      }
+
+    default:
       grub_free (uuid);
-      return grub_dev;
+      return NULL;
     }
-  grub_free (uuid);
-  return NULL;
 }
 
 char *

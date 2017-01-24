@@ -1282,6 +1282,7 @@ main (int argc, char *argv[])
       grub_install_push_module ("ahci");
       grub_install_push_module ("ohci");
       grub_install_push_module ("uhci");
+      grub_install_push_module ("ehci");
       grub_install_push_module ("usbms");
     }
   else if (disk_module && disk_module[0])

@@ -115,6 +115,7 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 			    grub_uint8_t ttl)
 {
   struct icmp_header *icmph;
+  struct grub_net_network_level_interface *orig_inf = inf;
   grub_err_t err;
   grub_uint16_t checksum;
 
@@ -345,14 +346,31 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
       {
 	grub_uint8_t *ptr;
 	struct option_header *ohdr;
+	struct router_adv *radv;
+	struct grub_net_network_level_interface *route_inf = NULL;
+	int default_route = 0;
 	if (icmph->code)
 	  break;
+	radv = (struct router_adv *)nb->data;
 	err = grub_netbuff_pull (nb, sizeof (struct router_adv));
 	if (err)
 	  {
 	    grub_netbuff_free (nb);
 	    return err;
 	  }
+	if (grub_be_to_cpu16 (radv->router_lifetime) > 0)
+	  {
+	    struct grub_net_route *route;
+
+	    FOR_NET_ROUTES (route)
+	    {
+	      if (!grub_memcmp (&route->gw, source, sizeof (route->gw)))
+		break;
+	    }
+	    if (route == NULL)
+	      default_route = 1;
+	  }
+
 	for (ptr = (grub_uint8_t *) nb->data; ptr < nb->tail;
 	     ptr += ohdr->len * 8)
 	  {
@@ -413,7 +431,11 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 		    /* Update lease time if needed here once we have
 		       lease times.  */
 		    if (inf)
-		      continue;
+		      {
+			if (!route_inf)
+			  route_inf = inf;
+			continue;
+		      }
 
 		    grub_dprintf ("net", "creating slaac\n");
 
@@ -429,12 +451,51 @@ grub_net_recv_icmp6_packet (struct grub_net_buff *nb,
 		      inf = grub_net_add_addr (name, 
 					       card, &addr,
 					       &slaac->address, 0);
+		      if (!route_inf)
+			route_inf = inf;
 		      grub_net_add_route (name, netaddr, inf);
 		      grub_free (name);
 		    }
 		  }
 	      }
 	  }
+	if (default_route)
+	  {
+	    char *name;
+	    grub_net_network_level_netaddress_t netaddr;
+	    name = grub_xasprintf ("%s:ra:default6", card->name);
+	    if (!name)
+	      {
+		grub_errno = GRUB_ERR_NONE;
+		goto next;
+	      }
+	    /* Default routes take alll of the traffic, so make the mask huge */
+	    netaddr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
+	    netaddr.ipv6.masksize = 0;
+	    netaddr.ipv6.base[0] = 0;
+	    netaddr.ipv6.base[1] = 0;
+
+	    /* May not have gotten slaac info, find a global address on this
+	      card.  */
+	    if (route_inf == NULL)
+	      {
+		FOR_NET_NETWORK_LEVEL_INTERFACES (inf)
+		{
+		  if (inf->card == card && inf != orig_inf
+		      && inf->address.type == GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6
+		      && grub_net_hwaddr_cmp(&inf->hwaddress,
+					     &orig_inf->hwaddress) == 0)
+		    {
+		      route_inf = inf;
+		      break;
+		    }
+		}
+	      }
+	    if (route_inf != NULL)
+	      grub_net_add_route_gw (name, netaddr, *source, route_inf);
+	    grub_free (name);
+	  }
+next:
 	if (ptr != nb->tail)
 	  break;
       }

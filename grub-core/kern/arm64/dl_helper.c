@@ -53,3 +53,43 @@ grub_arm64_set_xxxx26_offset (grub_uint32_t *place, grub_int64_t offset)
   *place &= insmask;
   *place |= grub_cpu_to_le32 (offset >> 2) & ~insmask;
 }
+
+int
+grub_arm64_check_hi21_signed (grub_int64_t offset)
+{
+  if (offset != (grub_int64_t)(grub_int32_t)offset)
+    return 0;
+  return 1;
+}
+
+void
+grub_arm64_set_hi21 (grub_uint32_t *place, grub_int64_t offset)
+{
+  const grub_uint32_t insmask = grub_cpu_to_le32_compile_time (0x9f00001f);
+  grub_uint32_t val;
+
+  offset >>= 12;
+  
+  val = ((offset & 3) << 29) | (((offset >> 2) & 0x7ffff) << 5);
+  
+  *place &= insmask;
+  *place |= grub_cpu_to_le32 (val) & ~insmask;
+}
+
+void
+grub_arm64_set_abs_lo12 (grub_uint32_t *place, grub_int64_t target)
+{
+  const grub_uint32_t insmask = grub_cpu_to_le32_compile_time (0xffc003ff);
+
+  *place &= insmask;
+  *place |= grub_cpu_to_le32 (target << 10) & ~insmask;
+}
+
+void
+grub_arm64_set_abs_lo12_ldst64 (grub_uint32_t *place, grub_int64_t target)
+{
+  const grub_uint32_t insmask = grub_cpu_to_le32_compile_time (0xfff803ff);
+
+  *place &= insmask;
+  *place |= grub_cpu_to_le32 (target << 7) & ~insmask;
+}

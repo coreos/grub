@@ -35,6 +35,12 @@
 #include <limits.h>
 #endif
 
+#if defined(MAJOR_IN_MKDEV)
+#include <sys/mkdev.h>
+#elif defined(MAJOR_IN_SYSMACROS)
+#include <sys/sysmacros.h>
+#endif
+
 #include <grub/types.h>
 #include <sys/ioctl.h>         /* ioctl */
 #include <sys/mount.h>
@@ -1075,7 +1081,7 @@ grub_util_get_grub_dev_os (const char *os_dev)
   switch (grub_util_get_dev_abstraction (os_dev))
     {
       /* Fallback for non-devmapper build. In devmapper-builds LVM is handled
-	 in rub_util_get_devmapper_grub_dev and this point isn't reached.
+	 in grub_util_get_devmapper_grub_dev and this point isn't reached.
        */
     case GRUB_DEV_ABSTRACTION_LVM:
       {

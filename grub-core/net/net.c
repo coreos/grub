@@ -37,21 +37,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 
 char *grub_net_default_server;
 
-struct grub_net_route
-{
-  struct grub_net_route *next;
-  struct grub_net_route **prev;
-  grub_net_network_level_netaddress_t target;
-  char *name;
-  struct grub_net_network_level_protocol *prot;
-  int is_gateway;
-  union
-  {
-    struct grub_net_network_level_interface *interface;
-    grub_net_network_level_address_t gw;
-  };
-};
-
 struct grub_net_route *grub_net_routes = NULL;
 struct grub_net_network_level_interface *grub_net_network_level_interfaces = NULL;
 struct grub_net_card *grub_net_cards = NULL;
@@ -299,12 +284,6 @@ grub_net_ipv6_get_link_local (struct grub_net_card *card,
   char *ptr;
   grub_net_network_level_address_t addr;
 
-  name = grub_malloc (grub_strlen (card->name)
-		      + GRUB_NET_MAX_STR_HWADDR_LEN
-		      + sizeof (":link"));
-  if (!name)
-    return NULL;
-
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6;
   addr.ipv6[0] = grub_cpu_to_be64_compile_time (0xfe80ULL << 48);
   addr.ipv6[1] = grub_net_ipv6_get_id (hwaddr);
@@ -316,6 +295,12 @@ grub_net_ipv6_get_link_local (struct grub_net_card *card,
 	&& grub_net_addr_cmp (&inf->address, &addr) == 0)
       return inf;
   }
+
+  name = grub_malloc (grub_strlen (card->name)
+		      + GRUB_NET_MAX_STR_HWADDR_LEN
+		      + sizeof (":link"));
+  if (!name)
+    return NULL;
 
   ptr = grub_stpcpy (name, card->name);
   if (grub_net_hwaddr_cmp (&card->default_address, hwaddr) != 0)
@@ -410,14 +395,6 @@ grub_cmd_ipv6_autoconf (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static inline void
-grub_net_route_register (struct grub_net_route *route)
-{
-  grub_list_push (GRUB_AS_LIST_P (&grub_net_routes),
-		  GRUB_AS_LIST (route));
-}
-
-#define FOR_NET_ROUTES(var) for (var = grub_net_routes; var; var = var->next)
 
 static int
 parse_ip (const char *val, grub_uint32_t *ip, const char **rest)
@@ -524,6 +501,8 @@ match_net (const grub_net_network_level_netaddress_t *net,
     case GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV6:
       {
 	grub_uint64_t mask[2];
+	if (net->ipv6.masksize == 0)
+	  return 1;
 	if (net->ipv6.masksize <= 64)
 	  {
 	    mask[0] = 0xffffffffffffffffULL << (64 - net->ipv6.masksize);
@@ -687,7 +666,14 @@ grub_net_route_address (grub_net_network_level_address_t addr,
 	  return GRUB_ERR_NONE;
 	}
       if (depth == 0)
-	*gateway = bestroute->gw;
+	{
+	  *gateway = bestroute->gw;
+	  if (bestroute->interface != NULL)
+	    {
+	      *interf = bestroute->interface;
+	      return GRUB_ERR_NONE;
+	    }
+	}
       curtarget = bestroute->gw;
     }
 
@@ -1109,7 +1095,8 @@ grub_net_add_route (const char *name,
 grub_err_t
 grub_net_add_route_gw (const char *name,
 		       grub_net_network_level_netaddress_t target,
-		       grub_net_network_level_address_t gw)
+		       grub_net_network_level_address_t gw,
+		       struct grub_net_network_level_interface *inter)
 {
   struct grub_net_route *route;
 
@@ -1127,6 +1114,7 @@ grub_net_add_route_gw (const char *name,
   route->target = target;
   route->is_gateway = 1;
   route->gw = gw;
+  route->interface = inter;
 
   grub_net_route_register (route);
 
@@ -1152,7 +1140,7 @@ grub_cmd_addroute (struct grub_command *cmd __attribute__ ((unused)),
       err = grub_net_resolve_address (args[3], &gw);
       if (err)
 	return err;
-      return grub_net_add_route_gw (args[0], target, gw);
+      return grub_net_add_route_gw (args[0], target, gw, NULL);
     }
   else
     {
@@ -1333,7 +1321,8 @@ grub_net_open_real (const char *name)
 	    if (!ret)
 	      return NULL;
 	    ret->protocol = proto;
-	    if (server)
+	    ret->server = grub_strdup (server);
+	    if (!ret->server)
 	      {
 		ret->server = grub_strdup (server);
 		ret->port = port;
@@ -1343,11 +1332,7 @@ grub_net_open_real (const char *name)
 		    return NULL;
 		  }
 	      }
-	    else
-	      ret->server = NULL;
 	    ret->fs = &grub_net_fs;
-	    ret->offset = 0;
-	    ret->eof = 0;
 	    return ret;
 	  }
       }
@@ -1373,6 +1358,15 @@ grub_net_open_real (const char *name)
 	      if (!root)
 		continue;
 	      prefdev = grub_strdup (root);
+	      if (!prefdev)
+		continue;
+	    }
+
+	  if (grub_strncmp (prefdev, "pxe", sizeof ("pxe") - 1) == 0 &&
+	      (!prefdev[sizeof ("pxe") - 1] || (prefdev[sizeof("pxe") - 1] == ':')))
+	    {
+	      grub_free (prefdev);
+	      prefdev = grub_strdup ("tftp");
 	      if (!prefdev)
 		continue;
 	    }
@@ -1440,7 +1434,10 @@ grub_net_fs_open (struct grub_file *file_out, const char *name)
   file->device->net->packs.last = NULL;
   file->device->net->name = grub_strdup (name);
   if (!file->device->net->name)
-    return grub_errno;
+    {
+      grub_free (file);
+      return grub_errno;
+    }
 
   err = file->device->net->protocol->open (file, name);
   if (err)
@@ -1700,6 +1697,7 @@ grub_net_seek_real (struct grub_file *file, grub_off_t offset)
     file->device->net->packs.last = NULL;
     file->device->net->offset = 0;
     file->device->net->eof = 0;
+    file->device->net->stall = 0;
     err = file->device->net->protocol->open (file, file->device->net->name);
     if (err)
       return err;

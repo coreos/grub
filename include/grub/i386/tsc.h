@@ -51,4 +51,20 @@ grub_get_tsc (void)
   return (((grub_uint64_t) hi) << 32) | lo;
 }
 
+static __inline int
+grub_cpu_is_tsc_supported (void)
+{
+#ifndef GRUB_MACHINE_XEN
+  grub_uint32_t a,b,c,d;
+  if (! grub_cpu_is_cpuid_supported ())
+    return 0;
+
+  grub_cpuid(1,a,b,c,d);
+
+  return (d & (1 << 4)) != 0;
+#else
+  return 1;
+#endif
+}
+
 #endif /* ! KERNEL_CPU_TSC_HEADER */

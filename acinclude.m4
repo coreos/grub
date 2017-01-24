@@ -390,6 +390,24 @@ else
 [fi]
 ])
 
+dnl Check if the Linker supports `-no-pie'.
+AC_DEFUN([grub_CHECK_NO_PIE],
+[AC_MSG_CHECKING([whether linker accepts -no-pie])
+AC_CACHE_VAL(grub_cv_cc_ld_no_pie,
+[save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -no-pie"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+	       [grub_cv_cc_ld_no_pie=yes],
+	       [grub_cv_cc_ld_no_pie=no])
+LDFLAGS="$save_LDFLAGS"
+])
+AC_MSG_RESULT([$grub_cv_cc_ld_no_pie])
+nopie_possible=no
+if test "x$grub_cv_cc_ld_no_pie" = xyes ; then
+  nopie_possible=yes
+fi
+])
+
 dnl Check if the C compiler supports `-fPIC'.
 AC_DEFUN([grub_CHECK_PIC],[
 [# Position independent executable.

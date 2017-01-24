@@ -37,16 +37,6 @@
 GRUB_MOD_LICENSE ("GPLv3+");
 
 #define XEN_HYPERVISOR_NAME  "xen_hypervisor"
-
-#define MODULE_DEFAULT_ALIGN  (0x0)
-#define MODULE_IMAGE_MIN_ALIGN  MODULE_DEFAULT_ALIGN
-#define MODULE_INITRD_MIN_ALIGN  MODULE_DEFAULT_ALIGN
-#define MODULE_XSM_MIN_ALIGN  MODULE_DEFAULT_ALIGN
-#define MODULE_CUSTOM_MIN_ALIGN  MODULE_DEFAULT_ALIGN
-
-#define MODULE_IMAGE_COMPATIBLE  "multiboot,kernel\0multiboot,module"
-#define MODULE_INITRD_COMPATIBLE  "multiboot,ramdisk\0multiboot,module"
-#define MODULE_XSM_COMPATIBLE  "xen,xsm-policy\0multiboot,module"
 #define MODULE_CUSTOM_COMPATIBLE  "multiboot,module"
 
 /* This maximum size is defined in Power.org ePAPR V1.1
@@ -74,14 +64,6 @@ enum module_type
 };
 typedef enum module_type module_type_t;
 
-struct fdt_node_info
-{
-  module_type_t type;
-
-  const char *compat_string;
-  grub_size_t compat_string_size;
-};
-
 struct xen_hypervisor_header
 {
   struct grub_arm64_linux_kernel_header efi_head;
@@ -98,7 +80,7 @@ struct xen_boot_binary
 {
   struct xen_boot_binary *next;
   struct xen_boot_binary **prev;
-  const char *name;
+  int is_hypervisor;
 
   grub_addr_t start;
   grub_size_t size;
@@ -106,8 +88,6 @@ struct xen_boot_binary
 
   char *cmdline;
   int cmdline_size;
-
-  struct fdt_node_info node_info;
 };
 
 static grub_dl_t my_mod;
@@ -116,38 +96,11 @@ static int loaded;
 
 static struct xen_boot_binary *xen_hypervisor;
 static struct xen_boot_binary *module_head;
-static const grub_size_t module_default_align[] = {
-  MODULE_IMAGE_MIN_ALIGN,
-  MODULE_INITRD_MIN_ALIGN,
-  MODULE_XSM_MIN_ALIGN,
-  MODULE_CUSTOM_MIN_ALIGN
-};
-
-static const compat_string_struct_t default_compat_string[] = {
-  FDT_COMPATIBLE (MODULE_IMAGE_COMPATIBLE),
-  FDT_COMPATIBLE (MODULE_INITRD_COMPATIBLE),
-  FDT_COMPATIBLE (MODULE_XSM_COMPATIBLE),
-  FDT_COMPATIBLE (MODULE_CUSTOM_COMPATIBLE)
-};
 
 static __inline grub_addr_t
 xen_boot_address_align (grub_addr_t start, grub_size_t align)
 {
   return (align ? (ALIGN_UP (start, align)) : start);
-}
-
-/* set module type according to command name. */
-static grub_err_t
-set_module_type (grub_command_t cmd, struct xen_boot_binary *module)
-{
-  if (!grub_strcmp (cmd->name, "xen_linux"))
-    module->node_info.type = MODULE_IMAGE;
-  else if (!grub_strcmp (cmd->name, "xen_initrd"))
-    module->node_info.type = MODULE_INITRD;
-  else if (!grub_strcmp (cmd->name, "xen_xsm"))
-    module->node_info.type = MODULE_XSM;
-
-  return GRUB_ERR_NONE;
 }
 
 static grub_err_t
@@ -203,15 +156,11 @@ prepare_xen_module_params (struct xen_boot_binary *module, void *xen_boot_fdt)
       grub_fdt_add_subnode (xen_boot_fdt, chosen_node, module_name);
 
   retval = grub_fdt_set_prop (xen_boot_fdt, module_node, "compatible",
-			      module->node_info.compat_string,
-			      (grub_uint32_t) module->
-			      node_info.compat_string_size);
+			      MODULE_CUSTOM_COMPATIBLE, sizeof(MODULE_CUSTOM_COMPATIBLE) - 1);
   if (retval)
     return grub_error (GRUB_ERR_IO, "failed to update FDT");
 
-  grub_dprintf ("xen_loader", "Module %s compatible = %s size = 0x%lx\n",
-		module->name, module->node_info.compat_string,
-		module->node_info.compat_string_size);
+  grub_dprintf ("xen_loader", "Module\n");
 
   retval = grub_fdt_set_reg64 (xen_boot_fdt, module_node,
 			       xen_boot_address_align (module->start,
@@ -223,7 +172,7 @@ prepare_xen_module_params (struct xen_boot_binary *module, void *xen_boot_fdt)
   if (module->cmdline && module->cmdline_size > 0)
     {
       grub_dprintf ("xen_loader",
-		    "Module %s cmdline : %s @ %p size:%d\n", module->name,
+		    "Module cmdline : %s @ %p size:%d\n",
 		    module->cmdline, module->cmdline, module->cmdline_size);
 
       retval = grub_fdt_set_prop (xen_boot_fdt, module_node, "bootargs",
@@ -233,8 +182,7 @@ prepare_xen_module_params (struct xen_boot_binary *module, void *xen_boot_fdt)
     }
   else
     {
-      grub_dprintf ("xen_loader", "Module %s has not bootargs!\n",
-		    module->name);
+      grub_dprintf ("xen_loader", "Module has no bootargs!\n");
     }
 
   return GRUB_ERR_NONE;
@@ -251,8 +199,8 @@ finalize_params_xen_boot (void)
   additional_size += FDT_NODE_NAME_MAX_SIZE + xen_hypervisor->cmdline_size;
   FOR_LIST_ELEMENTS (module, module_head)
   {
-    additional_size += 6 * FDT_NODE_NAME_MAX_SIZE + module->
-      node_info.compat_string_size + module->cmdline_size;
+    additional_size += 6 * FDT_NODE_NAME_MAX_SIZE + sizeof(MODULE_CUSTOM_COMPATIBLE) - 1
+      + module->cmdline_size;
   }
 
   xen_boot_fdt = grub_fdt_load (additional_size);
@@ -275,8 +223,7 @@ finalize_params_xen_boot (void)
   {
     if (module->start && module->size > 0)
       {
-	grub_dprintf ("xen_loader", "Module %s @ 0x%lx size:0x%lx\n",
-		      module->name,
+	grub_dprintf ("xen_loader", "Module @ 0x%lx size:0x%lx\n",
 		      xen_boot_address_align (module->start, module->align),
 		      module->size);
 	if (prepare_xen_module_params (module, xen_boot_fdt) != GRUB_ERR_NONE)
@@ -284,7 +231,7 @@ finalize_params_xen_boot (void)
       }
     else
       {
-	grub_dprintf ("xen_loader", "Module info error: %s!\n", module->name);
+	grub_dprintf ("xen_loader", "Module info error!\n");
 	goto fail;
       }
   }
@@ -327,19 +274,16 @@ single_binary_unload (struct xen_boot_binary *binary)
     {
       grub_free (binary->cmdline);
       grub_dprintf ("xen_loader",
-		    "Module %s cmdline memory free @ %p size: %d\n",
-		    binary->name, binary->cmdline, binary->cmdline_size);
+		    "Module cmdline memory free @ %p size: %d\n",
+		    binary->cmdline, binary->cmdline_size);
     }
 
-  if (binary->node_info.type == MODULE_CUSTOM)
-    grub_free ((void *) binary->node_info.compat_string);
-
-  if (grub_strcmp (binary->name, XEN_HYPERVISOR_NAME))
+  if (!binary->is_hypervisor)
     grub_list_remove (GRUB_AS_LIST (binary));
 
   grub_dprintf ("xen_loader",
-		"Module %s struct memory free @ %p size: 0x%lx\n",
-		binary->name, binary, sizeof (binary));
+		"Module struct memory free @ %p size: 0x%lx\n",
+		binary, sizeof (binary));
   grub_free (binary);
 
   return;
@@ -377,8 +321,7 @@ xen_boot_binary_load (struct xen_boot_binary *binary, grub_file_t file,
 		      int argc, char *argv[])
 {
   binary->size = grub_file_size (file);
-  grub_dprintf ("xen_loader", "Xen_boot %s file size: 0x%lx\n",
-		binary->name, binary->size);
+  grub_dprintf ("xen_loader", "Xen_boot file size: 0x%lx\n", binary->size);
 
   binary->start
     = (grub_addr_t) grub_efi_allocate_pages (0,
@@ -391,8 +334,8 @@ xen_boot_binary_load (struct xen_boot_binary *binary, grub_file_t file,
       return;
     }
 
-  grub_dprintf ("xen_loader", "Xen_boot %s numpages: 0x%lx\n",
-		binary->name, GRUB_EFI_BYTES_TO_PAGES (binary->size + binary->align));
+  grub_dprintf ("xen_loader", "Xen_boot numpages: 0x%lx\n",
+	        GRUB_EFI_BYTES_TO_PAGES (binary->size + binary->align));
 
   if (grub_file_read (file, (void *) xen_boot_address_align (binary->start,
 							     binary->align),
@@ -416,7 +359,7 @@ xen_boot_binary_load (struct xen_boot_binary *binary, grub_file_t file,
       grub_create_loader_cmdline (argc - 1, argv + 1, binary->cmdline,
 				  binary->cmdline_size);
       grub_dprintf ("xen_loader",
-		    "Xen_boot %s cmdline @ %p %s, size: %d\n", binary->name,
+		    "Xen_boot cmdline @ %p %s, size: %d\n",
 		    binary->cmdline, binary->cmdline, binary->cmdline_size);
     }
   else
@@ -430,7 +373,8 @@ xen_boot_binary_load (struct xen_boot_binary *binary, grub_file_t file,
 }
 
 static grub_err_t
-grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
+grub_cmd_xen_module (grub_command_t cmd __attribute__((unused)),
+		     int argc, char *argv[])
 {
 
   struct xen_boot_binary *module = NULL;
@@ -454,34 +398,10 @@ grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
   if (!module)
     return grub_errno;
 
-  /* process all the options and get module type */
-  if (set_module_type (cmd, module) != GRUB_ERR_NONE)
-    goto fail;
-  switch (module->node_info.type)
-    {
-    case MODULE_IMAGE:
-    case MODULE_INITRD:
-    case MODULE_XSM:
-      module->node_info.compat_string =
-	default_compat_string[module->node_info.type].compat_string;
-      module->node_info.compat_string_size =
-	default_compat_string[module->node_info.type].size;
-      break;
+  module->is_hypervisor = 0;
+  module->align = 4096;
 
-    case MODULE_CUSTOM:
-      /* we have set the node_info in set_module_type */
-      break;
-
-    default:
-      return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("invalid argument"));
-    }
-  module->name = module->node_info.compat_string;
-  module->align = module_default_align[module->node_info.type];
-
-  grub_dprintf ("xen_loader", "Init %s module and node info:\n"
-		"compatible %s\ncompat_string_size 0x%lx\n",
-		module->name, module->node_info.compat_string,
-		module->node_info.compat_string_size);
+  grub_dprintf ("xen_loader", "Init module and node info\n");
 
   file = grub_file_open (argv[0]);
   if (!file)
@@ -491,7 +411,7 @@ grub_cmd_xen_module (grub_command_t cmd, int argc, char *argv[])
   if (grub_errno == GRUB_ERR_NONE)
     grub_list_push (GRUB_AS_LIST_P (&module_head), GRUB_AS_LIST (module));
 
-fail:
+ fail:
   if (file)
     grub_file_close (file);
   if (grub_errno != GRUB_ERR_NONE)
@@ -535,7 +455,7 @@ grub_cmd_xen_hypervisor (grub_command_t cmd __attribute__ ((unused)),
   if (!xen_hypervisor)
     return grub_errno;
 
-  xen_hypervisor->name = XEN_HYPERVISOR_NAME;
+  xen_hypervisor->is_hypervisor = 1;
   xen_hypervisor->align = (grub_size_t) sh.optional_header.section_alignment;
 
   xen_boot_binary_load (xen_hypervisor, file, argc, argv);
@@ -559,29 +479,21 @@ fail:
 }
 
 static grub_command_t cmd_xen_hypervisor;
-static grub_command_t cmd_xen_linux, cmd_xen_initrd, cmd_xen_xsm;
+static grub_command_t cmd_xen_module;
 
 GRUB_MOD_INIT (xen_boot)
 {
   cmd_xen_hypervisor =
     grub_register_command ("xen_hypervisor", grub_cmd_xen_hypervisor, 0,
 			   N_("Load a xen hypervisor."));
-  cmd_xen_linux =
-    grub_register_command ("xen_linux", grub_cmd_xen_module, 0,
-			   N_("Load a xen linux kernel for dom0."));
-  cmd_xen_initrd =
-    grub_register_command ("xen_initrd", grub_cmd_xen_module, 0,
-			   N_("Load a xen initrd for dom0."));
-  cmd_xen_xsm =
-    grub_register_command ("xen_xsm", grub_cmd_xen_module, 0,
-			   N_("Load a xen security module."));
+  cmd_xen_module =
+    grub_register_command ("xen_module", grub_cmd_xen_module, 0,
+			   N_("Load a xen module."));
   my_mod = mod;
 }
 
 GRUB_MOD_FINI (xen_boot)
 {
   grub_unregister_command (cmd_xen_hypervisor);
-  grub_unregister_command (cmd_xen_linux);
-  grub_unregister_command (cmd_xen_initrd);
-  grub_unregister_command (cmd_xen_xsm);
+  grub_unregister_command (cmd_xen_module);
 }

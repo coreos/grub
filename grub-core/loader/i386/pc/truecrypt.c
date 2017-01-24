@@ -205,7 +205,7 @@ grub_cmd_truecrypt (grub_command_t cmd __attribute__ ((unused)),
  fail:
 
   if (!grub_errno)
-    return grub_error (GRUB_ERR_BAD_OS, "bad truecrypt ISO");
+    grub_error (GRUB_ERR_BAD_OS, "bad truecrypt ISO");
 
   if (file)
     grub_file_close (file);

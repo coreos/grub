@@ -44,6 +44,13 @@ FUNCTION(grub_bios_interrupt)
 	movl 	24(%edx), %esi
 	movl 	28(%edx), %edx
 
+	/*
+	Via C3 CPUs have cache coherence problems, so we need to call
+	wbinvd at these 2 points. As wbinvd slows down boot, don't do
+	it on non-VIA. 9090 is nop nop. */
+VARIABLE(grub_bios_via_workaround1)
+	.byte 0x90, 0x90
+
 	PROT_TO_REAL
 	.code16
 	pushf
@@ -92,6 +99,10 @@ intno:
 	movw	%ax, LOCAL(bios_register_es)
 
 	popf
+
+VARIABLE(grub_bios_via_workaround2)
+	.byte 0x90, 0x90
+
 	REAL_TO_PROT
 	.code32
 

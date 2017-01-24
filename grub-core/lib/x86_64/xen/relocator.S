@@ -16,93 +16,84 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grub/x86_64/memory.h>
+#include <grub/x86_64/types.h>
 #include <grub/symbol.h>
 #include <grub/xen.h>
+
+/* Macro to load an imm64 value stored by the C-part into %rax: */
+#define MOV_IMM64_RAX(var) .byte 0x48, 0xb8; VARIABLE(var); .quad 0
 
 	.p2align	4	/* force 16-byte alignment */
 
 VARIABLE(grub_relocator_xen_remap_start)
 LOCAL(base):
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_remapper_virt)
-	.quad	0
+	/* Remap the remapper to it's new address. */
+	MOV_IMM64_RAX(grub_relocator_xen_remapper_virt)
 
-	movq    %rax, %rdi
-	movq    %rax, %rbx
+	movq    %rax, %rdi	/* %rdi: new virtual address of remapper */
+	movq    %rax, %rbx	/* Remember new virtual address */
 
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_remapper_map)
-	.quad	0
+	MOV_IMM64_RAX(grub_relocator_xen_remapper_map)
 
-	movq    %rax, %rsi
+	movq    %rax, %rsi	/* %rsi: page table entry */
 
-	movq    $2, %rdx
+	movq    $UVMF_INVLPG, %rdx	/* %rdx: flags (inv. single entry) */
 	movq    $__HYPERVISOR_update_va_mapping, %rax
-	syscall
+	syscall			/* Do the remap operation */
 
 	addq   $(LOCAL(cont) - LOCAL(base)), %rbx
 
-	jmp *%rbx
+	jmp *%rbx		/* Continue with new virtual address */
 
 LOCAL(cont):
-	
-	/* mov imm64, %rcx */
-	.byte 	0x48
-	.byte	0xb9
-VARIABLE(grub_relocator_xen_paging_size)
-	.quad	0
+	/* Modify mappings of new page tables to be read-only. */
+	MOV_IMM64_RAX(grub_relocator_xen_mfn_list)
 
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_paging_start)
-	.quad	0
+	movq	%rax, %rbx	/* %rbx is the base of the p2m list */
+	leaq	EXT_C(grub_relocator_xen_paging_areas) (%rip), %r8
 
-	movq	%rax, %r12
-
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_mfn_list)
-	.quad	0
-
-	movq	%rax, %rsi
 1:
+	movq	0(%r8), %r12	/* Get start pfn of the current area */
+	movq	GRUB_TARGET_SIZEOF_LONG(%r8), %rcx	/* Get # of pg tables */
+	testq	%rcx, %rcx	/* 0 -> last area reached */
+	jz	3f
+2:
 	movq	%r12, %rdi
-	movq    %rsi, %rbx
-	movq    0(%rsi), %rsi
-	shlq    $12,  %rsi
-	orq     $5, %rsi
-	movq    $2, %rdx
-	movq    %rcx, %r9
+	shlq	$PAGE_SHIFT, %rdi	/* virtual address (1:1 mapping) */
+	movq    (%rbx, %r12, 8), %rsi	/* mfn */
+	shlq    $PAGE_SHIFT,  %rsi
+	orq     $(GRUB_PAGE_PRESENT | GRUB_PAGE_USER), %rsi	/* Build pte */
+	movq    $UVMF_INVLPG, %rdx
+	movq    %rcx, %r9	/* %rcx clobbered by hypercall */
 	movq    $__HYPERVISOR_update_va_mapping, %rax
 	syscall
 
 	movq    %r9, %rcx
-	addq    $8, %rbx
-	addq    $4096, %r12
-	movq    %rbx, %rsi
+	incq	%r12		/* next pfn */
 
-	loop 1b
+	loop 2b
 
+	addq	$(2 * GRUB_TARGET_SIZEOF_LONG), %r8	/* next pg table area */
+	jmp	1b
+
+3:
+	/* Switch page tables: pin new L4 pt, load cr3, unpin old L4. */
 	leaq   EXT_C(grub_relocator_xen_mmu_op) (%rip), %rdi
-	movq   $3, %rsi
-	movq   $0, %rdx
-	movq   $0x7FF0, %r10
+	movq   $3, %rsi		/* 3 mmu ops */
+	movq   $0, %rdx		/* pdone (not used) */
+	movq   $DOMID_SELF, %r10
 	movq   $__HYPERVISOR_mmuext_op, %rax
 	syscall
 
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_remap_continue)
-	.quad	0
+	/* Continue in virtual kernel mapping. */
+	MOV_IMM64_RAX(grub_relocator_xen_remap_continue)
 
 	jmp *%rax
+
+VARIABLE(grub_relocator_xen_paging_areas)
+	/* array of start, size pairs, size 0 is end marker */
+	.quad	0, 0, 0, 0, 0, 0, 0, 0
 
 VARIABLE(grub_relocator_xen_mmu_op)
 	.space 256
@@ -111,46 +102,32 @@ VARIABLE(grub_relocator_xen_remap_end)
 
 
 VARIABLE(grub_relocator_xen_start)
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_remapper_virt2)
-	.quad	0
+	/* Unmap old remapper area. */
+	MOV_IMM64_RAX(grub_relocator_xen_remapper_virt2)
 
 	movq    %rax, %rdi
 
-	xorq    %rax, %rax
+	xorq    %rax, %rax	/* Invalid pte */
 	movq    %rax, %rsi
 
-	movq    $2, %rdx
+	movq    $UVMF_INVLPG, %rdx
 	movq    $__HYPERVISOR_update_va_mapping, %rax
 	syscall
 
-
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_stack)
-	.quad	0
+	/* Prepare registers for starting kernel. */
+	MOV_IMM64_RAX(grub_relocator_xen_stack)
 
 	movq	%rax, %rsp
 
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_start_info)
-	.quad	0
+	MOV_IMM64_RAX(grub_relocator_xen_start_info)
 
 	movq	%rax, %rsi
 
 	cld
 
-	/* mov imm64, %rax */
-	.byte 	0x48
-	.byte	0xb8
-VARIABLE(grub_relocator_xen_entry_point)
-	.quad	0
+	MOV_IMM64_RAX(grub_relocator_xen_entry_point)
 
+	/* Now start the new kernel. */
 	jmp *%rax
 
 VARIABLE(grub_relocator_xen_end)

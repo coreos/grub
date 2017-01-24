@@ -43,9 +43,11 @@ case ${GRUB_DEVICE} in
   ;;
 esac
 
+# btrfs may reside on multiple devices. We cannot pass them as value of root= parameter
+# and mounting btrfs requires user space scanning, so force UUID in this case.
 if [ "x${GRUB_DEVICE_UUID}" = "x" ] || [ "x${GRUB_DISABLE_LINUX_UUID}" = "xtrue" ] \
     || ! test -e "/dev/disk/by-uuid/${GRUB_DEVICE_UUID}" \
-    || uses_abstraction "${GRUB_DEVICE}" lvm; then
+    || ( test -e "${GRUB_DEVICE}" && uses_abstraction "${GRUB_DEVICE}" lvm ); then
   LINUX_ROOT_DEVICE=${GRUB_DEVICE}
 else
   LINUX_ROOT_DEVICE=UUID=${GRUB_DEVICE_UUID}

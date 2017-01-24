@@ -271,3 +271,17 @@ grub_util_resolve_dependencies (const char *prefix,
     return prev;
   }
 }
+
+void
+grub_util_free_path_list (struct grub_util_path_list *path_list)
+{
+  struct grub_util_path_list *next;
+
+  while (path_list)
+    {
+      next = path_list->next;
+      free ((void *) path_list->name);
+      free (path_list);
+      path_list = next;
+    }
+}

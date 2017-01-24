@@ -161,9 +161,9 @@ grub_util_biosdisk_open (const char *name, grub_disk_t disk)
     {
       struct stat st;
 # if GRUB_DISK_DEVS_ARE_CHAR
-      if (fstat (fd, &st) < 0 || ! S_ISCHR (st.st_mode))
+      if (fstat (fd, &st) >= 0 && S_ISCHR (st.st_mode))
 # else
-      if (fstat (fd, &st) < 0 || ! S_ISBLK (st.st_mode))
+      if (fstat (fd, &st) >= 0 && S_ISBLK (st.st_mode))
 # endif
 	data->is_disk = 1;
     }

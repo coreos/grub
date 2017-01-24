@@ -39,6 +39,10 @@ gentrigtables$(BUILD_EXEEXT): gentrigtables.c
 	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) $< $(BUILD_LIBM)
 CLEANFILES += gentrigtables$(BUILD_EXEEXT)
 
+build-grub-module-verifier$(BUILD_EXEEXT): $(top_srcdir)/util/grub-module-verifier.c $(top_srcdir)/util/grub-module-verifier32.c $(top_srcdir)/util/grub-module-verifier64.c $(top_srcdir)/grub-core/kern/emu/misc.c $(top_srcdir)/util/misc.c
+	$(BUILD_CC) -o $@ -I$(top_srcdir)/include $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(BUILD_LDFLAGS) -DGRUB_BUILD=1 -DGRUB_UTIL=1 -DGRUB_BUILD_PROGRAM_NAME=\"build-grub-module-verifier\" $^
+CLEANFILES += build-grub-module-verifier$(BUILD_EXEEXT)
+
 # trigtables.c
 trigtables.c: gentrigtables$(BUILD_EXEEXT) gentrigtables.c $(top_srcdir)/configure.ac
 	./gentrigtables$(BUILD_EXEEXT) > $@
@@ -104,6 +108,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pmtimer.h
 endif
 
 if COND_i386_coreboot
@@ -159,6 +164,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/pci.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pmtimer.h
 endif
 
 if COND_ia64_efi
@@ -391,7 +397,7 @@ moddep.lst: syminfo.lst genmoddep.awk video.lst
 platform_DATA += moddep.lst
 CLEANFILES += config.log syminfo.lst moddep.lst
 
-$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT)
+$(MOD_FILES): %.mod : genmod.sh moddep.lst %.module$(EXEEXT) build-grub-module-verifier$(BUILD_EXEEXT)
 	TARGET_OBJ2ELF=@TARGET_OBJ2ELF@ sh $^ $@
 platform_DATA += $(MOD_FILES)
 platform_DATA += modinfo.sh

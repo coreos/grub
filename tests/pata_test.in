@@ -30,7 +30,7 @@ case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
     *-arc)
 	exit 0;;
     # FIXME: No native drivers are available for those
-    powerpc-ieee1275 | sparc64-ieee1275)
+    powerpc-ieee1275 | sparc64-ieee1275 | arm*-efi)
 	exit 0;;
     i386-ieee1275)
 	disk=hdb

@@ -740,6 +740,12 @@ parse_printf_args (const char *fmt0, struct printf_args *args,
 	fmt++;
 
       c = *fmt++;
+      if (c == '%')
+	{
+	  n--;
+	  continue;
+	}
+
       if (c == 'l')
 	{
 	  c = *fmt++;
@@ -876,6 +882,7 @@ grub_vsnprintf_real (char *str, grub_size_t max_len, const char *fmt0,
       if (c == '%')
 	{
 	  write_char (str, &count, max_len,c);
+	  n--;
 	  continue;
 	}
 
@@ -1098,6 +1105,8 @@ grub_fatal (const char *fmt, ...)
   va_start (ap, fmt);
   grub_vprintf (_(fmt), ap);
   va_end (ap);
+
+  grub_refresh ();
 
   grub_abort ();
 }
