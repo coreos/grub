@@ -4,7 +4,14 @@
 #define VERITY_ARG_LENGTH (sizeof (VERITY_ARG) - 1)
 #define VERITY_HASH_LENGTH 64
 #define VERITY_CMDLINE_LENGTH ((VERITY_ARG_LENGTH)+(VERITY_HASH_LENGTH))
-#define VERITY_HASH_OFFSET 0x40
+
+#if defined(__aarch64__)
+# define VERITY_HASH_OFFSET 512
+#elif defined(__i386__)
+# define VERITY_HASH_OFFSET 0x40
+#else
+# error Unsupported arch
+#endif
 
 
 /**
