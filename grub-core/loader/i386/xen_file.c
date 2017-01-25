@@ -20,7 +20,7 @@
 #include <grub/i386/linux.h>
 #include <grub/misc.h>
 
-#include "verity-hash.h"
+#include <grub/verity-hash.h>
 
 #define XZ_MAGIC "\3757zXZ\0"
 
