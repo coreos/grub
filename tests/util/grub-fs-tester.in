@@ -251,7 +251,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    CFILES[0]="american-english";;
 	    esac
         # OS LIMITATION: Limited by NAME_MAX (usually 255) in GNU/Linux
-	    LONGNAME="qwertzuiopasdfghjklyxcvbnm1234567890qwertzuiopasdfghjklyxcvbnm1234567890oiewqfiewioqoiqoiurqruewqoiuwoieoiiuewqroreqiufieiuwrnureweriuvceoiroiewqoiricdsalkcndsakfirefoiwqeoircorejwoijfreoijojoiewjfwnfcoirenfoirefnreoifenoiwfnoirewoifoiwqwoieqfrqwioerijewr"
+	    LONGNAME="qwertzuiopasdfghjklyxcvbnm1234567890qwertzuiopasdfghjklyxcvbnm1234567890oiewqfiewioqoiqoiurqruewqoiuwoieoiiuewqroreqiufieiuwrnureweriuvceoiroiewqoiricdsalkcndsakfirefoiwqeoircorejwoijfreoijojoiewjfwnfcoirenfoirefnreoifenoiwfnoi"
 	    rm -rf "$MASTER"
 
 	    case x"$fs" in
@@ -498,8 +498,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    NOFSLABEL=y;;
 	    esac
 
-	    PDIRCOMPNUM=220
-	    PDIR2COMPNUM=220
+	    PDIRCOMPNUM=210
+	    PDIR2COMPNUM=210
 
 	    case x$fs in
 		    # OS LIMITATION: bfs_fuse bugs beyond that
@@ -514,7 +514,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    # FS LIMITATION: at most 255 on path length
 		    # FS LIMITATION: at most 100 on symlink length
 		xcpio_ustar)
-		    PDIRCOMPNUM=85
+		    PDIRCOMPNUM=84
 		    PDIR2COMPNUM=30;;
 		    # OS LIMITATION: Linux supports only symlink at most one block long on reiserfs
 		xreiserfs | xreiserfs_old)
