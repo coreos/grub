@@ -1152,15 +1152,23 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 fi
 
 if test "x$target_cpu" = xarm; then
-  AC_CACHE_CHECK([whether option -mllvm -arm-use-movt=0 works], grub_cv_cc_mllvm_arm_use_movt, [
-    CPPFLAGS="$TARGET_CPPFLAGS -mllvm -arm-use-movt=0 -Werror"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_mllvm_arm_use_movt=yes],
-		      [grub_cv_cc_mllvm_arm_use_movt=no])
+  AC_CACHE_CHECK([for options to disable movt and movw], grub_cv_target_cc_mno_movt, [
+    grub_cv_target_cc_mno_movt=no
+    for cand in "-mno-movt" \
+		"-mllvm -arm-use-movt=0"; do
+      if test x"$grub_cv_target_cc_mno_movt" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      CPPFLAGS="$TARGET_CPPFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		        [grub_cv_target_cc_mno_movt="$cand"], [])
+    done
   ])
-  if test "x$grub_cv_cc_mllvm_arm_use_movt" = xyes; then
+
+  if test x"$grub_cv_target_cc_mno_movt" != xno ; then
     # A trick so that clang doesn't see it on link stage
-    TARGET_CPPFLAGS="$TARGET_CPPFLAGS -mllvm -arm-use-movt=0"
+    TARGET_CPPFLAGS="$TARGET_CPPFLAGS $grub_cv_target_cc_mno_movt"
   fi
   AC_CACHE_CHECK([whether option -mthumb-interwork works], grub_cv_cc_mthumb_interwork, [
     CFLAGS="$TARGET_CFLAGS -mthumb-interwork -Werror"
