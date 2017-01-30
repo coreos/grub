@@ -116,15 +116,27 @@ struct grub_module_verifier_arch archs[] = {
   },
 };
 
+struct platform_whitelist {
+  const char *arch;
+  const char *platform;
+  const char **whitelist_empty;
+};
+
+static struct platform_whitelist whitelists[] = {
+  {"i386", "xen", (const char *[]) {"all_video", 0}},
+  {"x86_64", "xen", (const char *[]) {"all_video", 0}}
+};
+
 
 int
 main (int argc, char **argv)
 {
   size_t module_size;
-  unsigned arch;
+  unsigned arch, whitelist;
+  const char **whitelist_empty = 0;
   char *module_img;
-  if (argc != 3) {
-    fprintf (stderr, "usage: %s FILE ARCH\n", argv[0]);
+  if (argc != 4) {
+    fprintf (stderr, "usage: %s FILE ARCH PLATFORM\n", argv[0]);
     return 1;
   }
 
@@ -134,11 +146,18 @@ main (int argc, char **argv)
   if (arch == ARRAY_SIZE(archs))
     grub_util_error("unknown arch: %s", argv[2]);
 
+  for (whitelist = 0; whitelist < ARRAY_SIZE(whitelists); whitelist++)
+    if (strcmp(whitelists[whitelist].arch, argv[2]) == 0
+	&& strcmp(whitelists[whitelist].platform, argv[3]) == 0)
+      break;
+  if (whitelist != ARRAY_SIZE(whitelists))
+    whitelist_empty = whitelists[whitelist].whitelist_empty;
+
   module_size = grub_util_get_image_size (argv[1]);
   module_img = grub_util_read_image (argv[1]);
   if (archs[arch].voidp_sizeof == 8)
-    grub_module_verify64(module_img, module_size, &archs[arch]);
+    grub_module_verify64(module_img, module_size, &archs[arch], whitelist_empty);
   else
-    grub_module_verify32(module_img, module_size, &archs[arch]);
+    grub_module_verify32(module_img, module_size, &archs[arch], whitelist_empty);
   return 0;
 }

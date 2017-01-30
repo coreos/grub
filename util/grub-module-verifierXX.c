@@ -184,8 +184,24 @@ get_symtab (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e, Elf_Word 
   return sym;
 }
 
+static int
+is_whitelisted (const char *modname, const char **whitelist)
+{
+  const char **ptr;
+  if (!whitelist)
+    return 0;
+  if (!modname)
+    return 0;
+  for (ptr = whitelist; *ptr; ptr++)
+    if (strcmp (modname, *ptr) == 0)
+      return 1;
+  return 0;
+}
+
 static void
-check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
+check_symbols (const struct grub_module_verifier_arch *arch,
+	       Elf_Ehdr *e, const char *modname,
+	       const char **whitelist_empty)
 {
   Elf_Sym *sym;
   Elf_Word size, entsize;
@@ -196,7 +212,16 @@ check_symbols (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
   sym = get_symtab (arch, e, &size, &entsize);
   if (!sym)
     {
-      Elf_Shdr *s = find_section (arch, e, ".moddeps");
+      Elf_Shdr *s;
+
+      /* However some modules are dependencies-only,
+	 e.g. insmod all_video pulls in all video drivers.
+	 Some platforms e.g. xen have no video drivers, so
+	 the module does nothing.  */
+      if (is_whitelisted (modname, whitelist_empty))
+	return;
+
+      s = find_section (arch, e, ".moddeps");
 
       if (!s)
 	grub_util_error ("no symbol table and no .moddeps section");
@@ -324,7 +349,9 @@ check_relocations (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
 }
 
 void
-SUFFIX(grub_module_verify) (void *module_img, size_t size, const struct grub_module_verifier_arch *arch)
+SUFFIX(grub_module_verify) (void *module_img, size_t size,
+			    const struct grub_module_verifier_arch *arch,
+			    const char **whitelist_empty)
 {
   Elf_Ehdr *e = module_img;
 
@@ -361,11 +388,14 @@ SUFFIX(grub_module_verify) (void *module_img, size_t size, const struct grub_mod
   check_license (arch, e);
 
   Elf_Shdr *s;
+  const char *modname;
 
   s = find_section (arch, e, ".modname");
   if (!s)
     grub_util_error ("no module name found");
 
-  check_symbols(arch, e);
+  modname = (const char *) e + grub_target_to_host (s->sh_offset);
+
+  check_symbols(arch, e, modname, whitelist_empty);
   check_relocations(arch, e);
 }
