@@ -7,7 +7,7 @@
 
 #if defined(__aarch64__)
 # define VERITY_HASH_OFFSET 512
-#elif defined(__i386__)
+#elif defined(__i386__) || defined(__amd64__)
 # define VERITY_HASH_OFFSET 0x40
 #else
 # error Unsupported arch
