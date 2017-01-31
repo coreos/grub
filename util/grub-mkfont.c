@@ -179,9 +179,6 @@ add_glyph (struct grub_font_info *font_info, FT_UInt glyph_idx, FT_Face face,
   if (font_info->flags & GRUB_FONT_FLAG_BOLD)
     FT_GlyphSlot_Embolden (glyph);
 
-  if (glyph->next)
-    printf ("%x\n", char_code);
-
   if (nocut)
     cuttop = cutbottom = cutleft = cutright = 0;
   else
