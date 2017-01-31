@@ -1144,6 +1144,16 @@ grub_bidi_line_logical_to_visual (const grub_uint32_t *logical,
   }
 }
 
+static int
+is_visible (const struct grub_unicode_glyph *gl)
+{
+  if (gl->ncomb)
+    return 1;
+  if (gl->base == GRUB_UNICODE_LRM || gl->base == GRUB_UNICODE_RLM)
+    return 0;
+  return 1;
+}
+
 grub_ssize_t
 grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 			     grub_size_t logical_len,
@@ -1164,6 +1174,7 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
       if (ptr == logical + logical_len || *ptr == '\n')
 	{
 	  grub_ssize_t ret;
+	  grub_ssize_t i, j;
 	  ret = grub_bidi_line_logical_to_visual (line_start,
 						  ptr - line_start,
 						  visual_ptr,
@@ -1182,7 +1193,10 @@ grub_bidi_logical_to_visual (const grub_uint32_t *logical,
 	      grub_free (*visual_out);
 	      return ret;
 	    }
-	  visual_ptr += ret; 
+	  for (i = 0, j = 0; i < ret; i++)
+	    if (is_visible(&visual_ptr[i]))
+	      visual_ptr[j++] = visual_ptr[i];
+	  visual_ptr += j;
 	  line_start = ptr;
 	  if (ptr != logical + logical_len)
 	    {
