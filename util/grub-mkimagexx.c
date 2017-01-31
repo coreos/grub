@@ -920,6 +920,10 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		  grub_ia64_add_value_to_slot_21 ((grub_addr_t) target,
 						  addend + sym_addr);
 		  break;
+		case R_IA64_GPREL64I:
+		  grub_ia64_set_immu64 ((grub_addr_t) target,
+					addend + sym_addr);
+		  break;
 		case R_IA64_PCREL64LSB:
 		  *target = grub_host_to_target64 (grub_target_to_host64 (*target)
 						   + addend + sym_addr
@@ -1286,6 +1290,7 @@ translate_relocation_pe (struct translate_context *ctx,
 	case R_IA64_LTOFF22X:
 	case R_IA64_LTOFF22:
 	case R_IA64_GPREL22:
+	case R_IA64_GPREL64I:
 	case R_IA64_SEGREL64LSB:
 	  break;
 

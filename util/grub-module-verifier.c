@@ -60,6 +60,7 @@ struct grub_module_verifier_arch archs[] = {
       R_IA64_PCREL64LSB,
       R_IA64_LTOFF22X,
       R_IA64_LTOFF22,
+      R_IA64_GPREL64I,
       R_IA64_LTOFF_FPTR22,
       R_IA64_LDXMOV,
       -1

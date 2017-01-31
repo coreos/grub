@@ -104,6 +104,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	case R_IA64_PCREL64LSB:
 	  *(grub_uint64_t *) addr += value - addr;
 	  break;
+	case R_IA64_GPREL64I:
+	  grub_ia64_set_immu64 (addr, value - (grub_addr_t) mod->base);
+	  break;
 	case R_IA64_GPREL22:
 	  if ((value - (grub_addr_t) mod->base) & ~MASK20)
 	    return grub_error (GRUB_ERR_BAD_MODULE,
