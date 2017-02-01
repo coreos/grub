@@ -1079,10 +1079,16 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_ARM_THM_JUMP19:
 		     {
 		       grub_err_t err;
+		       Elf_Sym *sym;
 		       grub_util_info ("  THM_JUMP24:\ttarget=0x%08lx\toffset=(0x%08x)",
 				       (unsigned long) ((char *) target
 							- (char *) e),
 				       sym_addr);
+		       sym = (Elf_Sym *) ((char *) e
+					  + grub_target_to_host (symtab_section->sh_offset)
+					  + ELF_R_SYM (info) * grub_target_to_host (symtab_section->sh_entsize));
+		       if (ELF_ST_TYPE (sym->st_info) != STT_FUNC)
+			 sym_addr |= 1;
 		       if (!(sym_addr & 1))
 			 {
 			   grub_uint32_t tr_addr;

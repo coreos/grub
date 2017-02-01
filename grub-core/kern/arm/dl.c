@@ -173,6 +173,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    sym_addr += grub_arm_thm_call_get_offset ((grub_uint16_t *) target);
 
 	    grub_dprintf ("dl", "    sym_addr = 0x%08x\n", sym_addr);
+	    if (ELF_ST_TYPE (sym->st_info) != STT_FUNC)
+	      sym_addr |= 1;
 
 	    offset = sym_addr - (grub_uint32_t) target;
 
@@ -226,6 +228,9 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    grub_int32_t offset;
 
 	    sym_addr += grub_arm_thm_jump19_get_offset ((grub_uint16_t *) target);
+
+	    if (ELF_ST_TYPE (sym->st_info) != STT_FUNC)
+	      sym_addr |= 1;
 
 	    offset = sym_addr - (grub_uint32_t) target;
 
