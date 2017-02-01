@@ -50,8 +50,6 @@
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
-static Elf_Addr SUFFIX (entry_point);
-
 /* These structures are defined according to the CHRP binding to IEEE1275,
    "Client Program Format" section.  */
 
@@ -979,7 +977,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_AARCH64_CALL26:
 		     {
 		       sym_addr -= offset;
-		       sym_addr -= SUFFIX (entry_point);
+		       sym_addr -= target_section_addr + image_target->vaddr_offset;
 		       if (!grub_arm_64_check_xxxx26_offset (sym_addr))
 			 grub_util_error ("%s", "CALL26 Relocation out of range");
 
@@ -990,7 +988,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		   case R_AARCH64_ADR_PREL_PG_HI21:
 		     {
 		       sym_addr &= ~0xfffULL;
-		       sym_addr -= (offset + SUFFIX (entry_point)) & ~0xfffULL;
+		       sym_addr -= (offset + target_section_addr + image_target->vaddr_offset) & ~0xfffULL;
 		       if (!grub_arm64_check_hi21_signed (sym_addr))
 			 grub_util_error ("%s", "CALL26 Relocation out of range");
 
@@ -1010,7 +1008,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 	     case EM_ARM:
 	       {
 		 sym_addr += addend;
-		 sym_addr -= SUFFIX (entry_point);
+		 sym_addr -= image_target->vaddr_offset;
 		 switch (ELF_R_TYPE (info))
 		   {
 		   case R_ARM_ABS32:
@@ -1973,8 +1971,6 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 					  image_target);
       if (layout->start_address == (Elf_Addr) -1)
 	grub_util_error ("start symbol is not defined");
-
-      SUFFIX (entry_point) = (Elf_Addr) layout->start_address;
 
       /* Resolve addresses in the virtual address space.  */
       SUFFIX (relocate_addresses) (e, sections, section_addresses, 
