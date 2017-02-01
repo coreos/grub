@@ -216,11 +216,11 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
        i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
     if (s->sh_type == grub_cpu_to_le32_compile_time (SHT_RELA))
       {
-	Elf64_Rela *rel, *max;
+	const Elf64_Rela *rel, *max;
 
 	for (rel = (Elf64_Rela *) ((char *) e + grub_le_to_cpu64 (s->sh_offset)),
-	       max = rel + grub_le_to_cpu64 (s->sh_size) / grub_le_to_cpu64 (s->sh_entsize);
-	     rel < max; rel++)
+	       max = (const Elf64_Rela *) ((grub_addr_t) rel + grub_le_to_cpu64 (s->sh_size));
+	     rel < max; rel = (const Elf64_Rela *) ((grub_addr_t) rel + grub_le_to_cpu64 (s->sh_entsize)))
 	  switch (ELF64_R_TYPE (grub_le_to_cpu64 (rel->r_info)))
 	    {
 	    case R_IA64_PCREL21B:
