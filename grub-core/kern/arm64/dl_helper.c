@@ -93,3 +93,42 @@ grub_arm64_set_abs_lo12_ldst64 (grub_uint32_t *place, grub_int64_t target)
   *place &= insmask;
   *place |= grub_cpu_to_le32 (target << 7) & ~insmask;
 }
+
+#pragma GCC diagnostic ignored "-Wcast-align"
+
+grub_err_t
+grub_arm64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
+				  grub_size_t *got)
+{
+  const Elf64_Ehdr *e = ehdr;
+  const Elf64_Shdr *s;
+  unsigned i;
+
+  *tramp = 0;
+  *got = 0;
+
+  for (i = 0, s = (Elf64_Shdr *) ((char *) e + grub_le_to_cpu64 (e->e_shoff));
+       i < grub_le_to_cpu16 (e->e_shnum);
+       i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
+    if (s->sh_type == grub_cpu_to_le32_compile_time (SHT_REL)
+	|| s->sh_type == grub_cpu_to_le32_compile_time (SHT_RELA))
+      {
+	const Elf64_Rela *rel, *max;
+
+	for (rel = (Elf64_Rela *) ((char *) e + grub_le_to_cpu64 (s->sh_offset)),
+	       max = (const Elf64_Rela *) ((grub_addr_t) rel + grub_le_to_cpu64 (s->sh_size));
+	     rel < max; rel = (const Elf64_Rela *) ((grub_addr_t) rel + grub_le_to_cpu64 (s->sh_entsize)))
+	  switch (ELF64_R_TYPE (rel->r_info))
+	    {
+	    case R_AARCH64_CALL26:
+	    case R_AARCH64_JUMP26:
+	      *tramp += sizeof (struct grub_arm64_trampoline);
+	      break;
+	    case R_AARCH64_ADR_GOT_PAGE:
+	      *got += 8;
+	      break;
+	    }
+      }
+
+  return GRUB_ERR_NONE;
+}

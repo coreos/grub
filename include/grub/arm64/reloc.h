@@ -19,6 +19,13 @@
 #ifndef GRUB_ARM64_RELOC_H
 #define GRUB_ARM64_RELOC_H 1
 
+struct grub_arm64_trampoline
+{
+  grub_uint32_t ldr; /* ldr	x16, 8 */
+  grub_uint32_t br; /* br x16 */
+  grub_uint64_t addr;
+};
+
 int grub_arm_64_check_xxxx26_offset (grub_int64_t offset);
 void
 grub_arm64_set_xxxx26_offset (grub_uint32_t *place, grub_int64_t offset);

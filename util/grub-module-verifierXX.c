@@ -319,6 +319,40 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
 	continue;
       grub_util_error ("relocation 0x%x is not module-local", type);
     }
+#if defined(MODULEVERIFIER_ELF64)
+  if (arch->machine == EM_AARCH64)
+    {
+      unsigned unmatched_adr_got_page = 0;
+      Elf_Rela *rel2;
+      for (rel = (Elf_Rel *) ((char *) ehdr + grub_target_to_host (s->sh_offset)),
+	     max = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_size));
+	   rel < max;
+	   rel = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_entsize)))
+	{
+	  switch (ELF_R_TYPE (grub_target_to_host (rel->r_info)))
+	    {
+	    case R_AARCH64_ADR_GOT_PAGE:
+	      unmatched_adr_got_page++;
+	      for (rel2 = (Elf_Rela *) ((char *) rel + grub_target_to_host (s->sh_entsize));
+		   rel2 < (Elf_Rela *) max;
+		   rel2 = (Elf_Rela *) ((char *) rel2 + grub_target_to_host (s->sh_entsize)))
+		if (ELF_R_SYM (rel2->r_info)
+		    == ELF_R_SYM (rel->r_info)
+		    && ((Elf_Rela *) rel)->r_addend == rel2->r_addend
+		    && ELF_R_TYPE (rel2->r_info) == R_AARCH64_LD64_GOT_LO12_NC)
+		  break;
+	      if (rel2 >= (Elf_Rela *) max)
+		grub_util_error ("ADR_GOT_PAGE without matching LD64_GOT_LO12_NC");
+	      break;
+	    case R_AARCH64_LD64_GOT_LO12_NC:
+	      if (unmatched_adr_got_page == 0)
+		grub_util_error ("LD64_GOT_LO12_NC without matching ADR_GOT_PAGE");
+	      unmatched_adr_got_page--;
+	      break;
+	    }
+	}
+    }
+#endif
 }
 
 static void

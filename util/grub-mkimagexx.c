@@ -717,6 +717,7 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 #ifdef MKIMAGE_ELF64
   struct grub_ia64_trampoline *tr = (void *) (pe_target + tramp_off);
   grub_uint64_t *gpptr = (void *) (pe_target + got_off);
+  unsigned unmatched_adr_got_page = 0;
 #define MASK19 ((1 << 19) - 1)
 #else
   grub_uint32_t *tr = (void *) (pe_target + tramp_off);
@@ -965,6 +966,18 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       *target = grub_host_to_target64 (grub_target_to_host64 (*target) + sym_addr);
 		     }
 		     break;
+		   case R_AARCH64_PREL32:
+		     {
+		       grub_uint32_t *t32 = (grub_uint32_t *) target;
+		       *t32 = grub_host_to_target64 (grub_target_to_host32 (*t32)
+						     + sym_addr
+						     - target_section_addr - offset
+						     - image_target->vaddr_offset);
+		       grub_util_info ("relocating an R_AARCH64_PREL32 entry to 0x%x at the offset 0x%"
+				       GRUB_HOST_PRIxLONG_LONG,
+				       *t32, (unsigned long long) offset);
+		       break;
+		     }
 		   case R_AARCH64_ADD_ABS_LO12_NC:
 		     grub_arm64_set_abs_lo12 ((grub_uint32_t *) target,
 					      sym_addr);
@@ -984,6 +997,41 @@ SUFFIX (relocate_addresses) (Elf_Ehdr *e, Elf_Shdr *sections,
 		       grub_arm64_set_xxxx26_offset((grub_uint32_t *)target,
 						     sym_addr);
 		     }
+		     break;
+		   case R_AARCH64_ADR_GOT_PAGE:
+		     {
+		       Elf64_Rela *rel2;
+		       grub_int64_t gpoffset = (((char *) gpptr - (char *) pe_target + image_target->vaddr_offset) & ~0xfffULL)
+			 - ((offset + target_section_addr + image_target->vaddr_offset) & ~0xfffULL);
+		       unsigned k;
+		       *gpptr = grub_host_to_target64 (sym_addr);
+		       unmatched_adr_got_page++;
+		       if (!grub_arm64_check_hi21_signed (gpoffset))
+			 grub_util_error ("HI21 out of range");
+		       grub_arm64_set_hi21((grub_uint32_t *)target,
+					   gpoffset);
+		       for (k = 0, rel2 = (Elf_Rela *) ((char *) r + r_size);
+			    k < num_rs;
+			    k++, rel2 = (Elf_Rela *) ((char *) rel2 + r_size))
+			 if (ELF_R_SYM (rel2->r_info)
+			     == ELF_R_SYM (r->r_info)
+			     && r->r_addend == rel2->r_addend
+			     && ELF_R_TYPE (rel2->r_info) == R_AARCH64_LD64_GOT_LO12_NC)
+			   {
+			     grub_arm64_set_abs_lo12_ldst64 ((grub_uint32_t *) SUFFIX (get_target_address) (e, target_section,
+													    grub_target_to_host (rel2->r_offset), image_target),
+							     ((char *) gpptr - (char *) pe_target + image_target->vaddr_offset));
+			     break;
+			   }
+		       if (k >= num_rs)
+			 grub_util_error ("ADR_GOT_PAGE without matching LD64_GOT_LO12_NC");
+		       gpptr++;
+	             }
+		     break;
+		   case R_AARCH64_LD64_GOT_LO12_NC:
+		     if (unmatched_adr_got_page == 0)
+		       grub_util_error ("LD64_GOT_LO12_NC without matching ADR_GOT_PAGE");
+		     unmatched_adr_got_page--;
 		     break;
 		   case R_AARCH64_ADR_PREL_PG_HI21:
 		     {
@@ -1329,6 +1377,7 @@ translate_relocation_pe (struct translate_context *ctx,
 	  /* Relative relocations do not require fixup entries. */
 	case R_AARCH64_CALL26:
 	case R_AARCH64_JUMP26:
+	case R_AARCH64_PREL32:
 	  break;
 	  /* Page-relative relocations do not require fixup entries. */
 	case R_AARCH64_ADR_PREL_PG_HI21:
@@ -1337,6 +1386,11 @@ translate_relocation_pe (struct translate_context *ctx,
 	  */
 	case R_AARCH64_ADD_ABS_LO12_NC:
 	case R_AARCH64_LDST64_ABS_LO12_NC:
+	  break;
+
+	  /* GOT is relocated separately.  */
+	case R_AARCH64_ADR_GOT_PAGE:
+	case R_AARCH64_LD64_GOT_LO12_NC:
 	  break;
 
 	default:
@@ -1547,9 +1601,9 @@ finish_reloc_translation (struct translate_context *ctx, struct grub_mkimage_lay
 
 
 static void
-translate_reloc_jumpers (struct translate_context *ctx,
-			 Elf_Addr jumpers, grub_size_t njumpers,
-			 const struct grub_install_image_target_desc *image_target)
+create_u64_fixups (struct translate_context *ctx,
+		   Elf_Addr jumpers, grub_size_t njumpers,
+		   const struct grub_install_image_target_desc *image_target)
 {
   unsigned i;
   assert (image_target->id == IMAGE_EFI);
@@ -1614,11 +1668,17 @@ make_reloc_section (Elf_Ehdr *e, struct grub_mkimage_layout *layout,
       }
 
   if (image_target->elf_target == EM_IA_64)
-    translate_reloc_jumpers (&ctx,
-			     layout->ia64jmp_off
-			     + image_target->vaddr_offset,
-			     2 * layout->ia64jmpnum + (layout->got_size / 8),
-			     image_target);
+    create_u64_fixups (&ctx,
+		       layout->ia64jmp_off
+		       + image_target->vaddr_offset,
+		       2 * layout->ia64jmpnum,
+		       image_target);
+  if (image_target->elf_target == EM_IA_64 || image_target->elf_target == EM_AARCH64)
+    create_u64_fixups (&ctx,
+		       layout->got_off
+		       + image_target->vaddr_offset,
+		       (layout->got_size / 8),
+		       image_target);
 
   finish_reloc_translation (&ctx, layout, image_target);
 }
@@ -1944,7 +2004,18 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 						     image_target);
 	  layout->kernel_size += 16 * layout->ia64jmpnum;
 
-	  layout->ia64_got_off = layout->kernel_size;
+	  layout->got_off = layout->kernel_size;
+	  layout->kernel_size += ALIGN_UP (layout->got_size, 16);
+	}
+      if (image_target->elf_target == EM_AARCH64)
+	{
+	  grub_size_t tramp;
+
+	  layout->kernel_size = ALIGN_UP (layout->kernel_size, 16);
+
+	  grub_arm64_dl_get_tramp_got_size (e, &tramp, &layout->got_size);
+
+	  layout->got_off = layout->kernel_size;
 	  layout->kernel_size += ALIGN_UP (layout->got_size, 16);
 	}
 #endif
@@ -1977,7 +2048,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 				   section_entsize,
 				   num_sections, strtab,
 				   out_img, layout->tramp_off,
-				   layout->ia64_got_off,
+				   layout->got_off,
 				   image_target);
 
       make_reloc_section (e, layout,
