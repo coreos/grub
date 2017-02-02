@@ -369,6 +369,12 @@ if COND_i386_coreboot
 BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64 bootcheck-kfreebsd-x86_64 bootcheck-kfreebsd-i386
 endif
 
+if COND_i386_ieee1275
+# *BSD requires ACPI
+#legacy protocol (linux16) makes early BIOS calls.
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64
+endif
+
 if COND_i386_pc
 #pc chainloader by definition is only for i386-pc
 #ntldr and bootmgr require BIOS.
