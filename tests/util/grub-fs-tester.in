@@ -640,7 +640,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    else
 			A=
 		    fi
-		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${LODEVICES[0]}"
+		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${FSIMAGES[0]}"
 		    MOUNTOPTS="iocharset=utf8,codepage=437,"
 		    MOUNTFS="$(echo "$fs"|sed 's,[0-9]*a\?$,,')";;
 		x"minix2")
