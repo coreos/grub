@@ -85,7 +85,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    MAXBLKSIZE=1048576
 	    ;;
 	xnilfs2)
-	    MINBLKSIZE=1024
+	    # nilfs2 supports blocksizes from 1024 to 4096
+	    # but non-4096 results in kernel oops in some cases,
+	    # avoid it.
+	    MINBLKSIZE=4096
 	    MAXBLKSIZE=4096
 	    ;;
 	xsfs*)
