@@ -263,7 +263,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    ;;
 	    # FS LIMITATION: btrfs label is at most 255 UTF-8 chars
 		x"btrfs"*)
-		    FSLABEL="grub_;/testé莭莽😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoif";;
+		    FSLABEL="grub_;/testé莭莽😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoi";;
 
 	    # FS LIMITATION: exfat is at most 15 UTF-16 chars
 		x"exfat")
