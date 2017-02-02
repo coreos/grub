@@ -73,14 +73,22 @@ VARIABLE(grub_relocator64_rsp)
 
 	movq	%rax, %rsp
 
+#ifdef GRUB_MACHINE_EFI
+	jmp	LOCAL(skip_efi_stack_align)
+
 	/*
-	 * Here is grub_relocator64_efi_start() entry point.
-	 * Following code is shared between grub_relocator64_efi_start()
+	 * Here is grub_relocator64_efi_start() entry point. Most of the
+	 * code below is shared between grub_relocator64_efi_start()
 	 * and grub_relocator64_start().
 	 *
-	 * Think twice before changing anything below!!!
+	 * Think twice before changing anything there!!!
 	 */
 VARIABLE(grub_relocator64_efi_start)
+	/* Align the stack as UEFI spec requires. */
+	andq	$~15, %rsp
+
+LOCAL(skip_efi_stack_align):
+#endif
 	/* mov imm64, %rax */
 	.byte 	0x48
 	.byte	0xb8
@@ -128,8 +136,10 @@ LOCAL(jump_addr):
 VARIABLE(grub_relocator64_rip)
 	.quad	0
 
+#ifdef GRUB_MACHINE_EFI
 	/* Here grub_relocator64_efi_start() ends. Ufff... */
 VARIABLE(grub_relocator64_efi_end)
+#endif
 
 #ifndef __x86_64__
 	.p2align	4
