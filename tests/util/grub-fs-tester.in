@@ -654,7 +654,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    MOUNTOPTS="iocharset=utf8,compression,"
 		    MOUNTFS="ntfs-3g";;
 		x"udf")
-		    "/usr/bin/mkudffs" -b $BLKSIZE --utf8 --lvid="$FSLABEL" "${LODEVICES[0]}"
+		    "mkudffs" --utf8 -b $BLKSIZE --lvid="$FSLABEL" "${LODEVICES[0]}"
 		    MOUNTOPTS="iocharset=utf8,bs=$BLKSIZE,";;
 		x"ufs2")
 		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 2 "${LODEVICES[0]}"
