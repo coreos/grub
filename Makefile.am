@@ -306,7 +306,7 @@ bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64.gz $(GRUB_PAYLOADS_DIR)/
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/miniroot.gz=knetbsd.miniroot-image.x86_64.gz --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/grub-core/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
-	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg --qemu-opts="-cpu pentium2" | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
