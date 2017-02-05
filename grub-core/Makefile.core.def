@@ -895,6 +895,11 @@ module = {
 };
 
 module = {
+  name = verifiers;
+  common = commands/verifiers.c;
+};
+
+module = {
   name = hdparm;
   common = commands/hdparm.c;
   enable = pci;
