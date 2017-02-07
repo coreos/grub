@@ -40,6 +40,7 @@
 #include <grub/xen_file.h>
 #include <grub/linux.h>
 #include <grub/i386/memory.h>
+#include <grub/verify.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -647,6 +648,9 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
   grub_create_loader_cmdline (argc - 1, argv + 1,
 			      (char *) xen_state.next_start.cmd_line,
 			      sizeof (xen_state.next_start.cmd_line) - 1);
+  err = grub_verify_string (xen_state.next_start.cmd_line, GRUB_VERIFY_MODULE_CMDLINE);
+  if (err)
+    return err;
 
   file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_KERNEL);
   if (!file)
@@ -908,6 +912,9 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
 
   grub_create_loader_cmdline (argc - 1, argv + 1,
 			      get_virtual_current_address (ch), cmdline_len);
+  err = grub_verify_string (get_virtual_current_address (ch), GRUB_VERIFY_MODULE_CMDLINE);
+  if (err)
+    goto fail;
 
   xen_state.module_info_page[xen_state.n_modules].cmdline =
     xen_state.max_addr - xen_state.modules_target_start;

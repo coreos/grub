@@ -33,6 +33,7 @@
 #include <grub/i18n.h>
 #include <grub/env.h>
 #include <grub/linux.h>
+#include <grub/verify.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -501,6 +502,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       p = grub_stpcpy (p, argv[i]);
     }
   cmdline[10] = '=';
+
+  *p = '\0';
+
+  err = grub_verify_string (cmdline, GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    goto fail;
   
   boot_param->command_line = (grub_uint64_t) cmdline;
   boot_param->efi_systab = (grub_uint64_t) grub_efi_system_table;

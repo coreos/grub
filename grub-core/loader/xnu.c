@@ -33,6 +33,7 @@
 #include <grub/extcmd.h>
 #include <grub/env.h>
 #include <grub/i18n.h>
+#include <grub/verify.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -425,6 +426,10 @@ grub_cmd_xnu_kernel (grub_command_t cmd __attribute__ ((unused)),
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
 
+  err = grub_verify_string (grub_xnu_cmdline, GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    return err;
+
 #if defined (__i386) && !defined (GRUB_MACHINE_EFI)
   err = grub_efiemu_autocore ();
   if (err)
@@ -533,6 +538,10 @@ grub_cmd_xnu_kernel64 (grub_command_t cmd __attribute__ ((unused)),
   /* Replace last space by '\0'. */
   if (ptr != grub_xnu_cmdline)
     *(ptr - 1) = 0;
+
+  err = grub_verify_string (grub_xnu_cmdline, GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    return err;
 
 #if defined (__i386) && !defined (GRUB_MACHINE_EFI)
   err = grub_efiemu_autocore ();

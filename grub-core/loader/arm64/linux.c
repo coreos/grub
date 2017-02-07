@@ -32,6 +32,7 @@
 #include <grub/efi/pe32.h>
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
+#include <grub/verify.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -339,9 +340,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
   grub_memcpy (linux_args, LINUX_IMAGE, sizeof (LINUX_IMAGE));
-  grub_create_loader_cmdline (argc, argv,
-			      linux_args + sizeof (LINUX_IMAGE) - 1,
-			      cmdline_size);
+  err = grub_create_loader_cmdline (argc, argv,
+				    linux_args + sizeof (LINUX_IMAGE) - 1,
+				    cmdline_size,
+				    GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    goto fail;
 
   if (grub_errno == GRUB_ERR_NONE)
     {

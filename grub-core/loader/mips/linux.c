@@ -327,6 +327,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_argv++;
   linux_args += ALIGN_UP (sizeof ("a0"), 4);
 
+  char *params = linux_args;
+
 #ifdef GRUB_MACHINE_MIPS_LOONGSON
   {
     unsigned mtype = grub_arch_machine;
@@ -351,6 +353,12 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       linux_argv++;
       linux_args += ALIGN_UP (grub_strlen (argv[i]) + 1, 4);
     }
+
+  *linux_args = '\0';
+
+  err = grub_verify_string (params, GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    return err;
 
   /* Reserve space for rd arguments.  */
   rd_addr_arg_off = (grub_uint8_t *) linux_args - (grub_uint8_t *) playground;

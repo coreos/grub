@@ -969,11 +969,17 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (!linux_cmdline)
     goto fail;
   grub_memcpy (linux_cmdline, LINUX_IMAGE, sizeof (LINUX_IMAGE));
-  grub_create_loader_cmdline (argc, argv,
-			      linux_cmdline
-			      + sizeof (LINUX_IMAGE) - 1,
-			      maximal_cmdline_size
-			      - (sizeof (LINUX_IMAGE) - 1));
+  {
+    grub_err_t err;
+    err = grub_create_loader_cmdline (argc, argv,
+				      linux_cmdline
+				      + sizeof (LINUX_IMAGE) - 1,
+				      maximal_cmdline_size
+				      - (sizeof (LINUX_IMAGE) - 1),
+				      GRUB_VERIFY_KERNEL_CMDLINE);
+    if (err)
+      goto fail;
+  }
 
   len = prot_file_size;
   if (grub_file_read (file, prot_mode_mem, len) != len && !grub_errno)

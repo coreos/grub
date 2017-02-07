@@ -334,11 +334,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   /* Create kernel command line.  */
   grub_memcpy ((char *)grub_linux_real_chunk + GRUB_LINUX_CL_OFFSET,
 		LINUX_IMAGE, sizeof (LINUX_IMAGE));
-  grub_create_loader_cmdline (argc, argv,
-			      (char *)grub_linux_real_chunk
-			      + GRUB_LINUX_CL_OFFSET + sizeof (LINUX_IMAGE) - 1,
-			      maximal_cmdline_size
-			      - (sizeof (LINUX_IMAGE) - 1));
+  err = grub_create_loader_cmdline (argc, argv,
+				    (char *)grub_linux_real_chunk
+				    + GRUB_LINUX_CL_OFFSET + sizeof (LINUX_IMAGE) - 1,
+				    maximal_cmdline_size
+				    - (sizeof (LINUX_IMAGE) - 1),
+				    GRUB_VERIFY_KERNEL_CMDLINE);
+  if (err)
+    goto fail;
 
   if (grub_linux_is_bzimage)
     grub_linux_prot_target = GRUB_LINUX_BZIMAGE_ADDR;

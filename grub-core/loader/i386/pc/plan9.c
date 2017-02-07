@@ -33,6 +33,7 @@
 #include <grub/mm.h>
 #include <grub/cpu/relocator.h>
 #include <grub/extcmd.h>
+#include <grub/verify.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -505,6 +506,7 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
   configptr = grub_stpcpy (configptr, "bootfile=");
   configptr = grub_stpcpy (configptr, bootpath);
   *configptr++ = '\n';
+  char *cmdline = configptr;
   {
     int i;
     for (i = 1; i < argc; i++)
@@ -513,6 +515,15 @@ grub_cmd_plan9 (grub_extcmd_context_t ctxt, int argc, char *argv[])
 	*configptr++ = '\n';
       }
   }
+
+  {
+    grub_err_t err;
+    *configptr = '\0';
+    err = grub_verify_string (cmdline, GRUB_VERIFY_KERNEL_CMDLINE);
+    if (err)
+      goto fail;
+  }
+
   configptr = grub_stpcpy (configptr, fill_ctx.pmap);
 
   {
