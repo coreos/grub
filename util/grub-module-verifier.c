@@ -129,6 +129,7 @@ struct platform_whitelist {
 static struct platform_whitelist whitelists[] = {
   {"i386", "xen", (const char *[]) {"all_video", 0}},
   {"x86_64", "xen", (const char *[]) {"all_video", 0}},
+  {"sparc64", "ieee1275", (const char *[]) {"all_video", 0}},
 
   /* video is compiled-in on MIPS.  */
   {"mipsel", "loongson", (const char *[]) {"all_video", 0}},
