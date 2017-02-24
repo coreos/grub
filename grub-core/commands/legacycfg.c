@@ -517,7 +517,7 @@ grub_cmd_legacy_initrd (struct grub_command *mycmd __attribute__ ((unused)),
 #endif
 			   );
 
-      return cmd->func (cmd, argc, args);
+      return cmd->func (cmd, argc ? 1 : 0, args);
     }
   if (kernel_type == MULTIBOOT)
     {
