@@ -823,7 +823,12 @@ direct_read (struct grub_squash_data *data,
       curread = data->blksz - boff;
       if (curread > len)
 	curread = len;
-      if (!(ino->block_sizes[i]
+      if (!ino->block_sizes[i])
+	{
+	  /* Sparse block */
+	  grub_memset (buf, '\0', curread);
+	}
+      else if (!(ino->block_sizes[i]
 	    & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED)))
 	{
 	  char *block;
@@ -873,36 +878,57 @@ direct_read (struct grub_squash_data *data,
 
 
 static grub_ssize_t
-grub_squash_read_data (struct grub_squash_data *data, 
-		       struct grub_squash_cache_inode *ino,
-		       grub_off_t off, char *buf, grub_size_t len)
+grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
 {
+  struct grub_squash_data *data = file->data;
+  struct grub_squash_cache_inode *ino = &data->ino;
+  grub_off_t off = file->offset;
   grub_err_t err;
-  grub_uint64_t a = 0, b;
+  grub_uint64_t a, b;
   grub_uint32_t fragment = 0;
   int compressed = 0;
   struct grub_squash_frag_desc frag;
+  grub_off_t direct_len;
+  grub_uint64_t mask = grub_le_to_cpu32 (data->sb.block_size) - 1;
+  grub_size_t orig_len = len;
 
   switch (ino->ino.type)
     {
     case grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR):
-      a = grub_le_to_cpu64 (ino->ino.long_file.chunk);
       fragment = grub_le_to_cpu32 (ino->ino.long_file.fragment);
       break;
     case grub_cpu_to_le16_compile_time (SQUASH_TYPE_REGULAR):
-      a = grub_le_to_cpu32 (ino->ino.file.chunk);
       fragment = grub_le_to_cpu32 (ino->ino.file.fragment);
       break;
     }
 
-  if (fragment == 0xffffffff)
-    return direct_read (data, ino, off, buf, len);
+  /* Squash may pack file tail as fragment. So read initial part directly and
+     get tail from fragments */
+  direct_len = fragment == 0xffffffff ? file->size : file->size & ~mask;
+  if (off < direct_len)
+    {
+      grub_size_t read_len = direct_len - off;
+      grub_ssize_t res;
+
+      if (read_len > len)
+	read_len = len;
+      res = direct_read (data, ino, off, buf, read_len);
+      if ((grub_size_t) res != read_len)
+	return -1; /* FIXME: is short read possible here? */
+      len -= read_len;
+      if (!len)
+	return read_len;
+      buf += read_len;
+      off = 0;
+    }
+  else
+    off -= direct_len;
  
   err = read_chunk (data, &frag, sizeof (frag),
 		    data->fragments, sizeof (frag) * fragment);
   if (err)
     return -1;
-  a += grub_le_to_cpu64 (frag.offset);
+  a = grub_le_to_cpu64 (frag.offset);
   compressed = !(frag.size & grub_cpu_to_le32_compile_time (SQUASH_BLOCK_UNCOMPRESSED));
   if (ino->ino.type == grub_cpu_to_le16_compile_time (SQUASH_TYPE_LONG_REGULAR))
     b = grub_le_to_cpu32 (ino->ino.long_file.offset) + off;
@@ -943,16 +969,7 @@ grub_squash_read_data (struct grub_squash_data *data,
       if (err)
 	return -1;
     }
-  return len;
-}
-
-static grub_ssize_t
-grub_squash_read (grub_file_t file, char *buf, grub_size_t len)
-{
-  struct grub_squash_data *data = file->data;
-
-  return grub_squash_read_data (data, &data->ino,
-				file->offset, buf, len);
+  return orig_len;
 }
 
 static grub_err_t
