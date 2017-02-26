@@ -913,6 +913,9 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		*)
 		    BLOCKCNT=5242880;;
 	    esac
+	    # Make sure file is not exact multiple of block size. This helps to force
+	    # tail packing in case of squash4.
+	    : $((BLOCKCNT--))
 	    case x"$fs" in
 		x"ntfscomp")
 		    setfattr -h -v 0x00000800 -n system.ntfs_attrib_be "$MNTPOINTRW/$OSDIR";;
@@ -998,8 +1001,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		x"romfs")
 		    genromfs -V "$FSLABEL" -f "${FSIMAGES[0]}" -d "$MASTER" ;;
 		xsquash4_*)
-		    echo mksquashfs "$MASTER" "${FSIMAGES[0]}" -comp "${fs/squash4_/}" -b $BLKSIZE
-		    mksquashfs "$MASTER" "${FSIMAGES[0]}" -comp "${fs/squash4_/}" -b $BLKSIZE ;;
+		    echo mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE
+		    mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE ;;
 		x"bfs")
 		    sleep 1
 		    fusermount -u "$MNTPOINTRW"
