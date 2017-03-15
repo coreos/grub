@@ -145,30 +145,37 @@ if COND_real_platform
 
 if COND_i386_coreboot
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_multiboot
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_ieee1275
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_qemu
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_pc
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_efi
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_x86_64_efi
 QEMU32=qemu-system-x86_64
+MINIMUM_CPU_LINUX=core2duo
 endif
 
 linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
@@ -306,7 +313,7 @@ bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64.gz $(GRUB_PAYLOADS_DIR)/
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/miniroot.gz=knetbsd.miniroot-image.x86_64.gz --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/grub-core/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
-	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg --qemu-opts="-cpu pentium2" | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg --qemu-opts="-cpu $(MINIMUM_CPU_LINUX)" | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
