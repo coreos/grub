@@ -750,6 +750,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 
 			s->sequence = SEQ_BLOCK_START;
 
+			/* FALLTHROUGH */
 		case SEQ_BLOCK_START:
 			/* We need one byte of input to continue. */
 			if (b->in_pos == b->in_size)
@@ -773,6 +774,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			s->temp.pos = 0;
 			s->sequence = SEQ_BLOCK_HEADER;
 
+			/* FALLTHROUGH */
 		case SEQ_BLOCK_HEADER:
 			if (!fill_temp(s, b))
 				return XZ_OK;
@@ -783,6 +785,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 
 			s->sequence = SEQ_BLOCK_UNCOMPRESS;
 
+			/* FALLTHROUGH */
 		case SEQ_BLOCK_UNCOMPRESS:
 			ret = dec_block(s, b);
 			if (ret != XZ_STREAM_END)
@@ -810,6 +813,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 
 			s->sequence = SEQ_BLOCK_CHECK;
 
+			/* FALLTHROUGH */
 		case SEQ_BLOCK_CHECK:
 			ret = hash_validate(s, b, 0);
 			if (ret != XZ_STREAM_END)
@@ -858,6 +862,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 
 			s->sequence = SEQ_INDEX_CRC32;
 
+			/* FALLTHROUGH */
 		case SEQ_INDEX_CRC32:
 			ret = hash_validate(s, b, 1);
 			if (ret != XZ_STREAM_END)
@@ -866,6 +871,7 @@ static enum xz_ret dec_main(struct xz_dec *s, struct xz_buf *b)
 			s->temp.size = STREAM_HEADER_SIZE;
 			s->sequence = SEQ_STREAM_FOOTER;
 
+			/* FALLTHROUGH */
 		case SEQ_STREAM_FOOTER:
 			if (!fill_temp(s, b))
 				return XZ_OK;

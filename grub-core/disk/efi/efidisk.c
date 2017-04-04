@@ -224,7 +224,7 @@ name_devices (struct grub_efidisk_data *devices)
 	    {
 	    case GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE:
 	      is_hard_drive = 1;
-	      /* Fall through by intention.  */
+	      /* Intentionally fall through.  */
 	    case GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE:
 	      {
 		struct grub_efidisk_data *parent, *parent2;

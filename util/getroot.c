@@ -99,7 +99,7 @@ grub_util_pull_device (const char *os_dev)
     {
     case GRUB_DEV_ABSTRACTION_LVM:
       grub_util_pull_lvm_by_command (os_dev);
-      /* Fallthrough in case that lvm-tools are unavailable.  */
+      /* Fallthrough - in case that lvm-tools are unavailable.  */
     case GRUB_DEV_ABSTRACTION_LUKS:
       grub_util_pull_devmapper (os_dev);
       return;

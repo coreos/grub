@@ -282,6 +282,7 @@ grub_cryptodisk_endecrypt (struct grub_cryptodisk *dev,
 	  break;
 	case GRUB_CRYPTODISK_MODE_IV_PLAIN64:
 	  iv[1] = grub_cpu_to_le32 (sector >> 32);
+	  /* FALLTHROUGH */
 	case GRUB_CRYPTODISK_MODE_IV_PLAIN:
 	  iv[0] = grub_cpu_to_le32 (sector & 0xFFFFFFFF);
 	  break;

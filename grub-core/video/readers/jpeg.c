@@ -736,6 +736,7 @@ grub_jpeg_decode_jpeg (struct grub_jpeg_data *data)
 	case JPEG_MARKER_SOS:	/* Start Of Scan.  */
 	  if (grub_jpeg_decode_sos (data))
 	    break;
+	  /* FALLTHROUGH */
 	case JPEG_MARKER_RST0:	/* Restart.  */
 	case JPEG_MARKER_RST1:
 	case JPEG_MARKER_RST2:
