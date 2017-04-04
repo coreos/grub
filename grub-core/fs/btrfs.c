@@ -227,11 +227,11 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data,
 static grub_err_t
 read_sblock (grub_disk_t disk, struct grub_btrfs_superblock *sb)
 {
+  struct grub_btrfs_superblock sblock;
   unsigned i;
   grub_err_t err = GRUB_ERR_NONE;
   for (i = 0; i < ARRAY_SIZE (superblock_sectors); i++)
     {
-      struct grub_btrfs_superblock sblock;
       /* Don't try additional superblocks beyond device size.  */
       if (i && (grub_le_to_cpu64 (sblock.this_device.size)
 		>> GRUB_DISK_SECTOR_BITS) <= superblock_sectors[i])
