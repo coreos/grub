@@ -119,6 +119,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	case R_IA64_LTOFF22:
 	  if (ELF_ST_TYPE (sym->st_info) == STT_FUNC)
 	    value = *(grub_uint64_t *) sym->st_value + rel->r_addend;
+	  /* Fallthrough.  */
 	case R_IA64_LTOFF_FPTR22:
 	  {
 	    grub_uint64_t *gpptr = mod->gotptr;
