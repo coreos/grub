@@ -31,6 +31,40 @@
 #define MASK3 (~(grub_addr_t) 3)
 
 void
+grub_ia64_set_immu64 (grub_addr_t addr, grub_uint64_t val)
+{
+  /* Copied from binutils.  */
+  grub_uint64_t *ptr = ((grub_uint64_t *) (addr & MASK3));
+  grub_uint64_t t0, t1;
+
+  t0 = grub_le_to_cpu64 (ptr[0]);
+  t1 = grub_le_to_cpu64 (ptr[1]);
+
+  /* tmpl/s: bits  0.. 5 in t0
+     slot 0: bits  5..45 in t0
+     slot 1: bits 46..63 in t0, bits 0..22 in t1
+     slot 2: bits 23..63 in t1 */
+
+  /* First, clear the bits that form the 64 bit constant.  */
+  t0 &= ~(0x3ffffLL << 46);
+  t1 &= ~(0x7fffffLL
+	  | ((  (0x07fLL << 13) | (0x1ffLL << 27)
+		| (0x01fLL << 22) | (0x001LL << 21)
+		| (0x001LL << 36)) << 23));
+
+  t0 |= ((val >> 22) & 0x03ffffLL) << 46;		/* 18 lsbs of imm41 */
+  t1 |= ((val >> 40) & 0x7fffffLL) <<  0;		/* 23 msbs of imm41 */
+  t1 |= (  (((val >>  0) & 0x07f) << 13)		/* imm7b */
+	   | (((val >>  7) & 0x1ff) << 27)		/* imm9d */
+	   | (((val >> 16) & 0x01f) << 22)		/* imm5c */
+	   | (((val >> 21) & 0x001) << 21)		/* ic */
+	   | (((val >> 63) & 0x001) << 36)) << 23;	/* i */
+
+  ptr[0] = t0;
+  ptr[1] = t1;
+}
+
+void
 grub_ia64_add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value)
 {
   grub_uint32_t val;
@@ -182,11 +216,11 @@ grub_ia64_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
        i++, s = (Elf64_Shdr *) ((char *) s + grub_le_to_cpu16 (e->e_shentsize)))
     if (s->sh_type == grub_cpu_to_le32_compile_time (SHT_RELA))
       {
-	Elf64_Rela *rel, *max;
+	const Elf64_Rela *rel, *max;
 
 	for (rel = (Elf64_Rela *) ((char *) e + grub_le_to_cpu64 (s->sh_offset)),
-	       max = rel + grub_le_to_cpu64 (s->sh_size) / grub_le_to_cpu64 (s->sh_entsize);
-	     rel < max; rel++)
+	       max = (const Elf64_Rela *) ((char *) rel + grub_le_to_cpu64 (s->sh_size));
+	     rel < max; rel = (const Elf64_Rela *) ((char *) rel + grub_le_to_cpu64 (s->sh_entsize)))
 	  switch (ELF64_R_TYPE (grub_le_to_cpu64 (rel->r_info)))
 	    {
 	    case R_IA64_PCREL21B:

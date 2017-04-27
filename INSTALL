@@ -15,15 +15,14 @@ configuring the GRUB.
   Note: older versions may work but support is limited
 
   Experimental support for clang 3.3 or later (results in much bigger binaries)
-  for i386, x86_64, arm (except thumb), arm64, mips(el), powerpc, sparc64
+  for i386, x86_64, arm (including thumb), arm64, mips(el), powerpc, sparc64
   Note: clang 3.2 or later works for i386 and x86_64 targets but results in
         much bigger binaries.
 	earlier versions not tested
   Note: clang 3.2 or later works for arm
-	None of tested clang versions generated usable thumb code
 	earlier versions not tested
-  Note: clang 3.3 or later works for arm64
-	earlier versions have no arm64 support
+  Note: clang on arm64 is not supported due to
+	https://llvm.org/bugs/show_bug.cgi?id=26030
   Note: clang 3.3 or later works for mips(el)
 	earlier versions fail to generate .reginfo and hence gprel relocations
 	fail.

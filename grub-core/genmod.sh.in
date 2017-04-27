@@ -94,6 +94,6 @@ else
 	rm -f $tmpfile.bin
 fi
 if test x@platform@ != xemu; then
-    ./build-grub-module-verifier@BUILD_EXEEXT@ $tmpfile @target_cpu@
+    ./build-grub-module-verifier@BUILD_EXEEXT@ $tmpfile @target_cpu@ @platform@
 fi
 mv $tmpfile $outfile

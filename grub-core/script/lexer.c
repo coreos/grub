@@ -251,7 +251,6 @@ grub_script_lexer_init (struct grub_parser_param *parser, char *script,
     {
       parser->lexerstate = 0;
       yylex_destroy (lexerstate->yyscanner);
-      grub_free (lexerstate->yyscanner);
       grub_free (lexerstate->text);
       grub_free (lexerstate);
       return 0;

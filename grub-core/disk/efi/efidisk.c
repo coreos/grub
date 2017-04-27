@@ -80,6 +80,15 @@ make_devices (void)
 	/* This should not happen... Why?  */
 	continue;
 
+      /* iPXE adds stub Block IO protocol to loaded image device handle. It is
+         completely non-functional and simply returns an error for every method.
+        So attempt to detect and skip it. Magic number is literal "iPXE" and
+        check block size as well */
+      /* FIXME: shoud we close it? We do not do it elsewhere */
+      if (bio->media && bio->media->media_id == 0x69505845U &&
+         bio->media->block_size == 1)
+         continue;
+
       d = grub_malloc (sizeof (*d));
       if (! d)
 	{
@@ -215,7 +224,7 @@ name_devices (struct grub_efidisk_data *devices)
 	    {
 	    case GRUB_EFI_HARD_DRIVE_DEVICE_PATH_SUBTYPE:
 	      is_hard_drive = 1;
-	      /* Fall through by intention.  */
+	      /* Intentionally fall through.  */
 	    case GRUB_EFI_CDROM_DEVICE_PATH_SUBTYPE:
 	      {
 		struct grub_efidisk_data *parent, *parent2;

@@ -4099,6 +4099,9 @@ check_node_accept (const re_match_context_t *mctx, const re_token_t *node,
     case OP_UTF8_PERIOD:
       if (ch >= ASCII_CHARS)
         return false;
+#if defined __GNUC__ && __GNUC__ >= 7
+      __attribute__ ((fallthrough));
+#endif
       /* FALLTHROUGH */
 #endif
     case OP_PERIOD:

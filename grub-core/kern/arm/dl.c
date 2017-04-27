@@ -173,6 +173,8 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	    sym_addr += grub_arm_thm_call_get_offset ((grub_uint16_t *) target);
 
 	    grub_dprintf ("dl", "    sym_addr = 0x%08x\n", sym_addr);
+	    if (ELF_ST_TYPE (sym->st_info) != STT_FUNC)
+	      sym_addr |= 1;
 
 	    offset = sym_addr - (grub_uint32_t) target;
 
@@ -227,13 +229,16 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 
 	    sym_addr += grub_arm_thm_jump19_get_offset ((grub_uint16_t *) target);
 
+	    if (ELF_ST_TYPE (sym->st_info) != STT_FUNC)
+	      sym_addr |= 1;
+
 	    offset = sym_addr - (grub_uint32_t) target;
 
 	    if (!grub_arm_thm_jump19_check_offset (offset)
 		|| !(sym_addr & 1))
 	      {
-		struct trampoline_thumb *tp = mod->gotptr;
-		mod->gotptr = tp + 1;
+		struct trampoline_thumb *tp = mod->trampptr;
+		mod->trampptr = tp + 1;
 		grub_memcpy (tp->template, thumb_template, sizeof (tp->template));
 		tp->neg_addr = -sym_addr - 4;
 		offset = ((grub_uint8_t *) tp - (grub_uint8_t *) target - 4) | 1;

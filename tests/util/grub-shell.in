@@ -481,7 +481,7 @@ elif [ x$boot = xemu ]; then
     mkdir -p "$grubdir/fonts"
     mkdir -p "$grubdir/themes"
     mkdir -p "$grubdir/locale"
-    cp "@builddir@/"unicode.pf2 "$grubdir/fonts/unicode.pf2"
+    test -f "@builddir@/"unicode.pf2 && cp "@builddir@/"unicode.pf2 "$grubdir/fonts/unicode.pf2"
     cp -R "@srcdir@/themes/starfield" "$grubdir/themes/starfield"
     for file in "@srcdir@/po/"*.gmo; do
 	if [ -f "$file" ]; then

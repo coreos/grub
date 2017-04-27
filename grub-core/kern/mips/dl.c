@@ -236,6 +236,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	      sym_value &= 0xffff0000;
 	      *(grub_uint16_t *) addr = 0;
 	    }
+	  /* Fallthrough.  */
 	case R_MIPS_CALL16:
 	  {
 	    grub_uint32_t *gpptr = mod->gotptr;

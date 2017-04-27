@@ -394,6 +394,9 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
 	  len = ((GRUB_EFI_DEVICE_PATH_LENGTH (dp) - 4)
 		 / sizeof (grub_efi_char16_t));
 	  fp = (grub_efi_file_path_device_path_t *) dp;
+	  /* According to EFI spec Path Name is NULL terminated */
+	  while (len > 0 && fp->path_name[len - 1] == 0)
+	    len--;
 
 	  p = (char *) grub_utf16_to_utf8 ((unsigned char *) p, fp->path_name, len);
 	}

@@ -240,6 +240,7 @@ main (int argc, char *argv[])
 {
   FILE *fp = stdout;
   struct arguments arguments;
+  unsigned i;
 
   grub_util_host_init (&argc, &argv);
 
@@ -304,7 +305,12 @@ main (int argc, char *argv[])
   grub_util_file_sync  (fp);
   fclose (fp);
 
+  for (i = 0; i < arguments.nmodules; i++)
+    free (arguments.modules[i]);
+
   free (arguments.dir);
+  free (arguments.prefix);
+  free (arguments.modules);
 
   if (arguments.output)
     free (arguments.output);

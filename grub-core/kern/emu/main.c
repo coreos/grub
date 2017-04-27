@@ -63,6 +63,7 @@ void
 grub_reboot (void)
 {
   longjmp (main_env, 1);
+  grub_fatal ("longjmp failed");
 }
 
 void

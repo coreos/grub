@@ -384,6 +384,7 @@ load_chewed (grub_file_t file, const char *filename)
 	  segment.len = 0;
 	  segment.offset = 0;
 	  segment.len = 0;
+	  /* Fallthrough.  */
 	case PAYLOAD_SEGMENT_CODE:
 	case PAYLOAD_SEGMENT_DATA:
 	  {

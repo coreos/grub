@@ -145,109 +145,116 @@ if COND_real_platform
 
 if COND_i386_coreboot
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_multiboot
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_ieee1275
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_qemu
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_pc
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_i386_efi
 QEMU32=qemu-system-i386
+MINIMUM_CPU_LINUX=pentium2
 endif
 
 if COND_x86_64_efi
 QEMU32=qemu-system-x86_64
+MINIMUM_CPU_LINUX=core2duo
 endif
 
 linux.init.x86_64: $(srcdir)/grub-core/tests/boot/linux.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -static -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.i386: $(srcdir)/grub-core/tests/boot/linux.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -static -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.mips: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
-	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.ppc: $(srcdir)/grub-core/tests/boot/linux.init-ppc.S
-	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.mipsel: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
-	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux.init.loongson: $(srcdir)/grub-core/tests/boot/linux.init-mips.S
-	$(TARGET_CC) -o $@ $< -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -DREBOOT=1
+	$(TARGET_CC) -o $@ $< -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -DREBOOT=1
 
 multiboot.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -static -ffreestanding -nostdlib -nostdinc -DTARGET_MULTIBOOT=1 -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
+	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -static -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include
 
 kfreebsd.aout: kfreebsd.elf
-	$(TARGET_OBJCOPY) -O a.out-i386-linux $< $@ -R .note.gnu.build-id -R .note.gnu.gold-version
+	$(TARGET_OBJCOPY) -O a.out-i386-linux $< $@ -j .text
 
 pc-chainloader.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x7c00 -m32
+	$(TARGET_CC) -o $@ $< -static -DTARGET_CHAINLOADER=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x7c00 -m32
 
 pc-chainloader.bin: pc-chainloader.elf
 	$(TARGET_OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
 
 ntldr.elf: $(srcdir)/grub-core/tests/boot/kernel-8086.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0 -m32
+	$(TARGET_CC) -o $@ $< -DTARGET_NTLDR=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -static -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0 -m32
 
 ntldr.bin: ntldr.elf
-	$(TARGET_OBJCOPY) -O binary --strip-unneeded -R .note -R .comment -R .note.gnu.build-id -R .reginfo -R .rel.dyn -R .note.gnu.gold-version $< $@;
+	$(TARGET_OBJCOPY) -O binary --strip-unneeded -j .text $< $@;
 
 multiboot2.elf: $(srcdir)/grub-core/tests/boot/kernel-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
+	$(TARGET_CC) -static -o $@ $< -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" -ffreestanding -nostdlib -nostdinc -Wl,--build-id=none -Wl,-N -Wl,-Ttext,0x100000 -m32 -I$(srcdir)/include -DTARGET_MULTIBOOT2=1
 
 kfreebsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kfreebsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m64 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
+	$(TARGET_CC) -o $@ $< -m64 -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
 kfreebsd.init.i386: $(srcdir)/grub-core/tests/boot/kfreebsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
+	$(TARGET_CC) -o $@ $< -m32 -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\" && freebsd-brandelf -t FreeBSD $@
 
 knetbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DTARGET_NETBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -m32 -static -nostdlib -nostdinc -DTARGET_NETBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 kopenbsd.init.i386: $(srcdir)/grub-core/tests/boot/kbsd.init-i386.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m32 -nostdlib -nostdinc -DTARGET_OPENBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -m32 -static -nostdlib -nostdinc -DTARGET_OPENBSD=1 -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 knetbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m64 -DTARGET_NETBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -m64 -DTARGET_NETBSD=1 -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 kopenbsd.init.x86_64: $(srcdir)/grub-core/tests/boot/kbsd.init-x86_64.S $(srcdir)/grub-core/tests/boot/qemu-shutdown-x86.S
-	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
+	$(TARGET_CC) -o $@ $< -m64 -DTARGET_OPENBSD=1 -static -nostdlib -nostdinc -DSUCCESSFUL_BOOT_STRING=\"$(SUCCESSFUL_BOOT_STRING)\"
 
 linux-initramfs.mips: linux.init.mips Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.ppc: linux.init.ppc Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.mipsel: linux.init.mipsel Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.loongson: linux.init.loongson Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.i386: linux.init.i386 Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 linux-initramfs.x86_64: linux.init.x86_64 Makefile
-	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
+	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && cp $< $$TDIR/init && (cd $$TDIR && echo ./init | cpio -R 0:0 --quiet --dereference -o -H newc) | gzip > $@ && rm -rf $$TDIR
 
 kfreebsd-mfsroot.i386.img: kfreebsd.init.i386 Makefile
 	TDIR=`mktemp -d "$${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"` && mkdir $$TDIR/dev && mkdir $$TDIR/sbin && cp $< $$TDIR/sbin/init && makefs -t ffs -s 30m -f 1000 -o minfree=0,version=1 $@ $$TDIR && rm -rf $$TDIR
@@ -306,7 +313,7 @@ bootcheck-knetbsd-x86_64: knetbsd.miniroot-image.x86_64.gz $(GRUB_PAYLOADS_DIR)/
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/miniroot.gz=knetbsd.miniroot-image.x86_64.gz --files=/knetbsd=$(GRUB_PAYLOADS_DIR)/knetbsd.x86_64 $(srcdir)/grub-core/tests/boot/knetbsd.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-i386: linux-initramfs.i386 $(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
-	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
+	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=$(QEMU32) --files=/initrd=linux-initramfs.i386 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.i386 $(srcdir)/grub-core/tests/boot/linux.cfg --qemu-opts="-cpu $(MINIMUM_CPU_LINUX)" | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
 
 bootcheck-linux-x86_64: linux-initramfs.x86_64 $(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg grub-shell
 	./grub-shell --timeout=$(BOOTCHECK_TIMEOUT) --qemu=qemu-system-x86_64 --files=/initrd=linux-initramfs.x86_64 --files=/linux=$(GRUB_PAYLOADS_DIR)/linux.x86_64 $(srcdir)/grub-core/tests/boot/linux.cfg | grep $(SUCCESSFUL_BOOT_STRING) > /dev/null
@@ -367,6 +374,12 @@ endif
 
 if COND_i386_coreboot
 BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-kopenbsd-i386 bootcheck-kopenbsd-x86_64 bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64 bootcheck-knetbsd-x86_64 bootcheck-kfreebsd-x86_64 bootcheck-kfreebsd-i386
+endif
+
+if COND_i386_ieee1275
+# *BSD requires ACPI
+#legacy protocol (linux16) makes early BIOS calls.
+BOOTCHECKS = bootcheck-kfreebsd-aout bootcheck-multiboot bootcheck-multiboot2 bootcheck-linux-i386 bootcheck-linux-x86_64
 endif
 
 if COND_i386_pc

@@ -761,10 +761,10 @@ grub_cmd_acpi (struct grub_extcmd_context *ctxt, int argc, char **args)
     struct grub_efi_guid acpi = GRUB_EFI_ACPI_TABLE_GUID;
     struct grub_efi_guid acpi20 = GRUB_EFI_ACPI_20_TABLE_GUID;
 
-    grub_efi_system_table->boot_services->install_configuration_table
-      (&acpi20, grub_acpi_get_rsdpv2 ());
-    grub_efi_system_table->boot_services->install_configuration_table
-      (&acpi, grub_acpi_get_rsdpv1 ());
+    efi_call_2 (grub_efi_system_table->boot_services->install_configuration_table,
+      &acpi20, grub_acpi_get_rsdpv2 ());
+    efi_call_2 (grub_efi_system_table->boot_services->install_configuration_table,
+      &acpi, grub_acpi_get_rsdpv1 ());
   }
 #endif
 

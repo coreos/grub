@@ -743,7 +743,7 @@ grub_video_fb_unmap_color_int (struct grub_video_fbblit_info * source,
   if ((mode_info->mode_type
        & GRUB_VIDEO_MODE_TYPE_INDEX_COLOR) != 0)
     {
-      if ((framebuffer.render_target->mode_info.mode_type
+      if ((mode_info->mode_type
 	   & GRUB_VIDEO_MODE_TYPE_ALPHA) != 0
 	  && color == 0xf0)
         {

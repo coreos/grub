@@ -3218,9 +3218,10 @@ source for more details.
 @node default
 @subsection default
 
-If this variable is set, it identifies a menu entry that should be selected
-by default, possibly after a timeout (@pxref{timeout}).  The entry may be
-identified by number or by id.
+If this variable is set, it identifies a menu entry that should be
+selected by default, possibly after a timeout (@pxref{timeout}).  The
+entry may be identified by number (starting from 0 at each level of
+the hierarchy), by title, or by id.
 
 For example, if you have:
 
@@ -3236,24 +3237,26 @@ then you can make this the default using:
 default=example-gnu-linux
 @end example
 
-If the entry is in a submenu, then it must be identified using the titles of
-each of the submenus starting from the top level followed by the number or
-title of the menu entry itself, separated by @samp{>}.  For example, take
-the following menu structure:
+If the entry is in a submenu, then it must be identified using the
+number, title, or id of each of the submenus starting from the top
+level, followed by the number, title, or id of the menu entry itself,
+with each element separated by @samp{>}.  For example, take the
+following menu structure:
 
 @example
-Submenu 1
-  Menu Entry 1
-  Menu Entry 2
-Submenu 2
-  Submenu 3
-    Menu Entry 3
-    Menu Entry 4
-  Menu Entry 5
+GNU/Hurd --id gnu-hurd
+  Standard Boot --id=gnu-hurd-std
+  Rescue shell --id=gnu-hurd-rescue
+Other platforms --id=other
+  Minix --id=minix
+    Version 3.4.0 --id=minix-3.4.0
+    Version 3.3.0 --id=minix-3.3.0
+  GRUB Invaders --id=grub-invaders
 @end example
 
-``Menu Entry 3'' would then be identified as
-@samp{Submenu 2>Submenu 3>Menu Entry 3}.
+The more recent release of Minix would then be identified as
+@samp{Other platforms>Minix>Version 3.4.0}, or as @samp{1>0>0}, or as
+@samp{other>minix>minix-3.4.0}.
 
 This variable is often set by @samp{GRUB_DEFAULT} (@pxref{Simple
 configuration}), @command{grub-set-default}, or @command{grub-reboot}.

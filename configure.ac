@@ -31,7 +31,7 @@ dnl (such as BUILD_CC, BUILD_CFLAGS, etc.) for the build type and variables
 dnl with the prefix "TARGET_" (such as TARGET_CC, TARGET_CFLAGS, etc.) are
 dnl used for the target type. See INSTALL for full list of variables.
 
-AC_INIT([GRUB],[2.02~beta3],[bug-grub@gnu.org])
+AC_INIT([GRUB],[2.02],[bug-grub@gnu.org])
 
 AC_CONFIG_AUX_DIR([build-aux])
 
@@ -1152,14 +1152,23 @@ if test "$target_cpu"-"$platform" = x86_64-efi; then
 fi
 
 if test "x$target_cpu" = xarm; then
-  AC_CACHE_CHECK([whether option -mlong-calls works], grub_cv_cc_mlong_calls, [
-    CFLAGS="$TARGET_CFLAGS -mlong-calls -Werror"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
-		      [grub_cv_cc_mlong_calls=yes],
-		      [grub_cv_cc_mlong_calls=no])
+  AC_CACHE_CHECK([for options to disable movt and movw], grub_cv_target_cc_mno_movt, [
+    grub_cv_target_cc_mno_movt=no
+    for cand in "-mno-movt" \
+		"-mllvm -arm-use-movt=0"; do
+      if test x"$grub_cv_target_cc_mno_movt" != xno ; then
+        break
+      fi
+      CFLAGS="$TARGET_CFLAGS $cand -Werror"
+      CPPFLAGS="$TARGET_CPPFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		        [grub_cv_target_cc_mno_movt="$cand"], [])
+    done
   ])
-  if test "x$grub_cv_cc_mlong_calls" = xyes; then
-    TARGET_CFLAGS="$TARGET_CFLAGS -mlong-calls"
+
+  if test x"$grub_cv_target_cc_mno_movt" != xno ; then
+    # A trick so that clang doesn't see it on link stage
+    TARGET_CPPFLAGS="$TARGET_CPPFLAGS $grub_cv_target_cc_mno_movt"
   fi
   AC_CACHE_CHECK([whether option -mthumb-interwork works], grub_cv_cc_mthumb_interwork, [
     CFLAGS="$TARGET_CFLAGS -mthumb-interwork -Werror"
@@ -1193,13 +1202,21 @@ CFLAGS="$TARGET_CFLAGS"
 # Position independent executable.
 grub_CHECK_PIE
 grub_CHECK_NO_PIE
+grub_CHECK_NO_PIE_ONEWORD
+grub_CHECK_LINK_PIE
 [# Need that, because some distributions ship compilers that include
 # `-fPIE' or '-fpie' and '-pie' in the default specs.
 if [ x"$pie_possible" = xyes ]; then
   TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIE -fno-pie"
 fi
-if [ x"$nopie_possible" = xyes ] &&  [ x"$pie_possible" = xyes ]; then
-  TARGET_LDFLAGS="$TARGET_LDFLAGS -no-pie"
+
+if [ x"$link_nopie_needed" = xyes ] || [ x"$pie_possible" = xyes ]; then
+  if [ x"$nopie_possible" = xyes ]; then
+    TARGET_LDFLAGS="$TARGET_LDFLAGS -no-pie"
+  fi
+  if [ x"$nopie_oneword_possible" = xyes ]; then
+    TARGET_LDFLAGS="$TARGET_LDFLAGS -nopie"
+  fi
 fi]
 
 CFLAGS="$TARGET_CFLAGS"
@@ -1212,9 +1229,12 @@ grub_CHECK_PIC
 # and reload $gp in every function.
 # GCC implements it using symbol __gnu_local_gp in non-PIC as well.
 # However with clang we need PIC for this reloading to happen.
+# With arm64 we need relocations that are in some way representable in
+# PE as we need to support arm64-efi. Without -fPIC clang generates
+# movk's which aren't representable.
 # Since default varies across dictributions use either -fPIC or -fno-PIC
 # explicitly.
-if ( test x$target_cpu = xmips || test x$target_cpu = xmipsel ) && test "x$grub_cv_cc_target_clang" = xyes ; then
+if ( test x$target_cpu = xmips || test x$target_cpu = xmipsel || test x$target_cpu = xarm64 ) && test "x$grub_cv_cc_target_clang" = xyes ; then
    TARGET_CFLAGS="$TARGET_CFLAGS -fPIC"
 elif [ x"$pic_possible" = xyes ]; then
    TARGET_CFLAGS="$TARGET_CFLAGS -fno-PIC"

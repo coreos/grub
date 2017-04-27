@@ -26,6 +26,8 @@ grub_ia64_add_value_to_slot_20b (grub_addr_t addr, grub_uint32_t value);
 void
 grub_ia64_add_value_to_slot_21 (grub_addr_t addr, grub_uint32_t value);
 void
+grub_ia64_set_immu64 (grub_addr_t addr, grub_uint64_t value);
+void
 grub_ia64_make_trampoline (struct grub_ia64_trampoline *tr, grub_uint64_t addr);
 
 struct grub_ia64_trampoline

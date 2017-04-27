@@ -2068,11 +2068,14 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_AARCH64_NONE			0	/* No relocation.  */
 #define R_AARCH64_ABS64			257	/* Direct 64 bit. */
 #define R_AARCH64_ABS32			258	/* Direct 32 bit.  */
+#define R_AARCH64_PREL32		261
 #define R_AARCH64_ADR_PREL_PG_HI21	275
 #define R_AARCH64_ADD_ABS_LO12_NC	277
 #define R_AARCH64_LDST64_ABS_LO12_NC	286
 #define R_AARCH64_JUMP26		282	/* 26-bit relative. */
 #define R_AARCH64_CALL26		283	/* 26-bit relative. */
+#define R_AARCH64_ADR_GOT_PAGE		311
+#define R_AARCH64_LD64_GOT_LO12_NC	312
 #define R_AARCH64_COPY			1024	/* Copy symbol at runtime.  */
 #define R_AARCH64_GLOB_DAT		1025	/* Create GOT entry.  */
 #define R_AARCH64_JUMP_SLOT		1026	/* Create PLT entry.  */

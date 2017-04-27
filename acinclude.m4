@@ -390,12 +390,29 @@ else
 [fi]
 ])
 
+AC_DEFUN([grub_CHECK_LINK_PIE],[
+[# Position independent executable.
+link_nopie_needed=no]
+AC_MSG_CHECKING([whether linker needs disabling of PIE to work])
+AC_LANG_CONFTEST([AC_LANG_SOURCE([[]])])
+
+[if eval "$ac_compile -Wl,-r,-d -nostdlib -Werror -o conftest.o" 2> /dev/null; then]
+  AC_MSG_RESULT([no])
+  [# Should we clear up other files as well, having called `AC_LANG_CONFTEST'?
+  rm -f conftest.o
+else
+  link_nopie_needed=yes]
+  AC_MSG_RESULT([yes])
+[fi]
+])
+
+
 dnl Check if the Linker supports `-no-pie'.
 AC_DEFUN([grub_CHECK_NO_PIE],
 [AC_MSG_CHECKING([whether linker accepts -no-pie])
 AC_CACHE_VAL(grub_cv_cc_ld_no_pie,
 [save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -no-pie"
+LDFLAGS="$LDFLAGS -no-pie -nostdlib -Werror"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 	       [grub_cv_cc_ld_no_pie=yes],
 	       [grub_cv_cc_ld_no_pie=no])
@@ -405,6 +422,23 @@ AC_MSG_RESULT([$grub_cv_cc_ld_no_pie])
 nopie_possible=no
 if test "x$grub_cv_cc_ld_no_pie" = xyes ; then
   nopie_possible=yes
+fi
+])
+
+AC_DEFUN([grub_CHECK_NO_PIE_ONEWORD],
+[AC_MSG_CHECKING([whether linker accepts -nopie])
+AC_CACHE_VAL(grub_cv_cc_ld_no_pie_oneword,
+[save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -nopie -nostdlib -Werror"
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+	       [grub_cv_cc_ld_no_pie_oneword=yes],
+	       [grub_cv_cc_ld_no_pie_oneword=no])
+LDFLAGS="$save_LDFLAGS"
+])
+AC_MSG_RESULT([$grub_cv_cc_ld_no_pie_oneword])
+nopie_oneword_possible=no
+if test "x$grub_cv_cc_ld_no_pie_oneword" = xyes ; then
+  nopie_oneword_possible=yes
 fi
 ])
 

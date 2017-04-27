@@ -419,8 +419,6 @@ grub_xen_pt_alloc (void)
       try_virt_end = ALIGN_UP (xen_state.xen_inf.virt_base +
 			       page2offset (nr_need_pages) +
 			       ADDITIONAL_SIZE + STACK_SIZE, ALIGN_SIZE);
-      if (!xen_state.xen_inf.virt_base)
-	try_virt_end += PAGE_SIZE;
 
       err = get_pgtable_size (xen_state.xen_inf.virt_base, try_virt_end,
 			      nr_info_pages);
@@ -433,7 +431,7 @@ grub_xen_pt_alloc (void)
       if (xen_state.xen_inf.virt_base)
 	err = get_pgtable_size (0, PAGE_SIZE, nr_need_pages);
       else
-	err = get_pgtable_size (try_virt_end - PAGE_SIZE, try_virt_end,
+	err = get_pgtable_size (try_virt_end, try_virt_end + PAGE_SIZE,
 				nr_need_pages);
       if (err)
 	return err;

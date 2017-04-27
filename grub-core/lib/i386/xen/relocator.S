@@ -128,7 +128,7 @@ VARIABLE(grub_relocator_xen_start)
 VARIABLE(grub_relocator_xen_remapper_virt2)
 	.long	0
 
-	movl    %eax, %edi
+	movl    %eax, %ebx
 
 	xorl    %ecx, %ecx	/* Invalid pte */
 	xorl    %edx, %edx
