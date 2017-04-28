@@ -417,6 +417,7 @@ fill_hook (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
       default:
 	grub_dprintf ("efiemu",
 		      "Unknown memory type %d. Assuming unusable\n", type);
+	/* FALLTHROUGH */
       case GRUB_MEMORY_RESERVED:
 	return grub_efiemu_add_to_mmap (addr, size,
 					GRUB_EFI_UNUSABLE_MEMORY);

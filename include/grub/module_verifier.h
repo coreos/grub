@@ -16,5 +16,5 @@ struct grub_module_verifier_arch {
   const int *short_relocations;
 };
 
-void grub_module_verify64(void *module_img, size_t module_size, const struct grub_module_verifier_arch *arch);
-void grub_module_verify32(void *module_img, size_t module_size, const struct grub_module_verifier_arch *arch);
+void grub_module_verify64(void *module_img, size_t module_size, const struct grub_module_verifier_arch *arch, const char **whitelist_empty);
+void grub_module_verify32(void *module_img, size_t module_size, const struct grub_module_verifier_arch *arch, const char **whitelist_empty);

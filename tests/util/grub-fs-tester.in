@@ -85,7 +85,10 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    MAXBLKSIZE=1048576
 	    ;;
 	xnilfs2)
-	    MINBLKSIZE=1024
+	    # nilfs2 supports blocksizes from 1024 to 4096
+	    # but non-4096 results in kernel oops in some cases,
+	    # avoid it.
+	    MINBLKSIZE=4096
 	    MAXBLKSIZE=4096
 	    ;;
 	xsfs*)
@@ -253,7 +256,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    CFILES[0]="american-english";;
 	    esac
         # OS LIMITATION: Limited by NAME_MAX (usually 255) in GNU/Linux
-	    LONGNAME="qwertzuiopasdfghjklyxcvbnm1234567890qwertzuiopasdfghjklyxcvbnm1234567890oiewqfiewioqoiqoiurqruewqoiuwoieoiiuewqroreqiufieiuwrnureweriuvceoiroiewqoiricdsalkcndsakfirefoiwqeoircorejwoijfreoijojoiewjfwnfcoirenfoirefnreoifenoiwfnoirewoifoiwqwoieqfrqwioerijewr"
+	    LONGNAME="qwertzuiopasdfghjklyxcvbnm1234567890qwertzuiopasdfghjklyxcvbnm1234567890oiewqfiewioqoiqoiurqruewqoiuwoieoiiuewqroreqiufieiuwrnureweriuvceoiroiewqoiricdsalkcndsakfirefoiwqeoircorejwoijfreoijojoiewjfwnfcoirenfoirefnreoifenoiwfnoi"
 	    rm -rf "$MASTER"
 
 	    case x"$fs" in
@@ -265,7 +268,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    ;;
 	    # FS LIMITATION: btrfs label is at most 255 UTF-8 chars
 		x"btrfs"*)
-		    FSLABEL="grub_;/testé莭莽😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoif";;
+		    FSLABEL="grub_;/testé莭莽😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoi";;
 
 	    # FS LIMITATION: exfat is at most 15 UTF-16 chars
 		x"exfat")
@@ -500,8 +503,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    NOFSLABEL=y;;
 	    esac
 
-	    PDIRCOMPNUM=220
-	    PDIR2COMPNUM=220
+	    PDIRCOMPNUM=210
+	    PDIR2COMPNUM=210
 
 	    case x$fs in
 		    # OS LIMITATION: bfs_fuse bugs beyond that
@@ -516,7 +519,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    # FS LIMITATION: at most 255 on path length
 		    # FS LIMITATION: at most 100 on symlink length
 		xcpio_ustar)
-		    PDIRCOMPNUM=85
+		    PDIRCOMPNUM=84
 		    PDIR2COMPNUM=30;;
 		    # OS LIMITATION: Linux supports only symlink at most one block long on reiserfs
 		xreiserfs | xreiserfs_old)
@@ -642,7 +645,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    else
 			A=
 		    fi
-		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${LODEVICES[0]}"
+		    "mkfs.vfat" -a $A -S $SECSIZE -s $((BLKSIZE/SECSIZE)) -F "${BITS:0:2}" -n "$FSLABEL" "${FSIMAGES[0]}"
 		    MOUNTOPTS="iocharset=utf8,codepage=437,"
 		    MOUNTFS="$(echo "$fs"|sed 's,[0-9]*a\?$,,')";;
 		x"minix2")
@@ -656,7 +659,7 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		    MOUNTOPTS="iocharset=utf8,compression,"
 		    MOUNTFS="ntfs-3g";;
 		x"udf")
-		    "/usr/bin/mkudffs" -b $BLKSIZE --utf8 --lvid="$FSLABEL" "${LODEVICES[0]}"
+		    "mkudffs" --utf8 -b $BLKSIZE --lvid="$FSLABEL" "${LODEVICES[0]}"
 		    MOUNTOPTS="iocharset=utf8,bs=$BLKSIZE,";;
 		x"ufs2")
 		    "mkfs.ufs" -b $BLKSIZE -L "$FSLABEL" -O 2 "${LODEVICES[0]}"
@@ -912,6 +915,9 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		*)
 		    BLOCKCNT=5242880;;
 	    esac
+	    # Make sure file is not exact multiple of block size. This helps to force
+	    # tail packing in case of squash4.
+	    : $((BLOCKCNT--))
 	    case x"$fs" in
 		x"ntfscomp")
 		    setfattr -h -v 0x00000800 -n system.ntfs_attrib_be "$MNTPOINTRW/$OSDIR";;
@@ -997,8 +1003,8 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 		x"romfs")
 		    genromfs -V "$FSLABEL" -f "${FSIMAGES[0]}" -d "$MASTER" ;;
 		xsquash4_*)
-		    echo mksquashfs "$MASTER" "${FSIMAGES[0]}" -comp "${fs/squash4_/}" -b $BLKSIZE
-		    mksquashfs "$MASTER" "${FSIMAGES[0]}" -comp "${fs/squash4_/}" -b $BLKSIZE ;;
+		    echo mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE
+		    mksquashfs "$MASTER" "${FSIMAGES[0]}" -always-use-fragments -comp "${fs/squash4_/}" -b $BLKSIZE ;;
 		x"bfs")
 		    sleep 1
 		    fusermount -u "$MNTPOINTRW"
@@ -1306,10 +1312,11 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	    # is not precise. Account for small difference here.
 	    FSTIMEM1="$(date -d "$FSTIME UTC -1 second" -u "+%Y-%m-%d %H:%M:%S")"
 	    FSTIMEM2="$(date -d "$FSTIME UTC -2 second" -u "+%Y-%m-%d %H:%M:%S")"
+	    FSTIMEM3="$(date -d "$FSTIME UTC -3 second" -u "+%Y-%m-%d %H:%M:%S")"
 
 	    if [ x$NOFSTIME = xy ]; then
 		:
-	    elif echo "$LSOUT" | grep -F 'Last modification time '"$FSTIME" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM1" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM2" > /dev/null; then
+	    elif echo "$LSOUT" | grep -F 'Last modification time '"$FSTIME" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM1" > /dev/null || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM2" || echo "$LSOUT" | grep -F 'Last modification time '"$FSTIMEM3" > /dev/null; then
 		:
 	    else
 		echo FSTIME FAIL
@@ -1517,3 +1524,4 @@ for ((LOGSECSIZE=MINLOGSECSIZE;LOGSECSIZE<=MAXLOGSECSIZE;LOGSECSIZE=LOGSECSIZE +
 	done
     done
 done
+rmdir "${tempdir}"

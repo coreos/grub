@@ -159,6 +159,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  if (value >> 32)
 	    return grub_error (GRUB_ERR_BAD_MODULE,
 			       "address out of 32 bits range");
+	  /* Fallthrough.  */
 	case R_SPARC_LM22:
 	  *addr = (*addr & 0xFFC00000) | ((value >> 10) & 0x3FFFFF);
 	  break;

@@ -668,6 +668,7 @@ draw_cursor (int show)
   unsigned int y;
   unsigned int width;
   unsigned int height;
+  unsigned int ascent;
   grub_video_color_t color;
   
   write_char ();
@@ -679,13 +680,18 @@ draw_cursor (int show)
       >= virtual_screen.rows)
     return;
 
+  /* Ensure that cursor doesn't go outside of character box.  */
+  ascent = grub_font_get_ascent(virtual_screen.font);
+  if (ascent > virtual_screen.normal_char_height - 2)
+    ascent = virtual_screen.normal_char_height - 2;
+
   /* Determine cursor properties and position on text layer. */
   x = virtual_screen.cursor_x * virtual_screen.normal_char_width;
   width = virtual_screen.normal_char_width;
   color = virtual_screen.fg_color;
   y = ((virtual_screen.cursor_y + virtual_screen.total_scroll)
        * virtual_screen.normal_char_height
-       + grub_font_get_ascent (virtual_screen.font));
+       + ascent);
   height = 2;
   
   /* Render cursor to text layer.  */

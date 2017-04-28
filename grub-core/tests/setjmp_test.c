@@ -25,7 +25,10 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static grub_jmp_buf jmp_point;
 static int expected, ctr;
 
-#pragma GCC diagnostic ignored "-Wmissing-noreturn"
+/* This fixes GCC7 "unintentional fallthrough" warning */
+static void jmp0 (void) __attribute__ ((noreturn));
+static void jmp1 (void) __attribute__ ((noreturn));
+static void jmp2 (void) __attribute__ ((noreturn));
 
 static void
 jmp0 (void)

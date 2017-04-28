@@ -181,6 +181,7 @@ grub_video_ieee1275_fill_mode_info (grub_ieee1275_phandle_t dev,
     case 32:
       out->reserved_mask_size = 8;
       out->reserved_field_pos = 24;
+      /* FALLTHROUGH */
 
     case 24:
       out->red_mask_size = 8;

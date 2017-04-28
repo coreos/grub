@@ -530,6 +530,7 @@ argp_parser (int key, char *arg, struct argp_state *state)
       if (arg[0] != '-')
 	break;
 
+    /* FALLTHROUGH */
     default:
       if (!arg)
 	return 0;

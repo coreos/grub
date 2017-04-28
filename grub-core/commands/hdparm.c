@@ -328,6 +328,7 @@ grub_cmd_hdparm (grub_extcmd_context_t ctxt, int argc, char **args)
 	  ata = ((struct grub_scsi *) disk->data)->data;
 	  break;
 	}
+      /* FALLTHROUGH */
     default:
       grub_disk_close (disk);
       return grub_error (GRUB_ERR_IO, "not an ATA device");

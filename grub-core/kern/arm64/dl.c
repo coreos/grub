@@ -25,14 +25,9 @@
 #include <grub/i18n.h>
 #include <grub/cpu/reloc.h>
 
-struct trampoline
-{
 #define LDR 0x58000050
 #define BR 0xd61f0200
-  grub_uint32_t ldr; /* ldr	x16, 8 */
-  grub_uint32_t br; /* br x16 */
-  grub_uint64_t addr;
-};
+
 
 /*
  * Check if EHDR is a valid ELF header.
@@ -53,42 +48,6 @@ grub_arch_dl_check_header (void *ehdr)
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
-grub_err_t
-grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
-				 grub_size_t *got)
-{
-  const Elf_Ehdr *e = ehdr;
-  const Elf_Shdr *s;
-  unsigned i;
-
-  *tramp = 0;
-  *got = 0;
-
-  for (i = 0, s = (const Elf_Shdr *) ((grub_addr_t) e + e->e_shoff);
-       i < e->e_shnum;
-       i++, s = (const Elf_Shdr *) ((grub_addr_t) s + e->e_shentsize))
-    if (s->sh_type == SHT_REL || s->sh_type == SHT_RELA)
-      {
-	const Elf_Rel *rel, *max;
-
-	for (rel = (const Elf_Rel *) ((grub_addr_t) e + s->sh_offset),
-	       max = rel + s->sh_size / s->sh_entsize;
-	     rel < max;
-	     rel = (const Elf_Rel *) ((grub_addr_t) rel + s->sh_entsize))
-	  switch (ELF_R_TYPE (rel->r_info))
-	    {
-	    case R_AARCH64_CALL26:
-	    case R_AARCH64_JUMP26:
-	      {
-		*tramp += sizeof (struct trampoline);
-		break;
-	      }
-	    }
-      }
-
-  return GRUB_ERR_NONE;
-}
-
 /*
  * Unified function for both REL and RELA 
  */
@@ -97,6 +56,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 			       Elf_Shdr *s, grub_dl_segment_t seg)
 {
   Elf_Rel *rel, *max;
+  unsigned unmatched_adr_got_page = 0;
 
   for (rel = (Elf_Rel *) ((char *) ehdr + s->sh_offset),
 	 max = (Elf_Rel *) ((char *) rel + s->sh_size);
@@ -145,7 +105,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 
 	    if (!grub_arm_64_check_xxxx26_offset (offset))
 	      {
-		struct trampoline *tp = mod->trampptr;
+		struct grub_arm64_trampoline *tp = mod->trampptr;
 		mod->trampptr = tp + 1;
 		tp->ldr = LDR;
 		tp->br = BR;
@@ -159,6 +119,56 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 
 	    grub_arm64_set_xxxx26_offset (place, offset);
 	  }
+	  break;
+	case R_AARCH64_PREL32:
+	  {
+	    grub_int64_t value;
+	    Elf64_Word *addr32 = place;
+	    value = ((grub_int32_t) *addr32) + sym_addr -
+	      (Elf64_Xword) (grub_addr_t) seg->addr - rel->r_offset;
+	    if (value != (grub_int32_t) value)
+	      return grub_error (GRUB_ERR_BAD_MODULE, "relocation out of range");
+	    grub_dprintf("dl", "  reloc_prel32 %p => 0x%016llx\n",
+			  place, (unsigned long long) sym_addr);
+	    *addr32 = value;
+	  }
+	  break;
+	case R_AARCH64_ADR_GOT_PAGE:
+	  {
+	    grub_uint64_t *gp = mod->gotptr;
+	    Elf_Rela *rel2;
+	    grub_int64_t gpoffset = ((grub_uint64_t) gp & ~0xfffULL) - (((grub_uint64_t) place) & ~0xfffULL);
+	    *gp = (grub_uint64_t) sym_addr;
+	    mod->gotptr = gp + 1;
+	    unmatched_adr_got_page++;
+	    grub_dprintf("dl", "  reloc_got %p => 0x%016llx (0x%016llx)\n",
+			 place, (unsigned long long) sym_addr, (unsigned long long) gp);
+	    if (!grub_arm64_check_hi21_signed (gpoffset))
+		return grub_error (GRUB_ERR_BAD_MODULE,
+				   "HI21 out of range");
+	    grub_arm64_set_hi21(place, gpoffset);
+	    for (rel2 = (Elf_Rela *) ((char *) rel + s->sh_entsize);
+		 rel2 < (Elf_Rela *) max;
+		 rel2 = (Elf_Rela *) ((char *) rel2 + s->sh_entsize))
+	      if (ELF_R_SYM (rel2->r_info)
+		  == ELF_R_SYM (rel->r_info)
+		  && ((Elf_Rela *) rel)->r_addend == rel2->r_addend
+		  && ELF_R_TYPE (rel2->r_info) == R_AARCH64_LD64_GOT_LO12_NC)
+		{
+		  grub_arm64_set_abs_lo12_ldst64 ((void *) ((grub_addr_t) seg->addr + rel2->r_offset),
+						  (grub_uint64_t)gp);
+		  break;
+		}
+	    if (rel2 >= (Elf_Rela *) max)
+	      return grub_error (GRUB_ERR_BAD_MODULE,
+				 "ADR_GOT_PAGE without matching LD64_GOT_LO12_NC");
+	  }
+	  break;
+	case R_AARCH64_LD64_GOT_LO12_NC:
+	  if (unmatched_adr_got_page == 0)
+	    return grub_error (GRUB_ERR_BAD_MODULE,
+			       "LD64_GOT_LO12_NC without matching ADR_GOT_PAGE");
+	  unmatched_adr_got_page--;
 	  break;
 	case R_AARCH64_ADR_PREL_PG_HI21:
 	  {

@@ -336,6 +336,7 @@ grub_gdb_trap (int trap_no)
 	/* sAA..AA: Step one instruction from AA..AA(optional).  */
 	case 's':
 	  stepping = 1;
+	  /* FALLTHROUGH */
 
 	/* cAA..AA: Continue at address AA..AA(optional).  */
 	case 'c':

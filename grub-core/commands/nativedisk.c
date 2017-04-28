@@ -79,6 +79,7 @@ get_uuid (const char *name, char **uuid, int getnative)
     case GRUB_DISK_DEVICE_XEN:
       if (getnative)
 	break;
+      /* FALLTHROUGH */
 
       /* Virtual disks.  */
       /* GRUB dynamically generated files.  */

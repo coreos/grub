@@ -19,8 +19,9 @@
 #include <grub/xen_file.h>
 #include <grub/i386/linux.h>
 #include <grub/misc.h>
-
 #include <grub/verity-hash.h>
+
+#define XZ_MAGIC "\3757zXZ\0"
 
 grub_elf_t
 grub_xen_file (grub_file_t file)
@@ -36,6 +37,8 @@ grub_xen_file_and_cmdline (grub_file_t file,
   grub_elf_t elf;
   struct linux_kernel_header lh;
   grub_file_t off_file;
+  grub_uint32_t payload_offset, payload_length;
+  grub_uint8_t magic[6];
 
   elf = grub_elf_file (file, file->name);
   if (elf)
@@ -56,23 +59,39 @@ grub_xen_file_and_cmdline (grub_file_t file,
       return NULL;
     }
 
-  if (lh.payload_length < 4)
+  payload_length = lh.payload_length;
+  payload_offset = (lh.setup_sects + 1) * 512
+    + lh.payload_offset;
+
+  if (payload_length < sizeof (magic))
     {
       grub_error (GRUB_ERR_BAD_OS, "payload too short");
       return NULL;
     }
 
   grub_dprintf ("xen", "found bzimage payload 0x%llx-0x%llx\n",
-		(unsigned long long) (lh.setup_sects + 1) * 512
-		+ lh.payload_offset,
+		(unsigned long long) payload_offset,
 		(unsigned long long) lh.payload_length);
 
   if (cmdline)
     grub_pass_verity_hash (&lh, cmdline, cmdline_max_len);
 
-  off_file = grub_file_offset_open (file, (lh.setup_sects + 1) * 512
-				    + lh.payload_offset,
-				    lh.payload_length);
+  grub_file_seek (file, payload_offset);
+
+  if (grub_file_read (file, &magic, sizeof (magic)) != sizeof (magic))
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    file->name);
+      goto fail;
+    }
+
+  /* Kernel suffixes xz payload with their uncompressed size.
+     Trim it.  */
+  if (grub_memcmp (magic, XZ_MAGIC, sizeof (XZ_MAGIC) - 1) == 0)
+    payload_length -= 4;
+  off_file = grub_file_offset_open (file, payload_offset,
+				    payload_length);
   if (!off_file)
     goto fail;
 

@@ -189,7 +189,11 @@ struct grub_fshelp_node {
   struct grub_fat_data *data;
 
   grub_uint8_t attr;
-  grub_ssize_t file_size;
+#ifndef MODE_EXFAT
+  grub_uint32_t file_size;
+#else
+  grub_uint64_t file_size;
+#endif
   grub_uint32_t file_cluster;
   grub_uint32_t cur_cluster_num;
   grub_uint32_t cur_cluster;
