@@ -160,6 +160,9 @@ kernel = {
   arm_coreboot = kern/arm/coreboot/coreboot.S;
   arm_coreboot = lib/fdt.c;
   arm_coreboot = bus/fdt.c;
+  arm_coreboot = term/ps2.c;
+  arm_coreboot = term/arm/pl050.c;
+  arm_coreboot = commands/keylayouts.c;
 
   terminfoinkernel = term/terminfo.c;
   terminfoinkernel = term/tparm.c;

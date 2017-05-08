@@ -133,6 +133,7 @@ grub_machine_init (void)
   grub_fdtbus_init (dtb, dtb_size);
 
   grub_machine_timer_init ();
+  grub_pl050_init ();
 }
 
 void
