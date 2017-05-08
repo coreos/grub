@@ -31,8 +31,6 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-#ifndef GRUB_MACHINE_COREBOOT
-
 static grub_dl_t my_mod;
 
 static grub_addr_t initrd_start;
@@ -44,7 +42,7 @@ static grub_size_t linux_size;
 static char *linux_args;
 
 static grub_uint32_t machine_type;
-static void *fdt_addr;
+static const void *current_fdt;
 
 typedef void (*kernel_entry_t) (int, unsigned long, void *);
 
@@ -56,9 +54,9 @@ typedef void (*kernel_entry_t) (int, unsigned long, void *);
 #define LINUX_FDT_PHYS_OFFSET    (LINUX_INITRD_PHYS_OFFSET - 0x10000)
 
 static grub_size_t
-get_atag_size (grub_uint32_t *atag)
+get_atag_size (const grub_uint32_t *atag)
 {
-  grub_uint32_t *atag0 = atag;
+  const grub_uint32_t *atag0 = atag;
   while (atag[0] && atag[1])
     atag += atag[0];
   return atag - atag0;
@@ -70,10 +68,11 @@ get_atag_size (grub_uint32_t *atag)
  *   Merges in command line parameters and sets up initrd addresses.
  */
 static grub_err_t
-linux_prepare_atag (void)
+linux_prepare_atag (void *target_atag)
 {
-  grub_uint32_t *atag_orig = (grub_uint32_t *) fdt_addr;
-  grub_uint32_t *tmp_atag, *from, *to;
+  const grub_uint32_t *atag_orig = (const grub_uint32_t *) current_fdt;
+  grub_uint32_t *tmp_atag, *to;
+  const grub_uint32_t *from;
   grub_size_t tmp_size;
   grub_size_t arg_size = grub_strlen (linux_args);
   char *cmdline_orig = NULL;
@@ -144,7 +143,7 @@ linux_prepare_atag (void)
   to += 2;
 
   /* Copy updated FDT to its launch location */
-  grub_memcpy (atag_orig, tmp_atag, sizeof (grub_uint32_t) * (to - tmp_atag));
+  grub_memcpy (target_atag, tmp_atag, sizeof (grub_uint32_t) * (to - tmp_atag));
   grub_free (tmp_atag);
 
   grub_dprintf ("loader", "ATAG updated for Linux boot\n");
@@ -158,19 +157,19 @@ linux_prepare_atag (void)
  *   Merges in command line parameters and sets up initrd addresses.
  */
 static grub_err_t
-linux_prepare_fdt (void)
+linux_prepare_fdt (void *target_fdt)
 {
   int node;
   int retval;
   int tmp_size;
   void *tmp_fdt;
 
-  tmp_size = grub_fdt_get_totalsize (fdt_addr) + 0x100 + grub_strlen (linux_args);
+  tmp_size = grub_fdt_get_totalsize (current_fdt) + 0x100 + grub_strlen (linux_args);
   tmp_fdt = grub_malloc (tmp_size);
   if (!tmp_fdt)
     return grub_errno;
 
-  grub_memcpy (tmp_fdt, fdt_addr, grub_fdt_get_totalsize (fdt_addr));
+  grub_memcpy (tmp_fdt, current_fdt, grub_fdt_get_totalsize (current_fdt));
   grub_fdt_set_totalsize (tmp_fdt, tmp_size);
 
   /* Find or create '/chosen' node */
@@ -211,7 +210,7 @@ linux_prepare_fdt (void)
     }
 
   /* Copy updated FDT to its launch location */
-  grub_memcpy (fdt_addr, tmp_fdt, tmp_size);
+  grub_memcpy (target_fdt, tmp_fdt, tmp_size);
   grub_free (tmp_fdt);
 
   grub_dprintf ("loader", "FDT updated for Linux boot\n");
@@ -228,16 +227,17 @@ linux_boot (void)
 {
   kernel_entry_t linuxmain;
   int fdt_valid, atag_valid;
+  void *target_fdt = 0;
 
-  fdt_valid = (fdt_addr && grub_fdt_check_header_nosize (fdt_addr) == 0);
-  atag_valid = ((((grub_uint16_t *) fdt_addr)[3] & ~3) == 0x5440
-		&& *((grub_uint32_t *) fdt_addr));
+  fdt_valid = (current_fdt && grub_fdt_check_header_nosize (current_fdt) == 0);
+  atag_valid = ((((const grub_uint16_t *) current_fdt)[3] & ~3) == 0x5440
+		&& *((const grub_uint32_t *) current_fdt));
   grub_dprintf ("loader", "atag: %p, %x, %x, %s, %s\n",
-		fdt_addr,
-		((grub_uint16_t *) fdt_addr)[3],
-		*((grub_uint32_t *) fdt_addr),
-		(char *) fdt_addr,
-		(char *) fdt_addr + 1);
+		current_fdt,
+		((const grub_uint16_t *) current_fdt)[3],
+		*((const grub_uint32_t *) current_fdt),
+		(const char *) current_fdt,
+		(const char *) current_fdt + 1);
 
   if (!fdt_valid && machine_type == GRUB_ARM_MACHINE_TYPE_FDT)
     return grub_error (GRUB_ERR_FILE_NOT_FOUND,
@@ -247,23 +247,40 @@ linux_boot (void)
 
   grub_dprintf ("loader", "Kernel at: 0x%x\n", linux_addr);
 
+  if (fdt_valid || atag_valid)
+    {
+#ifdef GRUB_MACHINE_EFI
+      grub_size_t size;
+      if (fdt_valid)
+	size = grub_fdt_get_totalsize (fdt_addr);
+      else
+	size = 4 * get_atag_size (atag_orig);
+      size += grub_strlen (linux_args) + 256;
+      target_fdt = grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
+      if (!fdt_addr)
+	return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
+#else
+      target_fdt = (void *) LINUX_FDT_ADDRESS;
+#endif
+    }
+
   if (fdt_valid)
     {
       grub_err_t err;
 
-      err = linux_prepare_fdt ();
+      err = linux_prepare_fdt (target_fdt);
       if (err)
 	return err;
-      grub_dprintf ("loader", "FDT @ 0x%p\n", fdt_addr);
+      grub_dprintf ("loader", "FDT @ %p\n", target_fdt);
     }
   else if (atag_valid)
     {
       grub_err_t err;
 
-      err = linux_prepare_atag ();
+      err = linux_prepare_atag (target_fdt);
       if (err)
 	return err;
-      grub_dprintf ("loader", "ATAG @ 0x%p\n", fdt_addr);
+      grub_dprintf ("loader", "ATAG @ %p\n", target_fdt);
     }
 
   grub_dprintf ("loader", "Jumping to Linux...\n");
@@ -287,7 +304,7 @@ linux_boot (void)
 
   grub_arm_disable_caches_mmu ();
 
-  linuxmain (0, machine_type, fdt_addr);
+  linuxmain (0, machine_type, target_fdt);
 
   return grub_error (GRUB_ERR_BAD_OS, "Linux call returned");
 }
@@ -446,11 +463,26 @@ fail:
 static grub_err_t
 load_dtb (grub_file_t dtb, int size)
 {
-  if ((grub_file_read (dtb, fdt_addr, size) != size)
-      || (grub_fdt_check_header (fdt_addr, size) != 0))
-    return grub_error (GRUB_ERR_BAD_OS, N_("invalid device tree"));
+  void *new_fdt = grub_zalloc (size);
+  if (!new_fdt)
+    return grub_errno;
+  grub_dprintf ("loader", "Loading device tree to %p\n",
+		new_fdt);
+  if ((grub_file_read (dtb, new_fdt, size) != size)
+      || (grub_fdt_check_header (new_fdt, size) != 0))
+    {
+      grub_free (new_fdt);
+      return grub_error (GRUB_ERR_BAD_OS, N_("invalid device tree"));
+    }
 
-  grub_fdt_set_totalsize (fdt_addr, size);
+  grub_fdt_set_totalsize (new_fdt, size);
+  current_fdt = new_fdt;
+  /* 
+   * We've successfully loaded an FDT, so any machine type passed
+   * from firmware is now obsolete.
+   */
+  machine_type = GRUB_ARM_MACHINE_TYPE_FDT;
+
   return GRUB_ERR_NONE;
 }
 
@@ -466,42 +498,13 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
 
   dtb = grub_file_open (argv[0]);
   if (!dtb)
-    goto out;
+    return grub_errno;
 
   size = grub_file_size (dtb);
   if (size == 0)
-    {
-      grub_error (GRUB_ERR_BAD_OS, "empty file");
-      goto out;
-    }
-
-#ifdef GRUB_MACHINE_EFI
-  fdt_addr = grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
-  if (!fdt_addr)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
-      goto out;
-    }
-#else
-  fdt_addr = (void *) LINUX_FDT_ADDRESS;
-#endif
-
-  grub_dprintf ("loader", "Loading device tree to 0x%08x\n",
-		(grub_addr_t) fdt_addr);
-  load_dtb (dtb, size);
-  if (grub_errno != GRUB_ERR_NONE)
-    {
-      fdt_addr = NULL;
-      goto out;
-    }
-
-  /* 
-   * We've successfully loaded an FDT, so any machine type passed
-   * from firmware is now obsolete.
-   */
-  machine_type = GRUB_ARM_MACHINE_TYPE_FDT;
-
- out:
+    grub_error (GRUB_ERR_BAD_OS, "empty file");
+  else
+    load_dtb (dtb, size);
   grub_file_close (dtb);
 
   return grub_errno;
@@ -519,7 +522,7 @@ GRUB_MOD_INIT (linux)
 					  /* TRANSLATORS: DTB stands for device tree blob.  */
 					  0, N_("Load DTB file."));
   my_mod = mod;
-  fdt_addr = (void *) grub_arm_firmware_get_boot_data ();
+  current_fdt = grub_arm_firmware_get_boot_data ();
   machine_type = grub_arm_firmware_get_machine_type ();
 }
 
@@ -529,4 +532,3 @@ GRUB_MOD_FINI (linux)
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_devicetree);
 }
-#endif

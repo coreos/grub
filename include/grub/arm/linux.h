@@ -46,6 +46,22 @@ grub_arm_firmware_get_machine_type (void)
 {
   return GRUB_ARM_MACHINE_TYPE_FDT;
 }
+#elif defined (GRUB_MACHINE_COREBOOT)
+#include <grub/fdtbus.h>
+#include <grub/machine/kernel.h>
+# define LINUX_ADDRESS        (start_of_ram + 0x8000)
+# define LINUX_INITRD_ADDRESS (start_of_ram + 0x02000000)
+# define LINUX_FDT_ADDRESS    (LINUX_INITRD_ADDRESS - 0x10000)
+static inline const void *
+grub_arm_firmware_get_boot_data (void)
+{
+  return grub_fdtbus_get_fdt ();
+}
+static inline grub_uint32_t
+grub_arm_firmware_get_machine_type (void)
+{
+  return GRUB_ARM_MACHINE_TYPE_FDT;
+}
 #endif
 
 #define FDT_ADDITIONAL_ENTRIES_SIZE	0x300
