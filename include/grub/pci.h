@@ -142,27 +142,7 @@ grub_pci_address_t EXPORT_FUNC(grub_pci_make_address) (grub_pci_device_t dev,
 void EXPORT_FUNC(grub_pci_iterate) (grub_pci_iteratefunc_t hook,
 				    void *hook_data);
 
-struct grub_pci_dma_chunk;
-
-struct grub_pci_dma_chunk *EXPORT_FUNC(grub_memalign_dma32) (grub_size_t align,
-							     grub_size_t size);
-void EXPORT_FUNC(grub_dma_free) (struct grub_pci_dma_chunk *ch);
-volatile void *EXPORT_FUNC(grub_dma_get_virt) (struct grub_pci_dma_chunk *ch);
-grub_uint32_t EXPORT_FUNC(grub_dma_get_phys) (struct grub_pci_dma_chunk *ch);
-
-static inline void *
-grub_dma_phys2virt (grub_uint32_t phys, struct grub_pci_dma_chunk *chunk)
-{
-  return ((grub_uint8_t *) grub_dma_get_virt (chunk)
-	  + (phys - grub_dma_get_phys (chunk)));
-}
-
-static inline grub_uint32_t
-grub_dma_virt2phys (volatile void *virt, struct grub_pci_dma_chunk *chunk)
-{
-  return (((grub_uint8_t *) virt - (grub_uint8_t *) grub_dma_get_virt (chunk))
-	  + grub_dma_get_phys (chunk));
-}
+#include <grub/dma.h>
 
 grub_uint8_t
 EXPORT_FUNC (grub_pci_find_capability) (grub_pci_device_t dev, grub_uint8_t cap);

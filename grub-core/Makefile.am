@@ -248,6 +248,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/gfxterm.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/font.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/bufio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/fdt.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/dma.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arm/coreboot/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/fdtbus.h
 endif

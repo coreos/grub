@@ -33,6 +33,18 @@
 # define ISB	isb
 #define ARMV7 1
 
+FUNCTION(grub_arm_clean_dcache_range_poc_armv7)
+	DSB
+	@ Clean data cache for range to point-of-coherence
+1:	cmp	r0, r1
+	bge	2f
+	mcr	p15, 0, r0, c7, c14, 1	@ DCCMVAC
+	add	r0, r0, r2		@ Next line
+	b	1b
+2:	DSB
+	bx	lr
+
+
 	@ r0  - CLIDR
 	@ r1  - LoC
 	@ r2  - current level
