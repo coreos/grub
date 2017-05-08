@@ -33,6 +33,7 @@
 #include <grub/symbol.h>
 #include <grub/video.h>
 #include <grub/coreboot/lbio.h>
+#include <grub/fdtbus.h>
 
 extern grub_uint8_t _start[];
 extern grub_uint8_t _end[];
@@ -99,6 +100,10 @@ heap_init (grub_uint64_t addr, grub_uint64_t size, grub_memory_type_t type,
 void
 grub_machine_init (void)
 {
+  struct grub_module_header *header;
+  void *dtb = 0;
+  grub_size_t dtb_size = 0;
+
   modend = grub_modules_get_end ();
 
   grub_video_coreboot_fb_early_init ();
@@ -111,6 +116,21 @@ grub_machine_init (void)
 
   grub_font_init ();
   grub_gfxterm_init ();
+
+  FOR_MODULES (header)
+    if (header->type == OBJ_TYPE_DTB)
+      {
+	char *dtb_orig_addr, *dtb_copy;
+	dtb_orig_addr = (char *) header + sizeof (struct grub_module_header);
+
+	dtb_size = header->size - sizeof (struct grub_module_header);
+	dtb = dtb_copy = grub_malloc (dtb_size);
+	grub_memmove (dtb_copy, dtb_orig_addr, dtb_size);
+	break;
+      }
+  if (!dtb)
+    grub_fatal ("No DTB found");
+  grub_fdtbus_init (dtb, dtb_size);
 
   grub_machine_timer_init ();
 }

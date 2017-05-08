@@ -368,6 +368,16 @@ terminal.lst: $(MARKER_FILES)
 platform_DATA += terminal.lst
 CLEANFILES += terminal.lst
 
+fdt.lst: $(MARKER_FILES)
+	(for pp in $^; do \
+	  b=`basename $$pp .marker`; \
+	  sed -n \
+	    -e "/FDT_DRIVER_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/i\1: $$b/;p;}" \
+	    -e "/FDT_DRIVER_LIST_MARKER *( *\"/{s/.*( *\"\([^\"]*\)\".*/o\1: $$b/;p;}" $$pp; \
+	done) | sort -u > $@
+platform_DATA += fdt.lst
+CLEANFILES += fdt.lst
+
 parttool.lst: $(MARKER_FILES)
 	(for pp in $^; do \
 	  b=`basename $$pp .marker`; \

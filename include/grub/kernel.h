@@ -28,7 +28,8 @@ enum
   OBJ_TYPE_MEMDISK,
   OBJ_TYPE_CONFIG,
   OBJ_TYPE_PREFIX,
-  OBJ_TYPE_PUBKEY
+  OBJ_TYPE_PUBKEY,
+  OBJ_TYPE_DTB
 };
 
 /* The module header.  */
