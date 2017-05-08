@@ -17,7 +17,7 @@
  */
 
 #include <grub/i386/coreboot/memory.h>
-#include <grub/i386/coreboot/lbio.h>
+#include <grub/coreboot/lbio.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
@@ -25,59 +25,20 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
-/* Helper for grub_linuxbios_table_iterate.  */
-static int
-check_signature (grub_linuxbios_table_header_t tbl_header)
-{
-  if (! grub_memcmp (tbl_header->signature, "LBIO", 4))
-    return 1;
-
-  return 0;
-}
-
-grub_err_t
-grub_linuxbios_table_iterate (int (*hook) (grub_linuxbios_table_item_t,
-					   void *),
-			      void *hook_data)
+grub_linuxbios_table_header_t
+grub_linuxbios_get_tables (void)
 {
   grub_linuxbios_table_header_t table_header;
-  grub_linuxbios_table_item_t table_item;
-
   /* Assuming table_header is aligned to its size (8 bytes).  */
-
   for (table_header = (grub_linuxbios_table_header_t) 0x500;
        table_header < (grub_linuxbios_table_header_t) 0x1000; table_header++)
-    if (check_signature (table_header))
-      goto signature_found;
+    if (grub_linuxbios_check_signature (table_header))
+      return table_header;
 
   for (table_header = (grub_linuxbios_table_header_t) 0xf0000;
        table_header < (grub_linuxbios_table_header_t) 0x100000; table_header++)
-    if (check_signature (table_header))
-      goto signature_found;
-
-  return 0;
-
-signature_found:
-
-  table_item =
-    (grub_linuxbios_table_item_t) ((char *) table_header +
-				   table_header->header_size);
-  for (; table_item < (grub_linuxbios_table_item_t) ((char *) table_header
-						     + table_header->header_size
-						     + table_header->table_size);
-       table_item = (grub_linuxbios_table_item_t) ((char *) table_item + table_item->size))
-    {
-      if (table_item->tag == GRUB_LINUXBIOS_MEMBER_LINK
-         && check_signature ((grub_linuxbios_table_header_t) (grub_addr_t)
-                             *(grub_uint64_t *) (table_item + 1)))
-       {
-         table_header = (grub_linuxbios_table_header_t) (grub_addr_t)
-           *(grub_uint64_t *) (table_item + 1);
-         goto signature_found;   
-       }
-      if (hook (table_item, hook_data))
-       return 1;
-    }
+    if (grub_linuxbios_check_signature (table_header))
+      return table_header;
 
   return 0;
 }

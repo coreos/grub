@@ -20,6 +20,9 @@
 #ifndef _GRUB_MACHINE_LBIO_HEADER
 #define _GRUB_MACHINE_LBIO_HEADER      1
 
+#include <grub/types.h>
+#include <grub/err.h>
+
 struct grub_linuxbios_table_header
 {
   grub_uint8_t signature[4];
@@ -101,5 +104,11 @@ grub_err_t
 EXPORT_FUNC(grub_linuxbios_table_iterate) (int (*hook) (grub_linuxbios_table_item_t,
 					   void *),
 					   void *hook_data);
+
+grub_linuxbios_table_header_t
+grub_linuxbios_get_tables (void);
+
+int
+grub_linuxbios_check_signature (grub_linuxbios_table_header_t tbl_header);
 
 #endif

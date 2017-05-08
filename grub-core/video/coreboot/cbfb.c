@@ -25,7 +25,7 @@
 #include <grub/mm.h>
 #include <grub/video.h>
 #include <grub/video_fb.h>
-#include <grub/machine/lbio.h>
+#include <grub/coreboot/lbio.h>
 #include <grub/machine/console.h>
 
 struct grub_linuxbios_table_framebuffer *grub_video_coreboot_fbtable;

@@ -166,7 +166,7 @@ kernel = {
   i386_multiboot = kern/i386/coreboot/init.c;
   i386_qemu = kern/i386/qemu/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
-  i386_coreboot = video/i386/coreboot/cbfb.c;
+  i386_coreboot = video/coreboot/cbfb.c;
 
   efi = disk/efi/efidisk.c;
   efi = kern/efi/efi.c;
@@ -227,8 +227,9 @@ kernel = {
   i386_qemu = kern/vga_init.c;
   i386_qemu = kern/i386/qemu/mmap.c;
 
-  i386_coreboot = kern/i386/coreboot/mmap.c;
+  i386_coreboot = kern/coreboot/mmap.c;
   i386_coreboot = kern/i386/coreboot/cbtable.c;
+  i386_coreboot = kern/coreboot/cbtable.c;
 
   i386_multiboot = kern/i386/multiboot_mmap.c;
 
@@ -643,6 +644,7 @@ module = {
 module = {
   name = cbtable;
   common = kern/i386/coreboot/cbtable.c;
+  common = kern/coreboot/cbtable.c;
   enable = i386_pc;
   enable = i386_efi;
   enable = i386_qemu;

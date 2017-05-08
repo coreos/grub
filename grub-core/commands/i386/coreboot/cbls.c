@@ -20,7 +20,7 @@
 #include <grub/misc.h>
 #include <grub/command.h>
 #include <grub/i18n.h>
-#include <grub/i386/coreboot/lbio.h>
+#include <grub/coreboot/lbio.h>
 #include <grub/i386/tsc.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");

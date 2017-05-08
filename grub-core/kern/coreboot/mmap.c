@@ -16,8 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <grub/machine/memory.h>
-#include <grub/machine/lbio.h>
+#include <grub/memory.h>
+#include <grub/coreboot/lbio.h>
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/misc.h>
@@ -49,6 +49,7 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
     {
       grub_uint64_t start = mem_region->addr;
       grub_uint64_t end = mem_region->addr + mem_region->size;
+#ifdef __i386__
       /* Mark region 0xa0000 - 0x100000 as reserved.  */
       if (start < 0x100000 && end >= 0xa0000
 	  && mem_region->type == GRUB_MACHINE_MEMORY_AVAILABLE)
@@ -75,6 +76,7 @@ iterate_linuxbios_table (grub_linuxbios_table_item_t table_item, void *data)
 	  if (end <= start)
 	    continue;
 	}
+#endif
       if (ctx->hook (start, end - start,
 		     /* Multiboot mmaps match with the coreboot mmap
 		        definition.  Therefore, we can just pass type

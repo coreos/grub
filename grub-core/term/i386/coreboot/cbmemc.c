@@ -23,7 +23,7 @@
 #include <grub/time.h>
 #include <grub/terminfo.h>
 #include <grub/dl.h>
-#include <grub/i386/coreboot/lbio.h>
+#include <grub/coreboot/lbio.h>
 #include <grub/command.h>
 #include <grub/normal.h>
 
