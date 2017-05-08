@@ -36,28 +36,12 @@
 extern char __bss_start[];
 extern char _end[];
 extern grub_size_t grub_total_module_size;
-extern int (*grub_uboot_syscall_ptr) (int, int *, ...);
 static unsigned long timer_start;
-
-extern grub_uint32_t grub_uboot_machine_type;
-extern grub_addr_t grub_uboot_boot_data;
 
 void
 grub_exit (void)
 {
   grub_uboot_return (0);
-}
-
-grub_uint32_t
-grub_uboot_get_machine_type (void)
-{
-  return grub_uboot_machine_type;
-}
-
-grub_addr_t
-grub_uboot_get_boot_data (void)
-{
-  return grub_uboot_boot_data;
 }
 
 static grub_uint64_t

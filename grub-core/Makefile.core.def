@@ -105,7 +105,7 @@ kernel = {
   mips_startup = kern/mips/startup.S;
   sparc64_ieee1275_startup = kern/sparc64/ieee1275/crt0.S;
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
-  arm_uboot_startup = kern/arm/uboot/startup.S;
+  arm_uboot_startup = kern/arm/startup.S;
   arm_efi_startup = kern/arm/efi/startup.S;
   arm64_efi_startup = kern/arm64/efi/startup.S;
 
@@ -149,6 +149,8 @@ kernel = {
   uboot = kern/uboot/init.c;
   uboot = kern/uboot/hw.c;
   uboot = term/uboot/console.c;
+  arm_uboot = kern/arm/uboot/init.c;
+  arm_uboot = kern/arm/uboot/uboot.S;
 
   terminfoinkernel = term/terminfo.c;
   terminfoinkernel = term/tparm.c;
