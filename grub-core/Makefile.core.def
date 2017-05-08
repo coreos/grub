@@ -841,7 +841,7 @@ module = {
   efi = lib/efi/halt.c;
   ieee1275 = lib/ieee1275/halt.c;
   emu = lib/emu/halt.c;
-  uboot = lib/uboot/halt.c;
+  uboot = lib/dummy/halt.c;
 };
 
 module = {
