@@ -73,6 +73,7 @@ grub_install_help_filter (int key, const char *text,
 
 static int (*compress_func) (const char *src, const char *dest) = NULL;
 char *grub_install_copy_buffer;
+static char *dtb;
 
 int
 grub_install_copy_file (const char *src,
@@ -364,6 +365,11 @@ grub_install_parse (int key, char *arg)
     case GRUB_INSTALL_OPTIONS_INSTALL_FONTS:
       handle_install_list (&install_fonts, arg, 0);
       return 1;
+    case GRUB_INSTALL_OPTIONS_DTB:
+      if (dtb)
+	free (dtb);
+      dtb = xstrdup (arg);
+      return 1;
     case GRUB_INSTALL_OPTIONS_INSTALL_COMPRESS:
       if (strcmp (arg, "no") == 0
 	  || strcmp (arg, "none") == 0)
@@ -486,9 +492,10 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
 
   grub_util_info ("grub-mkimage --directory '%s' --prefix '%s'"
 		  " --output '%s' "
+		  " --dtb '%s' "
 		  "--format '%s' --compression '%s' %s %s\n",
 		  dir, prefix,
-		  outname, mkimage_target,
+		  outname, dtb ? : "", mkimage_target,
 		  compnames[compression], note ? "--note" : "", s);
   free (s);
 
@@ -499,7 +506,7 @@ grub_install_make_image_wrap_file (const char *dir, const char *prefix,
   grub_install_generate_image (dir, prefix, fp, outname,
 			       modules.entries, memdisk_path,
 			       pubkeys, npubkeys, config_path, tgt,
-			       note, compression, 0);
+			       note, compression, dtb);
   while (dc--)
     grub_install_pop_module ();
 }
@@ -666,6 +673,7 @@ static struct
     [GRUB_INSTALL_PLATFORM_ARM_EFI] =          { "arm",     "efi"       },
     [GRUB_INSTALL_PLATFORM_ARM64_EFI] =        { "arm64",   "efi"       },
     [GRUB_INSTALL_PLATFORM_ARM_UBOOT] =        { "arm",     "uboot"     },
+    [GRUB_INSTALL_PLATFORM_ARM_COREBOOT] =     { "arm",     "coreboot"  },
   }; 
 
 char *

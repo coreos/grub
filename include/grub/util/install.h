@@ -29,6 +29,8 @@
 #define GRUB_INSTALL_OPTIONS					  \
   { "modules",      GRUB_INSTALL_OPTIONS_MODULES, N_("MODULES"),	  \
     0, N_("pre-load specified modules MODULES"), 1 },			  \
+  { "dtb",      GRUB_INSTALL_OPTIONS_DTB, N_("FILE"),	  \
+    0, N_("embed a specific DTB"), 1 },			  \
   { "install-modules", GRUB_INSTALL_OPTIONS_INSTALL_MODULES,	  \
     N_("MODULES"), 0,							  \
     N_("install only MODULES and their dependencies [default=all]"), 1 }, \
@@ -99,6 +101,7 @@ enum grub_install_plat
     GRUB_INSTALL_PLATFORM_I386_XEN,
     GRUB_INSTALL_PLATFORM_X86_64_XEN,
     GRUB_INSTALL_PLATFORM_ARM64_EFI,
+    GRUB_INSTALL_PLATFORM_ARM_COREBOOT,
     GRUB_INSTALL_PLATFORM_MAX
   };
 
@@ -115,7 +118,8 @@ enum grub_install_options {
   GRUB_INSTALL_OPTIONS_LOCALE_DIRECTORY,
   GRUB_INSTALL_OPTIONS_THEMES_DIRECTORY,
   GRUB_INSTALL_OPTIONS_GRUB_MKIMAGE,
-  GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS
+  GRUB_INSTALL_OPTIONS_INSTALL_CORE_COMPRESS,
+  GRUB_INSTALL_OPTIONS_DTB
 };
 
 extern char *grub_install_source_directory;
