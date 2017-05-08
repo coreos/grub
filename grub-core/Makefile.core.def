@@ -593,8 +593,10 @@ module = {
 module = {
   name = ehci;
   common = bus/usb/ehci.c;
+  arm_coreboot = bus/usb/ehci-fdt.c;
   pci = bus/usb/ehci-pci.c;
   enable = pci;
+  enable = arm_coreboot;
 };
 
 module = {

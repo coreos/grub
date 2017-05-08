@@ -63,7 +63,7 @@ GROUPS["cmos"] = GROUPS["x86"][:] + ["mips_loongson", "mips_qemu_mips",
                                      "sparc64_ieee1275", "powerpc_ieee1275"]
 GROUPS["cmos"].remove("i386_efi"); GROUPS["cmos"].remove("x86_64_efi");
 GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
-GROUPS["usb"]      = GROUPS["pci"]
+GROUPS["usb"]      = GROUPS["pci"] + ["arm_coreboot"]
 
 # If gfxterm is main output console integrate it into kernel
 GROUPS["videoinkernel"] = ["mips_loongson", "i386_coreboot", "arm_coreboot" ]

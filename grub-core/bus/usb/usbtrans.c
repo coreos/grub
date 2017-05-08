@@ -18,7 +18,7 @@
  */
 
 #include <grub/dl.h>
-#include <grub/pci.h>
+#include <grub/dma.h>
 #include <grub/mm.h>
 #include <grub/misc.h>
 #include <grub/usb.h>
