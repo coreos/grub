@@ -167,6 +167,7 @@ case "$target_cpu"-"$platform" in
   mipsel-fuloong) platform=loongson ;;
   mipsel-loongson) ;;
   arm-uboot) ;;
+  arm-coreboot) ;;
   arm-efi) ;;
   arm64-efi) ;;
   *-emu) ;;
@@ -1918,6 +1919,7 @@ AM_CONDITIONAL([COND_mipsel], [test x$target_cpu = xmipsel])
 AM_CONDITIONAL([COND_mipseb], [test x$target_cpu = xmips])
 AM_CONDITIONAL([COND_arm], [test x$target_cpu = xarm ])
 AM_CONDITIONAL([COND_arm_uboot], [test x$target_cpu = xarm -a x$platform = xuboot])
+AM_CONDITIONAL([COND_arm_coreboot], [test x$target_cpu = xarm -a x$platform = xcoreboot])
 AM_CONDITIONAL([COND_arm_efi], [test x$target_cpu = xarm -a x$platform = xefi])
 AM_CONDITIONAL([COND_arm64], [test x$target_cpu = xarm64 ])
 AM_CONDITIONAL([COND_arm64_efi], [test x$target_cpu = xarm64 -a x$platform = xefi])

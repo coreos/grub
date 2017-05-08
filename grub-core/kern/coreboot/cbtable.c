@@ -23,6 +23,8 @@
 #include <grub/misc.h>
 #include <grub/dl.h>
 
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 /* Helper for grub_linuxbios_table_iterate.  */
 int
 grub_linuxbios_check_signature (grub_linuxbios_table_header_t tbl_header)

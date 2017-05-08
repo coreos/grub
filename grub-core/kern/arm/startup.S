@@ -24,6 +24,7 @@
  * GRUB is called from U-Boot as a Linux Kernel type image, which
  * means among other things that it always enters in ARM state.
  *
+ * coreboot starts in ARM mode as well.
  *
  * Overview of GRUB image layout:
  *
@@ -127,6 +128,8 @@ reloc_done:
 
 	str     r1, EXT_C(grub_modbase)
 
+	/* Coreboot already places modules at right place.  */
+#ifndef GRUB_MACHINE_COREBOOT
 	add	r1, r1, r2
 	add	r0, r0, r2
 	sub     r1, r1, #4
@@ -136,6 +139,7 @@ reloc_done:
 	str	r3, [r1], #-4			@ *dst-- = r3 
 	subs	r2, #4				@ remaining -= 4
 	bne	1b				@ while remaining != 0
+#endif
 
 	@ Since we _are_ the C run-time, we need to manually zero the BSS
 	@ region before continuing

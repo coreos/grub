@@ -122,6 +122,12 @@
 #define GRUB_KERNEL_ARM_UBOOT_MOD_ALIGN 	0x8
 #define GRUB_KERNEL_ARM_UBOOT_TOTAL_MODULE_SIZE	0x4
 
+#define GRUB_KERNEL_ARM_COREBOOT_MOD_ALIGN 	0x8
+#define GRUB_KERNEL_ARM_COREBOOT_TOTAL_MODULE_SIZE	0x4
+
+#define GRUB_KERNEL_ARM_STACK_SIZE 0x40000
+#define GRUB_KERNEL_ARM_COREBOOT_MOD_GAP (GRUB_KERNEL_ARM_STACK_SIZE + 1024)
+
 /* Minimal gap between _end and the start of the modules.  It's a hack
    for PowerMac to prevent "CLAIM failed" error.  The real fix is to
    rewrite grub-mkimage to generate valid ELF files.  */

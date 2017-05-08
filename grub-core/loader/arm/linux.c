@@ -31,6 +31,8 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#ifndef GRUB_MACHINE_COREBOOT
+
 static grub_dl_t my_mod;
 
 static grub_addr_t initrd_start;
@@ -527,3 +529,4 @@ GRUB_MOD_FINI (linux)
   grub_unregister_command (cmd_initrd);
   grub_unregister_command (cmd_devicetree);
 }
+#endif

@@ -533,6 +533,45 @@ static const struct grub_install_image_target_desc image_targets[] =
       .mod_align = GRUB_KERNEL_ARM_UBOOT_MOD_ALIGN,
       .link_align = 4
     },
+    /* For coreboot versions that don't support self-relocating images. */
+    {
+      .dirname = "arm-coreboot-vexpress",
+      .names = { "arm-coreboot-vexpress", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_COREBOOT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = GRUB_KERNEL_ARM_COREBOOT_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = GRUB_KERNEL_ARM_COREBOOT_MOD_ALIGN,
+      .vaddr_offset = 0,
+      .elf_target = EM_ARM,
+      .mod_gap = GRUB_KERNEL_ARM_COREBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_ARM_COREBOOT_MOD_ALIGN,
+      .link_align = 4,
+      .link_addr = 0x62000000,
+    },
+    {
+      .dirname = "arm-coreboot-veyron",
+      .names = { "arm-coreboot-veyron", NULL },
+      .voidp_sizeof = 4,
+      .bigendian = 0,
+      .id = IMAGE_COREBOOT,
+      .flags = PLATFORM_FLAGS_NONE,
+      .total_module_size = GRUB_KERNEL_ARM_COREBOOT_TOTAL_MODULE_SIZE,
+      .decompressor_compressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_size = TARGET_NO_FIELD,
+      .decompressor_uncompressed_addr = TARGET_NO_FIELD,
+      .section_align = GRUB_KERNEL_ARM_COREBOOT_MOD_ALIGN,
+      .vaddr_offset = 0,
+      .elf_target = EM_ARM,
+      .mod_gap = GRUB_KERNEL_ARM_COREBOOT_MOD_GAP,
+      .mod_align = GRUB_KERNEL_ARM_COREBOOT_MOD_ALIGN,
+      .link_align = 4,
+      .link_addr = 0x43000000,
+    },
     {
       .dirname = "arm-efi",
       .names = { "arm-efi", NULL },
@@ -1033,7 +1072,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	/* fallthrough */
     case IMAGE_COREBOOT:
     case IMAGE_QEMU:
-	if (layout.kernel_size + layout.bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
+	if (image_target->elf_target != EM_ARM && layout.kernel_size + layout.bss_size + GRUB_KERNEL_I386_PC_LINK_ADDR > 0x68000)
 	  grub_util_error (_("kernel image is too big (0x%x > 0x%x)"),
 			   (unsigned) layout.kernel_size + (unsigned) layout.bss_size
 			   + GRUB_KERNEL_I386_PC_LINK_ADDR,

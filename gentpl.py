@@ -31,7 +31,8 @@ GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "i386_xen", "x86_64_xen",
                    "mips_loongson", "sparc64_ieee1275",
                    "powerpc_ieee1275", "mips_arc", "ia64_efi",
-                   "mips_qemu_mips", "arm_uboot", "arm_efi", "arm64_efi" ]
+                   "mips_qemu_mips", "arm_uboot", "arm_efi", "arm64_efi",
+                   "arm_coreboot"]
 
 GROUPS = {}
 
@@ -44,7 +45,7 @@ GROUPS["x86"]      = GROUPS["i386"] + GROUPS["x86_64"]
 GROUPS["mips"]     = [ "mips_loongson", "mips_qemu_mips", "mips_arc" ]
 GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
-GROUPS["arm"]      = [ "arm_uboot", "arm_efi" ]
+GROUPS["arm"]      = [ "arm_uboot", "arm_efi", "arm_coreboot" ]
 GROUPS["arm64"]    = [ "arm64_efi" ]
 
 # Groups based on firmware
@@ -52,6 +53,7 @@ GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi", "arm_efi", "arm64_efi" 
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 GROUPS["uboot"] = [ "arm_uboot" ]
 GROUPS["xen"]  = [ "i386_xen", "x86_64_xen" ]
+GROUPS["coreboot"]  = [ "i386_coreboot", "arm_coreboot" ]
 
 # emu is a special case so many core functionality isn't needed on this platform
 GROUPS["noemu"]   = GRUB_PLATFORMS[:]; GROUPS["noemu"].remove("emu")
@@ -64,7 +66,7 @@ GROUPS["pci"]      = GROUPS["x86"] + ["mips_loongson"]
 GROUPS["usb"]      = GROUPS["pci"]
 
 # If gfxterm is main output console integrate it into kernel
-GROUPS["videoinkernel"] = ["mips_loongson", "i386_coreboot" ]
+GROUPS["videoinkernel"] = ["mips_loongson", "i386_coreboot", "arm_coreboot" ]
 GROUPS["videomodules"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["videoinkernel"]: GROUPS["videomodules"].remove(i)
 

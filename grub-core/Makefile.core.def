@@ -92,6 +92,8 @@ kernel = {
   emu_cppflags = '$(CPPFLAGS_GNULIB)';
   arm_uboot_ldflags       = '-Wl,-r,-d';
   arm_uboot_stripflags    = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
+  arm_coreboot_ldflags       = '-Wl,-r,-d';
+  arm_coreboot_stripflags    = '--strip-unneeded -K start -R .note -R .comment -R .note.gnu.gold-version';
 
   i386_pc_startup = kern/i386/pc/startup.S;
   i386_efi_startup = kern/i386/efi/startup.S;
@@ -106,6 +108,7 @@ kernel = {
   sparc64_ieee1275_startup = kern/sparc64/ieee1275/crt0.S;
   powerpc_ieee1275_startup = kern/powerpc/ieee1275/startup.S;
   arm_uboot_startup = kern/arm/startup.S;
+  arm_coreboot_startup = kern/arm/startup.S;
   arm_efi_startup = kern/arm/efi/startup.S;
   arm64_efi_startup = kern/arm64/efi/startup.S;
 
@@ -152,6 +155,10 @@ kernel = {
   arm_uboot = kern/arm/uboot/init.c;
   arm_uboot = kern/arm/uboot/uboot.S;
 
+  arm_coreboot = kern/arm/coreboot/init.c;
+  arm_coreboot = kern/arm/coreboot/timer.c;
+  arm_coreboot = kern/arm/coreboot/coreboot.S;
+
   terminfoinkernel = term/terminfo.c;
   terminfoinkernel = term/tparm.c;
   terminfoinkernel = commands/extcmd.c;
@@ -166,7 +173,7 @@ kernel = {
   i386_multiboot = kern/i386/coreboot/init.c;
   i386_qemu = kern/i386/qemu/init.c;
   i386_coreboot_multiboot_qemu = term/i386/pc/vga_text.c;
-  i386_coreboot = video/coreboot/cbfb.c;
+  coreboot = video/coreboot/cbfb.c;
 
   efi = disk/efi/efidisk.c;
   efi = kern/efi/efi.c;
@@ -227,9 +234,10 @@ kernel = {
   i386_qemu = kern/vga_init.c;
   i386_qemu = kern/i386/qemu/mmap.c;
 
-  i386_coreboot = kern/coreboot/mmap.c;
+  coreboot = kern/coreboot/mmap.c;
   i386_coreboot = kern/i386/coreboot/cbtable.c;
-  i386_coreboot = kern/coreboot/cbtable.c;
+  coreboot = kern/coreboot/cbtable.c;
+  arm_coreboot = kern/arm/coreboot/cbtable.c;
 
   i386_multiboot = kern/i386/multiboot_mmap.c;
 
@@ -758,6 +766,7 @@ module = {
   enable = arm_efi;
   enable = arm64_efi;
   enable = arm_uboot;
+  enable = arm_coreboot;
 };
 
 module = {
@@ -842,6 +851,7 @@ module = {
   ieee1275 = lib/ieee1275/halt.c;
   emu = lib/emu/halt.c;
   uboot = lib/dummy/halt.c;
+  arm_coreboot = lib/dummy/halt.c;
 };
 
 module = {
@@ -859,6 +869,7 @@ module = {
   mips_qemu_mips = lib/mips/qemu_mips/reboot.c;
   xen = lib/xen/reboot.c;
   uboot = lib/uboot/reboot.c;
+  arm_coreboot = lib/dummy/reboot.c;
   common = commands/reboot.c;
 };
 
@@ -1553,6 +1564,7 @@ module = {
   cmos = lib/cmos_datetime.c;
   efi = lib/efi/datetime.c;
   uboot = lib/dummy/datetime.c;
+  arm_coreboot = lib/dummy/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/datetime.c;
   powerpc_ieee1275 = lib/ieee1275/datetime.c;
   sparc64_ieee1275 = lib/ieee1275/cmos.c;
