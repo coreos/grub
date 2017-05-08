@@ -21,6 +21,7 @@
 #include <grub/types.h>
 #include <grub/err.h>
 #include <grub/time.h>
+#include <grub/fdtbus.h>
 #include <grub/misc.h>
 
 grub_uint64_t
@@ -33,6 +34,39 @@ grub_uint32_t
 grub_arm_pfr1(void);
 
 static int have_timer = 0;
+static volatile grub_uint32_t *sp804_regs;
+
+static grub_uint64_t
+sp804_get_time_ms (void)
+{
+  static grub_uint32_t high, last_low;
+  grub_uint32_t low = ~sp804_regs[1];
+  if (last_low > low)
+    high++;
+  last_low = low;
+  return grub_divmod64 ((((grub_uint64_t) high) << 32) | low,
+			1000, 0);
+}
+
+static grub_err_t
+sp804_attach(const struct grub_fdtbus_dev *dev)
+{
+  if (have_timer)
+    return GRUB_ERR_NONE;
+  sp804_regs = grub_fdtbus_map_reg (dev, 0, 0);
+  if (!grub_fdtbus_is_mapping_valid (sp804_regs))
+    return grub_error (GRUB_ERR_IO, "could not map sp804: %p", sp804_regs);
+  grub_install_get_time_ms (sp804_get_time_ms);
+  have_timer = 1;
+  return GRUB_ERR_NONE;
+}
+
+struct grub_fdtbus_driver sp804 =
+{
+  .compatible = "arm,sp804",
+  .attach = sp804_attach
+};
+
 static grub_uint32_t timer_frequency_in_khz;
 
 static grub_uint64_t
@@ -58,6 +92,8 @@ try_generic_timer (void)
 void
 grub_machine_timer_init (void)
 {
+  grub_fdtbus_register (&sp804);
+
   if (!have_timer)
     try_generic_timer ();
   if (!have_timer)
