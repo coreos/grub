@@ -593,6 +593,7 @@ module = {
 module = {
   name = ehci;
   common = bus/usb/ehci.c;
+  pci = bus/usb/ehci-pci.c;
   enable = pci;
 };
 
