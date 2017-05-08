@@ -18,7 +18,6 @@
 
 #include <grub/types.h>
 #include <grub/symbol.h>
-#include <grub/uboot/uboot.h>
 #include <grub/datetime.h>
 #include <grub/dl.h>
 
@@ -30,12 +29,12 @@ grub_err_t
 grub_get_datetime (struct grub_datetime *datetime __attribute__ ((unused)))
 {
   return grub_error (GRUB_ERR_INVALID_COMMAND,
-		     "can\'t get datetime using U-Boot");
+		     "can\'t get datetime on this machine");
 }
 
 grub_err_t
 grub_set_datetime (struct grub_datetime * datetime __attribute__ ((unused)))
 {
   return grub_error (GRUB_ERR_INVALID_COMMAND,
-		     "can\'t set datetime using U-Boot");
+		     "can\'t set datetime on this machine");
 }
