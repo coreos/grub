@@ -16,23 +16,28 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_AT_KEYBOARD_HEADER
-#define GRUB_AT_KEYBOARD_HEADER	1
+#ifndef GRUB_PS2_HEADER
+#define GRUB_PS2_HEADER	1
 
-/* Used for sending commands to the controller.  */
-#define KEYBOARD_COMMAND_ISREADY(x)	!((x) & 0x02)
-#define KEYBOARD_COMMAND_READ		0x20
-#define KEYBOARD_COMMAND_WRITE		0x60
-#define KEYBOARD_COMMAND_REBOOT		0xfe
+#include <grub/types.h>
 
-#define KEYBOARD_AT_TRANSLATE		0x40
+#define GRUB_AT_ACK                     0xfa
+#define GRUB_AT_NACK                    0xfe
+#define GRUB_AT_TRIES                   5
 
-#define KEYBOARD_ISMAKE(x)	!((x) & 0x80)
-#define KEYBOARD_ISREADY(x)	((x) & 0x01)
-#define KEYBOARD_SCANCODE(x)	((x) & 0x7f)
+/* Make sure it's zeroed-out and set current_set at init.  */
+struct grub_ps2_state
+{
+  int e0_received;
+  int f0_received;
+  grub_uint8_t led_status;
+  short at_keyboard_status;
+  grub_uint8_t current_set;
+};
 
-extern void grub_at_keyboard_init (void);
-extern void grub_at_keyboard_fini (void);
-int grub_at_keyboard_is_alive (void);
+/* If there is a key pending, return it; otherwise return GRUB_TERM_NO_KEY.  */
+int
+grub_ps2_process_incoming_byte (struct grub_ps2_state *ps2_state,
+				grub_uint8_t data);
 
 #endif

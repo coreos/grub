@@ -251,6 +251,7 @@ kernel = {
   mips_qemu_mips = term/ns8250.c;
   mips_qemu_mips = term/serial.c;
   mips_qemu_mips = term/at_keyboard.c;
+  mips_qemu_mips = term/ps2.c;
   mips_qemu_mips = commands/boot.c;
   mips_qemu_mips = commands/keylayouts.c;
   mips_qemu_mips = term/i386/pc/vga_text.c;
@@ -266,6 +267,7 @@ kernel = {
   mips_loongson = bus/pci.c;
   mips_loongson = kern/mips/loongson/init.c;
   mips_loongson = term/at_keyboard.c;
+  mips_loongson = term/ps2.c;
   mips_loongson = commands/boot.c;
   mips_loongson = term/serial.c;
   mips_loongson = video/sm712.c;
@@ -1887,6 +1889,7 @@ module = {
 module = {
   name = at_keyboard;
   common = term/at_keyboard.c;
+  common = term/ps2.c;
   enable = x86;
 };
 
