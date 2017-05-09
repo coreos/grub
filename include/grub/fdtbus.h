@@ -22,7 +22,13 @@
 #include <grub/fdt.h>
 #include <grub/err.h>
 
-struct grub_fdtbus_dev;
+struct grub_fdtbus_dev
+{
+  struct grub_fdtbus_dev *next;
+  struct grub_fdtbus_dev *parent;
+  int node;
+  struct grub_fdtbus_driver *driver;
+};
 
 struct grub_fdtbus_driver
 {
@@ -33,6 +39,12 @@ struct grub_fdtbus_driver
 
   grub_err_t (*attach) (const struct grub_fdtbus_dev *dev);
   void (*detach) (const struct grub_fdtbus_dev *dev);
+
+  /* Message bus operations.  */
+  grub_err_t (*send) (const struct grub_fdtbus_dev *dev, const void *data, grub_size_t sz);
+  grub_err_t (*receive) (const struct grub_fdtbus_dev *dev, void *data, grub_size_t sz);
+  grub_err_t (*start) (const struct grub_fdtbus_dev *dev);
+  void (*stop) (const struct grub_fdtbus_dev *dev);
 };
 
 extern char EXPORT_VAR(grub_fdtbus_invalid_mapping)[1];
@@ -62,6 +74,10 @@ EXPORT_FUNC(grub_fdtbus_register) (struct grub_fdtbus_driver *driver);
 
 void
 EXPORT_FUNC(grub_fdtbus_unregister) (struct grub_fdtbus_driver *driver);
+
+int
+EXPORT_FUNC(grub_fdtbus_is_compatible) (const char *compat_string,
+					const struct grub_fdtbus_dev *dev);
 
 /* Must be called before any register(). */
 /* dtb is assumed to be unfreeable and must remain

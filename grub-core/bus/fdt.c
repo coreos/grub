@@ -25,30 +25,22 @@ static grub_size_t root_address_cells, root_size_cells;
 /* Pointer to this symbol signals invalid mapping.  */
 char grub_fdtbus_invalid_mapping[1];
 
-struct grub_fdtbus_dev
-{
-  struct grub_fdtbus_dev *next;
-  struct grub_fdtbus_dev *parent;
-  int node;
-  struct grub_fdtbus_driver *driver;
-};
-
 struct grub_fdtbus_dev *devs;
 struct grub_fdtbus_driver *drivers;
 
-static int
-is_compatible (struct grub_fdtbus_driver *driver,
-	       int node)
+int
+grub_fdtbus_is_compatible (const char *compat_string,
+			   const struct grub_fdtbus_dev *dev)
 {
   grub_size_t compatible_size;
-  const char *compatible = grub_fdt_get_prop (dtb, node, "compatible",
+  const char *compatible = grub_fdt_get_prop (dtb, dev->node, "compatible",
 					      &compatible_size);
   if (!compatible)
     return 0;
   const char *compatible_end = compatible + compatible_size;
   while (compatible < compatible_end)
     {
-      if (grub_strcmp (driver->compatible, compatible) == 0)
+      if (grub_strcmp (compat_string, compatible) == 0)
 	return 1;
       compatible += grub_strlen (compatible) + 1;
     }
@@ -75,10 +67,12 @@ fdtbus_scan (struct grub_fdtbus_dev *parent)
       dev->parent = parent;
       devs = dev;
       FOR_LIST_ELEMENTS(driver, drivers)
-	if (!dev->driver && is_compatible (driver, node))
+	if (!dev->driver && grub_fdtbus_is_compatible (driver->compatible, dev))
 	  {
-	    if (driver->attach(dev) == GRUB_ERR_NONE)
+	    grub_dprintf ("fdtbus", "Attaching %s\n", driver->compatible);
+	    if (driver->attach (dev) == GRUB_ERR_NONE)
 	      {
+		grub_dprintf ("fdtbus", "Attached %s\n", driver->compatible);
 		dev->driver = driver;
 		break;
 	      }
@@ -92,13 +86,18 @@ void
 grub_fdtbus_register (struct grub_fdtbus_driver *driver)
 {
   struct grub_fdtbus_dev *dev;
+  grub_dprintf ("fdtbus", "Registering %s\n", driver->compatible);
   grub_list_push (GRUB_AS_LIST_P (&drivers),
 		  GRUB_AS_LIST (driver));
   for (dev = devs; dev; dev = dev->next)
-    if (!dev->driver && is_compatible (driver, dev->node))
+    if (!dev->driver && grub_fdtbus_is_compatible (driver->compatible, dev))
       {
-	if (driver->attach(dev) == GRUB_ERR_NONE)
-	  dev->driver = driver;
+	grub_dprintf ("fdtbus", "Attaching %s (%p)\n", driver->compatible, dev);
+	if (driver->attach (dev) == GRUB_ERR_NONE)
+	  {
+	    grub_dprintf ("fdtbus", "Attached %s\n", driver->compatible);
+	    dev->driver = driver;
+	  }
 	grub_print_error ();
       }
 }
