@@ -84,6 +84,7 @@ This edition documents version @value{VERSION}.
 * Video Subsystem::
 * PFF2 Font File Format::
 * Graphical Menu Software Design::
+* Verifiers framework::
 * Copying This Manual::         Copying This Manual
 * Index::
 @end menu
@@ -1948,6 +1949,63 @@ graphics mode.  It's possible that making @code{grub_video_restore()} return to
 the graphics mode that was in use before @code{grub_video_setup()} was called
 might fix some of the problems.
 
+
+@node Verifiers framework
+@chapter Verifiers framework
+
+To register your own verifier call @samp{grub_verifier_register} with a structure
+pointing to your functions.
+
+The interface is inspired by the hash interface with @samp{init}/@samp{write}/@samp{fini}.
+
+There are essentially 2 ways of using it, hashing and whole-file verification.
+
+With the hashing approach:
+During @samp{init} you decide whether you want to check the given file and init context.
+In @samp{write} you update your hashing state.
+In @samp{fini} you check that the hash matches the expected value/passes some check/...
+
+With whole-file verification:
+During @samp{init} you decide whether you want to check the given file and init context.
+In @samp{write} you verify the file and return an error if it fails.
+You don't have @samp{fini}.
+
+Additional @samp{verify_string} receives various strings like kernel parameters
+to verify. Returning no error means successful verification and an error stops
+the current action.
+
+Detailed description of the API:
+
+Every time a file is opened your @samp{init} function is called with file descriptor
+and file type. Your function can have the following outcomes:
+
+@itemize
+
+@item returning no error and setting @samp{*flags} to @samp{GRUB_VERIFY_FLAGS_DEFER_AUTH}.
+In this case verification is deferred to other active verifiers. Verification
+fails if nobody cares or selected verifier fails.
+
+@item returning no error and setting @samp{*flags} to @samp{GRUB_VERIFY_FLAGS_SKIP_VERIFICATION}.
+In this case your verifier will not be called anymore and it is assumed to have
+skipped verification.
+
+@item returning no error and not setting @samp{*flags} to @samp{GRUB_VERIFY_FLAGS_SKIP_VERIFICATION}
+In this case verification is done as described in the following section.
+
+@item returning an error. Then opening of the file will fail due to failed verification.
+
+@end itemize
+
+In the third case your @samp{write} will be called with chunks of the file. If
+you need the whole file in a single chunk then during @samp{init} set the bit
+@samp{GRUB_VERIFY_FLAGS_SINGLE_CHUNK} in @samp{*flags}. During @samp{init} you
+may set @samp{*context} if you need additional context. At every iteration you
+may return an error and the file will be considered as having failed the
+verification. If you return no error then verification continues.
+
+Optionally at the end of the file @samp{fini}, if it exists, is called with just
+the context. If you return no error during any of @samp{init}, @samp{write} and
+@samp{fini} then the file is considered as having succeded verification.
 
 @node Copying This Manual
 @appendix Copying This Manual
