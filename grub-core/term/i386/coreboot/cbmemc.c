@@ -29,11 +29,14 @@
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
+#define CURSOR_MASK ((1 << 28) - 1)
+#define OVERFLOW (1 << 31)
+
 struct grub_linuxbios_cbmemc
 {
   grub_uint32_t size;
-  grub_uint32_t pointer;
-  char data[0];
+  grub_uint32_t cursor;
+  char body[0];
 };
 
 static struct grub_linuxbios_cbmemc *cbmemc;
@@ -41,11 +44,20 @@ static struct grub_linuxbios_cbmemc *cbmemc;
 static void
 put (struct grub_term_output *term __attribute__ ((unused)), const int c)
 {
+  grub_uint32_t flags, cursor;
   if (!cbmemc)
     return;
-  if (cbmemc->pointer < cbmemc->size)
-    cbmemc->data[cbmemc->pointer] = c;
-  cbmemc->pointer++;
+  flags = cbmemc->cursor & ~CURSOR_MASK;
+  cursor = cbmemc->cursor & CURSOR_MASK;
+  if (cursor >= cbmemc->size)
+    return;
+  cbmemc->body[cursor++] = c;
+  if (cursor >= cbmemc->size)
+    {
+      cursor = 0;
+      flags |= OVERFLOW;
+    }
+  cbmemc->cursor = flags | cursor;
 }
 
 struct grub_terminfo_output_state grub_cbmemc_terminfo_output =
@@ -87,21 +99,29 @@ grub_cmd_cbmemc (struct grub_command *cmd __attribute__ ((unused)),
 		 int argc __attribute__ ((unused)),
 		 char *argv[] __attribute__ ((unused)))
 {
-  grub_size_t len;
-  char *str;
-  struct grub_linuxbios_cbmemc *cbmemc_saved;
+  grub_size_t size, cursor;
+  struct grub_linuxbios_cbmemc *real_cbmemc;
 
   if (!cbmemc)
     return grub_error (GRUB_ERR_IO, "no CBMEM console found");
 
-  len = cbmemc->pointer;
-  if (len > cbmemc->size)
-    len = cbmemc->size;
-  str = cbmemc->data;
-  cbmemc_saved = cbmemc;
+  real_cbmemc = cbmemc;
   cbmemc = 0;
-  grub_xnputs (str, len);
-  cbmemc = cbmemc_saved;
+  cursor = real_cbmemc->cursor & CURSOR_MASK;
+  if (!(real_cbmemc->cursor & OVERFLOW) && cursor < real_cbmemc->size)
+    size = cursor;
+  else
+    size = real_cbmemc->size;
+  if (real_cbmemc->cursor & OVERFLOW)
+    {
+      if (cursor > size)
+        cursor = 0;
+      grub_xnputs(real_cbmemc->body + cursor, size - cursor);
+      grub_xnputs(real_cbmemc->body, cursor);
+    }
+  else
+    grub_xnputs(real_cbmemc->body, size);
+  cbmemc = real_cbmemc;
   return 0;
 }
 
