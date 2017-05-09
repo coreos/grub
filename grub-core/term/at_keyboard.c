@@ -40,6 +40,8 @@ grub_keyboard_controller_init (void);
 static void
 keyboard_controller_wait_until_ready (void)
 {
+  /* 50 us would be enough but our current time resolution is 1ms.  */
+  grub_millisleep (1);
   while (! KEYBOARD_COMMAND_ISREADY (grub_inb (KEYBOARD_REG_STATUS)));
 }
 
@@ -50,10 +52,11 @@ wait_ack (void)
   grub_uint8_t ack;
 
   endtime = grub_get_time_ms () + 20;
-  do
+  do {
+    keyboard_controller_wait_until_ready ();
     ack = grub_inb (KEYBOARD_REG_DATA);
-  while (ack != GRUB_AT_ACK && ack != GRUB_AT_NACK
-	 && grub_get_time_ms () < endtime);
+  } while (ack != GRUB_AT_ACK && ack != GRUB_AT_NACK
+	   && grub_get_time_ms () < endtime);
   return ack;
 }
 
@@ -135,12 +138,10 @@ query_mode (void)
   if (!e)
     return 0;
 
-  keyboard_controller_wait_until_ready ();
-
-  do
+  do {
+    keyboard_controller_wait_until_ready ();
     ret = grub_inb (KEYBOARD_REG_DATA);
-  while (ret == GRUB_AT_ACK);
-
+  } while (ret == GRUB_AT_ACK);
   /* QEMU translates the set even in no-translate mode.  */
   if (ret == 0x43 || ret == 1)
     return 1;
@@ -169,7 +170,11 @@ set_scancodes (void)
 #else
 
   grub_keyboard_controller_write (grub_keyboard_controller_orig
-				  & ~KEYBOARD_AT_TRANSLATE);
+				  & ~KEYBOARD_AT_TRANSLATE
+				  & ~KEYBOARD_AT_DISABLE);
+
+  keyboard_controller_wait_until_ready ();
+  grub_outb (KEYBOARD_COMMAND_ENABLE, KEYBOARD_REG_DATA);
 
   write_mode (2);
   ps2_state.current_set = query_mode ();
