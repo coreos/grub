@@ -34,8 +34,8 @@ struct grub_fdt_board
 extern struct grub_fdt_board grub_fdt_boards[];
 void grub_machine_timer_init (void);
 void grub_pl050_init (void);
-void
-grub_cros_init (void);
+void grub_cros_init (void);
+void grub_rk3288_spi_init (void);
 extern grub_addr_t EXPORT_VAR (start_of_ram);
 #endif /* ! ASM_FILE */
 

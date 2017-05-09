@@ -132,6 +132,8 @@ grub_machine_init (void)
     grub_fatal ("No DTB found");
   grub_fdtbus_init (dtb, dtb_size);
 
+  grub_rk3288_spi_init ();
+
   grub_machine_timer_init ();
   grub_pl050_init ();
 }
