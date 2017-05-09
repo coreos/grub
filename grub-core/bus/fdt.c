@@ -43,6 +43,8 @@ is_compatible (struct grub_fdtbus_driver *driver,
   grub_size_t compatible_size;
   const char *compatible = grub_fdt_get_prop (dtb, node, "compatible",
 					      &compatible_size);
+  if (!compatible)
+    return 0;
   const char *compatible_end = compatible + compatible_size;
   while (compatible < compatible_end)
     {
