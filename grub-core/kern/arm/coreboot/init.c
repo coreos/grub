@@ -135,6 +135,7 @@ grub_machine_init (void)
   grub_rk3288_spi_init ();
 
   grub_machine_timer_init ();
+  grub_cros_init ();
   grub_pl050_init ();
 }
 
