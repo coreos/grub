@@ -138,6 +138,9 @@ struct blocklists
 #ifdef GRUB_SETUP_BIOS
   grub_uint16_t current_segment;
 #endif
+#ifdef GRUB_SETUP_SPARC64
+  grub_uint64_t gpt_offset;
+#endif
   grub_uint16_t last_length;
   grub_disk_addr_t first_sector;
 };
@@ -150,6 +153,10 @@ save_blocklists (grub_disk_addr_t sector, unsigned offset, unsigned length,
   struct blocklists *bl = data;
   struct grub_boot_blocklist *prev = bl->block + 1;
   grub_uint64_t seclen;
+
+#ifdef GRUB_SETUP_SPARC64
+  sector -= bl->gpt_offset;
+#endif
 
   grub_util_info ("saving <%"  GRUB_HOST_PRIuLONG_LONG ",%u,%u>",
 		  (unsigned long long) sector, offset, length);
@@ -662,6 +669,16 @@ unable_to_embed:
 
   bl.block = bl.first_block;
 
+#ifdef GRUB_SETUP_SPARC64
+  {
+    grub_partition_t container = root_dev->disk->partition;
+    bl.gpt_offset = 0;
+
+    if (grub_strstr (container->partmap->name, "gpt"))
+      bl.gpt_offset = grub_partition_get_start (container);
+  }
+#endif
+
   grub_install_get_blocklist (root_dev, core_path, core_img, core_size,
 			      save_blocklists, &bl);
 
@@ -721,15 +738,18 @@ unable_to_embed:
   {
     char *buf, *ptr = core_img;
     size_t len = core_size;
-    grub_uint64_t blk;
+    grub_uint64_t blk, offset = 0;
     grub_partition_t container = core_dev->disk->partition;
     grub_err_t err;
 
     core_dev->disk->partition = 0;
+#ifdef GRUB_SETUP_SPARC64
+    offset = bl.gpt_offset;
+#endif
 
     buf = xmalloc (core_size);
     blk = bl.first_sector;
-    err = grub_disk_read (core_dev->disk, blk, 0, GRUB_DISK_SECTOR_SIZE, buf);
+    err = grub_disk_read (core_dev->disk, blk + offset, 0, GRUB_DISK_SECTOR_SIZE, buf);
     if (err)
       grub_util_error (_("cannot read `%s': %s"), core_dev->disk->name,
 		       grub_errmsg);
@@ -748,7 +768,7 @@ unable_to_embed:
 	if (cur > len)
 	  cur = len;
 
-	err = grub_disk_read (core_dev->disk, blk, 0, cur, buf);
+	err = grub_disk_read (core_dev->disk, blk + offset, 0, cur, buf);
 	if (err)
 	  grub_util_error (_("cannot read `%s': %s"), core_dev->disk->name,
 			   grub_errmsg);
