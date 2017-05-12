@@ -69,6 +69,10 @@ prom_seek_name:		.asciz "seek"
 prom_read_name:		.asciz "read"
 prom_exit_name:		.asciz "exit"
 grub_name:		.asciz "GRUB "
+#ifdef CDBOOT
+prom_close_name:	.asciz "close"
+#endif
+
 #define GRUB_NAME_LEN	5
 
 	.align	4
@@ -213,6 +217,12 @@ bootpath_known:
 	call	prom_call_3_1_o1
 #ifdef CDBOOT
 	 LDUW_ABS(kernel_size, 0x00, %o3)
+
+	GET_ABS(prom_close_name, %o0)
+	mov	1, %g1
+	mov	0, %o5
+	call	prom_call
+	 mov	BOOTDEV_REG, %o1
 #else
 	 mov	512, %o3
 #endif
