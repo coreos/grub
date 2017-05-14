@@ -3873,11 +3873,9 @@ you forget a command, you can run the command @command{help}
 @comment * vbeinfo::                     List available video modes
 * verify_detached::             Verify detached digital signature
 * videoinfo::                   List available video modes
-@comment * xen_*::              Xen boot commands
-* xen_hypervisor::              Load xen hypervisor binary
-* xen_linux::                   Load dom0 kernel for xen hypervisor
-* xen_initrd::                  Load dom0 initrd for dom0 kernel
-* xen_xsm::                     Load xen security module for xen hypervisor
+@comment * xen_*::              Xen boot commands for AArch64
+* xen_hypervisor::              Load xen hypervisor binary (only on AArch64)
+* xen_module::                  Load xen modules for xen hypervisor (only on AArch64)
 @end menu
 
 
@@ -5153,31 +5151,21 @@ List available video modes. If resolution is given, show only matching modes.
 Load a Xen hypervisor binary from @var{file}. The rest of the line is passed
 verbatim as the @dfn{kernel command-line}. Any other binaries must be
 reloaded after using this command.
+This command is only available on AArch64 systems.
 @end deffn
 
-@node xen_linux
-@subsection xen_linux
+@node xen_module
+@subsection xen_module
 
-@deffn Command xen_linux file [arguments]
-Load a dom0 kernel image for xen hypervisor at the booting process of xen.
+@deffn Command xen_module [--nounzip] file [arguments]
+Load a module for xen hypervisor at the booting process of xen.
 The rest of the line is passed verbatim as the module command line.
+Modules should be loaded in the following order:
+ - dom0 kernel image
+ - dom0 ramdisk if present
+ - XSM policy if present
+This command is only available on AArch64 systems.
 @end deffn
-
-@node xen_initrd
-@subsection xen_initrd
-
-@deffn Command xen_initrd file
-Load a initrd image for dom0 kernel at the booting process of xen.
-@end deffn
-
-@node xen_xsm
-@subsection xen_xsm
-
-@deffn Command xen_xsm file
-Load a xen security module for xen hypervisor at the booting process of xen.
-See @uref{http://wiki.xen.org/wiki/XSM} for more detail.
-@end deffn
-
 
 @node Networking commands
 @section The list of networking commands
