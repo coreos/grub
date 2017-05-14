@@ -379,6 +379,20 @@ grub_cmd_xen_module (grub_command_t cmd __attribute__((unused)),
 
   struct xen_boot_binary *module = NULL;
   grub_file_t file = 0;
+  int nounzip = 0;
+
+  if (!argc)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
+      goto fail;
+    }
+
+  if (grub_strcmp (argv[0], "--nounzip") == 0)
+    {
+      argv++;
+      argc--;
+      nounzip = 1;
+    }
 
   if (!argc)
     {
@@ -403,6 +417,8 @@ grub_cmd_xen_module (grub_command_t cmd __attribute__((unused)),
 
   grub_dprintf ("xen_loader", "Init module and node info\n");
 
+  if (nounzip)
+    grub_file_filter_disable_compression ();
   file = grub_file_open (argv[0]);
   if (!file)
     goto fail;
