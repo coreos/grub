@@ -860,6 +860,25 @@ read_string (const grub_uint8_t *raw, grub_size_t sz, char *outbuf)
   return outbuf;
 }
 
+static char *
+read_dstring (const grub_uint8_t *raw, grub_size_t sz)
+{
+  grub_size_t len;
+
+  if (raw[0] == 0) {
+      char *outbuf = grub_malloc (1);
+      if (!outbuf)
+	return NULL;
+      outbuf[0] = 0;
+      return outbuf;
+    }
+
+  len = raw[sz - 1];
+  if (len > sz - 1)
+    len = sz - 1;
+  return read_string (raw, len, NULL);
+}
+
 static int
 grub_udf_iterate_dir (grub_fshelp_node_t dir,
 		      grub_fshelp_iterate_dir_hook_t hook, void *hook_data)
@@ -1197,7 +1216,7 @@ grub_udf_label (grub_device_t device, char **label)
 
   if (data)
     {
-      *label = read_string (data->lvd.ident, sizeof (data->lvd.ident), 0);
+      *label = read_dstring (data->lvd.ident, sizeof (data->lvd.ident));
       grub_free (data);
     }
   else
