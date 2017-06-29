@@ -156,6 +156,12 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		# Could go further but what's the point?
 	    MAXBLKSIZE=$((65536*1024))
 	    ;;
+       xext4_encrypt)
+           # OS LIMITATION: Linux currently only allows the 'encrypt' feature
+           # in combination with block_size = PAGE_SIZE (4096 bytes on x86).
+           MINBLKSIZE=$(getconf PAGE_SIZE)
+           MAXBLKSIZE=$MINBLKSIZE
+           ;;
 	xext*)
 	    MINBLKSIZE=1024
 	    if [ $MINBLKSIZE -lt $SECSIZE ]; then
@@ -796,6 +802,10 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O meta_bg,^resize_inode -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}"
 		    MOUNTFS=ext4
 		    ;;
+               xext4_encrypt)
+                   MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.ext4" -O encrypt -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}"
+                   MOUNTFS=ext4
+                   ;;
 		xext*)
 		    MKE2FS_DEVICE_SECTSIZE=$SECSIZE "mkfs.$fs" -b $BLKSIZE -L "$FSLABEL" -q "${MOUNTDEVICE}" ;;
 		xxfs)

@@ -30,3 +30,4 @@ fi
 "@builddir@/grub-fs-tester" ext3
 "@builddir@/grub-fs-tester" ext4
 "@builddir@/grub-fs-tester" ext4_metabg
+"@builddir@/grub-fs-tester" ext4_encrypt
