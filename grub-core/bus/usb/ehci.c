@@ -504,8 +504,8 @@ grub_ehci_init_device (volatile void *regs)
 #endif
 
   grub_dprintf ("ehci",
-		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08x\n",
-		(grub_addr_t) e->iobase_ehcc + caplen);
+		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08llxx\n",
+		(unsigned long long) e->iobase_ehcc + caplen);
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: COMMAND: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: STATUS: %08x\n",
@@ -696,8 +696,8 @@ grub_ehci_init_device (volatile void *regs)
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: OK at all\n");
 
   grub_dprintf ("ehci",
-		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08x\n",
-		(grub_addr_t) regs);
+		"EHCI grub_ehci_pci_iter: iobase of oper. regs: %08llx\n",
+		(unsigned long long) regs);
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: COMMAND: %08x\n",
 		grub_ehci_oper_read32 (e, GRUB_EHCI_COMMAND));
   grub_dprintf ("ehci", "EHCI grub_ehci_pci_iter: STATUS: %08x\n",
