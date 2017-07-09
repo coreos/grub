@@ -252,12 +252,12 @@ linux_boot (void)
 #ifdef GRUB_MACHINE_EFI
       grub_size_t size;
       if (fdt_valid)
-	size = grub_fdt_get_totalsize (fdt_addr);
+	size = grub_fdt_get_totalsize (current_fdt);
       else
-	size = 4 * get_atag_size (atag_orig);
+	size = 4 * get_atag_size (current_fdt);
       size += grub_strlen (linux_args) + 256;
       target_fdt = grub_efi_allocate_loader_memory (LINUX_FDT_PHYS_OFFSET, size);
-      if (!fdt_addr)
+      if (!target_fdt)
 	return grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
 #else
       target_fdt = (void *) LINUX_FDT_ADDRESS;
@@ -522,7 +522,7 @@ GRUB_MOD_INIT (linux)
 					  /* TRANSLATORS: DTB stands for device tree blob.  */
 					  0, N_("Load DTB file."));
   my_mod = mod;
-  current_fdt = grub_arm_firmware_get_boot_data ();
+  current_fdt = (const void *) grub_arm_firmware_get_boot_data ();
   machine_type = grub_arm_firmware_get_machine_type ();
 }
 
