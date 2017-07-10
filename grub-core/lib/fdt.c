@@ -309,7 +309,8 @@ advance_token (const void *fdt, const grub_uint32_t *token, const grub_uint32_t 
 	    continue;
 	  }
 	char *ptr;
-	for (ptr = (char *) (token + 1); *ptr && ptr < (char *) end; ptr++);
+	for (ptr = (char *) (token + 1); *ptr && ptr < (char *) end; ptr++)
+	  ;
         if (ptr >= (char *) end)
           return 0;
 	return token;
