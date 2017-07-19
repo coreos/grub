@@ -109,8 +109,10 @@ grub_cmd_lsefi (grub_command_t cmd __attribute__ ((unused)),
 
       status = efi_call_3 (grub_efi_system_table->boot_services->protocols_per_handle,
 			   handle, &protocols, &num_protocols);
-      if (status != GRUB_EFI_SUCCESS)
+      if (status != GRUB_EFI_SUCCESS) {
 	grub_printf ("Unable to retrieve protocols\n");
+	continue;
+      }
       for (j = 0; j < num_protocols; j++)
 	{
 	  for (k = 0; k < ARRAY_SIZE (known_protocols); k++)
