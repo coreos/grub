@@ -57,8 +57,6 @@ grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
 		       N_("plain image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled"));
 
   grub_dprintf ("linux", "UEFI stub kernel:\n");
-  grub_dprintf ("linux", "text_offset = 0x%012llx\n",
-		(long long unsigned) lh->text_offset);
   grub_dprintf ("linux", "PE/COFF header @ %08x\n", lh->hdr_offset);
 
   return GRUB_ERR_NONE;
@@ -86,8 +84,8 @@ finalize_params_linux (void)
   /* Set initrd info */
   if (initrd_start && initrd_end > initrd_start)
     {
-      grub_dprintf ("linux", "Initrd @ 0x%012lx-0x%012lx\n",
-		    initrd_start, initrd_end);
+      grub_dprintf ("linux", "Initrd @ %p-%p\n",
+		    (void *) initrd_start, (void *) initrd_end);
 
       retval = grub_fdt_set_prop64 (fdt, node, "linux,initrd-start",
 				    initrd_start);
@@ -161,7 +159,7 @@ grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size, char *args)
 
   /* When successful, not reached */
   b->unload_image (image_handle);
-  grub_efi_free_pages ((grub_efi_physical_address_t) loaded_image->load_options,
+  grub_efi_free_pages ((grub_addr_t) loaded_image->load_options,
 		       GRUB_EFI_BYTES_TO_PAGES (loaded_image->load_options_size));
 
   return grub_errno;
@@ -188,7 +186,7 @@ grub_linux_unload (void)
   initrd_start = initrd_end = 0;
   grub_free (linux_args);
   if (kernel_addr)
-    grub_efi_free_pages ((grub_efi_physical_address_t) kernel_addr,
+    grub_efi_free_pages ((grub_addr_t) kernel_addr,
 			 GRUB_EFI_BYTES_TO_PAGES (kernel_size));
   grub_fdt_unload ();
   return GRUB_ERR_NONE;
@@ -240,8 +238,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
  fail:
   grub_initrd_close (&initrd_ctx);
   if (initrd_mem && !initrd_start)
-    grub_efi_free_pages ((grub_efi_physical_address_t) initrd_mem,
-			 initrd_pages);
+    grub_efi_free_pages ((grub_addr_t) initrd_mem, initrd_pages);
 
   return grub_errno;
 }
@@ -328,7 +325,7 @@ fail:
     grub_free (linux_args);
 
   if (kernel_addr && !loaded)
-    grub_efi_free_pages ((grub_efi_physical_address_t) kernel_addr,
+    grub_efi_free_pages ((grub_addr_t) kernel_addr,
 			 GRUB_EFI_BYTES_TO_PAGES (kernel_size));
 
   return grub_errno;
