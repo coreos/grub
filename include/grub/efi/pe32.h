@@ -45,6 +45,8 @@
 
 #define GRUB_PE32_MSDOS_STUB_SIZE	0x80
 
+#define GRUB_PE32_MAGIC			0x5a4d
+
 /* According to the spec, the minimal alignment is 512 bytes...
    But some examples (such as EFI drivers in the Intel
    Sample Implementation) use 32 bytes (0x20) instead, and it seems

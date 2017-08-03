@@ -52,7 +52,7 @@ grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
   if (lh->magic != GRUB_ARM64_LINUX_MAGIC)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
 
-  if ((lh->code0 & 0xffff) != GRUB_EFI_PE_MAGIC)
+  if ((lh->code0 & 0xffff) != GRUB_PE32_MAGIC)
     return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 		       N_("plain image kernel not supported - rebuild with CONFIG_(U)EFI_STUB enabled"));
 
