@@ -51,36 +51,20 @@ int grub_efi_is_finished = 0;
 
 /* Allocate pages. Return the pointer to the first of allocated pages.  */
 void *
-grub_efi_allocate_pages (grub_efi_physical_address_t address,
-			 grub_efi_uintn_t pages)
+grub_efi_allocate_pages_real (grub_efi_physical_address_t address,
+			      grub_efi_uintn_t pages,
+			      grub_efi_allocate_type_t alloctype,
+			      grub_efi_memory_type_t memtype)
 {
-  grub_efi_allocate_type_t type;
   grub_efi_status_t status;
   grub_efi_boot_services_t *b;
 
-#if 1
   /* Limit the memory access to less than 4GB for 32-bit platforms.  */
   if (address > GRUB_EFI_MAX_USABLE_ADDRESS)
     return 0;
-#endif
-
-#if 1
-  if (address == 0)
-    {
-      type = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
-      address = GRUB_EFI_MAX_USABLE_ADDRESS;
-    }
-  else
-    type = GRUB_EFI_ALLOCATE_ADDRESS;
-#else
-  if (address == 0)
-    type = GRUB_EFI_ALLOCATE_ANY_PAGES;
-  else
-    type = GRUB_EFI_ALLOCATE_ADDRESS;
-#endif
 
   b = grub_efi_system_table->boot_services;
-  status = efi_call_4 (b->allocate_pages, type, GRUB_EFI_LOADER_DATA, pages, &address);
+  status = efi_call_4 (b->allocate_pages, alloctype, memtype, pages, &address);
   if (status != GRUB_EFI_SUCCESS)
     return 0;
 
@@ -89,13 +73,31 @@ grub_efi_allocate_pages (grub_efi_physical_address_t address,
       /* Uggh, the address 0 was allocated... This is too annoying,
 	 so reallocate another one.  */
       address = GRUB_EFI_MAX_USABLE_ADDRESS;
-      status = efi_call_4 (b->allocate_pages, type, GRUB_EFI_LOADER_DATA, pages, &address);
+      status = efi_call_4 (b->allocate_pages, alloctype, memtype, pages, &address);
       grub_efi_free_pages (0, pages);
       if (status != GRUB_EFI_SUCCESS)
 	return 0;
     }
 
   return (void *) ((grub_addr_t) address);
+}
+
+void *
+grub_efi_allocate_pages (grub_efi_physical_address_t address,
+			 grub_efi_uintn_t pages)
+{
+  grub_efi_allocate_type_t alloctype;
+
+  if (address == 0)
+    {
+      alloctype = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
+      address = GRUB_EFI_MAX_USABLE_ADDRESS;
+    }
+  else
+    alloctype = GRUB_EFI_ALLOCATE_ADDRESS;
+
+  return grub_efi_allocate_pages_real (address, pages, alloctype,
+				       GRUB_EFI_LOADER_DATA);
 }
 
 /* Free pages starting from ADDRESS.  */

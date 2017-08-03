@@ -38,6 +38,11 @@ void *EXPORT_FUNC(grub_efi_open_protocol) (grub_efi_handle_t handle,
 int EXPORT_FUNC(grub_efi_set_text_mode) (int on);
 void EXPORT_FUNC(grub_efi_stall) (grub_efi_uintn_t microseconds);
 void *
+EXPORT_FUNC(grub_efi_allocate_pages_real) (grub_efi_physical_address_t address,
+				           grub_efi_uintn_t pages,
+					   grub_efi_allocate_type_t alloctype,
+					   grub_efi_memory_type_t memtype);
+void *
 EXPORT_FUNC(grub_efi_allocate_pages) (grub_efi_physical_address_t address,
 				      grub_efi_uintn_t pages);
 void EXPORT_FUNC(grub_efi_free_pages) (grub_efi_physical_address_t address,
