@@ -73,7 +73,6 @@ static int LZ4_uncompress_unknownOutputSize(const char *source, char *dest,
 #define	U32	grub_uint32_t
 #define	S32	grub_int32_t
 #define	U64	grub_uint64_t
-typedef grub_size_t size_t;
 
 typedef struct _U16_S {
 	U16 v;
@@ -133,10 +132,10 @@ typedef struct _U64_S {
 
 /* Decompression functions */
 grub_err_t
-lz4_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len);
+lz4_decompress(void *s_start, void *d_start, grub_size_t s_len, grub_size_t d_len);
 
 grub_err_t
-lz4_decompress(void *s_start, void *d_start, size_t s_len, size_t d_len)
+lz4_decompress(void *s_start, void *d_start, grub_size_t s_len, grub_size_t d_len)
 {
 	const BYTE *src = s_start;
 	U32 bufsiz = (src[0] << 24) | (src[1] << 16) | (src[2] << 8) |
@@ -167,7 +166,7 @@ LZ4_uncompress_unknownOutputSize(const char *source,
 	BYTE *const oend = op + maxOutputSize;
 	BYTE *cpy;
 
-	size_t dec[] = { 0, 3, 2, 3, 0, 0, 0, 0 };
+	grub_size_t dec[] = { 0, 3, 2, 3, 0, 0, 0, 0 };
 
 	/* Main Loop */
 	while (ip < iend) {
@@ -237,8 +236,8 @@ LZ4_uncompress_unknownOutputSize(const char *source,
 		/* copy repeated sequence */
 		if unlikely(op - ref < STEPSIZE) {
 #if LZ4_ARCH64
-			size_t dec2table[] = { 0, 0, 0, -1, 0, 1, 2, 3 };
-			size_t dec2 = dec2table[op - ref];
+			grub_size_t dec2table[] = { 0, 0, 0, -1, 0, 1, 2, 3 };
+			grub_size_t dec2 = dec2table[op - ref];
 #else
 			const int dec2 = 0;
 #endif
