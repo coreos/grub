@@ -1707,7 +1707,7 @@ module = {
 
 module = {
   name = fdt;
-  arm64 = loader/arm64/fdt.c;
+  arm64 = loader/efi/fdt.c;
   common = lib/fdt.c;
   enable = fdt;
 };

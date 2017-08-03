@@ -18,12 +18,12 @@
 
 #include <grub/fdt.h>
 #include <grub/mm.h>
-#include <grub/cpu/fdtload.h>
 #include <grub/err.h>
 #include <grub/dl.h>
 #include <grub/command.h>
 #include <grub/file.h>
 #include <grub/efi/efi.h>
+#include <grub/efi/fdtload.h>
 
 static void *loaded_fdt;
 static void *fdt;

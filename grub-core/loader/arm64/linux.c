@@ -26,8 +26,8 @@
 #include <grub/mm.h>
 #include <grub/types.h>
 #include <grub/cpu/linux.h>
-#include <grub/cpu/fdtload.h>
 #include <grub/efi/efi.h>
+#include <grub/efi/fdtload.h>
 #include <grub/efi/pe32.h>
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
