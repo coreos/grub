@@ -429,6 +429,7 @@ main (int argc, char *argv[])
   char **argp_argv;
   int xorriso_tail_argc;
   char **xorriso_tail_argv;
+  int rv;
 
   grub_util_host_init (&argc, &argv);
   grub_util_disable_fd_syncs ();
@@ -794,7 +795,6 @@ main (int argc, char *argv[])
       free (efidir_efi_boot);
 
       efiimgfat = grub_util_path_concat (2, iso9660_dir, "efi.img");
-      int rv;
       rv = grub_util_exec ((const char * []) { "mformat", "-C", "-f", "2880", "-L", "16", "-i",
 	    efiimgfat, "::", NULL });
       if (rv != 0)
@@ -967,7 +967,9 @@ main (int argc, char *argv[])
 
   xorriso_argv[xorriso_argc] = NULL;
 
-  grub_util_exec ((const char *const *)xorriso_argv);
+  rv = grub_util_exec ((const char *const *)xorriso_argv);
+  if (rv != 0)
+    grub_util_error ("`%s` invocation failed\n", "xorriso");
 
   grub_util_unlink_recursive (iso9660_dir);
 
