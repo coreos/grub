@@ -324,10 +324,9 @@ xen_boot_binary_load (struct xen_boot_binary *binary, grub_file_t file,
   grub_dprintf ("xen_loader", "Xen_boot file size: 0x%lx\n", binary->size);
 
   binary->start
-    = (grub_addr_t) grub_efi_allocate_pages (0,
-					     GRUB_EFI_BYTES_TO_PAGES
-					     (binary->size +
-					      binary->align));
+    = (grub_addr_t) grub_efi_allocate_any_pages (GRUB_EFI_BYTES_TO_PAGES
+						 (binary->size +
+						  binary->align));
   if (!binary->start)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));

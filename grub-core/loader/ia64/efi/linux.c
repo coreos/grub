@@ -252,7 +252,7 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 	aligned_start += align;
       if (aligned_start + size > end)
 	continue;
-      mem = grub_efi_allocate_pages (aligned_start, size_pages);
+      mem = grub_efi_allocate_fixed (aligned_start, size_pages);
       if (! mem)
 	{
 	  grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate memory");
@@ -326,7 +326,7 @@ grub_linux_boot (void)
   mmap_size = find_mmap_size ();
   if (! mmap_size)
     return grub_errno;
-  mmap_buf = grub_efi_allocate_pages (0, page_align (mmap_size) >> 12);
+  mmap_buf = grub_efi_allocate_any_pages (page_align (mmap_size) >> 12);
   if (! mmap_buf)
     return grub_error (GRUB_ERR_IO, "cannot allocate memory map");
   err = grub_efi_finish_boot_services (&mmap_size, mmap_buf, &map_key,
@@ -422,7 +422,7 @@ grub_load_elf64 (grub_file_t file, void *buffer, const char *filename)
   relocate = grub_env_get ("linux_relocate");
   if (!relocate || grub_strcmp (relocate, "force") != 0)
     {
-      kernel_mem = grub_efi_allocate_pages (low_addr, kernel_pages);
+      kernel_mem = grub_efi_allocate_fixed (low_addr, kernel_pages);
       reloc_offset = 0;
     }
   /* Try to relocate.  */
@@ -524,7 +524,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     len += grub_strlen (argv[i]) + 1;
   len += sizeof (struct ia64_boot_param) + 512; /* Room for extensions.  */
   boot_param_pages = page_align (len) >> 12;
-  boot_param = grub_efi_allocate_pages (0, boot_param_pages);
+  boot_param = grub_efi_allocate_any_pages (boot_param_pages);
   if (boot_param == 0)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY,
@@ -589,7 +589,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("linux", "Loading initrd\n");
 
   initrd_pages = (page_align (initrd_size) >> 12);
-  initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
+  initrd_mem = grub_efi_allocate_any_pages (initrd_pages);
   if (! initrd_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, "cannot allocate pages");

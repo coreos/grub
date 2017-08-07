@@ -55,7 +55,7 @@ static inline grub_err_t grub_autoefi_prepare (void)
 # define SYSTEM_TABLE_PTR GRUB_EFIEMU_SYSTEM_TABLE_PTR
 # define SIZEOF_OF_UINTN GRUB_EFIEMU_SIZEOF_OF_UINTN
 # define SYSTEM_TABLE GRUB_EFIEMU_SYSTEM_TABLE
-# define grub_efi_allocate_pages(x,y) (x)
+# define grub_efi_allocate_fixed(x,y) (x)
 # define grub_efi_free_pages(x,y) GRUB_EFI_SUCCESS
 # define grub_autoefi_finish_boot_services grub_efiemu_finish_boot_services
 # define EFI_PRESENT 1

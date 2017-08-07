@@ -146,7 +146,7 @@ grub_efi_allocate_loader_memory (grub_uint32_t min_offset, grub_uint32_t size)
 	continue;
       grub_dprintf("mm", "%s: let's allocate some (0x%x) pages @ 0x%08x...\n",
 		  __FUNCTION__, (size >> PAGE_SHIFT), (grub_addr_t) start);
-      mem = grub_efi_allocate_pages (start, (size >> PAGE_SHIFT) + 1);
+      mem = grub_efi_allocate_fixed (start, (size >> PAGE_SHIFT) + 1);
       grub_dprintf("mm", "%s: retval=0x%08x\n",
 		   __FUNCTION__, (grub_addr_t) mem);
       if (! mem)
@@ -189,7 +189,7 @@ grub_efi_prepare_platform (void)
   mmap_size = find_mmap_size ();
   if (! mmap_size)
     return GRUB_ERR_OUT_OF_MEMORY;
-  mmap_buf = grub_efi_allocate_pages (0, page_align (mmap_size) >> 12);
+  mmap_buf = grub_efi_allocate_any_pages (page_align (mmap_size) >> 12);
   if (! mmap_buf)
     return GRUB_ERR_OUT_OF_MEMORY;
 

@@ -148,8 +148,7 @@ grub_arm64_uefi_boot_image (grub_addr_t addr, grub_size_t size, char *args)
   loaded_image->load_options_size = len =
     (grub_strlen (args) + 1) * sizeof (grub_efi_char16_t);
   loaded_image->load_options =
-    grub_efi_allocate_pages (0,
-			     GRUB_EFI_BYTES_TO_PAGES (loaded_image->load_options_size));
+    grub_efi_allocate_any_pages (GRUB_EFI_BYTES_TO_PAGES (loaded_image->load_options_size));
   if (!loaded_image->load_options)
     return grub_errno;
 
@@ -223,7 +222,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("linux", "Loading initrd\n");
 
   initrd_pages = (GRUB_EFI_BYTES_TO_PAGES (initrd_size));
-  initrd_mem = grub_efi_allocate_pages (0, initrd_pages);
+  initrd_mem = grub_efi_allocate_any_pages (initrd_pages);
   if (!initrd_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
@@ -277,7 +276,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_loader_unset();
 
   grub_dprintf ("linux", "kernel file size: %lld\n", (long long) kernel_size);
-  kernel_addr = grub_efi_allocate_pages (0, GRUB_EFI_BYTES_TO_PAGES (kernel_size));
+  kernel_addr = grub_efi_allocate_any_pages (GRUB_EFI_BYTES_TO_PAGES (kernel_size));
   grub_dprintf ("linux", "kernel numpages: %lld\n",
 		(long long) GRUB_EFI_BYTES_TO_PAGES (kernel_size));
   if (!kernel_addr)

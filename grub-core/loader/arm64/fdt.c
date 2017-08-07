@@ -50,7 +50,7 @@ grub_fdt_load (grub_size_t additional_size)
   size += additional_size;
 
   grub_dprintf ("linux", "allocating %ld bytes for fdt\n", size);
-  fdt = grub_efi_allocate_pages (0, GRUB_EFI_BYTES_TO_PAGES (size));
+  fdt = grub_efi_allocate_any_pages (GRUB_EFI_BYTES_TO_PAGES (size));
   if (!fdt)
     return NULL;
 

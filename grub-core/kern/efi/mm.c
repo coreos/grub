@@ -83,20 +83,19 @@ grub_efi_allocate_pages_real (grub_efi_physical_address_t address,
 }
 
 void *
-grub_efi_allocate_pages (grub_efi_physical_address_t address,
+grub_efi_allocate_any_pages (grub_efi_uintn_t pages)
+{
+  return grub_efi_allocate_pages_real (GRUB_EFI_MAX_USABLE_ADDRESS,
+				       pages, GRUB_EFI_ALLOCATE_MAX_ADDRESS,
+				       GRUB_EFI_LOADER_DATA);
+}
+
+void *
+grub_efi_allocate_fixed (grub_efi_physical_address_t address,
 			 grub_efi_uintn_t pages)
 {
-  grub_efi_allocate_type_t alloctype;
-
-  if (address == 0)
-    {
-      alloctype = GRUB_EFI_ALLOCATE_MAX_ADDRESS;
-      address = GRUB_EFI_MAX_USABLE_ADDRESS;
-    }
-  else
-    alloctype = GRUB_EFI_ALLOCATE_ADDRESS;
-
-  return grub_efi_allocate_pages_real (address, pages, alloctype,
+  return grub_efi_allocate_pages_real (address, pages,
+				       GRUB_EFI_ALLOCATE_ADDRESS,
 				       GRUB_EFI_LOADER_DATA);
 }
 
@@ -404,7 +403,7 @@ add_memory_regions (grub_efi_memory_descriptor_t *memory_map,
 	  pages = required_pages;
 	}
 
-      addr = grub_efi_allocate_pages (start, pages);
+      addr = grub_efi_allocate_fixed (start, pages);
       if (! addr)
 	grub_fatal ("cannot allocate conventional memory %p with %u pages",
 		    (void *) ((grub_addr_t) start),
@@ -456,8 +455,7 @@ grub_efi_mm_init (void)
   int mm_status;
 
   /* Prepare a memory region to store two memory maps.  */
-  memory_map = grub_efi_allocate_pages (0,
-					2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
+  memory_map = grub_efi_allocate_any_pages (2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
   if (! memory_map)
     grub_fatal ("cannot allocate memory");
 
@@ -475,7 +473,7 @@ grub_efi_mm_init (void)
       /* Freeing/allocating operations may increase memory map size.  */
       map_size += desc_size * 32;
 
-      memory_map = grub_efi_allocate_pages (0, 2 * BYTES_TO_PAGES (map_size));
+      memory_map = grub_efi_allocate_any_pages (2 * BYTES_TO_PAGES (map_size));
       if (! memory_map)
 	grub_fatal ("cannot allocate memory");
 
