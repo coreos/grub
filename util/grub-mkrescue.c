@@ -323,6 +323,7 @@ check_xorriso (const char *val)
   char *buf = NULL;
   size_t len = 0;
   int ret = 0;
+  int wstatus = 0;
 
   argv[0] = xorriso;
   argv[1] = "-as";
@@ -347,8 +348,10 @@ check_xorriso (const char *val)
     }
 
   close (fd);
-  waitpid (pid, NULL, 0);
+  waitpid (pid, &wstatus, 0);
   free (buf);
+  if (!WIFEXITED (wstatus) || WEXITSTATUS(wstatus) != 0)
+    return 0;
   return ret;
 }
 
@@ -477,6 +480,10 @@ main (int argc, char *argv[])
 
   if (!output_image)
     grub_util_error ("%s", _("output file must be specified"));
+
+  if (!check_xorriso ("graft-points")) {
+    grub_util_error ("%s", _("xorriso not found"));
+  }
 
   grub_init_all ();
   grub_hostfs_init ();
