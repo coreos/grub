@@ -204,7 +204,7 @@ static int
 grub_console_getkey (struct grub_term_input *term __attribute__ ((unused)))
 {
   const grub_uint16_t bypass_table[] = {
-    0x0100 | '\e', 0x0f00 | '\t', 0x0e00 | '\b', 0x1c00 | '\r', 0x1c00 | '\n'
+    0x0100 | GRUB_TERM_ESC, 0x0f00 | GRUB_TERM_TAB, 0x0e00 | GRUB_TERM_BACKSPACE, 0x1c00 | '\r', 0x1c00 | '\n'
   };
   struct grub_bios_int_registers regs;
   unsigned i;

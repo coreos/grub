@@ -103,7 +103,7 @@ cmdline_cat_test (void)
 					     '/', 't', 'e', 's', 't', '.',
 					     't', 'x', 't', '\n',
 					     GRUB_TERM_NO_KEY,
-					     GRUB_TERM_NO_KEY, '\e'},
+					     GRUB_TERM_NO_KEY, GRUB_TERM_ESC},
 					 23);
 
       grub_video_checksum ("cmdline_cat");

@@ -462,7 +462,7 @@ grub_password_get (char buf[], unsigned buf_size)
       if (key == '\n' || key == '\r')
 	break;
 
-      if (key == '\e')
+      if (key == GRUB_TERM_ESC)
 	{
 	  cur_len = 0;
 	  break;
@@ -487,7 +487,7 @@ grub_password_get (char buf[], unsigned buf_size)
   grub_xputs ("\n");
   grub_refresh ();
 
-  return (key != '\e');
+  return (key != GRUB_TERM_ESC);
 }
 #endif
 

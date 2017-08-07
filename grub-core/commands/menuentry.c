@@ -52,8 +52,8 @@ static struct
   int key;
 } hotkey_aliases[] =
   {
-    {"backspace", '\b'},
-    {"tab", '\t'},
+    {"backspace", GRUB_TERM_BACKSPACE},
+    {"tab", GRUB_TERM_TAB},
     {"delete", GRUB_TERM_KEY_DC},
     {"insert", GRUB_TERM_KEY_INSERT},
     {"f1", GRUB_TERM_KEY_F1},

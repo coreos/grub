@@ -426,12 +426,12 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
     }
   *len = 1;
   keys[0] = c;
-  if (c != ANSI_CSI && c != '\e')
+  if (c != ANSI_CSI && c != GRUB_TERM_ESC)
     {
       /* Backspace: Ctrl-h.  */
       if (c == 0x7f)
-	c = '\b'; 
-      if (c < 0x20 && c != '\t' && c!= '\b' && c != '\n' && c != '\r')
+	c = GRUB_TERM_BACKSPACE;
+      if (c < 0x20 && c != GRUB_TERM_TAB && c!= GRUB_TERM_BACKSPACE && c != '\n' && c != '\r')
 	c = GRUB_TERM_CTRL | (c - 1 + 'a');
       *len = 1;
       keys[0] = c;
@@ -487,7 +487,7 @@ grub_terminfo_readkey (struct grub_term_input *term, int *keys, int *len,
 	  GRUB_TERM_KEY_HOME, GRUB_TERM_KEY_END };
     unsigned i;
 
-    if (c == '\e')
+    if (c == GRUB_TERM_ESC)
       {
 	CONTINUE_READ;
 
@@ -606,7 +606,7 @@ grub_terminfo_getkey (struct grub_term_input *termi)
 			 &data->npending, data->readkey);
 
 #if defined(__powerpc__) && defined(GRUB_MACHINE_IEEE1275)
-  if (data->npending == 1 && data->input_buf[0] == '\e'
+  if (data->npending == 1 && data->input_buf[0] == GRUB_TERM_ESC
       && grub_ieee1275_test_flag (GRUB_IEEE1275_FLAG_BROKEN_REPEAT)
       && grub_get_time_ms () - data->last_key_time < 1000
       && (data->last_key & GRUB_TERM_EXTENDED))

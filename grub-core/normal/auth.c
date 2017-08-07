@@ -166,13 +166,13 @@ grub_username_get (char buf[], unsigned buf_size)
       if (key == '\n' || key == '\r')
 	break;
 
-      if (key == '\e')
+      if (key == GRUB_TERM_ESC)
 	{
 	  cur_len = 0;
 	  break;
 	}
 
-      if (key == '\b')
+      if (key == GRUB_TERM_BACKSPACE)
 	{
 	  if (cur_len)
 	    {
@@ -197,7 +197,7 @@ grub_username_get (char buf[], unsigned buf_size)
   grub_xputs ("\n");
   grub_refresh ();
 
-  return (key != '\e');
+  return (key != GRUB_TERM_ESC);
 }
 
 grub_err_t

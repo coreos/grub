@@ -1403,7 +1403,7 @@ grub_menu_entry_run (grub_menu_entry_t entry)
 	    goto fail;
 	  break;
 
-	case '\e':
+	case GRUB_TERM_ESC:
 	  destroy_screen (screen);
 	  return;
 

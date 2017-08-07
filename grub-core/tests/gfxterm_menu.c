@@ -146,7 +146,7 @@ gfxterm_menu (void)
 	    return;
 	  }
 	grub_terminal_input_fake_sequence ((int []) { -1, -1, -1, GRUB_TERM_KEY_DOWN, -1, 'e',
-	      -1, GRUB_TERM_KEY_RIGHT, -1, 'x', -1,  '\e', -1, '\e' }, 14);
+	      -1, GRUB_TERM_KEY_RIGHT, -1, 'x', -1,  GRUB_TERM_ESC, -1, GRUB_TERM_ESC }, 14);
 
 	grub_video_checksum (tests[j].name);
 

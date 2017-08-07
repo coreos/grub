@@ -55,7 +55,8 @@
 #define GRUB_TERM_KEY_INSERT    (GRUB_TERM_EXTENDED | 0x52)
 #define GRUB_TERM_KEY_CENTER    (GRUB_TERM_EXTENDED | 0x4c)
 
-#define GRUB_TERM_ESC		'\e'
+/* Hex value is used for ESC, since '\e' is nonstandard */
+#define GRUB_TERM_ESC		0x1b
 #define GRUB_TERM_TAB		'\t'
 #define GRUB_TERM_BACKSPACE	'\b'
 

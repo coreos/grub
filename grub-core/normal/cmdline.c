@@ -626,12 +626,12 @@ grub_cmdline_get (const char *prompt_translated)
 	    cl_insert (cl_terms, nterms, &lpos, &llen, &max_len, &buf, kill_buf);
 	  break;
 
-	case '\e':
+	case GRUB_TERM_ESC:
 	  grub_free (cl_terms);
 	  grub_free (buf);
 	  return 0;
 
-	case '\b':
+	case GRUB_TERM_BACKSPACE:
 	  if (lpos > 0)
 	    {
 	      lpos--;

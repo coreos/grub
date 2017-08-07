@@ -763,7 +763,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
               *auto_boot = 0;
 	      return current_entry;
 
-	    case '\e':
+	    case GRUB_TERM_ESC:
 	      if (nested)
 		{
 		  menu_fini ();

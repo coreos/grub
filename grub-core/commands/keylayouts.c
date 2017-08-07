@@ -40,7 +40,7 @@ static struct grub_keyboard_layout layout_us = {
     /* 0x10 */ 'm',  'n',  'o',  'p',  'q', 'r', 's', 't',
     /* 0x18 */ 'u',  'v',  'w',  'x',  'y', 'z', '1', '2',
     /* 0x20 */ '3',  '4',  '5',  '6',  '7', '8', '9', '0',
-    /* 0x28 */ '\n', '\e', '\b', '\t', ' ', '-', '=', '[',
+    /* 0x28 */ '\n', GRUB_TERM_ESC, GRUB_TERM_BACKSPACE, GRUB_TERM_TAB, ' ', '-', '=', '[',
     /* According to usage table 0x31 should be mapped to '/'
        but testing with real keyboard shows that 0x32 is remapped to '/'.
        Map 0x31 to 0. 
@@ -82,8 +82,8 @@ static struct grub_keyboard_layout layout_us = {
     /* 0x10 */ 'M',  'N',  'O',  'P',  'Q', 'R', 'S', 'T',
     /* 0x18 */ 'U',  'V',  'W',  'X',  'Y', 'Z', '!', '@',
     /* 0x20 */ '#',  '$',  '%',  '^',  '&', '*', '(', ')',
-    /* 0x28 */ '\n' | GRUB_TERM_SHIFT, '\e' | GRUB_TERM_SHIFT, 
-    /* 0x2a */ '\b' | GRUB_TERM_SHIFT, '\t' | GRUB_TERM_SHIFT, 
+    /* 0x28 */ '\n' | GRUB_TERM_SHIFT, GRUB_TERM_ESC | GRUB_TERM_SHIFT,
+    /* 0x2a */ GRUB_TERM_BACKSPACE | GRUB_TERM_SHIFT, GRUB_TERM_TAB | GRUB_TERM_SHIFT,
     /* 0x2c */ ' '  | GRUB_TERM_SHIFT,  '_', '+', '{',
     /* According to usage table 0x31 should be mapped to '/'
        but testing with real keyboard shows that 0x32 is remapped to '/'.
