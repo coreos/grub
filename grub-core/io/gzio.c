@@ -140,24 +140,24 @@ eat_field (grub_file_t file, int len)
 #define OLD_GZIP_MAGIC	grub_le_to_cpu16 (0x9E1F)
 
 /* Compression methods (see algorithm.doc) */
-#define STORED      0
-#define COMPRESSED  1
-#define PACKED      2
-#define LZHED       3
+#define GRUB_GZ_STORED      0
+#define GRUB_GZ_COMPRESSED  1
+#define GRUB_GZ_PACKED      2
+#define GRUB_GZ_LZHED       3
 /* methods 4 to 7 reserved */
-#define DEFLATED    8
-#define MAX_METHODS 9
+#define GRUB_GZ_DEFLATED    8
+#define GRUB_GZ_MAX_METHODS 9
 
 /* gzip flag byte */
-#define ASCII_FLAG   0x01	/* bit 0 set: file probably ascii text */
-#define CONTINUATION 0x02	/* bit 1 set: continuation of multi-part gzip file */
-#define EXTRA_FIELD  0x04	/* bit 2 set: extra field present */
-#define ORIG_NAME    0x08	/* bit 3 set: original file name present */
-#define COMMENT      0x10	/* bit 4 set: file comment present */
-#define ENCRYPTED    0x20	/* bit 5 set: file is encrypted */
-#define RESERVED     0xC0	/* bit 6,7:   reserved */
+#define GRUB_GZ_ASCII_FLAG   0x01	/* bit 0 set: file probably ascii text */
+#define GRUB_GZ_CONTINUATION 0x02	/* bit 1 set: continuation of multi-part gzip file */
+#define GRUB_GZ_EXTRA_FIELD  0x04	/* bit 2 set: extra field present */
+#define GRUB_GZ_ORIG_NAME    0x08	/* bit 3 set: original file name present */
+#define GRUB_GZ_COMMENT      0x10	/* bit 4 set: file comment present */
+#define GRUB_GZ_ENCRYPTED    0x20	/* bit 5 set: file is encrypted */
+#define GRUB_GZ_RESERVED     0xC0	/* bit 6,7:   reserved */
 
-#define UNSUPPORTED_FLAGS	(CONTINUATION | ENCRYPTED | RESERVED)
+#define GRUB_GZ_UNSUPPORTED_FLAGS	(GRUB_GZ_CONTINUATION | GRUB_GZ_ENCRYPTED | GRUB_GZ_RESERVED)
 
 /* inflate block codes */
 #define INFLATE_STORED	0
@@ -201,14 +201,14 @@ test_gzip_header (grub_file_t file)
    *  problem occurs from here on, then we have corrupt or otherwise
    *  bad data, and the error should be reported to the user.
    */
-  if (hdr.method != DEFLATED
-      || (hdr.flags & UNSUPPORTED_FLAGS)
-      || ((hdr.flags & EXTRA_FIELD)
+  if (hdr.method != GRUB_GZ_DEFLATED
+      || (hdr.flags & GRUB_GZ_UNSUPPORTED_FLAGS)
+      || ((hdr.flags & GRUB_GZ_EXTRA_FIELD)
 	  && (grub_file_read (gzio->file, &extra_len, 2) != 2
 	      || eat_field (gzio->file,
 			    grub_le_to_cpu16 (extra_len))))
-      || ((hdr.flags & ORIG_NAME) && eat_field (gzio->file, -1))
-      || ((hdr.flags & COMMENT) && eat_field (gzio->file, -1)))
+      || ((hdr.flags & GRUB_GZ_ORIG_NAME) && eat_field (gzio->file, -1))
+      || ((hdr.flags & GRUB_GZ_COMMENT) && eat_field (gzio->file, -1)))
     return 0;
 
   gzio->data_offset = grub_file_tell (gzio->file);
@@ -1183,7 +1183,7 @@ test_zlib_header (grub_gzio_t gzio)
   flg = get_byte (gzio);
 
   /* Check that compression method is DEFLATE.  */
-  if ((cmf & 0xf) != DEFLATED)
+  if ((cmf & 0xf) != GRUB_GZ_DEFLATED)
     {
       /* TRANSLATORS: It's about given file having some strange format, not
 	 complete lack of gzip support.  */
