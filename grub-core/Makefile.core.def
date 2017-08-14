@@ -770,7 +770,6 @@ module = {
 module = {
   name = boot;
   common = commands/boot.c;
-  common = lib/cmdline.c;
   i386_pc = lib/i386/pc/biosnum.c;
   enable = x86;
   enable = emu;
@@ -1696,6 +1695,7 @@ module = {
   arm = loader/arm/linux.c;
   arm64 = loader/arm64/linux.c;
   common = loader/linux.c;
+  common = lib/cmdline.c;
   enable = noemu;
 };
 
