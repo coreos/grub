@@ -22,7 +22,7 @@
 #include <grub/machine/apm.h>
 #include <grub/machine/memory.h>
 #endif
-#include <grub/multiboot.h>
+#include <grub/multiboot2.h>
 #include <grub/cpu/multiboot.h>
 #include <grub/cpu/relocator.h>
 #include <grub/disk.h>
@@ -71,7 +71,7 @@ static int keep_bs = 0;
 static grub_uint32_t load_base_addr;
 
 void
-grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
+grub_multiboot2_add_elfsyms (grub_size_t num, grub_size_t entsize,
 			    unsigned shndx, void *data)
 {
   elf_sec_num = num;
@@ -90,17 +90,17 @@ find_header (grub_properly_aligned_t *buffer, grub_ssize_t len)
        ((char *) header <= (char *) buffer + len - 12);
        header = (struct multiboot_header *) ((grub_uint32_t *) header + MULTIBOOT_HEADER_ALIGN / 4))
     {
-      if (header->magic == MULTIBOOT_HEADER_MAGIC
+      if (header->magic == MULTIBOOT2_HEADER_MAGIC
 	  && !(header->magic + header->architecture
 	       + header->header_length + header->checksum)
-	  && header->architecture == MULTIBOOT_ARCHITECTURE_CURRENT)
+	  && header->architecture == MULTIBOOT2_ARCHITECTURE_CURRENT)
 	return header;
     }
   return NULL;
 }
 
 grub_err_t
-grub_multiboot_load (grub_file_t file, const char *filename)
+grub_multiboot2_load (grub_file_t file, const char *filename)
 {
   grub_ssize_t len;
   struct multiboot_header *header;
@@ -112,7 +112,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
   grub_addr_t entry = 0, efi_entry = 0;
   grub_uint32_t console_required = 0;
   struct multiboot_header_tag_framebuffer *fbtag = NULL;
-  int accepted_consoles = GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
+  int accepted_consoles = GRUB_MULTIBOOT2_CONSOLE_EGA_TEXT;
   mbi_load_data_t mld;
 
   mld.mbi_ver = 2;
@@ -210,7 +210,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       case MULTIBOOT_HEADER_TAG_CONSOLE_FLAGS:
 	if (!(((struct multiboot_header_tag_console_flags *) tag)->console_flags
 	    & MULTIBOOT_CONSOLE_FLAGS_EGA_TEXT_SUPPORTED))
-	  accepted_consoles &= ~GRUB_MULTIBOOT_CONSOLE_EGA_TEXT;
+	  accepted_consoles &= ~GRUB_MULTIBOOT2_CONSOLE_EGA_TEXT;
 	if (((struct multiboot_header_tag_console_flags *) tag)->console_flags
 	    & MULTIBOOT_CONSOLE_FLAGS_CONSOLE_REQUIRED)
 	  console_required = 1;
@@ -218,7 +218,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 
       case MULTIBOOT_HEADER_TAG_FRAMEBUFFER:
 	fbtag = (struct multiboot_header_tag_framebuffer *) tag;
-	accepted_consoles |= GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER;
+	accepted_consoles |= GRUB_MULTIBOOT2_CONSOLE_FRAMEBUFFER;
 	break;
 
       case MULTIBOOT_HEADER_TAG_RELOCATABLE:
@@ -295,13 +295,13 @@ grub_multiboot_load (grub_file_t file, const char *filename)
 	      return grub_error (GRUB_ERR_BAD_OS, "invalid min/max address and/or load size");
 	    }
 
-	  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+	  err = grub_relocator_alloc_chunk_align (grub_multiboot2_relocator, &ch,
 						  mld.min_addr, mld.max_addr - code_size,
 						  code_size, mld.align ? mld.align : 1,
 						  mld.preference, keep_bs);
 	}
       else
-	err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator,
+	err = grub_relocator_alloc_chunk_addr (grub_multiboot2_relocator,
 					       &ch, load_addr, code_size);
       if (err)
 	{
@@ -343,7 +343,7 @@ grub_multiboot_load (grub_file_t file, const char *filename)
       mld.file = file;
       mld.filename = filename;
       mld.avoid_efi_boot_services = keep_bs;
-      err = grub_multiboot_load_elf (&mld);
+      err = grub_multiboot2_load_elf (&mld);
       if (err)
 	{
 	  grub_free (mld.buffer);
@@ -354,9 +354,9 @@ grub_multiboot_load (grub_file_t file, const char *filename)
   load_base_addr = mld.load_base_addr;
 
   if (keep_bs && efi_entry_specified)
-    grub_multiboot_payload_eip = efi_entry;
+    grub_multiboot2_payload_eip = efi_entry;
   else if (entry_specified)
-    grub_multiboot_payload_eip = entry;
+    grub_multiboot2_payload_eip = entry;
 
   if (mld.relocatable)
     {
@@ -370,20 +370,20 @@ grub_multiboot_load (grub_file_t file, const char *filename)
        * 64-bit int here.
        */
       if (mld.load_base_addr >= mld.link_base_addr)
-	grub_multiboot_payload_eip += mld.load_base_addr - mld.link_base_addr;
+	grub_multiboot2_payload_eip += mld.load_base_addr - mld.link_base_addr;
       else
-	grub_multiboot_payload_eip -= mld.link_base_addr - mld.load_base_addr;
+	grub_multiboot2_payload_eip -= mld.link_base_addr - mld.load_base_addr;
     }
 
   if (fbtag)
-    err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_FRAMEBUFFER,
-				      accepted_consoles,
-				      fbtag->width, fbtag->height,
-				      fbtag->depth, console_required);
+    err = grub_multiboot2_set_console (GRUB_MULTIBOOT2_CONSOLE_FRAMEBUFFER,
+				       accepted_consoles,
+				       fbtag->width, fbtag->height,
+				       fbtag->depth, console_required);
   else
-    err = grub_multiboot_set_console (GRUB_MULTIBOOT_CONSOLE_EGA_TEXT,
-				      accepted_consoles,
-				      0, 0, 0, console_required);
+    err = grub_multiboot2_set_console (GRUB_MULTIBOOT2_CONSOLE_EGA_TEXT,
+				       accepted_consoles,
+				       0, 0, 0, console_required);
   return err;
 }
 
@@ -459,7 +459,7 @@ net_size (void)
 }
 
 static grub_size_t
-grub_multiboot_get_mbi_size (void)
+grub_multiboot2_get_mbi_size (void)
 {
 #ifdef GRUB_MACHINE_EFI
   if (!keep_bs && !efi_mmap_size)
@@ -478,7 +478,7 @@ grub_multiboot_get_mbi_size (void)
     + ALIGN_UP (sizeof (struct multiboot_tag_elf_sections), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (elf_sec_entsize * elf_sec_num, MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP ((sizeof (struct multiboot_tag_mmap)
-		 + grub_get_multiboot_mmap_count ()
+		 + grub_multiboot2_get_mmap_count ()
 		 * sizeof (struct multiboot_mmap_entry)), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_framebuffer), MULTIBOOT_TAG_ALIGN)
     + ALIGN_UP (sizeof (struct multiboot_tag_old_acpi)
@@ -522,7 +522,7 @@ grub_fill_multiboot_mmap (struct multiboot_tag_mmap *tag)
 
   tag->type = MULTIBOOT_TAG_TYPE_MMAP;
   tag->size = sizeof (struct multiboot_tag_mmap)
-    + sizeof (struct multiboot_mmap_entry) * grub_get_multiboot_mmap_count (); 
+    + sizeof (struct multiboot_mmap_entry) * grub_multiboot2_get_mmap_count (); 
   tag->entry_size = sizeof (struct multiboot_mmap_entry);
   tag->entry_version = 0;
 
@@ -588,7 +588,7 @@ retrieve_video_parameters (grub_properly_aligned_t **ptrorig)
   struct multiboot_tag_framebuffer *tag
     = (struct multiboot_tag_framebuffer *) *ptrorig;
 
-  err = grub_multiboot_set_video_mode ();
+  err = grub_multiboot2_set_video_mode ();
   if (err)
     {
       grub_print_error ();
@@ -731,7 +731,7 @@ retrieve_video_parameters (grub_properly_aligned_t **ptrorig)
 }
 
 grub_err_t
-grub_multiboot_make_mbi (grub_uint32_t *target)
+grub_multiboot2_make_mbi (grub_uint32_t *target)
 {
   grub_properly_aligned_t *ptrorig;
   grub_properly_aligned_t *mbistart;
@@ -739,11 +739,11 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
   grub_size_t bufsize;
   grub_relocator_chunk_t ch;
 
-  bufsize = grub_multiboot_get_mbi_size ();
+  bufsize = grub_multiboot2_get_mbi_size ();
 
   COMPILE_TIME_ASSERT (MULTIBOOT_TAG_ALIGN % sizeof (grub_properly_aligned_t) == 0);
 
-  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+  err = grub_relocator_alloc_chunk_align (grub_multiboot2_relocator, &ch,
 					  0, 0xffffffff - bufsize,
 					  bufsize, MULTIBOOT_TAG_ALIGN,
 					  GRUB_RELOCATOR_PREFERENCE_NONE, 1);
@@ -1039,7 +1039,7 @@ grub_multiboot_make_mbi (grub_uint32_t *target)
 }
 
 void
-grub_multiboot_free_mbi (void)
+grub_multiboot2_free_mbi (void)
 {
   struct module *cur, *next;
 
@@ -1061,11 +1061,11 @@ grub_multiboot_free_mbi (void)
 }
 
 grub_err_t
-grub_multiboot_init_mbi (int argc, char *argv[])
+grub_multiboot2_init_mbi (int argc, char *argv[])
 {
   grub_ssize_t len = 0;
 
-  grub_multiboot_free_mbi ();
+  grub_multiboot2_free_mbi ();
 
   len = grub_loader_cmdline_size (argc, argv);
 
@@ -1081,7 +1081,7 @@ grub_multiboot_init_mbi (int argc, char *argv[])
 }
 
 grub_err_t
-grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
+grub_multiboot2_add_module (grub_addr_t start, grub_size_t size,
 			   int argc, char *argv[])
 {
   struct module *newmod;
@@ -1119,7 +1119,7 @@ grub_multiboot_add_module (grub_addr_t start, grub_size_t size,
 }
 
 void
-grub_multiboot_set_bootdev (void)
+grub_multiboot2_set_bootdev (void)
 {
   grub_device_t dev;
 

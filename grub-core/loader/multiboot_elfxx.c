@@ -104,13 +104,13 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
       if (load_size > mld->max_addr || mld->min_addr > mld->max_addr - load_size)
 	return grub_error (GRUB_ERR_BAD_OS, "invalid min/max address and/or load size");
 
-      err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch,
+      err = grub_relocator_alloc_chunk_align (GRUB_MULTIBOOT (relocator), &ch,
 					      mld->min_addr, mld->max_addr - load_size,
 					      load_size, mld->align ? mld->align : 1,
 					      mld->preference, mld->avoid_efi_boot_services);
     }
   else
-    err = grub_relocator_alloc_chunk_addr (grub_multiboot_relocator, &ch,
+    err = grub_relocator_alloc_chunk_addr (GRUB_MULTIBOOT (relocator), &ch,
 					   mld->link_base_addr, load_size);
 
   if (err)
@@ -167,7 +167,7 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
     if (phdr(i)->p_vaddr <= ehdr->e_entry
 	&& phdr(i)->p_vaddr + phdr(i)->p_memsz > ehdr->e_entry)
       {
-	grub_multiboot_payload_eip = (ehdr->e_entry - phdr(i)->p_vaddr)
+	GRUB_MULTIBOOT (payload_eip) = (ehdr->e_entry - phdr(i)->p_vaddr)
 	  + phdr(i)->p_paddr;
 #ifdef MULTIBOOT_LOAD_ELF64
 # ifdef __mips
@@ -191,7 +191,7 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
 #if defined (__i386__) || defined (__x86_64__)
   
 #elif defined (__mips)
-  grub_multiboot_payload_eip |= 0x80000000;
+  GRUB_MULTIBOOT (payload_eip) |= 0x80000000;
 #else
 #error Please complete this
 #endif
@@ -238,7 +238,7 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
 	  if (sh->sh_size == 0)
 	    continue;
 
-	  err = grub_relocator_alloc_chunk_align (grub_multiboot_relocator, &ch, 0,
+	  err = grub_relocator_alloc_chunk_align (GRUB_MULTIBOOT (relocator), &ch, 0,
 						  (0xffffffff - sh->sh_size) + 1,
 						  sh->sh_size, sh->sh_addralign,
 						  GRUB_RELOCATOR_PREFERENCE_NONE,
@@ -264,8 +264,8 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
 	    }
 	  sh->sh_addr = target;
 	}
-      grub_multiboot_add_elfsyms (ehdr->e_shnum, ehdr->e_shentsize,
-				  ehdr->e_shstrndx, shdr);
+      GRUB_MULTIBOOT (add_elfsyms) (ehdr->e_shnum, ehdr->e_shentsize,
+				    ehdr->e_shstrndx, shdr);
     }
 
 #undef phdr

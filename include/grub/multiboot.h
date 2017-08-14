@@ -22,19 +22,11 @@
 
 #include <grub/file.h>
 
-#ifdef GRUB_USE_MULTIBOOT2
-#include <multiboot2.h>
-/* Same thing as far as our loader is concerned.  */
-#define MULTIBOOT_BOOTLOADER_MAGIC	MULTIBOOT2_BOOTLOADER_MAGIC
-#define MULTIBOOT_HEADER_MAGIC		MULTIBOOT2_HEADER_MAGIC
-#else
 #include <multiboot.h>
-#endif
 
 #include <grub/types.h>
 #include <grub/err.h>
 
-#ifndef GRUB_USE_MULTIBOOT2
 typedef enum
   {
     GRUB_MULTIBOOT_QUIRKS_NONE = 0,
@@ -42,7 +34,6 @@ typedef enum
     GRUB_MULTIBOOT_QUIRK_MODULES_AFTER_KERNEL = 2
   } grub_multiboot_quirks_t;
 extern grub_multiboot_quirks_t grub_multiboot_quirks;
-#endif
 
 extern struct grub_relocator *grub_multiboot_relocator;
 
@@ -60,7 +51,7 @@ void
 grub_multiboot_add_elfsyms (grub_size_t num, grub_size_t entsize,
 			    unsigned shndx, void *data);
 
-grub_uint32_t grub_get_multiboot_mmap_count (void);
+grub_uint32_t grub_multiboot_get_mmap_count (void);
 grub_err_t grub_multiboot_set_video_mode (void);
 
 /* FIXME: support coreboot as well.  */
