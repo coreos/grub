@@ -91,7 +91,7 @@ typedef size_t yy_size_t;
 #define stdin  0
 #define stdout 0
 
-#define fprintf(...) 0
+#define fprintf(...) (void)0
 #define exit(...) grub_fatal("fatal error in lexer")
 #endif
 
