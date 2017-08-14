@@ -770,6 +770,7 @@ module = {
 module = {
   name = boot;
   common = commands/boot.c;
+  common = lib/cmdline.c;
   i386_pc = lib/i386/pc/biosnum.c;
   enable = x86;
   enable = emu;
@@ -1630,8 +1631,6 @@ module = {
 module = {
   name = linux16;
   common = loader/i386/pc/linux.c;
-  common = loader/linux.c;
-  common = lib/cmdline.c;
   enable = x86;
 };
 
@@ -1666,7 +1665,6 @@ module = {
   cppflags = "-DGRUB_USE_MULTIBOOT2";
 
   common = loader/multiboot.c;
-  common = lib/cmdline.c;
   common = loader/multiboot_mbi2.c;
   enable = x86;
   enable = mips;
@@ -1675,7 +1673,6 @@ module = {
 module = {
   name = multiboot;
   common = loader/multiboot.c;
-  common = lib/cmdline.c;
   x86 = loader/i386/multiboot_mbi.c;
   extra_dist = loader/multiboot_elfxx.c;
   enable = x86;
@@ -1683,7 +1680,6 @@ module = {
 
 module = {
   name = xen_boot;
-  common = lib/cmdline.c;
   arm64 = loader/arm64/xen_boot.c;
   enable = arm64;
 };
@@ -1700,7 +1696,6 @@ module = {
   arm = loader/arm/linux.c;
   arm64 = loader/arm64/linux.c;
   common = loader/linux.c;
-  common = lib/cmdline.c;
   enable = noemu;
 };
 
