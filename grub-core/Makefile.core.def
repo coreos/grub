@@ -902,7 +902,6 @@ module = {
 module = {
   name = hdparm;
   common = commands/hdparm.c;
-  common = lib/hexdump.c;
   enable = pci;
   enable = mips_qemu_mips;
 };
