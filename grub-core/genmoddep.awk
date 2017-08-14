@@ -18,7 +18,7 @@ BEGIN {
 
 {
   if ($1 == "defined") {
-    if ($3 in symtab) {
+    if ($3 !~ /^\.refptr\./ && $3 in symtab) {
       printf "%s in %s is duplicated in %s\n", $3, $2, symtab[$3] >"/dev/stderr";
       error++;
     }
