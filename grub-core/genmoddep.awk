@@ -18,6 +18,10 @@ BEGIN {
 
 {
   if ($1 == "defined") {
+    if ($3 in symtab) {
+      printf "%s in %s is duplicated in %s\n", $3, $2, symtab[$3] >"/dev/stderr";
+      error++;
+    }
     symtab[$3] = $2;
     modtab[$2] = "" modtab[$2]
   } else if ($1 == "undefined") {
