@@ -4643,7 +4643,7 @@ range 0-0xFF (prefix with @samp{0x} to enter it in hexadecimal).
 When enabled, this hides the selected partition by setting the @dfn{hidden}
 bit in its partition type code; when disabled, unhides the selected
 partition by clearing this bit.  This is useful only when booting DOS or
-Wwindows and multiple primary FAT partitions exist in one disk.  See also
+Windows and multiple primary FAT partitions exist in one disk.  See also
 @ref{DOS/Windows}.
 @end table
 @end deffn
