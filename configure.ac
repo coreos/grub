@@ -204,7 +204,8 @@ case "$host_os" in
 esac
 
 case "$host_os" in
-  cygwin | windows* | mingw32*)	have_exec=n ;;
+  cygwin) have_exec=y ;;
+  windows* | mingw32*) have_exec=n ;;
   aros*) have_exec=n ;;
   *) have_exec=y;;
 esac
