@@ -138,8 +138,11 @@ static void
 efi_boot (struct grub_relocator *rel,
 	  grub_uint32_t target)
 {
+#ifdef GRUB_USE_MULTIBOOT2
+  struct grub_relocator_efi_state state_efi = MULTIBOOT2_EFI_INITIAL_STATE;
+#else
   struct grub_relocator_efi_state state_efi = MULTIBOOT_EFI_INITIAL_STATE;
-
+#endif
   state_efi.MULTIBOOT_EFI_ENTRY_REGISTER = grub_multiboot_payload_eip;
   state_efi.MULTIBOOT_EFI_MBI_REGISTER = target;
 
