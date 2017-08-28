@@ -99,7 +99,7 @@ grub_util_exec_redirect_all (const char *const *argv, const char *stdin_file,
 	{
 	  fd = open (stdin_file, O_RDONLY);
 	  if (fd < 0)
-	    exit (127);
+	    _exit (127);
 	  dup2 (fd, STDIN_FILENO);
 	  close (fd);
 	}
@@ -108,7 +108,7 @@ grub_util_exec_redirect_all (const char *const *argv, const char *stdin_file,
 	{
 	  fd = open (stdout_file, O_WRONLY | O_CREAT, 0700);
 	  if (fd < 0)
-	    exit (127);
+	    _exit (127);
 	  dup2 (fd, STDOUT_FILENO);
 	  close (fd);
 	}
@@ -117,7 +117,7 @@ grub_util_exec_redirect_all (const char *const *argv, const char *stdin_file,
 	{
 	  fd = open (stderr_file, O_WRONLY | O_CREAT, 0700);
 	  if (fd < 0)
-	    exit (127);
+	    _exit (127);
 	  dup2 (fd, STDERR_FILENO);
 	  close (fd);
 	}
@@ -126,7 +126,7 @@ grub_util_exec_redirect_all (const char *const *argv, const char *stdin_file,
       setenv ("LC_ALL", "C", 1);
 
       execvp ((char *) argv[0], (char **) argv);
-      exit (127);
+      _exit (127);
     }
   waitpid (pid, &status, 0);
   if (!WIFEXITED (status))
