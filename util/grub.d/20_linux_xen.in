@@ -206,13 +206,12 @@ while [ "x${xen_list}" != "x" ] ; do
     if [ "x$is_top_level" != xtrue ]; then
 	echo "	submenu '$(gettext_printf "Xen hypervisor, version %s" "${xen_version}" | grub_quote)' \$menuentry_id_option 'xen-hypervisor-$xen_version-$boot_device_id' {"
     fi
-    $grub_file --is-arm64-efi $current_xen
-    if [ $? -ne 0 ]; then
-	xen_loader="multiboot"
-	module_loader="module"
-    else
+    if ($grub_file --is-arm64-efi $current_xen); then
 	xen_loader="xen_hypervisor"
 	module_loader="xen_module"
+    else
+	xen_loader="multiboot"
+	module_loader="module"
     fi
     while [ "x$list" != "x" ] ; do
 	linux=`version_find_latest $list`
