@@ -210,8 +210,13 @@ while [ "x${xen_list}" != "x" ] ; do
 	xen_loader="xen_hypervisor"
 	module_loader="xen_module"
     else
-	xen_loader="multiboot"
-	module_loader="module"
+	if ($grub_file --is-x86-multiboot2 $current_xen); then
+	    xen_loader="multiboot2"
+	    module_loader="module2"
+	else
+	    xen_loader="multiboot"
+	    module_loader="module"
+        fi
     fi
     while [ "x$list" != "x" ] ; do
 	linux=`version_find_latest $list`
