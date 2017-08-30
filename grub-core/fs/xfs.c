@@ -828,6 +828,9 @@ grub_xfs_iterate_dir (grub_fshelp_node_t dir,
 	    entries = (grub_be_to_cpu32 (tail->leaf_count)
 		       - grub_be_to_cpu32 (tail->leaf_stale));
 
+	    if (!entries)
+	      continue;
+
 	    /* Iterate over all entries within this block.  */
 	    while ((char *)direntry < (char *)tail)
 	      {
