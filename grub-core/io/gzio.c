@@ -1116,7 +1116,7 @@ inflate_window (grub_gzio_t gzio)
 	  grub_uint32_t csum;
 
 	  gzio->hdesc->final (gzio->hcontext);
-	  csum = *(grub_uint32_t *)gzio->hdesc->read (gzio->hcontext);
+	  csum = grub_get_unaligned32 (gzio->hdesc->read (gzio->hcontext));
 	  csum = grub_be_to_cpu32 (csum);
 	  if (csum != gzio->orig_checksum)
 	    grub_error (GRUB_ERR_BAD_COMPRESSED_DATA,
