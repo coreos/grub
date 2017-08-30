@@ -957,7 +957,7 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 	    esac
 	    # Make sure file is not exact multiple of block size. This helps to force
 	    # tail packing in case of squash4.
-	    : $((BLOCKCNT--))
+	    BLOCKCNT="$((BLOCKCNT-1))"
 	    case x"$fs" in
 		x"ntfscomp")
 		    setfattr -h -v 0x00000800 -n system.ntfs_attrib_be "$MNTPOINTRW/$OSDIR";;
