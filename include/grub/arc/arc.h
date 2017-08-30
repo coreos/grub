@@ -53,7 +53,7 @@ enum grub_arc_memory_type
 #ifndef GRUB_CPU_WORDS_BIGENDIAN
     GRUB_ARC_MEMORY_FREE_CONTIGUOUS,
 #endif
-  } grub_arc_memory_type_t;
+  };
 
 struct grub_arc_timeinfo
 {
