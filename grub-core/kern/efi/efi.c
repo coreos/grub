@@ -155,6 +155,15 @@ grub_efi_get_loaded_image (grub_efi_handle_t image_handle)
 }
 
 void
+grub_reboot (void)
+{
+  grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
+  efi_call_4 (grub_efi_system_table->runtime_services->reset_system,
+              GRUB_EFI_RESET_COLD, GRUB_EFI_SUCCESS, 0, NULL);
+  for (;;) ;
+}
+
+void
 grub_exit (void)
 {
   grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
