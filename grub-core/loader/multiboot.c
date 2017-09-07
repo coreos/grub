@@ -143,7 +143,7 @@ efi_boot (struct grub_relocator *rel,
 #else
   struct grub_relocator_efi_state state_efi = MULTIBOOT_EFI_INITIAL_STATE;
 #endif
-  state_efi.MULTIBOOT_EFI_ENTRY_REGISTER = grub_multiboot_payload_eip;
+  state_efi.MULTIBOOT_EFI_ENTRY_REGISTER = GRUB_MULTIBOOT (payload_eip);
   state_efi.MULTIBOOT_EFI_MBI_REGISTER = target;
 
   grub_relocator_efi_boot (rel, state_efi);

@@ -43,6 +43,10 @@
     .rcx = 0,									\
     .rdx = 0,									\
       }
+#define MULTIBOOT2_EFI_INITIAL_STATE  { .rax = MULTIBOOT2_BOOTLOADER_MAGIC,	\
+    .rcx = 0,									\
+    .rdx = 0,									\
+      }
 #define MULTIBOOT_EFI_ENTRY_REGISTER rip
 #define MULTIBOOT_EFI_MBI_REGISTER rbx
 #endif
