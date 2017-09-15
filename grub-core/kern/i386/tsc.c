@@ -68,7 +68,7 @@ grub_tsc_init (void)
 #ifdef GRUB_MACHINE_XEN
   (void) (grub_tsc_calibrate_from_xen () || calibrate_tsc_hardcode());
 #elif defined (GRUB_MACHINE_EFI)
-  (void) (grub_tsc_calibrate_from_pit () || grub_tsc_calibrate_from_pmtimer () || grub_tsc_calibrate_from_efi() || calibrate_tsc_hardcode());
+  (void) (grub_tsc_calibrate_from_pmtimer () || grub_tsc_calibrate_from_pit () || grub_tsc_calibrate_from_efi() || calibrate_tsc_hardcode());
 #elif defined (GRUB_MACHINE_COREBOOT)
   (void) (grub_tsc_calibrate_from_pmtimer () || grub_tsc_calibrate_from_pit () || calibrate_tsc_hardcode());
 #else
