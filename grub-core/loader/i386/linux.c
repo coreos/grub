@@ -49,7 +49,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 #include <grub/efi/efi.h>
 #define HAS_VGA_TEXT 0
 #define DEFAULT_VIDEO_MODE "auto"
-#define ACCEPTS_PURE_TEXT 0
+#define ACCEPTS_PURE_TEXT 1
 #elif defined (GRUB_MACHINE_IEEE1275)
 #include <grub/ieee1275/ieee1275.h>
 #define HAS_VGA_TEXT 0
