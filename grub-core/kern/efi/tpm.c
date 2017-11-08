@@ -161,15 +161,6 @@ grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,
   }
 }
 
-typedef struct {
-	grub_uint32_t pcrindex;
-	grub_uint32_t eventtype;
-	grub_uint8_t digest[20];
-	grub_uint32_t eventsize;
-	grub_uint8_t event[1];
-} Event;
-
-
 static grub_err_t
 grub_tpm1_log_event(grub_efi_handle_t tpm_handle, unsigned char *buf,
 		    grub_size_t size, grub_uint8_t pcr,
