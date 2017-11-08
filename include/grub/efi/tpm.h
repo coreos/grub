@@ -129,7 +129,7 @@ struct grub_efi_tpm2_protocol
 				      grub_efi_boolean_t *EventLogTruncated);
   grub_efi_status_t (*hash_log_extend_event) (struct grub_efi_tpm2_protocol *this,
 					      grub_efi_uint64_t Flags,
-					      grub_efi_physical_address_t *DataToHash,
+					      grub_efi_physical_address_t DataToHash,
 					      grub_efi_uint64_t DataToHashLen,
 					      EFI_TCG2_EVENT *EfiTcgEvent);
   grub_efi_status_t (*submit_command) (struct grub_efi_tpm2_protocol *this,
