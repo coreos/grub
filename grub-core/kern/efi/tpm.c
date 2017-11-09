@@ -161,21 +161,12 @@ grub_tpm_execute(PassThroughToTPM_InputParamBlock *inbuf,
   }
 }
 
-typedef struct {
-	grub_uint32_t pcrindex;
-	grub_uint32_t eventtype;
-	grub_uint8_t digest[20];
-	grub_uint32_t eventsize;
-	grub_uint8_t event[1];
-} Event;
-
-
 static grub_err_t
 grub_tpm1_log_event(grub_efi_handle_t tpm_handle, unsigned char *buf,
 		    grub_size_t size, grub_uint8_t pcr,
 		    const char *description)
 {
-  Event *event;
+  TCG_PCR_EVENT *event;
   grub_efi_status_t status;
   grub_efi_tpm_protocol_t *tpm;
   grub_efi_physical_address_t lastevent;
@@ -188,18 +179,18 @@ grub_tpm1_log_event(grub_efi_handle_t tpm_handle, unsigned char *buf,
   if (!grub_tpm_present(tpm))
     return 0;
 
-  event = grub_zalloc(sizeof (Event) + grub_strlen(description) + 1);
+  event = grub_zalloc(sizeof (TCG_PCR_EVENT) + grub_strlen(description) + 1);
   if (!event)
     return grub_error (GRUB_ERR_OUT_OF_MEMORY,
 		       N_("cannot allocate TPM event buffer"));
 
-  event->pcrindex = pcr;
-  event->eventtype = EV_IPL;
-  event->eventsize = grub_strlen(description) + 1;
-  grub_memcpy(event->event, description, event->eventsize);
+  event->PCRIndex  = pcr;
+  event->EventType = EV_IPL;
+  event->EventSize = grub_strlen(description) + 1;
+  grub_memcpy(event->Event, description, event->EventSize);
 
   algorithm = TCG_ALG_SHA;
-  status = efi_call_7 (tpm->log_extend_event, tpm, buf, (grub_uint64_t) size,
+  status = efi_call_7 (tpm->log_extend_event, tpm, (grub_efi_physical_address_t)buf, (grub_uint64_t) size,
 		       algorithm, event, &eventnum, &lastevent);
 
   switch (status) {
@@ -245,7 +236,7 @@ grub_tpm2_log_event(grub_efi_handle_t tpm_handle, unsigned char *buf,
   event->Size = sizeof(*event) - sizeof(event->Event) + grub_strlen(description) + 1;
   grub_memcpy(event->Event, description, grub_strlen(description) + 1);
 
-  status = efi_call_5 (tpm->hash_log_extend_event, tpm, 0, buf,
+  status = efi_call_5 (tpm->hash_log_extend_event, tpm, 0, (grub_efi_physical_address_t)buf,
 		       (grub_uint64_t) size, event);
 
   switch (status) {
