@@ -201,6 +201,15 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
       if (grub_errno == GRUB_ERR_UNKNOWN_FS)
 	grub_errno = GRUB_ERR_NONE;
 
+#ifdef GRUB_MACHINE_IEEE1275
+      /*
+       * Close device to prevent a double open in grub_normal_print_device_info().
+       * Otherwise it may lead to hangs on some IEEE 1275 platforms.
+       */
+      grub_device_close (dev);
+      dev = NULL;
+#endif
+
       grub_normal_print_device_info (device_name);
     }
   else if (fs)
