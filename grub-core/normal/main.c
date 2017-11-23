@@ -326,7 +326,7 @@ grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
 	{
 	  config = grub_xasprintf ("%s/grub.cfg", prefix);
 	  if (! config)
-	    goto quit;
+	    return 0;
 
 	  grub_enter_normal_mode (config);
 	  grub_free (config);
@@ -337,7 +337,6 @@ grub_cmd_normal (struct grub_command *cmd __attribute__ ((unused)),
   else
     grub_enter_normal_mode (argv[0]);
 
-quit:
   return 0;
 }
 
