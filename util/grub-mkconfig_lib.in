@@ -188,6 +188,7 @@ grub_file_is_not_garbage ()
       *.dpkg-*) return 1 ;; # debian dpkg
       *.rpmsave|*.rpmnew) return 1 ;;
       README*|*/README*)  return 1 ;; # documentation
+      *.sig) return 1 ;; # signatures
     esac
   else
     return 1
