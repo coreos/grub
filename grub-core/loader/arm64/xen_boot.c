@@ -115,6 +115,17 @@ prepare_xen_hypervisor_params (void *xen_boot_fdt)
   if (chosen_node < 1)
     return grub_error (GRUB_ERR_IO, "failed to get chosen node in FDT");
 
+  /*
+   * The address and size are always written using 64-bits value. Set
+   * #address-cells and #size-cells accordingly.
+   */
+  retval = grub_fdt_set_prop32 (xen_boot_fdt, chosen_node, "#address-cells", 2);
+  if (retval)
+    return grub_error (GRUB_ERR_IO, "failed to set #address-cells");
+  retval = grub_fdt_set_prop32 (xen_boot_fdt, chosen_node, "#size-cells", 2);
+  if (retval)
+    return grub_error (GRUB_ERR_IO, "failed to set #size-cells");
+
   grub_dprintf ("xen_loader",
 		"Xen Hypervisor cmdline : %s @ %p size:%d\n",
 		xen_hypervisor->cmdline, xen_hypervisor->cmdline,
