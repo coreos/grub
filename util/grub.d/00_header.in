@@ -221,7 +221,7 @@ case x${GRUB_TERMINAL_OUTPUT} in
   ;;
   x*)
     cat << EOF
-terminal_output ${GRUB_TERMINAL_OUTPUT}
+terminal_output --append ${GRUB_TERMINAL_OUTPUT}
 EOF
   ;;
 esac
