@@ -82,6 +82,20 @@ enum grub_ahci_hba_port_command
     GRUB_AHCI_HBA_PORT_CMD_FR = 0x4000,
   };
 
+enum grub_ahci_hba_port_int_status
+  {
+    GRUB_AHCI_HBA_PORT_IS_IFS  = (1UL << 27),
+    GRUB_AHCI_HBA_PORT_IS_HBDS = (1UL << 28),
+    GRUB_AHCI_HBA_PORT_IS_HBFS = (1UL << 29),
+    GRUB_AHCI_HBA_PORT_IS_TFES = (1UL << 30),
+  };
+
+#define GRUB_AHCI_HBA_PORT_IS_FATAL_MASK ( \
+	GRUB_AHCI_HBA_PORT_IS_IFS | \
+	GRUB_AHCI_HBA_PORT_IS_HBDS | \
+	GRUB_AHCI_HBA_PORT_IS_HBFS | \
+	GRUB_AHCI_HBA_PORT_IS_TFES)
+
 struct grub_ahci_hba
 {
   grub_uint32_t cap;
@@ -1026,7 +1040,8 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 
   endtime = grub_get_time_ms () + (spinup ? 20000 : 20000);
   while ((dev->hba->ports[dev->port].command_issue & 1))
-    if (grub_get_time_ms () > endtime)
+    if (grub_get_time_ms () > endtime ||
+	(dev->hba->ports[dev->port].intstatus & GRUB_AHCI_HBA_PORT_IS_FATAL_MASK))
       {
 	grub_dprintf ("ahci", "AHCI status <%x %x %x %x>\n",
 		      dev->hba->ports[dev->port].command_issue,
@@ -1034,7 +1049,10 @@ grub_ahci_readwrite_real (struct grub_ahci_device *dev,
 		      dev->hba->ports[dev->port].intstatus,
 		      dev->hba->ports[dev->port].task_file_data);
 	dev->hba->ports[dev->port].command_issue = 0;
-	err = grub_error (GRUB_ERR_IO, "AHCI transfer timed out");
+	if (dev->hba->ports[dev->port].intstatus & GRUB_AHCI_HBA_PORT_IS_FATAL_MASK)
+	  err = grub_error (GRUB_ERR_IO, "AHCI transfer error");
+	else
+	  err = grub_error (GRUB_ERR_IO, "AHCI transfer timed out");
 	if (!reset)
 	  grub_ahci_reset_port (dev, 1);
 	break;
