@@ -50,6 +50,10 @@ AC_PREREQ(2.60)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config-util.h])
 
+# Explicitly check for pkg-config early on, since otherwise conditional
+# calls are problematic.
+PKG_PROG_PKG_CONFIG
+
 # Program name transformations
 AC_ARG_PROGRAM
 grub_TRANSFORM([grub-bios-setup])
@@ -1508,29 +1512,22 @@ if test x"$enable_grub_mkfont" = xno ; then
   grub_mkfont_excuse="explicitly disabled"
 fi
 
-if test x"$grub_mkfont_excuse" = x ; then
-  # Check for freetype libraries.
-  AC_CHECK_TOOLS([FREETYPE], [freetype-config])
-  if test "x$FREETYPE" = x ; then
-    grub_mkfont_excuse=["need freetype2 library"]
-  fi
-fi
-
 unset ac_cv_header_ft2build_h
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  FREETYPE_CFLAGS=`$FREETYPE --cflags`
-  FREETYPE_LIBS=`$FREETYPE --libs`
-  SAVED_CPPFLAGS="$CPPFLAGS"
-  SAVED_LIBS="$LIBS"
-  CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS"
-  LIBS="$LIBS $FREETYPE_LIBS"
-  AC_CHECK_HEADERS([ft2build.h], [],
-  	[grub_mkfont_excuse=["need freetype2 headers"]])
-  AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_mkfont_excuse=["freetype2 library unusable"]])
-  CPPFLAGS="$SAVED_CPPFLAGS"
-  LIBS="$SAVED_LIBS"
+  PKG_CHECK_MODULES([FREETYPE], [freetype2], [
+    SAVED_CPPFLAGS="$CPPFLAGS"
+    SAVED_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS"
+    LIBS="$LIBS $FREETYPE_LIBS"
+    AC_CHECK_HEADERS([ft2build.h], [],
+      [grub_mkfont_excuse=["need freetype2 headers"]])
+    AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [],
+      [grub_mkfont_excuse=["freetype2 library unusable"]])
+    CPPFLAGS="$SAVED_CPPFLAGS"
+    LIBS="$SAVED_LIBS"
+  ], [grub_mkfont_excuse=["need freetype2 library"]])
 fi
 
 if test x"$enable_grub_mkfont" = xyes && test x"$grub_mkfont_excuse" != x ; then
@@ -1542,8 +1539,6 @@ else
 enable_grub_mkfont=no
 fi
 AC_SUBST([enable_grub_mkfont])
-AC_SUBST([FREETYPE_CFLAGS])
-AC_SUBST([FREETYPE_LIBS])
 
 SAVED_CC="$CC"
 SAVED_CPP="$CPP"
@@ -1573,25 +1568,21 @@ AC_SUBST([BUILD_WORDS_BIGENDIAN])
 
 if test x"$grub_build_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  AC_CHECK_PROGS([BUILD_FREETYPE], [freetype-config])
-  if test "x$BUILD_FREETYPE" = x ; then
-    grub_build_mkfont_excuse=["need freetype2 library"]
-  fi
-fi
-
-if test x"$grub_build_mkfont_excuse" = x ; then
-  # Check for freetype libraries.
-  BUILD_FREETYPE_CFLAGS=`$BUILD_FREETYPE --cflags`
-  BUILD_FREETYPE_LIBS=`$BUILD_FREETYPE --libs`
-  SAVED_CPPFLAGS_2="$CPPFLAGS"
-  SAVED_LIBS="$LIBS"
-  CPPFLAGS="$CPPFLAGS $BUILD_FREETYPE_CFLAGS"
-  LIBS="$LIBS $BUILD_FREETYPE_LIBS"
-  AC_CHECK_HEADERS([ft2build.h], [],
-  	[grub_build_mkfont_excuse=["need freetype2 headers"]])
-  AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_build_mkfont_excuse=["freetype2 library unusable"]])
-  LIBS="$SAVED_LIBS"
-  CPPFLAGS="$SAVED_CPPFLAGS_2"
+  SAVED_PKG_CONFIG="$PKG_CONFIG"
+  test -z "$BUILD_PKG_CONFIG" || PKG_CONFIG="$BUILD_PKG_CONFIG"
+  PKG_CHECK_MODULES([BUILD_FREETYPE], [freetype2], [
+    SAVED_CPPFLAGS_2="$CPPFLAGS"
+    SAVED_LIBS="$LIBS"
+    CPPFLAGS="$CPPFLAGS $BUILD_FREETYPE_CFLAGS"
+    LIBS="$LIBS $BUILD_FREETYPE_LIBS"
+    AC_CHECK_HEADERS([ft2build.h], [],
+      [grub_build_mkfont_excuse=["need freetype2 headers"]])
+    AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [],
+      [grub_build_mkfont_excuse=["freetype2 library unusable"]])
+    LIBS="$SAVED_LIBS"
+    CPPFLAGS="$SAVED_CPPFLAGS_2"
+  ], [grub_build_mkfont_excuse=["need freetype2 library"]])
+  PKG_CONFIG="$SAVED_PKG_CONFIG"
 fi
 
 if test x"$enable_build_grub_mkfont" = xyes && test x"$grub_build_mkfont_excuse" != x ; then
@@ -1609,9 +1600,6 @@ if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || tes
     AC_MSG_ERROR([qemu, coreboot and loongson ports need build-time grub-mkfont ($grub_build_mkfont_excuse)])
   fi
 fi
-
-AC_SUBST([BUILD_FREETYPE_CFLAGS])
-AC_SUBST([BUILD_FREETYPE_LIBS])
 
 CC="$SAVED_CC"
 CPP="$SAVED_CPP"
