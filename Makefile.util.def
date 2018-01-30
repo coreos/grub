@@ -303,14 +303,14 @@ program = {
   common = grub-core/kern/emu/argp_common.c;
   common = grub-core/osdep/init.c;
 
-  cflags = '$(freetype_cflags)';
+  cflags = '$(FREETYPE_CFLAGS)';
   cppflags = '-DGRUB_MKFONT=1';
 
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;
   ldadd = libgrubkern.a;
   ldadd = grub-core/gnulib/libgnu.a;
-  ldadd = '$(freetype_libs)';
+  ldadd = '$(FREETYPE_LIBS)';
   ldadd = '$(LIBINTL) $(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
   condition = COND_GRUB_MKFONT;
 };

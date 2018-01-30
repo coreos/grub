@@ -1520,12 +1520,12 @@ unset ac_cv_header_ft2build_h
 
 if test x"$grub_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  freetype_cflags=`$FREETYPE --cflags`
-  freetype_libs=`$FREETYPE --libs`
+  FREETYPE_CFLAGS=`$FREETYPE --cflags`
+  FREETYPE_LIBS=`$FREETYPE --libs`
   SAVED_CPPFLAGS="$CPPFLAGS"
   SAVED_LIBS="$LIBS"
-  CPPFLAGS="$CPPFLAGS $freetype_cflags"
-  LIBS="$LIBS $freetype_libs"
+  CPPFLAGS="$CPPFLAGS $FREETYPE_CFLAGS"
+  LIBS="$LIBS $FREETYPE_LIBS"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_mkfont_excuse=["need freetype2 headers"]])
   AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_mkfont_excuse=["freetype2 library unusable"]])
@@ -1542,8 +1542,8 @@ else
 enable_grub_mkfont=no
 fi
 AC_SUBST([enable_grub_mkfont])
-AC_SUBST([freetype_cflags])
-AC_SUBST([freetype_libs])
+AC_SUBST([FREETYPE_CFLAGS])
+AC_SUBST([FREETYPE_LIBS])
 
 SAVED_CC="$CC"
 SAVED_CPP="$CPP"
@@ -1581,12 +1581,12 @@ fi
 
 if test x"$grub_build_mkfont_excuse" = x ; then
   # Check for freetype libraries.
-  build_freetype_cflags=`$BUILD_FREETYPE --cflags`
-  build_freetype_libs=`$BUILD_FREETYPE --libs`
+  BUILD_FREETYPE_CFLAGS=`$BUILD_FREETYPE --cflags`
+  BUILD_FREETYPE_LIBS=`$BUILD_FREETYPE --libs`
   SAVED_CPPFLAGS_2="$CPPFLAGS"
   SAVED_LIBS="$LIBS"
-  CPPFLAGS="$CPPFLAGS $build_freetype_cflags"
-  LIBS="$LIBS $build_freetype_libs"
+  CPPFLAGS="$CPPFLAGS $BUILD_FREETYPE_CFLAGS"
+  LIBS="$LIBS $BUILD_FREETYPE_LIBS"
   AC_CHECK_HEADERS([ft2build.h], [],
   	[grub_build_mkfont_excuse=["need freetype2 headers"]])
   AC_LINK_IFELSE([AC_LANG_CALL([], [FT_Load_Glyph])], [], [grub_build_mkfont_excuse=["freetype2 library unusable"]])
@@ -1610,8 +1610,8 @@ if test x"$enable_build_grub_mkfont" = xno && ( test "x$platform" = xqemu || tes
   fi
 fi
 
-AC_SUBST([build_freetype_cflags])
-AC_SUBST([build_freetype_libs])
+AC_SUBST([BUILD_FREETYPE_CFLAGS])
+AC_SUBST([BUILD_FREETYPE_LIBS])
 
 CC="$SAVED_CC"
 CPP="$SAVED_CPP"
