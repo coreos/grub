@@ -38,6 +38,46 @@
 #include <errno.h>
 #include <ctype.h>
 
+#ifdef __sparc__
+typedef enum
+  {
+    GRUB_OFPATH_SPARC_WWN_ADDR = 1,
+    GRUB_OFPATH_SPARC_TGT_LUN,
+  } ofpath_sparc_addressing;
+
+struct ofpath_sparc_hba
+{
+  grub_uint32_t device_id;
+  ofpath_sparc_addressing addressing;
+};
+
+static struct ofpath_sparc_hba sparc_lsi_hba[] = {
+  /* Rhea, Jasper 320, LSI53C1020/1030. */
+  {0x30, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* SAS-1068E. */
+  {0x50, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* SAS-1064E. */
+  {0x56, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* Pandora SAS-1068E. */
+  {0x58, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* Aspen, Invader, LSI SAS-3108. */
+  {0x5d, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* Niwot, SAS 2108. */
+  {0x79, GRUB_OFPATH_SPARC_TGT_LUN},
+  /* Erie, Falcon, LSI SAS 2008. */
+  {0x72, GRUB_OFPATH_SPARC_WWN_ADDR},
+  /* LSI WarpDrive 6203. */
+  {0x7e, GRUB_OFPATH_SPARC_WWN_ADDR},
+  /* LSI SAS 2308. */
+  {0x87, GRUB_OFPATH_SPARC_WWN_ADDR},
+  /* LSI SAS 3008. */
+  {0x97, GRUB_OFPATH_SPARC_WWN_ADDR},
+  {0, 0}
+};
+
+static const int LSI_VENDOR_ID = 0x1000;
+#endif
+
 #ifdef OFPATH_STANDALONE
 #define xmalloc malloc
 void
@@ -338,6 +378,64 @@ vendor_is_ATA(const char *path)
   return (memcmp(bufcont, "ATA", 3) == 0);
 }
 
+#ifdef __sparc__
+static void
+check_hba_identifiers (const char *sysfs_path, int *vendor, int *device_id)
+{
+  char *ed = strstr (sysfs_path, "host");
+  size_t path_size;
+  char *p, *path;
+  char buf[8];
+  int fd;
+
+  if (!ed)
+    return;
+
+  p = xstrdup (sysfs_path);
+  ed = strstr (p, "host");
+
+  *ed = '\0';
+
+  path_size = (strlen (p) + sizeof ("vendor"));
+  path = xmalloc (path_size);
+
+  if (!path)
+    goto out;
+
+  snprintf (path, path_size, "%svendor", p);
+  fd = open (path, O_RDONLY);
+
+  if (fd < 0)
+    goto out;
+
+  memset (buf, 0, sizeof (buf));
+
+  if (read (fd, buf, sizeof (buf) - 1) < 0)
+    goto out;
+
+  close (fd);
+  sscanf (buf, "%x", vendor);
+
+  snprintf (path, path_size, "%sdevice", p);
+  fd = open (path, O_RDONLY);
+
+  if (fd < 0)
+    goto out;
+
+  memset (buf, 0, sizeof (buf));
+
+  if (read (fd, buf, sizeof (buf) - 1) < 0)
+    goto out;
+
+  close (fd);
+  sscanf (buf, "%x", device_id);
+
+ out:
+  free (path);
+  free (p);
+}
+#endif
+
 static void
 check_sas (const char *sysfs_path, int *tgt, unsigned long int *sas_address)
 {
@@ -399,7 +497,7 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
 {
   const char *p, *digit_string, *disk_name;
   int host, bus, tgt, lun;
-  unsigned long int sas_address;
+  unsigned long int sas_address = 0;
   char *sysfs_path, disk[MAX_DISK_CAT - sizeof ("/fp@0,0")];
   char *of_path;
 
@@ -416,9 +514,8 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
     }
 
   of_path = find_obppath(sysfs_path);
-  free (sysfs_path);
   if (!of_path)
-    return NULL;
+    goto out;
 
   if (strstr (of_path, "qlc"))
     strcat (of_path, "/fp@0,0");
@@ -447,6 +544,46 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
     }
   else
     {
+#ifdef __sparc__
+      ofpath_sparc_addressing addressing = GRUB_OFPATH_SPARC_TGT_LUN;
+      int vendor = 0, device_id = 0;
+      char *optr = disk;
+
+      check_hba_identifiers (sysfs_path, &vendor, &device_id);
+
+      if (vendor == LSI_VENDOR_ID)
+        {
+          struct ofpath_sparc_hba *lsi_hba;
+
+	  /*
+	   * Over time different OF addressing schemes have been supported.
+	   * There is no generic addressing scheme that works across
+	   * every HBA.
+	   */
+          for (lsi_hba = sparc_lsi_hba; lsi_hba->device_id; lsi_hba++)
+            if (lsi_hba->device_id == device_id)
+              {
+                addressing = lsi_hba->addressing;
+                break;
+              }
+        }
+
+      if (addressing == GRUB_OFPATH_SPARC_WWN_ADDR)
+        optr += snprintf (disk, sizeof (disk), "/%s@w%lx,%x", disk_name,
+                          sas_address, lun);
+      else
+        optr += snprintf (disk, sizeof (disk), "/%s@%x,%x", disk_name, tgt,
+                          lun);
+
+      if (*digit_string != '\0')
+        {
+          int part;
+
+          sscanf (digit_string, "%d", &part);
+          snprintf (optr, sizeof (disk) - (optr - disk - 1), ":%c", 'a'
+                    + (part - 1));
+        }
+#else
       if (lun == 0)
         {
           int sas_id = 0;
@@ -494,8 +631,12 @@ of_path_of_scsi(const char *sys_devname __attribute__((unused)), const char *dev
             }
 	  free (lunstr);
         }
+#endif
     }
   strcat(of_path, disk);
+
+ out:
+  free (sysfs_path);
   return of_path;
 }
 
