@@ -210,7 +210,7 @@ grub_install_create_envblk_file (const char *name);
 const char *
 grub_install_get_default_x86_platform (void);
 
-void
+int
 grub_install_register_efi (grub_device_t efidir_grub_dev,
 			   const char *efifile_path,
 			   const char *efi_distributor);

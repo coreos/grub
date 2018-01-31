@@ -1848,9 +1848,13 @@ main (int argc, char *argv[])
 	  if (!removable && update_nvram)
 	    {
 	      /* Try to make this image bootable using the EFI Boot Manager, if available.  */
-	      grub_install_register_efi (efidir_grub_dev,
-					 "\\System\\Library\\CoreServices",
-					 efi_distributor);
+	      int ret;
+	      ret = grub_install_register_efi (efidir_grub_dev,
+					       "\\System\\Library\\CoreServices",
+					       efi_distributor);
+	      if (ret)
+	        grub_util_error (_("efibootmgr failed to register the boot entry: %s"),
+				 strerror (ret));
 	    }
 
 	  grub_device_close (ins_dev);
@@ -1871,6 +1875,7 @@ main (int argc, char *argv[])
 	{
 	  char * efifile_path;
 	  char * part;
+	  int ret;
 
 	  /* Try to make this image bootable using the EFI Boot Manager, if available.  */
 	  if (!efi_distributor || efi_distributor[0] == '\0')
@@ -1887,8 +1892,11 @@ main (int argc, char *argv[])
 			  efidir_grub_dev->disk->name,
 			  (part ? ",": ""), (part ? : ""));
 	  grub_free (part);
-	  grub_install_register_efi (efidir_grub_dev,
-				     efifile_path, efi_distributor);
+	  ret = grub_install_register_efi (efidir_grub_dev,
+					   efifile_path, efi_distributor);
+	  if (ret)
+	    grub_util_error (_("efibootmgr failed to register the boot entry: %s"),
+			     strerror (ret));
 	}
       break;
 

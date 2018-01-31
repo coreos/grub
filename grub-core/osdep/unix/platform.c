@@ -78,19 +78,20 @@ get_ofpathname (const char *dev)
 		   dev);
 }
 
-static void
+static int
 grub_install_remove_efi_entries_by_distributor (const char *efi_distributor)
 {
   int fd;
   pid_t pid = grub_util_exec_pipe ((const char * []){ "efibootmgr", NULL }, &fd);
   char *line = NULL;
   size_t len = 0;
+  int rc;
 
   if (!pid)
     {
       grub_util_warn (_("Unable to open stream from %s: %s"),
 		      "efibootmgr", strerror (errno));
-      return;
+      return errno;
     }
 
   FILE *fp = fdopen (fd, "r");
@@ -98,7 +99,7 @@ grub_install_remove_efi_entries_by_distributor (const char *efi_distributor)
     {
       grub_util_warn (_("Unable to open stream from %s: %s"),
 		      "efibootmgr", strerror (errno));
-      return;
+      return errno;
     }
 
   line = xmalloc (80);
@@ -119,23 +120,25 @@ grub_install_remove_efi_entries_by_distributor (const char *efi_distributor)
       bootnum = line + sizeof ("Boot") - 1;
       bootnum[4] = '\0';
       if (!verbosity)
-	grub_util_exec ((const char * []){ "efibootmgr", "-q",
+	rc = grub_util_exec ((const char * []){ "efibootmgr", "-q",
 	      "-b", bootnum,  "-B", NULL });
       else
-	grub_util_exec ((const char * []){ "efibootmgr",
+	rc = grub_util_exec ((const char * []){ "efibootmgr",
 	      "-b", bootnum, "-B", NULL });
     }
 
   free (line);
+  return rc;
 }
 
-void
+int
 grub_install_register_efi (grub_device_t efidir_grub_dev,
 			   const char *efifile_path,
 			   const char *efi_distributor)
 {
   const char * efidir_disk;
   int efidir_part;
+  int ret;
   efidir_disk = grub_util_biosdisk_get_osdev (efidir_grub_dev->disk);
   efidir_part = efidir_grub_dev->disk->partition ? efidir_grub_dev->disk->partition->number + 1 : 1;
 
@@ -151,23 +154,26 @@ grub_install_register_efi (grub_device_t efidir_grub_dev,
   grub_util_exec ((const char * []){ "modprobe", "-q", "efivars", NULL });
 #endif
   /* Delete old entries from the same distributor.  */
-  grub_install_remove_efi_entries_by_distributor (efi_distributor);
+  ret = grub_install_remove_efi_entries_by_distributor (efi_distributor);
+  if (ret)
+    return ret;
 
   char *efidir_part_str = xasprintf ("%d", efidir_part);
 
   if (!verbosity)
-    grub_util_exec ((const char * []){ "efibootmgr", "-q",
+    ret = grub_util_exec ((const char * []){ "efibootmgr", "-q",
 	  "-c", "-d", efidir_disk,
 	  "-p", efidir_part_str, "-w",
 	  "-L", efi_distributor, "-l", 
 	  efifile_path, NULL });
   else
-    grub_util_exec ((const char * []){ "efibootmgr",
+    ret = grub_util_exec ((const char * []){ "efibootmgr",
 	  "-c", "-d", efidir_disk,
 	  "-p", efidir_part_str, "-w",
 	  "-L", efi_distributor, "-l", 
 	  efifile_path, NULL });
   free (efidir_part_str);
+  return ret;
 }
 
 void
