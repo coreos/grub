@@ -29,7 +29,4 @@ grub_fdt_unload (void);
 grub_err_t
 grub_fdt_install (void);
 
-#define GRUB_EFI_PAGE_SHIFT	12
-#define GRUB_EFI_BYTES_TO_PAGES(bytes)   (((bytes) + 0xfff) >> GRUB_EFI_PAGE_SHIFT)
-
 #endif

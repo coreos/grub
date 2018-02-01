@@ -22,6 +22,13 @@
 #include <grub/err.h>
 #include <grub/types.h>
 
+/* The term "page" in UEFI refers only to a 4 KiB-aligned 4 KiB size region of
+   memory. It is not concerned with underlying translation management concepts,
+   but only used as the granule for memory allocations. */
+#define GRUB_EFI_PAGE_SHIFT             12
+#define GRUB_EFI_PAGE_SIZE              (1 << GRUB_EFI_PAGE_SHIFT)
+#define GRUB_EFI_BYTES_TO_PAGES(bytes)  (((bytes) + 0xfff) >> GRUB_EFI_PAGE_SHIFT)
+
 #define GRUB_MMAP_REGISTER_BY_FIRMWARE  1
 
 grub_err_t grub_machine_mmap_register (grub_uint64_t start, grub_uint64_t size,
