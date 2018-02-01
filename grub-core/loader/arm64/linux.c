@@ -48,7 +48,7 @@ static grub_addr_t initrd_start;
 static grub_addr_t initrd_end;
 
 grub_err_t
-grub_arm64_uefi_check_image (struct grub_arm64_linux_kernel_header * lh)
+grub_arm64_uefi_check_image (struct linux_arm64_kernel_header * lh)
 {
   if (lh->magic != GRUB_ARM64_LINUX_MAGIC)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
@@ -249,7 +249,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_file_t file = 0;
-  struct grub_arm64_linux_kernel_header lh;
+  struct linux_arm64_kernel_header lh;
 
   grub_dl_ref (my_mod);
 

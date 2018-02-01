@@ -67,7 +67,7 @@ typedef enum module_type module_type_t;
 
 struct xen_hypervisor_header
 {
-  struct grub_arm64_linux_kernel_header efi_head;
+  struct linux_arm64_kernel_header efi_head;
 
   /* This is always PE\0\0.  */
   grub_uint8_t signature[GRUB_PE32_SIGNATURE_SIZE];
@@ -469,7 +469,7 @@ grub_cmd_xen_hypervisor (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, &sh, sizeof (sh)) != (long) sizeof (sh))
     goto fail;
   if (grub_arm64_uefi_check_image
-      ((struct grub_arm64_linux_kernel_header *) &sh) != GRUB_ERR_NONE)
+      ((struct linux_arm64_kernel_header *) &sh) != GRUB_ERR_NONE)
     goto fail;
   grub_file_seek (file, 0);
 
