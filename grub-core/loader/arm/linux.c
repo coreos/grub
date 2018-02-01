@@ -46,9 +46,6 @@ static const void *current_fdt;
 
 typedef void (*kernel_entry_t) (int, unsigned long, void *);
 
-#define LINUX_ZIMAGE_OFFSET	0x24
-#define LINUX_ZIMAGE_MAGIC	0x016f2818
-
 #define LINUX_PHYS_OFFSET        (0x00008000)
 #define LINUX_INITRD_PHYS_OFFSET (LINUX_PHYS_OFFSET + 0x02000000)
 #define LINUX_FDT_PHYS_OFFSET    (LINUX_INITRD_PHYS_OFFSET - 0x10000)
@@ -315,6 +312,7 @@ linux_boot (void)
 static grub_err_t
 linux_load (const char *filename, grub_file_t file)
 {
+  struct linux_arm_kernel_header *lh;
   int size;
 
   size = grub_file_size (file);
@@ -337,9 +335,10 @@ linux_load (const char *filename, grub_file_t file)
       return grub_errno;
     }
 
-  if (size > LINUX_ZIMAGE_OFFSET + 4
-      && *(grub_uint32_t *) (linux_addr + LINUX_ZIMAGE_OFFSET)
-      == LINUX_ZIMAGE_MAGIC)
+  lh = (void *) linux_addr;
+
+  if ((grub_size_t) size > sizeof (*lh) &&
+      lh->magic == GRUB_LINUX_ARM_MAGIC_SIGNATURE)
     ;
   else if (size > 0x8000 && *(grub_uint32_t *) (linux_addr) == 0xea000006
 	   && machine_type == GRUB_ARM_MACHINE_TYPE_RASPBERRY_PI)

@@ -20,10 +20,19 @@
 #ifndef GRUB_ARM_LINUX_HEADER
 #define GRUB_ARM_LINUX_HEADER 1
 
-#define LINUX_ZIMAGE_OFFSET 0x24
-#define LINUX_ZIMAGE_MAGIC  0x016f2818
-
 #include "system.h"
+
+#define GRUB_LINUX_ARM_MAGIC_SIGNATURE 0x016f2818
+
+struct linux_arm_kernel_header {
+  grub_uint32_t code0;
+  grub_uint32_t reserved1[8];
+  grub_uint32_t magic;
+  grub_uint32_t start; /* _start */
+  grub_uint32_t end;   /* _edata */
+  grub_uint32_t reserved2[4];
+  grub_uint32_t hdr_offset;
+};
 
 #if defined GRUB_MACHINE_UBOOT
 # include <grub/uboot/uboot.h>
