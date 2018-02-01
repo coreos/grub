@@ -19,6 +19,7 @@
 
 #include <grub/loader.h>
 #include <grub/machine/chainloader.h>
+#include <grub/machine/biosdisk.h>
 #include <grub/machine/memory.h>
 #include <grub/file.h>
 #include <grub/err.h>
@@ -86,9 +87,16 @@ grub_chainloader_unload (void)
 void
 grub_chainloader_patch_bpb (void *bs, grub_device_t dev, grub_uint8_t dl)
 {
-  grub_uint32_t part_start = 0;
+  grub_uint32_t part_start = 0, heads = 0, sectors = 0;
   if (dev && dev->disk)
-    part_start = grub_partition_get_start (dev->disk->partition);
+    {
+      part_start = grub_partition_get_start (dev->disk->partition);
+      if (dev->disk->data)
+        {
+          heads = ((struct grub_biosdisk_data *)(dev->disk->data))->heads;
+          sectors = ((struct grub_biosdisk_data *)(dev->disk->data))->sectors;
+        }
+    }
   if (grub_memcmp ((char *) &((struct grub_ntfs_bpb *) bs)->oem_name,
 		   "NTFS", 4) == 0)
     {
@@ -127,12 +135,20 @@ grub_chainloader_patch_bpb (void *bs, grub_device_t dev, grub_uint8_t dl)
 	{
 	  bpb->num_hidden_sectors = grub_cpu_to_le32 (part_start);
 	  bpb->version_specific.fat12_or_fat16.num_ph_drive = dl;
+          if (sectors)
+            bpb->sectors_per_track = grub_cpu_to_le16 (sectors);
+          if (heads)
+            bpb->num_heads = grub_cpu_to_le16 (heads);
 	  return;
 	}
       if (bpb->version_specific.fat32.sectors_per_fat_32)
 	{
 	  bpb->num_hidden_sectors = grub_cpu_to_le32 (part_start);
 	  bpb->version_specific.fat32.num_ph_drive = dl;
+          if (sectors)
+            bpb->sectors_per_track = grub_cpu_to_le16 (sectors);
+          if (heads)
+            bpb->num_heads = grub_cpu_to_le16 (heads);
 	  return;
 	}
       break;
