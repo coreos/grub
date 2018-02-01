@@ -497,7 +497,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
     case IS_X86_LINUX32:
     case IS_X86_LINUX:
       {
-	struct linux_kernel_header lh;
+	struct linux_i386_kernel_header lh;
 	if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
 	  break;
 	if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55))

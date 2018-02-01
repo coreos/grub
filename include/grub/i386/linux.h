@@ -85,7 +85,7 @@ enum
   };
 
 /* For the Linux/i386 boot protocol version 2.10.  */
-struct linux_kernel_header
+struct linux_i386_kernel_header
 {
   grub_uint8_t code1[0x0020];
   grub_uint16_t cl_magic;		/* Magic number 0xA33F */

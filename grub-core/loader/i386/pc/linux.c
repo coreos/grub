@@ -121,7 +121,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_file_t file = 0;
-  struct linux_kernel_header lh;
+  struct linux_i386_kernel_header lh;
   grub_uint8_t setup_sects;
   grub_size_t real_size;
   grub_ssize_t len;
@@ -387,7 +387,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_size_t size = 0;
   grub_addr_t addr_max, addr_min;
-  struct linux_kernel_header *lh;
+  struct linux_i386_kernel_header *lh;
   grub_uint8_t *initrd_chunk;
   grub_addr_t initrd_addr;
   grub_err_t err;
@@ -405,7 +405,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  lh = (struct linux_kernel_header *) grub_linux_real_chunk;
+  lh = (struct linux_i386_kernel_header *) grub_linux_real_chunk;
 
   if (!(lh->header == grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
 	&& grub_le_to_cpu16 (lh->version) >= 0x0200))
