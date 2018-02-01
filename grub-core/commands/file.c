@@ -508,7 +508,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 
 	/* FIXME: some really old kernels (< 1.3.73) will fail this.  */
 	if (lh.header !=
-	    grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+	    grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
 	    || grub_le_to_cpu16 (lh.version) < 0x0200)
 	  break;
 
@@ -521,7 +521,7 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
 	/* FIXME: 2.03 is not always good enough (Linux 2.4 can be 2.03 and
 	   still not support 32-bit boot.  */
 	if (lh.header !=
-	    grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+	    grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
 	    || grub_le_to_cpu16 (lh.version) < 0x0203)
 	  break;
 

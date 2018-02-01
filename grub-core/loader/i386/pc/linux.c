@@ -169,7 +169,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   maximal_cmdline_size = 256;
 
-  if (lh.header == grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (lh.header == grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
       && grub_le_to_cpu16 (lh.version) >= 0x0200)
     {
       grub_linux_is_bzimage = (lh.loadflags & GRUB_LINUX_FLAG_BIG_KERNEL);
@@ -322,7 +322,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
       || grub_le_to_cpu16 (lh.version) < 0x0200)
     /* Clear the heap space.  */
     grub_memset (grub_linux_real_chunk
@@ -407,7 +407,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   lh = (struct linux_kernel_header *) grub_linux_real_chunk;
 
-  if (!(lh->header == grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (!(lh->header == grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
 	&& grub_le_to_cpu16 (lh->version) >= 0x0200))
     {
       grub_error (GRUB_ERR_BAD_OS, "the kernel is too old for initrd");

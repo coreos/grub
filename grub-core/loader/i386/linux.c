@@ -721,7 +721,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   /* FIXME: 2.03 is not always good enough (Linux 2.4 can be 2.03 and
      still not support 32-bit boot.  */
-  if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+  if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
       || grub_le_to_cpu16 (lh.version) < 0x0203)
     {
       grub_error (GRUB_ERR_BAD_OS, "version too old for 32-bit boot"

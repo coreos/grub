@@ -43,7 +43,7 @@ grub_xen_file (grub_file_t file)
     goto fail;
 
   if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55)
-      || lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
+      || lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_I386_MAGIC_SIGNATURE)
       || grub_le_to_cpu16 (lh.version) < 0x0208)
     {
       grub_error (GRUB_ERR_BAD_OS, "version too old for xen boot");
