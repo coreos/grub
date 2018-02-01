@@ -16,8 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_LINUX_MACHINE_HEADER
-#define GRUB_LINUX_MACHINE_HEADER	1
+#ifndef GRUB_I386_LINUX_HEADER
+#define GRUB_I386_LINUX_HEADER	1
 
 #define GRUB_LINUX_MAGIC_SIGNATURE	0x53726448      /* "HdrS" */
 #define GRUB_LINUX_DEFAULT_SETUP_SECTS	4
@@ -312,4 +312,4 @@ struct linux_kernel_params
 } GRUB_PACKED;
 #endif /* ! ASM_FILE */
 
-#endif /* ! GRUB_LINUX_MACHINE_HEADER */
+#endif /* ! GRUB_I386_LINUX_HEADER */

@@ -17,8 +17,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GRUB_LINUX_CPU_HEADER
-#define GRUB_LINUX_CPU_HEADER 1
+#ifndef GRUB_ARM_LINUX_HEADER
+#define GRUB_ARM_LINUX_HEADER 1
 
 #define LINUX_ZIMAGE_OFFSET 0x24
 #define LINUX_ZIMAGE_MAGIC  0x016f2818
@@ -66,4 +66,4 @@ grub_arm_firmware_get_machine_type (void)
 
 #define FDT_ADDITIONAL_ENTRIES_SIZE	0x300
 
-#endif /* ! GRUB_LINUX_CPU_HEADER */
+#endif /* ! GRUB_ARM_LINUX_HEADER */
