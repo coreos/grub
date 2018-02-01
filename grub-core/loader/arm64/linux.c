@@ -50,7 +50,7 @@ static grub_addr_t initrd_end;
 grub_err_t
 grub_arm64_uefi_check_image (struct linux_arm64_kernel_header * lh)
 {
-  if (lh->magic != GRUB_ARM64_LINUX_MAGIC)
+  if (lh->magic != GRUB_LINUX_ARM64_MAGIC_SIGNATURE)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
 
   if ((lh->code0 & 0xffff) != GRUB_PE32_MAGIC)
