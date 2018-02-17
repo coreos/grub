@@ -98,6 +98,7 @@ grub_arch_efiemu_relocate_symbols64 (grub_efiemu_segment_t segs,
 		    break;
 
 		  case R_X86_64_PC32:
+		  case R_X86_64_PLT32:
 		    err = grub_efiemu_write_value (addr,
 						   *addr32 + rel->r_addend
 						   + sym.off

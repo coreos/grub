@@ -19,6 +19,7 @@ struct grub_module_verifier_arch archs[] = {
       -1
     }, (int[]){
       R_X86_64_PC32,
+      R_X86_64_PLT32,
       -1
     }
   },
