@@ -350,6 +350,50 @@ of_path_of_ide(const char *sys_devname __attribute__((unused)), const char *devi
   return ret;
 }
 
+static char *
+of_path_of_nvme(const char *sys_devname __attribute__((unused)),
+	        const char *device,
+	        const char *devnode __attribute__((unused)),
+	        const char *devicenode)
+{
+  char *sysfs_path, *of_path, disk[MAX_DISK_CAT];
+  const char *digit_string, *part_end;
+
+  digit_string = trailing_digits (device);
+  part_end = devicenode + strlen (devicenode) - 1;
+
+  if ((digit_string != '\0') && (*part_end == 'p'))
+    {
+      /* We have a partition number, strip it off. */
+      int part;
+      char *nvmedev, *end;
+
+      nvmedev = strdup (devicenode);
+
+      if (!nvmedev)
+        return NULL;
+
+      end = nvmedev + strlen (nvmedev) - 1;
+      /* Remove the p. */
+      *end = '\0';
+      sscanf (digit_string, "%d", &part);
+      snprintf (disk, sizeof (disk), "/disk@1:%c", 'a' + (part - 1));
+      sysfs_path = block_device_get_sysfs_path_and_link (nvmedev);
+      free (nvmedev);
+    }
+  else
+    {
+      /* We do not have the parition. */
+      snprintf (disk, sizeof (disk), "/disk@1");
+      sysfs_path = block_device_get_sysfs_path_and_link (device);
+    }
+
+  of_path = find_obppath (sysfs_path);
+  free (sysfs_path);
+  strcat (of_path, disk);
+  return of_path;
+}
+
 static int
 vendor_is_ATA(const char *path)
 {
@@ -681,6 +725,9 @@ grub_util_devname_to_ofpath (const char *sys_devname)
     /* All the models I've seen have a devalias "floppy".
        New models have no floppy at all. */
     ofpath = xstrdup ("floppy");
+  else if (device[0] == 'n' && device[1] == 'v' && device[2] == 'm'
+           && device[3] == 'e')
+    ofpath = of_path_of_nvme (name_buf, device, devnode, devicenode);
   else
     {
       grub_util_warn (_("unknown device type %s"), device);
