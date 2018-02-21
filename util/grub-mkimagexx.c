@@ -50,6 +50,15 @@
 
 #pragma GCC diagnostic ignored "-Wcast-align"
 
+#define GRUB_MKIMAGEXX
+#if !defined(MKIMAGE_ELF32) && !defined(MKIMAGE_ELF64)
+#if __SIZEOF_POINTER__ == 8
+#include "grub-mkimage64.c"
+#else
+#include "grub-mkimage32.c"
+#endif
+#endif
+
 /* These structures are defined according to the CHRP binding to IEEE1275,
    "Client Program Format" section.  */
 

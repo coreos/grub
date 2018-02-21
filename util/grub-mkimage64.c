@@ -19,4 +19,6 @@
 # define ELF_ST_TYPE(val)		ELF64_ST_TYPE(val)
 #define XEN_NOTE_SIZE 120
 
+#ifndef GRUB_MKIMAGEXX
 #include "grub-mkimagexx.c"
+#endif
