@@ -725,6 +725,12 @@ arm_get_trampoline_size (Elf_Ehdr *e,
 }
 #endif
 
+static int
+SUFFIX (is_kept_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target);
+static int
+SUFFIX (is_kept_reloc_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target,
+				struct section_metadata *smd);
+
 /* Deal with relocation information. This function relocates addresses
    within the virtual address space starting from 0. So only relative
    addresses can be fully resolved. Absolute addresses must be relocated
@@ -758,6 +764,14 @@ SUFFIX (relocate_addrs) (Elf_Ehdr *e, struct section_metadata *smd,
 	Elf_Addr target_section_addr;
 	Elf_Shdr *target_section;
 	Elf_Word j;
+
+	if (!SUFFIX (is_kept_section) (s, image_target) &&
+	    !SUFFIX (is_kept_reloc_section) (s, image_target, smd))
+	  {
+	    grub_util_info ("not translating relocations for omitted section %s",
+			smd->strtab + grub_le_to_cpu32 (s->sh_name));
+	    continue;
+	  }
 
 	target_section_index = grub_target_to_host32 (s->sh_info);
 	target_section_addr = smd->addrs[target_section_index];
@@ -1664,6 +1678,13 @@ make_reloc_section (Elf_Ehdr *e, struct grub_mkimage_layout *layout,
 	Elf_Addr section_address;
 	Elf_Word j;
 
+	if (!SUFFIX (is_kept_reloc_section) (s, image_target, smd))
+	  {
+	    grub_util_info ("not translating the skipped relocation section %s",
+			    smd->strtab + grub_le_to_cpu32 (s->sh_name));
+	    continue;
+	  }
+
 	grub_util_info ("translating the relocation section %s",
 			smd->strtab + grub_le_to_cpu32 (s->sh_name));
 
@@ -1737,6 +1758,56 @@ SUFFIX (is_bss_section) (Elf_Shdr *s, const struct grub_install_image_target_des
     return 0;
   return ((grub_target_to_host (s->sh_flags) & (SHF_EXECINSTR | SHF_ALLOC))
 	  == SHF_ALLOC) && (grub_target_to_host32 (s->sh_type) == SHT_NOBITS);
+}
+
+/* Determine if a section is going to be in the final output */
+static int
+SUFFIX (is_kept_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target)
+{
+  /* We keep .text and .data */
+  if (SUFFIX (is_text_section) (s, image_target)
+      || SUFFIX (is_data_section) (s, image_target))
+    return 1;
+
+  /*
+   * And we keep .bss if we're producing PE binaries or the target doesn't
+   * have a relocating loader.  Platforms other than EFI and U-boot shouldn't
+   * have .bss in their binaries as we build with -Wl,-Ttext.
+   */
+  if (SUFFIX (is_bss_section) (s, image_target)
+      && (image_target->id == IMAGE_EFI || !is_relocatable (image_target)))
+    return 1;
+
+  /* Otherwise this is not a section we're keeping in the final output. */
+  return 0;
+}
+
+static int
+SUFFIX (is_kept_reloc_section) (Elf_Shdr *s, const struct grub_install_image_target_desc *image_target,
+				struct section_metadata *smd)
+{
+  int i;
+  int r = 0;
+  const char *name = smd->strtab + grub_host_to_target32 (s->sh_name);
+
+  if (!strncmp (name, ".rela.", 6))
+    name += 5;
+  else if (!strncmp (name, ".rel.", 5))
+    name += 4;
+  else
+    return 1;
+
+  for (i = 0, s = smd->sections; i < smd->num_sections;
+       i++, s = (Elf_Shdr *) ((char *) s + smd->section_entsize))
+    {
+      const char *sname = smd->strtab + grub_host_to_target32 (s->sh_name);
+      if (strcmp (sname, name))
+	continue;
+
+      return SUFFIX (is_kept_section) (s, image_target);
+    }
+
+  return r;
 }
 
 /* Return if the ELF header is valid.  */
@@ -2063,14 +2134,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
   for (i = 0, s = smd.sections;
        i < smd.num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + smd.section_entsize))
-    if (SUFFIX (is_data_section) (s, image_target)
-	/* Explicitly initialize BSS
-	   when producing PE32 to avoid a bug in EFI implementations.
-	   Platforms other than EFI and U-boot shouldn't have .bss in
-	   their binaries as we build with -Wl,-Ttext.
-	*/
-	|| (SUFFIX (is_bss_section) (s, image_target) && (image_target->id == IMAGE_EFI || !is_relocatable (image_target)))
-	|| SUFFIX (is_text_section) (s, image_target))
+    if (SUFFIX (is_kept_section) (s, image_target))
       {
 	if (grub_target_to_host32 (s->sh_type) == SHT_NOBITS)
 	  memset (out_img + smd.addrs[i], 0,
