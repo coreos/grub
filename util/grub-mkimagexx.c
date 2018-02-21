@@ -509,7 +509,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
    Return the address of a start symbol.  */
 static Elf_Addr
 SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
-			   Elf_Shdr *symtab_section, Elf_Addr *section_addresses,
+			   Elf_Shdr *symtab_section, Elf_Addr *section_vaddresses,
 			   Elf_Half section_entsize, Elf_Half num_sections,
 			   void *jumpers, Elf_Addr jumpers_addr,
 			   Elf_Addr bss_start, Elf_Addr end,
@@ -520,15 +520,15 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
   Elf_Addr start_address = (Elf_Addr) -1;
   Elf_Sym *sym;
   Elf_Word i;
-  Elf_Shdr *strtab_section;
-  const char *strtab;
+  Elf_Shdr *symtab_link_section;
+  const char *symtab;
   grub_uint64_t *jptr = jumpers;
 
-  strtab_section
+  symtab_link_section
     = (Elf_Shdr *) ((char *) sections
 		      + (grub_target_to_host32 (symtab_section->sh_link)
 			 * section_entsize));
-  strtab = (char *) e + grub_target_to_host (strtab_section->sh_offset);
+  symtab = (char *) e + grub_target_to_host (symtab_link_section->sh_offset);
 
   symtab_size = grub_target_to_host (symtab_section->sh_size);
   sym_size = grub_target_to_host (symtab_section->sh_entsize);
@@ -542,7 +542,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
       Elf_Section cur_index;
       const char *name;
 
-      name = strtab + grub_target_to_host32 (sym->st_name);
+      name = symtab + grub_target_to_host32 (sym->st_name);
 
       cur_index = grub_target_to_host16 (sym->st_shndx);
       if (cur_index == STN_ABS)
@@ -565,7 +565,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
       else
 	{
 	  sym->st_value = (grub_target_to_host (sym->st_value)
-			   + section_addresses[cur_index]);
+			   + section_vaddresses[cur_index]);
 	}
 
       if (image_target->elf_target == EM_IA_64 && ELF_ST_TYPE (sym->st_info)
@@ -580,7 +580,7 @@ SUFFIX (relocate_symbols) (Elf_Ehdr *e, Elf_Shdr *sections,
       grub_util_info ("locating %s at 0x%"  GRUB_HOST_PRIxLONG_LONG
 		      " (0x%"  GRUB_HOST_PRIxLONG_LONG ")", name,
 		      (unsigned long long) sym->st_value,
-		      (unsigned long long) section_addresses[cur_index]);
+		      (unsigned long long) section_vaddresses[cur_index]);
 
       if (start_address == (Elf_Addr)-1)
 	if (strcmp (name, "_start") == 0 || strcmp (name, "start") == 0)
@@ -1644,7 +1644,7 @@ create_u64_fixups (struct translate_context *ctx,
 /* Make a .reloc section.  */
 static void
 make_reloc_section (Elf_Ehdr *e, struct grub_mkimage_layout *layout,
-		    Elf_Addr *section_addresses, Elf_Shdr *sections,
+		    Elf_Addr *section_vaddresses, Elf_Shdr *sections,
 		    Elf_Half section_entsize, Elf_Half num_sections,
 		    const char *strtab,
 		    const struct grub_install_image_target_desc *image_target)
@@ -1674,7 +1674,7 @@ make_reloc_section (Elf_Ehdr *e, struct grub_mkimage_layout *layout,
 	rtab_offset = grub_target_to_host (s->sh_offset);
 	num_rs = rtab_size / r_size;
 
-	section_address = section_addresses[grub_le_to_cpu32 (s->sh_info)];
+	section_address = section_vaddresses[grub_le_to_cpu32 (s->sh_info)];
 
 	for (j = 0, r = (Elf_Rel *) ((char *) e + rtab_offset);
 	     j < num_rs;
