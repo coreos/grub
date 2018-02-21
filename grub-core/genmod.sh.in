@@ -58,6 +58,10 @@ if test x@TARGET_APPLE_LINKER@ != x1; then
 		-K grub_mod_init -K grub_mod_fini \
 		-K _grub_mod_init -K _grub_mod_fini \
 		-R .note.gnu.gold-version -R .note.GNU-stack \
+		-R .gnu.build.attributes \
+		-R .rel.gnu.build.attributes \
+		-R .rela.gnu.build.attributes \
+		-R .eh_frame -R .rela.eh_frame -R .rel.eh_frame \
 		-R .note -R .comment -R .ARM.exidx $tmpfile || exit 1
 	fi
 	if ! test -z "${TARGET_OBJ2ELF}"; then
