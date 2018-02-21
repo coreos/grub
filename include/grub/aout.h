@@ -52,6 +52,7 @@
 #define GRUB_AOUT_HEADER 1
 
 #include <grub/types.h>
+#include <grub/file.h>
 
 struct grub_aout32_header
 {
