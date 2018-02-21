@@ -1784,18 +1784,19 @@ SUFFIX (put_section) (Elf_Shdr *s, int i,
 	return current_address;
 }
 
-/* Locate section addresses by merging code sections and data sections
-   into .text and .data, respectively. Return the array of section
-   addresses.  */
-static Elf_Addr *
+/*
+ * Locate section addresses by merging code sections and data sections
+ * into .text and .data, respectively.
+ */
+static void
 SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
 			  Elf_Shdr *sections, Elf_Half section_entsize,
-			  Elf_Half num_sections, const char *strtab,
+			  Elf_Half num_sections, Elf_Addr *section_addresses,
+			  Elf_Addr *section_vaddresses, const char *strtab,
 			  struct grub_mkimage_layout *layout,
 			  const struct grub_install_image_target_desc *image_target)
 {
   int i;
-  Elf_Addr *section_addresses;
   Elf_Shdr *s;
 
   layout->align = 1;
@@ -1803,8 +1804,6 @@ SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
   if (image_target->elf_target == EM_AARCH64)
     layout->align = 4096;
 
-  section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
-  memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
 
   layout->kernel_size = 0;
 
@@ -1880,12 +1879,16 @@ SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
   for (i = 0, s = sections;
        i < num_sections;
        i++, s = (Elf_Shdr *) ((char *) s + section_entsize))
-    if (SUFFIX (is_bss_section) (s, image_target))
-      layout->end = SUFFIX (put_section) (s, i,
-					  layout->end,
-					  section_addresses,
-					  strtab,
-					  image_target);
+    {
+      if (SUFFIX (is_bss_section) (s, image_target))
+	layout->end = SUFFIX (put_section) (s, i, layout->end,
+					    section_addresses, strtab,
+					    image_target);
+      /*
+       * This must to be in the last time this function passes through the loop.
+       */
+      section_vaddresses[i] = section_addresses[i] + image_target->vaddr_offset;
+    }
 
   layout->end = ALIGN_UP (layout->end + image_target->vaddr_offset,
 			      image_target->section_align) - image_target->vaddr_offset;
@@ -1896,8 +1899,6 @@ SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
   */
   if (image_target->id == IMAGE_EFI || !is_relocatable (image_target))
     layout->kernel_size = layout->end;
-
-  return section_addresses;
 }
 
 char *
@@ -1946,16 +1947,14 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 		      + grub_host_to_target16 (e->e_shstrndx) * section_entsize);
   strtab = (char *) e + grub_host_to_target_addr (s->sh_offset);
 
-  section_addresses = SUFFIX (locate_sections) (e, kernel_path,
-						sections, section_entsize,
-						num_sections, strtab,
-						layout,
-						image_target);
+  section_addresses = xmalloc (sizeof (*section_addresses) * num_sections);
+  memset (section_addresses, 0, sizeof (*section_addresses) * num_sections);
+  section_vaddresses = xmalloc (sizeof (*section_vaddresses) * num_sections);
+  memset (section_vaddresses, 0, sizeof (*section_vaddresses) * num_sections);
 
-  section_vaddresses = xmalloc (sizeof (*section_addresses) * num_sections);
-
-  for (i = 0; i < num_sections; i++)
-    section_vaddresses[i] = section_addresses[i] + image_target->vaddr_offset;
+  SUFFIX (locate_sections) (e, kernel_path, sections, section_entsize, num_sections,
+			    section_addresses, section_vaddresses, strtab, layout,
+			    image_target);
 
   if (!is_relocatable (image_target))
     {
