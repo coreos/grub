@@ -117,7 +117,7 @@ grub_chainloader_patch_bpb (void *bs, grub_device_t dev, grub_uint8_t dl)
 
       if (bpb->num_reserved_sectors == 0)
 	break;
-      if (bpb->num_total_sectors_16 == 0 || bpb->num_total_sectors_32 == 0)
+      if (bpb->num_total_sectors_16 == 0 && bpb->num_total_sectors_32 == 0)
 	break;
 
       if (bpb->num_fats == 0)

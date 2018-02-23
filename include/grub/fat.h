@@ -28,20 +28,15 @@ struct grub_fat_bpb
   grub_uint16_t bytes_per_sector;
   grub_uint8_t sectors_per_cluster;
   grub_uint16_t num_reserved_sectors;
-  grub_uint8_t num_fats;
-  /* 0x10 */
+  grub_uint8_t num_fats;		/* 0x10 */
   grub_uint16_t num_root_entries;
   grub_uint16_t num_total_sectors_16;
-  grub_uint8_t media;
-  /*0 x15 */
+  grub_uint8_t media;			/* 0x15 */
   grub_uint16_t sectors_per_fat_16;
-  grub_uint16_t sectors_per_track;
-  /*0 x19 */
-  grub_uint16_t num_heads;
-  /*0 x1b */
-  grub_uint32_t num_hidden_sectors;
-  /* 0x1f */
-  grub_uint32_t num_total_sectors_32;
+  grub_uint16_t sectors_per_track;	/* 0x18 */
+  grub_uint16_t num_heads;		/* 0x1A */
+  grub_uint32_t num_hidden_sectors;	/* 0x1C */
+  grub_uint32_t num_total_sectors_32;	/* 0x20 */
   union
   {
     struct
