@@ -1398,6 +1398,25 @@ for all respectively normal entries.
 The values of these options replace the values of @samp{GRUB_CMDLINE_LINUX}
 and @samp{GRUB_CMDLINE_LINUX_DEFAULT} for Linux and Xen menu entries.
 
+@item GRUB_EARLY_INITRD_LINUX_CUSTOM
+@itemx GRUB_EARLY_INITRD_LINUX_STOCK
+List of space-separated early initrd images to be loaded from @samp{/boot}.
+This is for loading things like CPU microcode, firmware, ACPI tables, crypto
+keys, and so on. These early images will be loaded in the order declared,
+and all will be loaded before the actual functional initrd image.
+
+@samp{GRUB_EARLY_INITRD_LINUX_STOCK} is for your distribution to declare
+images that are provided by the distribution. It should not be modified
+without understanding the consequences. They will be loaded first.
+
+@samp{GRUB_EARLY_INITRD_LINUX_CUSTOM} is for your custom created images.
+
+The default stock images are as follows, though they may be overridden by
+your distribution:
+@example
+intel-uc.img intel-ucode.img amd-uc.img amd-ucode.img early_ucode.cpio microcode.cpio
+@end example
+
 @item GRUB_DISABLE_LINUX_UUID
 Normally, @command{grub-mkconfig} will generate menu entries that use
 universally-unique identifiers (UUIDs) to identify the root filesystem to

@@ -136,9 +136,13 @@ EOF
   if test -n "${initrd}" ; then
     # TRANSLATORS: ramdisk isn't identifier. Should be translated.
     message="$(gettext_printf "Loading initial ramdisk ...")"
+    initrd_path=
+    for i in ${initrd}; do
+      initrd_path="${initrd_path} ${rel_dirname}/${i}"
+    done
     sed "s/^/$submenu_indentation/" << EOF
 	echo	'$(echo "$message" | grub_quote)'
-	initrd	${rel_dirname}/${initrd}
+	initrd	$(echo $initrd_path)
 EOF
   fi
   sed "s/^/$submenu_indentation/" << EOF
@@ -188,7 +192,15 @@ while [ "x$list" != "x" ] ; do
   alt_version=`echo $version | sed -e "s,\.old$,,g"`
   linux_root_device_thisversion="${LINUX_ROOT_DEVICE}"
 
-  initrd=
+  initrd_early=
+  for i in ${GRUB_EARLY_INITRD_LINUX_STOCK} \
+	   ${GRUB_EARLY_INITRD_LINUX_CUSTOM}; do
+    if test -e "${dirname}/${i}" ; then
+      initrd_early="${initrd_early} ${i}"
+    fi
+  done
+
+  initrd_real=
   for i in "initrd.img-${version}" "initrd-${version}.img" "initrd-${version}.gz" \
 	   "initrd-${version}" "initramfs-${version}.img" \
 	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
@@ -198,10 +210,21 @@ while [ "x$list" != "x" ] ; do
 	   "initramfs-genkernel-${GENKERNEL_ARCH}-${version}" \
 	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}"; do
     if test -e "${dirname}/${i}" ; then
-      initrd="$i"
+      initrd_real="${i}"
       break
     fi
   done
+
+  initrd=
+  if test -n "${initrd_early}" || test -n "${initrd_real}"; then
+    initrd="${initrd_early} ${initrd_real}"
+
+    initrd_display=
+    for i in ${initrd}; do
+      initrd_display="${initrd_display} ${dirname}/${i}"
+    done
+    gettext_printf "Found initrd image: %s\n" "$(echo $initrd_display)" >&2
+  fi
 
   config=
   for i in "${dirname}/config-${version}" "${dirname}/config-${alt_version}" "/etc/kernels/kernel-config-${version}" ; do
@@ -216,9 +239,7 @@ while [ "x$list" != "x" ] ; do
       initramfs=`grep CONFIG_INITRAMFS_SOURCE= "${config}" | cut -f2 -d= | tr -d \"`
   fi
 
-  if test -n "${initrd}" ; then
-    gettext_printf "Found initrd image: %s\n" "${dirname}/${initrd}" >&2
-  elif test -z "${initramfs}" ; then
+  if test -z "${initramfs}" && test -z "${initrd_real}" ; then
     # "UUID=" and "ZFS=" magic is parsed by initrd or initramfs.  Since there's
     # no initrd or builtin initramfs, it can't work here.
     linux_root_device_thisversion=${GRUB_DEVICE}

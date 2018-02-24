@@ -147,6 +147,12 @@ if [ x"$GRUB_FS" = xunknown ]; then
     GRUB_FS="$(stat -f --printf=%T / || echo unknown)"
 fi
 
+# Provide a default set of stock linux early initrd images.
+# Define here so the list can be modified in the sourced config file.
+if [ "x${GRUB_EARLY_INITRD_LINUX_STOCK}" = "x" ]; then
+	GRUB_EARLY_INITRD_LINUX_STOCK="intel-uc.img intel-ucode.img amd-uc.img amd-ucode.img early_ucode.cpio microcode.cpio"
+fi
+
 if test -f ${sysconfdir}/default/grub ; then
   . ${sysconfdir}/default/grub
 fi
@@ -211,6 +217,8 @@ export GRUB_DEFAULT \
   GRUB_CMDLINE_NETBSD \
   GRUB_CMDLINE_NETBSD_DEFAULT \
   GRUB_CMDLINE_GNUMACH \
+  GRUB_EARLY_INITRD_LINUX_CUSTOM \
+  GRUB_EARLY_INITRD_LINUX_STOCK \
   GRUB_TERMINAL_INPUT \
   GRUB_TERMINAL_OUTPUT \
   GRUB_SERIAL_COMMAND \
