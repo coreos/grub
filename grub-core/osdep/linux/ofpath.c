@@ -362,7 +362,7 @@ of_path_of_nvme(const char *sys_devname __attribute__((unused)),
   digit_string = trailing_digits (device);
   part_end = devicenode + strlen (devicenode) - 1;
 
-  if ((digit_string != '\0') && (*part_end == 'p'))
+  if ((*digit_string != '\0') && (*part_end == 'p'))
     {
       /* We have a partition number, strip it off. */
       int part;
