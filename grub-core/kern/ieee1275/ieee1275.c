@@ -19,6 +19,7 @@
 
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/types.h>
+#include <grub/misc.h>
 
 #define IEEE1275_PHANDLE_INVALID  ((grub_ieee1275_cell_t) -1)
 #define IEEE1275_IHANDLE_INVALID  ((grub_ieee1275_cell_t) 0)
@@ -521,6 +522,50 @@ grub_ieee1275_decode_unit4 (grub_ieee1275_ihandle_t ihandle,
   *lun_lo = args.lun_l;
   *lun_hi = args.lun_h;
   return 0;
+}
+
+char *
+grub_ieee1275_encode_uint4 (grub_ieee1275_ihandle_t ihandle,
+                            grub_uint32_t phy_lo, grub_uint32_t phy_hi,
+                            grub_uint32_t lun_lo, grub_uint32_t lun_hi,
+                            grub_size_t *size)
+{
+  char *addr;
+  struct encode_args
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t tgt_h;
+    grub_ieee1275_cell_t tgt_l;
+    grub_ieee1275_cell_t lun_h;
+    grub_ieee1275_cell_t lun_l;
+    grub_ieee1275_cell_t catch_result;
+    grub_ieee1275_cell_t size;
+    grub_ieee1275_cell_t addr;
+  }
+  args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 6, 3);
+  args.method = (grub_ieee1275_cell_t) "encode-unit";
+  args.ihandle = ihandle;
+
+  args.tgt_l = phy_lo;
+  args.tgt_h = phy_hi;
+  args.lun_l = lun_lo;
+  args.lun_h = lun_hi;
+  args.catch_result = 1;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.catch_result))
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "encode-unit failed\n");
+      return 0;
+    }
+
+  addr = (void *)args.addr;
+  *size = args.size;
+  addr = grub_strdup ((char *)args.addr);
+  return addr;
 }
 
 int
