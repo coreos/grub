@@ -483,6 +483,47 @@ grub_ieee1275_close (grub_ieee1275_ihandle_t ihandle)
 }
 
 int
+grub_ieee1275_decode_unit4 (grub_ieee1275_ihandle_t ihandle,
+                            void *addr, grub_size_t size,
+                            grub_uint32_t *phy_lo, grub_uint32_t *phy_hi,
+                            grub_uint32_t *lun_lo, grub_uint32_t *lun_hi)
+{
+  struct decode_args
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t size;
+    grub_ieee1275_cell_t addr;
+    grub_ieee1275_cell_t catch_result;
+    grub_ieee1275_cell_t tgt_h;
+    grub_ieee1275_cell_t tgt_l;
+    grub_ieee1275_cell_t lun_h;
+    grub_ieee1275_cell_t lun_l;
+  }
+  args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 4, 5);
+  args.method = (grub_ieee1275_cell_t) "decode-unit";
+  args.ihandle = ihandle;
+  args.size = size;
+  args.addr = (grub_ieee1275_cell_t) addr;
+  args.catch_result = 1;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.catch_result))
+    {
+      grub_error (GRUB_ERR_OUT_OF_RANGE, "decode-unit failed\n");
+      return -1;
+    }
+
+  *phy_lo = args.tgt_l;
+  *phy_hi = args.tgt_h;
+  *lun_lo = args.lun_l;
+  *lun_hi = args.lun_h;
+  return 0;
+}
+
+int
 grub_ieee1275_claim (grub_addr_t addr, grub_size_t size, unsigned int align,
 		     grub_addr_t *result)
 {

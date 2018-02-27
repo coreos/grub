@@ -210,7 +210,12 @@ int EXPORT_FUNC(grub_ieee1275_set_property) (grub_ieee1275_phandle_t phandle,
 int EXPORT_FUNC(grub_ieee1275_set_color) (grub_ieee1275_ihandle_t ihandle,
 					  int index, int r, int g, int b);
 int EXPORT_FUNC(grub_ieee1275_milliseconds) (grub_uint32_t *msecs);
-
+int EXPORT_FUNC(grub_ieee1275_decode_unit4) (grub_ieee1275_ihandle_t ihandle,
+                                             void *addr, grub_size_t size,
+                                             grub_uint32_t *phy_lo,
+                                             grub_uint32_t *phy_hi,
+                                             grub_uint32_t *lun_lo,
+                                             grub_uint32_t *lun_hi);
 
 grub_err_t EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
