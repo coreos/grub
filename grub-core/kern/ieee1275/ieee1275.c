@@ -784,3 +784,26 @@ grub_ieee1275_no_data_command (grub_ieee1275_ihandle_t ihandle,
 
   return args.catch_result;
 }
+
+int
+grub_ieee1275_get_block_size (grub_ieee1275_ihandle_t ihandle)
+{
+  struct size_args_ieee1275
+    {
+      struct grub_ieee1275_common_hdr common;
+      grub_ieee1275_cell_t method;
+      grub_ieee1275_cell_t ihandle;
+      grub_ieee1275_cell_t result;
+      grub_ieee1275_cell_t size;
+    } args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 2);
+  args.method = (grub_ieee1275_cell_t) "block-size";
+  args.ihandle = ihandle;
+  args.result = 1;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.result))
+    return 0;
+
+  return args.size;
+}

@@ -228,6 +228,7 @@ char *EXPORT_FUNC(grub_ieee1275_encode_uint4) (grub_ieee1275_ihandle_t ihandle,
                                              grub_uint32_t lun_lo,
                                              grub_uint32_t lun_hi,
                                              grub_size_t *size);
+int EXPORT_FUNC(grub_ieee1275_get_block_size) (grub_ieee1275_ihandle_t ihandle);
 
 grub_err_t EXPORT_FUNC(grub_claimmap) (grub_addr_t addr, grub_size_t size);
 
