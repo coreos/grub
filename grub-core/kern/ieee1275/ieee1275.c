@@ -693,3 +693,43 @@ grub_ieee1275_milliseconds (grub_uint32_t *msecs)
   *msecs = args.msecs;
   return 0;
 }
+
+int
+grub_ieee1275_set_address (grub_ieee1275_ihandle_t ihandle,
+                           grub_uint32_t target, grub_uint32_t lun)
+{
+  struct set_address
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t tgt;
+    grub_ieee1275_cell_t lun;
+    grub_ieee1275_cell_t catch_result;
+  }
+  args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 4, 1);
+
+  /*
+   * IEEE 1275-1994 Standard for Boot (Initialization Configuration)
+   * Firmware: Core Requirements and Practices
+   * E.3.2.2 Bus-specific methods for bus nodes
+   *
+   * A package implementing the scsi-2 device type shall implement the
+   * following bus-specific method:
+   *
+   * set-address ( unit# target# -- )
+   * Sets the SCSI target number (0x0..0xf) and unit number (0..7) to which
+   * subsequent commands apply.
+   */
+  args.method = (grub_ieee1275_cell_t) "set-address";
+  args.ihandle = ihandle;
+  args.tgt = target;
+  args.lun = lun;
+
+  if (IEEE1275_CALL_ENTRY_FN (&args) == -1)
+    return -1;
+
+  return args.catch_result;
+}
