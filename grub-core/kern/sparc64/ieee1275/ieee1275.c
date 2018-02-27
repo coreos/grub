@@ -120,3 +120,28 @@ grub_ieee1275_num_blocks (grub_ieee1275_ihandle_t ihandle)
 
   return args.blocks;
 }
+
+grub_uint64_t
+grub_ieee1275_num_blocks64 (grub_ieee1275_ihandle_t ihandle)
+{
+  struct nblocks_args_ieee1275
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t catch_result;
+    grub_ieee1275_cell_t hi_blocks;
+    grub_ieee1275_cell_t lo_blocks;
+  }
+  args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 3);
+  args.method = (grub_ieee1275_cell_t) "#blocks64";
+  args.ihandle = ihandle;
+  args.catch_result = 1;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.catch_result != 0))
+    return -1;
+
+  return ((args.hi_blocks << 32) | (args.lo_blocks));
+}
