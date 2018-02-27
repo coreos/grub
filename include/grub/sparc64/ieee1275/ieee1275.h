@@ -42,6 +42,7 @@ extern int EXPORT_FUNC(grub_ieee1275_claim_vaddr) (grub_addr_t vaddr,
 extern int EXPORT_FUNC(grub_ieee1275_alloc_physmem) (grub_addr_t *paddr,
 						     grub_size_t size,
 						     grub_uint32_t align);
+extern grub_uint64_t EXPORT_FUNC(grub_ieee1275_num_blocks) (grub_uint32_t ihandle);
 
 extern grub_addr_t EXPORT_VAR (grub_ieee1275_original_stack);
 

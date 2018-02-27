@@ -89,3 +89,34 @@ grub_ieee1275_alloc_physmem (grub_addr_t *paddr, grub_size_t size,
 
   return args.catch_result;
 }
+
+grub_uint64_t
+grub_ieee1275_num_blocks (grub_ieee1275_ihandle_t ihandle)
+{
+  struct nblocks_args_ieee1275
+  {
+    struct grub_ieee1275_common_hdr common;
+    grub_ieee1275_cell_t method;
+    grub_ieee1275_cell_t ihandle;
+    grub_ieee1275_cell_t catch_result;
+    grub_ieee1275_cell_t blocks;
+  }
+  args;
+
+  INIT_IEEE1275_COMMON (&args.common, "call-method", 2, 2);
+  args.method = (grub_ieee1275_cell_t) "#blocks";
+  args.ihandle = ihandle;
+  args.catch_result = 1;
+
+  if ((IEEE1275_CALL_ENTRY_FN (&args) == -1) || (args.catch_result != 0))
+    return -1;
+
+  /*
+   * If the number of blocks exceeds the range of an unsigned number,
+   * return 0 to alert the caller to try the #blocks64 command.
+   */
+  if (args.blocks >= 0xffffffffULL)
+    return 0;
+
+  return args.blocks;
+}
