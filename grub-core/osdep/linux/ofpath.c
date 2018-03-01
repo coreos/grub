@@ -389,8 +389,11 @@ of_path_of_nvme(const char *sys_devname __attribute__((unused)),
     }
 
   of_path = find_obppath (sysfs_path);
+
+  if (of_path)
+    strcat (of_path, disk);
+
   free (sysfs_path);
-  strcat (of_path, disk);
   return of_path;
 }
 
