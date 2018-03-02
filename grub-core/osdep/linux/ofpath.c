@@ -350,6 +350,7 @@ of_path_of_ide(const char *sys_devname __attribute__((unused)), const char *devi
   return ret;
 }
 
+#ifdef __sparc__
 static char *
 of_path_of_nvme(const char *sys_devname __attribute__((unused)),
 	        const char *device,
@@ -396,6 +397,7 @@ of_path_of_nvme(const char *sys_devname __attribute__((unused)),
   free (sysfs_path);
   return of_path;
 }
+#endif
 
 static int
 vendor_is_ATA(const char *path)
@@ -728,9 +730,11 @@ grub_util_devname_to_ofpath (const char *sys_devname)
     /* All the models I've seen have a devalias "floppy".
        New models have no floppy at all. */
     ofpath = xstrdup ("floppy");
+#ifdef __sparc__
   else if (device[0] == 'n' && device[1] == 'v' && device[2] == 'm'
            && device[3] == 'e')
     ofpath = of_path_of_nvme (name_buf, device, devnode, devicenode);
+#endif
   else
     {
       grub_util_warn (_("unknown device type %s"), device);
