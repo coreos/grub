@@ -213,6 +213,9 @@ int EXPORT_FUNC(grub_ieee1275_milliseconds) (grub_uint32_t *msecs);
 int EXPORT_FUNC(grub_ieee1275_set_address) (grub_ieee1275_ihandle_t ihandle,
                                             grub_uint32_t target,
                                             grub_uint32_t lun);
+int EXPORT_FUNC(grub_ieee1275_no_data_command) (grub_ieee1275_ihandle_t ihandle,
+                                                const void *cmd_addr,
+                                                grub_ssize_t *result);
 int EXPORT_FUNC(grub_ieee1275_decode_unit4) (grub_ieee1275_ihandle_t ihandle,
                                              void *addr, grub_size_t size,
                                              grub_uint32_t *phy_lo,
