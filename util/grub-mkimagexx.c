@@ -1965,7 +1965,7 @@ SUFFIX (grub_mkimage_load_image) (const char *kernel_path,
 				  const struct grub_install_image_target_desc *image_target)
 {
   char *kernel_img, *out_img;
-  struct section_metadata smd = { 0, };
+  struct section_metadata smd = { 0, 0, 0, 0, 0, 0, 0 };
   Elf_Ehdr *e;
   int i;
   Elf_Shdr *s;
