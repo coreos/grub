@@ -253,6 +253,8 @@ void EXPORT_FUNC(grub_ieee1275_children_peer) (struct grub_ieee1275_devalias *al
 void EXPORT_FUNC(grub_ieee1275_children_first) (const char *devpath,
 						struct grub_ieee1275_devalias *alias);
 
+char *EXPORT_FUNC(grub_ieee1275_get_boot_dev) (void);
+
 #define FOR_IEEE1275_DEVALIASES(alias) for (grub_ieee1275_devalias_init_iterator (&(alias)); grub_ieee1275_devalias_next (&(alias));)
 
 #define FOR_IEEE1275_DEVCHILDREN(devpath, alias) for (grub_ieee1275_children_first ((devpath), &(alias)); \
