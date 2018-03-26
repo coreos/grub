@@ -175,7 +175,7 @@ struct grub_btrfs_time
 {
   grub_int64_t sec;
   grub_uint32_t nanosec;
-} __attribute__ ((aligned (4)));
+} GRUB_PACKED;
 
 struct grub_btrfs_inode
 {
