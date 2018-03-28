@@ -94,10 +94,19 @@ static int
 find_card (grub_pci_device_t dev, grub_pci_id_t pciid, void *data)
 {
   struct find_framebuf_ctx *ctx = data;
-  grub_pci_address_t addr;
+  grub_pci_address_t addr, rcaddr;
+  grub_uint32_t subclass;
 
   addr = grub_pci_make_address (dev, GRUB_PCI_REG_CLASS);
-  if (grub_pci_read (addr) >> 24 == 0x3)
+  subclass = (grub_pci_read (addr) >> 16) & 0xffff;
+
+  if (subclass != GRUB_PCI_CLASS_SUBCLASS_VGA)
+    return 0;
+
+  /* Enable MEM address spaces */
+  rcaddr = grub_pci_make_address (dev, GRUB_PCI_REG_COMMAND);
+  grub_pci_write_word (rcaddr, grub_pci_read_word (rcaddr) | GRUB_PCI_COMMAND_MEM_ENABLED);
+
     {
       int i;
 
