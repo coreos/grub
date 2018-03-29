@@ -360,8 +360,9 @@ blocklist notation. The currently supported filesystem types are @dfn{Amiga
 Fast FileSystem (AFFS)}, @dfn{AtheOS fs}, @dfn{BeFS},
 @dfn{BtrFS} (including raid0, raid1, raid10, gzip and lzo),
 @dfn{cpio} (little- and big-endian bin, odc and newc variants),
-@dfn{Linux ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32}, @dfn{exFAT}, @dfn{HFS},
-@dfn{HFS+}, @dfn{ISO9660} (including Joliet, Rock-ridge and multi-chunk files),
+@dfn{Linux ext2/ext3/ext4}, @dfn{DOS FAT12/FAT16/FAT32},
+@dfn{exFAT}, @dfn{F2FS}, @dfn{HFS}, @dfn{HFS+},
+@dfn{ISO9660} (including Joliet, Rock-ridge and multi-chunk files),
 @dfn{JFS}, @dfn{Minix fs} (versions 1, 2 and 3), @dfn{nilfs2},
 @dfn{NTFS} (including compression), @dfn{ReiserFS}, @dfn{ROMFS},
 @dfn{Amiga Smart FileSystem (SFS)}, @dfn{Squash4}, @dfn{tar}, @dfn{UDF},
@@ -5375,7 +5376,7 @@ NTFS, JFS, UDF, HFS+, exFAT, long filenames in FAT, Joliet part of
 ISO9660 are treated as UTF-16 as per specification. AFS and BFS are read
 as UTF-8, again according to specification. BtrFS, cpio, tar, squash4, minix,
 minix2, minix3, ROMFS, ReiserFS, XFS, ext2, ext3, ext4, FAT (short names),
-RockRidge part of ISO9660, nilfs2, UFS1, UFS2 and ZFS are assumed
+F2FS, RockRidge part of ISO9660, nilfs2, UFS1, UFS2 and ZFS are assumed
 to be UTF-8. This might be false on systems configured with legacy charset
 but as long as the charset used is superset of ASCII you should be able to
 access ASCII-named files. And it's recommended to configure your system to use

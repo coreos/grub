@@ -1315,6 +1315,11 @@ module = {
 };
 
 module = {
+  name = f2fs;
+  common = fs/f2fs.c;
+};
+
+module = {
   name = fshelp;
   common = fs/fshelp.c;
 };

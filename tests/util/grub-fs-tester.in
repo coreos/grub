@@ -172,7 +172,7 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 	xsquash*)
 	    MINBLKSIZE=4096
 	    MAXBLKSIZE=1048576;;
-	xxfs)
+	xxfs|xf2fs)
 	    MINBLKSIZE=$SECSIZE
 		# OS Limitation: GNU/Linux doesn't accept > 4096
 	    MAXBLKSIZE=4096;;
@@ -298,6 +298,10 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 	    # FS LIMITATION: btrfs label is at most 255 UTF-8 chars
 		x"btrfs"*)
 		    FSLABEL="grub_;/testé莭莽😁киритi urewfceniuewruevrewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoi";;
+
+	    # FS LIMITATION: f2fs label is at most 512 UTF-16 chars
+		x"f2fs")
+		    FSLABEL="grub_;/testé䏌䐓䏕киритiurewfceniuewruewnuuireurevueurnievrewfnerfcnevirivinrewvnirewnivrewiuvcrewvnuewvrrrewniuerwreiuviurewiuviurewnuvewnvrenurnunuvrevuurerejiremvreijnvvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoirvcreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoircreivire nverivnreivrevnureiorfnfrvoeoiroireoireoifrefoieroifoireoifoiq";;
 
 	    # FS LIMITATION: exfat is at most 15 UTF-16 chars
 		x"exfat")
@@ -508,7 +512,7 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 	    # FIXME: Not sure about BtrFS, NTFS, JFS, AFS, UDF and SFS. Check it.
 	# FS LIMITATION: as far as I know those FS don't store their last modification date.
 		x"jfs_caseins" | x"jfs" | x"xfs" | x"xfs_crc" | x"btrfs"* | x"reiserfs_old" | x"reiserfs" \
-		    | x"bfs" | x"afs" \
+		    | x"bfs" | x"afs" | x"f2fs" \
 		    | x"tarfs" | x"cpio_"* | x"minix" | x"minix2" \
 		    | x"minix3" | x"ntfs"* | x"udf" | x"sfs"*)
 		    NOFSTIME=y;;
@@ -792,6 +796,8 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		    MOUNTDEVICE="/dev/mapper/grub_test-testvol"
 		    MOUNTFS=ext2
 		    "mkfs.ext2" -L "$FSLABEL" -q "${MOUNTDEVICE}"  ;;
+		xf2fs)
+		    "mkfs.f2fs" -l "$FSLABEL" -q "${LODEVICES[0]}" ;;
 		xnilfs2)
 		    "mkfs.nilfs2" -L "$FSLABEL" -b $BLKSIZE  -q "${MOUNTDEVICE}" ;;
 		xext2_old)

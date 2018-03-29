@@ -1214,6 +1214,7 @@ msgstr ""
 
 #: grub-core/commands/xnu_uuid.c:75 grub-core/fs/jfs.c:924
 #: grub-core/fs/nilfs2.c:1135
+#: grub-core/fs/f2fs.c:1259
 #, c-format
 msgid "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x"
 msgstr ""

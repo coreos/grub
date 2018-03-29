@@ -99,6 +99,7 @@ library = {
   common = grub-core/fs/ext2.c;
   common = grub-core/fs/fat.c;
   common = grub-core/fs/exfat.c;
+  common = grub-core/fs/f2fs.c;
   common = grub-core/fs/fshelp.c;
   common = grub-core/fs/hfs.c;
   common = grub-core/fs/hfsplus.c;
@@ -772,6 +773,12 @@ script = {
   testcase;
   name = xfs_test;
   common = tests/xfs_test.in;
+};
+
+script = {
+  testcase;
+  name = f2fs_test;
+  common = tests/f2fs_test.in;
 };
 
 script = {
