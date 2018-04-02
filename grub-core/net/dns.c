@@ -285,8 +285,8 @@ recv_hook (grub_net_udp_socket_t sock __attribute__ ((unused)),
       ptr++;
       ptr += 4;
     }
-  *data->addresses = grub_malloc (sizeof ((*data->addresses)[0])
-				 * grub_be_to_cpu16 (head->ancount));
+  *data->addresses = grub_realloc (*data->addresses, sizeof ((*data->addresses)[0])
+		     * (grub_be_to_cpu16 (head->ancount) + *data->naddresses));
   if (!*data->addresses)
     {
       grub_errno = GRUB_ERR_NONE;

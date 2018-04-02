@@ -30,6 +30,7 @@ GRUB_MOD_LICENSE ("GPLv3+");
 static grub_efi_guid_t acpi_guid = GRUB_EFI_ACPI_TABLE_GUID;
 static grub_efi_guid_t acpi2_guid = GRUB_EFI_ACPI_20_TABLE_GUID;
 static grub_efi_guid_t smbios_guid = GRUB_EFI_SMBIOS_TABLE_GUID;
+static grub_efi_guid_t smbios3_guid = GRUB_EFI_SMBIOS3_TABLE_GUID;
 
 #define EBDA_SEG_ADDR	0x40e
 #define LOW_MEM_ADDR	0x413
@@ -93,7 +94,7 @@ static void
 fake_bios_data (int use_rom)
 {
   unsigned i;
-  void *acpi, *smbios;
+  void *acpi, *smbios, *smbios3;
   grub_uint16_t *ebda_seg_ptr, *low_mem_ptr;
 
   ebda_seg_ptr = (grub_uint16_t *) EBDA_SEG_ADDR;
@@ -103,6 +104,7 @@ fake_bios_data (int use_rom)
 
   acpi = 0;
   smbios = 0;
+  smbios3 = 0;
   for (i = 0; i < grub_efi_system_table->num_table_entries; i++)
     {
       grub_efi_packed_guid_t *guid =
@@ -127,6 +129,11 @@ fake_bios_data (int use_rom)
 	  smbios = grub_efi_system_table->configuration_table[i].vendor_table;
 	  grub_dprintf ("efi", "SMBIOS: %p\n", smbios);
 	}
+      else if (! grub_memcmp (guid, &smbios3_guid, sizeof (grub_efi_guid_t)))
+	{
+	  smbios3 = grub_efi_system_table->configuration_table[i].vendor_table;
+	  grub_dprintf ("efi", "SMBIOS3: %p\n", smbios3);
+	}
     }
 
   *ebda_seg_ptr = FAKE_EBDA_SEG;
@@ -137,8 +144,13 @@ fake_bios_data (int use_rom)
   if (acpi)
     grub_memcpy ((char *) ((FAKE_EBDA_SEG << 4) + 16), acpi, 1024 - 16);
 
-  if ((use_rom) && (smbios))
-    grub_memcpy ((char *) SBIOS_ADDR, (char *) smbios + 16, 16);
+  if (use_rom)
+    {
+      if (smbios)
+	grub_memcpy ((char *) SBIOS_ADDR, (char *) smbios, 31);
+      if (smbios3)
+	grub_memcpy ((char *) SBIOS_ADDR + 32, (char *) smbios3, 24);
+    }
 }
 
 static grub_err_t

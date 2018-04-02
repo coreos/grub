@@ -49,6 +49,38 @@ static grub_efi_uintn_t finish_desc_size;
 static grub_efi_uint32_t finish_desc_version;
 int grub_efi_is_finished = 0;
 
+/* Allocate pages below a specified address */
+void *
+grub_efi_allocate_pages_max (grub_efi_physical_address_t max,
+			     grub_efi_uintn_t pages)
+{
+  grub_efi_status_t status;
+  grub_efi_boot_services_t *b;
+  grub_efi_physical_address_t address = max;
+
+  if (max > 0xffffffff)
+    return 0;
+
+  b = grub_efi_system_table->boot_services;
+  status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_MAX_ADDRESS, GRUB_EFI_LOADER_DATA, pages, &address);
+
+  if (status != GRUB_EFI_SUCCESS)
+    return 0;
+
+  if (address == 0)
+    {
+      /* Uggh, the address 0 was allocated... This is too annoying,
+	 so reallocate another one.  */
+      address = max;
+      status = efi_call_4 (b->allocate_pages, GRUB_EFI_ALLOCATE_MAX_ADDRESS, GRUB_EFI_LOADER_DATA, pages, &address);
+      grub_efi_free_pages (0, pages);
+      if (status != GRUB_EFI_SUCCESS)
+	return 0;
+    }
+
+  return (void *) ((grub_addr_t) address);
+}
+
 /* Allocate pages. Return the pointer to the first of allocated pages.  */
 void *
 grub_efi_allocate_pages (grub_efi_physical_address_t address,

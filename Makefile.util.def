@@ -1161,6 +1161,18 @@ script = {
 
 script = {
   testcase;
+  name = gptrepair_test;
+  common = tests/gptrepair_test.in;
+};
+
+script = {
+  testcase;
+  name = gptprio_test;
+  common = tests/gptprio_test.in;
+};
+
+script = {
+  testcase;
   name = file_filter_test;
   common = tests/file_filter_test.in;
 };
@@ -1246,6 +1258,25 @@ program = {
   common = tests/lib/unit_test.c;
   common = grub-core/kern/list.c;
   common = grub-core/kern/misc.c;
+  common = grub-core/tests/lib/test.c;
+  ldadd = libgrubmods.a;
+  ldadd = libgrubgcry.a;
+  ldadd = libgrubkern.a;
+  ldadd = grub-core/gnulib/libgnu.a;
+  ldadd = '$(LIBDEVMAPPER) $(LIBZFS) $(LIBNVPAIR) $(LIBGEOM)';
+};
+
+program = {
+  testcase;
+  name = gpt_unit_test;
+  common = tests/gpt_unit_test.c;
+  common = tests/lib/unit_test.c;
+  common = grub-core/commands/search_part_label.c;
+  common = grub-core/commands/search_part_uuid.c;
+  common = grub-core/commands/search_disk_uuid.c;
+  common = grub-core/disk/host.c;
+  common = grub-core/kern/emu/hostfs.c;
+  common = grub-core/lib/gpt.c;
   common = grub-core/tests/lib/test.c;
   ldadd = libgrubmods.a;
   ldadd = libgrubgcry.a;

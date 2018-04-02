@@ -32,6 +32,8 @@
 #include <grub/i18n.h>
 #include <grub/lib/cmdline.h>
 
+#include <grub/verity-hash.h>
+
 GRUB_MOD_LICENSE ("GPLv3+");
 
 static grub_dl_t my_mod;
@@ -297,7 +299,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   grub_dprintf ("linux", "kernel @ %p\n", kernel_addr);
 
-  cmdline_size = grub_loader_cmdline_size (argc, argv) + sizeof (LINUX_IMAGE);
+  cmdline_size = grub_loader_cmdline_size (argc, argv) + sizeof (LINUX_IMAGE)
+	+ VERITY_CMDLINE_LENGTH;
   linux_args = grub_malloc (cmdline_size);
   if (!linux_args)
     {
@@ -311,6 +314,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_errno == GRUB_ERR_NONE)
     {
+      grub_pass_verity_hash (kernel_addr, linux_args, cmdline_size);
       grub_loader_set (grub_linux_boot, grub_linux_unload, 0);
       loaded = 1;
     }

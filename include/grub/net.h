@@ -276,6 +276,7 @@ typedef struct grub_net
   grub_fs_t fs;
   int eof;
   int stall;
+  int port;
 } *grub_net_t;
 
 extern grub_net_t (*EXPORT_VAR (grub_net_open)) (const char *name);

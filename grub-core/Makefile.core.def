@@ -126,6 +126,7 @@ kernel = {
   common = kern/rescue_parser.c;
   common = kern/rescue_reader.c;
   common = kern/term.c;
+  common = kern/tpm.c;
 
   noemu = kern/compiler-rt.c;
   noemu = kern/mm.c;
@@ -173,6 +174,7 @@ kernel = {
   efi = term/efi/console.c;
   efi = kern/acpi.c;
   efi = kern/efi/acpi.c;
+  efi = kern/efi/tpm.c;
   i386_coreboot = kern/i386/pc/acpi.c;
   i386_multiboot = kern/i386/pc/acpi.c;
   i386_coreboot = kern/acpi.c;
@@ -219,6 +221,7 @@ kernel = {
 
   i386_pc = kern/i386/pc/init.c;
   i386_pc = kern/i386/pc/mmap.c;
+  i386_pc = kern/i386/pc/tpm.c;
   i386_pc = term/i386/pc/console.c;
 
   i386_qemu = bus/pci.c;
@@ -817,8 +820,29 @@ module = {
 };
 
 module = {
+  name = getenv;
+  common = commands/efi/getenv.c;
+  enable = efi;
+};
+
+module = {
   name = gptsync;
   common = commands/gptsync.c;
+};
+
+module = {
+  name = gptrepair;
+  common = commands/gptrepair.c;
+};
+
+module = {
+  name = gptprio;
+  common = commands/gptprio.c;
+};
+
+module = {
+  name = gpt;
+  common = lib/gpt.c;
 };
 
 module = {
@@ -999,6 +1023,21 @@ module = {
 };
 
 module = {
+  name = search_part_uuid;
+  common = commands/search_part_uuid.c;
+};
+
+module = {
+  name = search_part_label;
+  common = commands/search_part_label.c;
+};
+
+module = {
+  name = search_disk_uuid;
+  common = commands/search_disk_uuid.c;
+};
+
+module = {
   name = setpci;
   common = commands/setpci.c;
   enable = pci;
@@ -1013,6 +1052,21 @@ module = {
 module = {
   name = sleep;
   common = commands/sleep.c;
+};
+
+module = {
+  name = smbios;
+
+  common = commands/smbios.c;
+  efi = commands/efi/smbios.c;
+  i386_pc = commands/i386/pc/smbios.c;
+  i386_coreboot = commands/i386/pc/smbios.c;
+  i386_multiboot = commands/i386/pc/smbios.c;
+
+  enable = efi;
+  enable = i386_pc;
+  enable = i386_coreboot;
+  enable = i386_multiboot;
 };
 
 module = {
@@ -1734,6 +1788,14 @@ module = {
 };
 
 module = {
+  name = linuxefi;
+  efi = loader/i386/efi/linux.c;
+  efi = lib/cmdline.c;
+  enable = i386_efi;
+  enable = x86_64_efi;
+};
+
+module = {
   name = chain;
   efi = loader/efi/chainloader.c;
   i386_pc = loader/i386/pc/chainloader.c;
@@ -2354,4 +2416,10 @@ module = {
   common = loader/i386/xen_file32.c;
   common = loader/i386/xen_file64.c;
   extra_dist = loader/i386/xen_fileXX.c;
+};
+
+module = {
+  name = fwconfig;
+  common = commands/fwconfig.c;
+  enable = x86;
 };

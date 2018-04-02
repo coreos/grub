@@ -27,6 +27,7 @@
 #include <grub/normal.h>
 #include <grub/extcmd.h>
 #include <grub/i18n.h>
+#include <grub/tpm.h>
 
 /* Max digits for a char is 3 (0xFF is 255), similarly for an int it
    is sizeof (int) * 3, and one extra for a possible -ve sign.  */
@@ -929,8 +930,9 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   grub_err_t ret = 0;
   grub_script_function_t func = 0;
   char errnobuf[18];
-  char *cmdname;
-  int argc;
+  char *cmdname, *cmdstring;
+  int argc, offset = 0, cmdlen = 0;
+  unsigned int i;
   char **args;
   int invert;
   struct grub_script_argv argv = { 0, 0, 0 };
@@ -939,6 +941,26 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   if (grub_script_arglist_to_argv (cmdline->arglist, &argv) || ! argv.args[0])
     return grub_errno;
 
+  for (i = 0; i < argv.argc; i++) {
+	  cmdlen += grub_strlen (argv.args[i]) + 1;
+  }
+
+  cmdstring = grub_malloc (cmdlen);
+  if (!cmdstring)
+  {
+	  return grub_error (GRUB_ERR_OUT_OF_MEMORY,
+			     N_("cannot allocate command buffer"));
+  }
+
+  for (i = 0; i < argv.argc; i++) {
+	  offset += grub_snprintf (cmdstring + offset, cmdlen - offset, "%s ",
+				   argv.args[i]);
+  }
+  cmdstring[cmdlen-1]= '\0';
+  grub_tpm_measure ((unsigned char *)cmdstring, cmdlen, GRUB_ASCII_PCR,
+		    "grub_cmd", cmdstring);
+  grub_print_error();
+  grub_free(cmdstring);
   invert = 0;
   argc = argv.argc - 1;
   args = argv.args + 1;

@@ -1,0 +1,207 @@
+#! /bin/bash
+set -e
+
+# Copyright (C) 2010  Free Software Foundation, Inc.
+# Copyright (C) 2014  CoreOS, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+sgdisk=sgdisk
+grubshell=@builddir@/grub-shell
+
+if ! which "${sgdisk}" >/dev/null 2>&1; then
+   echo "sgdisk not installed; cannot test gptprio."
+   exit 77
+fi
+
+. "@builddir@/grub-core/modinfo.sh"
+
+case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot | mipsel-loongson)
+	disk=ata0
+	;;
+    powerpc-ieee1275)
+	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    sparc64-ieee1275)
+	disk=ieee1275//pci@1fe\,0/pci-ata@5/ide0@500/disk@0
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    i386-ieee1275)
+	disk=ieee1275/d
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    mips-arc)
+	# FIXME: ARC firmware has bugs which prevent it from accessing hard disk w/o dvh disklabel.
+	exit 0 ;;
+    mipsel-arc)
+	disk=arc/scsi0/disk0/rdisk0
+	;;
+    *)
+	disk=hd0
+	;;
+esac
+img1="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+trap "rm -f '${img1}'" EXIT
+
+prio_type="5dfbf5f4-2848-4bac-aa5e-0d9a20b745a6"
+declare -a prio_uuid
+prio_uuid[2]="9b003904-d006-4ab3-97f1-73f547b7af1a"
+prio_uuid[3]="1aa5a658-5b02-414d-9b71-f7e6c151f0cd"
+prio_uuid[4]="8aa0240d-98af-42b0-b32a-ccbe0572d62b"
+
+create_disk_image () {
+    size=$1
+    rm -f "${img1}"
+    dd if=/dev/zero of="${img1}" bs=512 count=1 seek=$((size - 1)) status=none
+    ${sgdisk} \
+        -n 1:0:+1 -c 1:ESP -t 1:ef00 \
+        -n 2:0:+1 -c 2:A -t 2:"${prio_type}" -u 2:"${prio_uuid[2]}" \
+        -n 3:0:+1 -c 3:B -t 3:"${prio_type}" -u 3:"${prio_uuid[3]}" \
+        -n 4:0:+1 -c 4:C -t 4:"${prio_type}" -u 4:"${prio_uuid[4]}" \
+        "${img1}" >/dev/null
+}
+
+wipe_disk_area () {
+    sector=$1
+    size=$2
+    dd if=/dev/zero of="${img1}" bs=512 count=${size} seek=${sector} conv=notrunc status=none
+}
+
+is_zero () {
+    sector=$1
+    size=$2
+    cmp -s -i $((sector * 512)) -n $((size * 512)) /dev/zero "${img1}"
+}
+
+check_is_zero () {
+    sector=$1
+    size=$2
+    if ! is_zero "$@"; then
+        echo "$size sector(s) starting at $sector should be all zero"
+        exit 1
+    fi
+}
+
+check_not_zero () {
+    sector=$1
+    size=$2
+    if is_zero "$@"; then
+        echo "$size sector(s) starting at $sector should not be all zero"
+        exit 1
+    fi
+}
+
+fmt_prio () {
+    priority=$(( ( $1 & 15 ) << 48 ))
+    tries=$(( ( $2 & 15 ) << 52 ))
+    success=$(( ( $3 & 1 ) << 56 ))
+    printf %016x $(( priority | tries | success ))
+}
+
+set_prio () {
+    part="$1"
+    attr=$(fmt_prio $2 $3 $4)
+    ${sgdisk} -A "${part}:=:${attr}" "${img1}" >/dev/null
+}
+
+check_prio () {
+    part="$1"
+    expect=$(fmt_prio $2 $3 $4)
+    result=$(LANG=C ${sgdisk} -i "${part}" "${img1}" 2>&1 \
+            | awk '/^Attribute flags: / {print $3}')
+    if [[ "${expect}" != "${result}" ]]; then
+        echo "Partition ${part} has attributes ${result:-??}, not ${expect}"
+        exit 1
+    fi
+}
+
+run_next() {
+    "${grubshell}" --disk="${img1}" --modules=gptprio <<EOF
+gptprio.next -d next_dev -u next_uuid "${disk}"
+echo next_dev=\$next_dev
+echo next_uuid=\$next_uuid
+EOF
+}
+
+check_next () {
+    part="$1"
+    output=$(run_next)
+    if grep ^error <<<"${output}"; then
+        exit 1
+    fi
+    if ! grep -q "^next_dev=${disk},gpt${part}$" <<<"${output}"; then
+        echo "Unexpected next_dev: (expected ${disk},gpt${part})"
+        echo "${output}"
+        exit 1
+    fi
+    if ! grep -q "^next_uuid=${prio_uuid[$part]}$" <<<"${output}"; then
+        echo "Unexpected next_uuid: (expected ${prio_uuid[$part]})"
+        echo "${output}"
+        exit 1
+    fi
+    check_prio "$@"
+}
+
+# Basic sanity check
+create_disk_image 100
+set_prio 2 3 2 1
+check_prio 2 3 2 1
+
+# Check gptprio works without modifying the disk when no update is required.
+# Leaves any existing corruption as is, repairing in the OS is better.
+create_disk_image 100
+set_prio 2 1 0 1
+wipe_disk_area 99 1
+check_next 2 1 0 1
+check_is_zero 99 1
+
+create_disk_image 100
+set_prio 2 1 0 1
+wipe_disk_area 1 1
+check_next 2 1 0 1
+check_is_zero 1 1
+
+# When writes do need to be made go ahead and perform the repair.
+create_disk_image 100
+set_prio 2 1 1 0
+wipe_disk_area 99 1
+check_next 2 1 0 0
+check_not_zero 99 1
+
+create_disk_image 100
+set_prio 2 1 1 0
+wipe_disk_area 1 1
+check_next 2 1 0 0
+check_not_zero 1 1
+
+# Try two partitions before falling before falling back to a third
+create_disk_image 100
+set_prio 2 3 3 0
+set_prio 3 2 2 0
+set_prio 4 1 0 1
+check_next 2 3 2 0
+check_next 2 3 1 0
+check_next 2 3 0 0
+check_next 3 2 1 0
+check_next 3 2 0 0
+check_next 4 1 0 1
+check_next 4 1 0 1
+check_next 4 1 0 1
+check_prio 2 3 0 0
+check_prio 3 2 0 0

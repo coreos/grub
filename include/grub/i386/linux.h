@@ -139,6 +139,7 @@ struct linux_kernel_header
   grub_uint64_t setup_data;
   grub_uint64_t pref_address;
   grub_uint32_t init_size;
+  grub_uint32_t handover_offset;
 } GRUB_PACKED;
 
 /* Boot parameters for Linux based on 2.6.12. This is used by the setup

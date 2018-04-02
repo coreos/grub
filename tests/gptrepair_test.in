@@ -1,0 +1,102 @@
+#! /bin/sh
+set -e
+
+# Copyright (C) 2010  Free Software Foundation, Inc.
+# Copyright (C) 2014  CoreOS, Inc.
+#
+# GRUB is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GRUB is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
+
+parted=parted
+grubshell=@builddir@/grub-shell
+
+. "@builddir@/grub-core/modinfo.sh"
+
+case "${grub_modinfo_target_cpu}-${grub_modinfo_platform}" in
+    mips-qemu_mips | mipsel-qemu_mips | i386-qemu | i386-multiboot | i386-coreboot | mipsel-loongson)
+	disk=ata0
+	;;
+    powerpc-ieee1275)
+	disk=ieee1275//pci@80000000/mac-io@4/ata-3@20000/disk@0
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    sparc64-ieee1275)
+	disk=ieee1275//pci@1fe\,0/pci-ata@5/ide0@500/disk@0
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    i386-ieee1275)
+	disk=ieee1275/d
+	# FIXME: QEMU firmware has bugs which prevent it from accessing hard disk w/o recognised label.
+	exit 0
+	;;
+    mips-arc)
+	# FIXME: ARC firmware has bugs which prevent it from accessing hard disk w/o dvh disklabel.
+	exit 0 ;;
+    mipsel-arc)
+	disk=arc/scsi0/disk0/rdisk0
+	;;
+    *)
+	disk=hd0
+	;;
+esac
+img1="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+img2="`mktemp "${TMPDIR:-/tmp}/tmp.XXXXXXXXXX"`" || exit 1
+trap "rm -f '${img1}' '${img2}'" EXIT
+
+create_disk_image () {
+    size=$1
+    rm -f "${img1}"
+    dd if=/dev/zero of="${img1}" bs=512 count=1 seek=$((size - 1)) status=none
+    ${parted} -a none -s "${img1}" mklabel gpt
+    cp "${img1}" "${img2}"
+}
+
+wipe_disk_area () {
+    sector=$1
+    size=$2
+    dd if=/dev/zero of="${img2}" bs=512 count=${size} seek=${sector} conv=notrunc status=none
+}
+
+do_repair () {
+    output="`echo "gptrepair ($disk)" | "${grubshell}" --disk="${img2}"`"
+    if echo "${output}" | grep ^error; then
+        return 1
+    fi
+    if echo "${output}" | grep -v GPT; then
+        echo "Unexpected output ${output}"
+        return 1
+    fi
+    echo "${output}"
+}
+
+echo "Nothing to repair:"
+create_disk_image 100
+do_repair
+cmp "${img1}" "${img2}"
+echo
+
+echo "Repair primary (MBR left intact)"
+create_disk_image 100
+wipe_disk_area 1 1
+do_repair
+cmp "${img1}" "${img2}"
+echo
+
+echo "Repair backup"
+create_disk_image 100
+wipe_disk_area 99 1
+do_repair
+cmp "${img1}" "${img2}"
+echo

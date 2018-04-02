@@ -3864,6 +3864,7 @@ you forget a command, you can run the command @command{help}
 * sha256sum::                   Compute or check SHA256 hash
 * sha512sum::                   Compute or check SHA512 hash
 * sleep::                       Wait for a specified number of seconds
+* smbios::                      Retrieve SMBIOS information
 * source::                      Read a configuration file in same context
 * test::                        Check file types and compare values
 * true::                        Do nothing, successfully
@@ -4983,6 +4984,74 @@ Sleep for @var{count} seconds. If option @option{--interruptible} is given,
 allow @key{ESC} to interrupt sleep. With @option{--verbose} show countdown
 of remaining seconds. Exit code is set to 0 if timeout expired and to 1
 if timeout was interrupted by @key{ESC}.
+@end deffn
+
+
+@node smbios
+@subsection smbios
+
+@deffn Command smbios @
+ [@option{--type} @var{type}] @
+ [@option{--handle} @var{handle}] @
+ [@option{--match} @var{match}] @
+ (@option{--get-byte} | @option{--get-word} | @option{--get-dword} | @
+  @option{--get-qword} | @option{--get-string} | @option{--get-uuid}) @
+ @var{offset} @
+ [@option{--set} @var{variable}]
+Retrieve SMBIOS information.
+
+The @command{smbios} command returns the value of a field in an SMBIOS
+structure.  The following options determine which structure to select.
+
+@itemize @bullet
+@item
+Specifying @option{--type} will select structures with a matching
+@var{type}.  The type can be any integer from 0 to 255.
+@item
+Specifying @option{--handle} will select structures with a matching
+@var{handle}.  The handle can be any integer from 0 to 65535.
+@item
+Specifying @option{--match} will select structure number @var{match} in the
+filtered list of structures; e.g. @code{smbios --type 4 --match 2} will select
+the second Process Information (Type 4) structure.  The list is always ordered
+the same as the hardware's SMBIOS table.  The match number must be a positive
+integer.  If unspecified, the first matching structure will be selected.
+@end itemize
+
+The remaining options determine which field in the selected SMBIOS structure to
+return.  Only one of these options may be specified at a time.
+
+@itemize @bullet
+@item
+When given @option{--get-byte}, return the value of the byte
+at @var{offset} bytes into the selected SMBIOS structure.
+@item
+When given @option{--get-word}, return the value of the word (two bytes)
+at @var{offset} bytes into the selected SMBIOS structure.
+@item
+When given @option{--get-dword}, return the value of the dword (four bytes)
+at @var{offset} bytes into the selected SMBIOS structure.
+@item
+When given @option{--get-qword}, return the value of the qword (eight bytes)
+at @var{offset} bytes into the selected SMBIOS structure.
+@item
+When given @option{--get-string}, return the string with its index found
+at @var{offset} bytes into the selected SMBIOS structure.
+@item
+When given @option{--get-uuid}, return the value of the UUID (sixteen bytes)
+at @var{offset} bytes into the selected SMBIOS structure.
+@end itemize
+
+The default action is to print the value of the requested field to the console,
+but a variable name can be specified with @option{--set} to store the value
+instead of printing it.
+
+For example, this will store and then display the system manufacturer's name.
+
+@example
+smbios --type 1 --get-string 4 --set system_manufacturer
+echo $system_manufacturer
+@end example
 @end deffn
 
 

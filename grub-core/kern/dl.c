@@ -32,10 +32,19 @@
 #include <grub/env.h>
 #include <grub/cache.h>
 #include <grub/i18n.h>
+#include <grub/tpm.h>
 
 /* Platforms where modules are in a readonly area of memory.  */
 #if defined(GRUB_MACHINE_QEMU)
 #define GRUB_MODULES_MACHINE_READONLY
+#endif
+
+#ifdef GRUB_MACHINE_EMU
+#include <sys/mman.h>
+#endif
+
+#ifdef GRUB_MACHINE_EFI
+#include <grub/efi/efi.h>
 #endif
 
 
@@ -686,6 +695,15 @@ grub_dl_load_file (const char *filename)
   void *core = 0;
   grub_dl_t mod = 0;
 
+#ifdef GRUB_MACHINE_EFI
+  if (grub_efi_secure_boot ())
+    {
+      grub_error (GRUB_ERR_ACCESS_DENIED,
+		  "Secure Boot forbids loading module from %s", filename);
+      return 0;
+    }
+#endif
+
   grub_boot_time ("Loading module %s", filename);
 
   file = grub_file_open (filename);
@@ -711,6 +729,9 @@ grub_dl_load_file (const char *filename)
      Some disk backends do not handle gracefully multiple concurrent
      opens of the same device.  */
   grub_file_close (file);
+
+  grub_tpm_measure(core, size, GRUB_BINARY_PCR, "grub_module", filename);
+  grub_print_error();
 
   mod = grub_dl_load_core (core, size);
   grub_free (core);

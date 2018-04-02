@@ -24,11 +24,14 @@
  *  defines for the code go here
  */
 
+#define TPM 1
+
 	/* Print message string */
 #define MSG(x)	movw $x, %si; call LOCAL(message)
 #define ERR(x)	movw $x, %si; jmp LOCAL(error_message)
 
 	.macro floppy
+#ifndef TPM
 part_start:
 
 LOCAL(probe_values):
@@ -85,6 +88,7 @@ fd_probe_error_string:	.asciz "Floppy"
 	movb	MACRO_DOLLAR(79), %ch
 
 	jmp	LOCAL(final_init)
+#endif
 	.endm
 
 	.macro scratch
@@ -255,6 +259,7 @@ real_start:
 	/* set %si to the disk address packet */
 	movw	$disk_address_packet, %si
 
+#ifndef TPM
 	/* check if LBA is supported */
 	movb	$0x41, %ah
 	movw	$0x55aa, %bx
@@ -274,6 +279,7 @@ real_start:
 
 	andw	$1, %cx
 	jz	LOCAL(chs_mode)
+#endif
 
 LOCAL(lba_mode):
 	xorw	%ax, %ax
@@ -317,6 +323,9 @@ LOCAL(lba_mode):
 	jmp	LOCAL(copy_buffer)
 
 LOCAL(chs_mode):
+#ifdef TPM
+	jmp	LOCAL(general_error)
+#else
 	/*
 	 *  Determine the hard disk geometry from the BIOS!
 	 *  We do this first, so that LS-120 IDE floppies work correctly.
@@ -428,7 +437,7 @@ setup_sectors:
 	jc	LOCAL(read_error)
 
 	movw	%es, %bx
-
+#endif /* TPM */
 LOCAL(copy_buffer):
 	/*
 	 * We need to save %cx and %si because the startup code in
@@ -451,6 +460,25 @@ LOCAL(copy_buffer):
 	popw	%ds
 	popa
 
+#ifdef TPM
+	pusha
+
+	movw	$0xBB00, %ax		/* TCG_StatusCheck */
+	int	$0x1A
+	test	%eax, %eax
+	jnz	boot			/* No TPM or TPM deactivated */
+
+	movw	$0xBB07, %ax		/* TCG_CompactHashLogExtendEvent */
+	movw	$GRUB_BOOT_MACHINE_KERNEL_ADDR, %di
+	xorl	%esi, %esi
+	movl	$0x41504354, %ebx	/* TCPA */
+	movl	$0x200, %ecx		/* Measure 512 bytes */
+	movl	$0x8, %edx		/* PCR 8 */
+	int	$0x1A
+
+boot:
+	popa
+#endif
 	/* boot kernel */
 	jmp	*(LOCAL(kernel_address))
 

@@ -35,6 +35,7 @@
 #include <grub/i386/floppy.h>
 #include <grub/lib/cmdline.h>
 #include <grub/linux.h>
+#include <grub/tpm.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -123,13 +124,14 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_file_t file = 0;
   struct linux_kernel_header lh;
   grub_uint8_t setup_sects;
-  grub_size_t real_size;
+  grub_size_t real_size, kernel_offset = 0;
   grub_ssize_t len;
   int i;
   char *grub_linux_prot_chunk;
   int grub_linux_is_bzimage;
   grub_addr_t grub_linux_prot_target;
   grub_err_t err;
+  grub_uint8_t *kernel = NULL;
 
   grub_dl_ref (my_mod);
 
@@ -143,13 +145,27 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (! file)
     goto fail;
 
-  if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
+  len = grub_file_size (file);
+  kernel = grub_malloc (len);
+  if (!kernel)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("cannot allocate kernel buffer"));
+      goto fail;
+    }
+
+  if (grub_file_read (file, kernel, len) != len)
     {
       if (!grub_errno)
 	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
 		    argv[0]);
       goto fail;
     }
+
+  grub_tpm_measure (kernel, len, GRUB_BINARY_PCR, "grub_linux16", "Kernel");
+  grub_print_error();
+
+  grub_memcpy (&lh, kernel, sizeof (lh));
+  kernel_offset = sizeof (lh);
 
   if (lh.boot_flag != grub_cpu_to_le16_compile_time (0xaa55))
     {
@@ -314,13 +330,9 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   grub_memmove (grub_linux_real_chunk, &lh, sizeof (lh));
 
   len = real_size + GRUB_DISK_SECTOR_SIZE - sizeof (lh);
-  if (grub_file_read (file, grub_linux_real_chunk + sizeof (lh), len) != len)
-    {
-      if (!grub_errno)
-	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-		    argv[0]);
-      goto fail;
-    }
+  grub_memcpy (grub_linux_real_chunk + sizeof (lh), kernel + kernel_offset,
+	       len);
+  kernel_offset += len;
 
   if (lh.header != grub_cpu_to_le32_compile_time (GRUB_LINUX_MAGIC_SIGNATURE)
       || grub_le_to_cpu16 (lh.version) < 0x0200)
@@ -355,10 +367,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   }
 
   len = grub_linux16_prot_size;
-  if (grub_file_read (file, grub_linux_prot_chunk, grub_linux16_prot_size)
-      != (grub_ssize_t) grub_linux16_prot_size && !grub_errno)
-    grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
-		argv[0]);
+  grub_memcpy (grub_linux_prot_chunk, kernel + kernel_offset, len);
+  kernel_offset += len;
 
   if (grub_errno == GRUB_ERR_NONE)
     {
@@ -367,6 +377,8 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
  fail:
+
+  grub_free (kernel);
 
   if (file)
     grub_file_close (file);
