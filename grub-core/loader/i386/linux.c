@@ -826,7 +826,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 
   len = sizeof (linux_params) - sizeof (lh);
 
-  grub_memcpy (&linux_params + sizeof (lh), kernel + kernel_offset, len);
+  grub_memcpy ((char *) &linux_params + sizeof (lh), kernel + kernel_offset, len);
   kernel_offset += len;
 
   linux_params.type_of_loader = GRUB_LINUX_BOOT_LOADER_TYPE;
