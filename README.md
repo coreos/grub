@@ -1,0 +1,1 @@
+This repository contains the CoreOS branches of GRUB. A new branch is created for each GRUB version the distribution is rebased onto. The currently shipped version is available in the [overlay repository](https://github.com/coreos/coreos-overlay/tree/master/sys-boot/grub).
