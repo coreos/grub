@@ -37,8 +37,8 @@
 start:
 _start:
 	/*
-	 * _start is loaded at 0x2000 and is jumped to with
-	 * CS:IP 0:0x2000 in kernel.
+	 * _start is loaded at 0x8000 and is jumped to with
+	 * CS:IP 0:0x8000 in kernel.
 	 */
 
 	/*
