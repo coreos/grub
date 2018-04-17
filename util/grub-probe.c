@@ -28,6 +28,7 @@
 #include <grub/partition.h>
 #include <grub/msdos_partition.h>
 #include <grub/gpt_partition.h>
+#include <grub/i386/pc/boot.h>
 #include <grub/emu/hostdisk.h>
 #include <grub/emu/getroot.h>
 #include <grub/term.h>
@@ -62,6 +63,7 @@ enum {
   PRINT_DRIVE,
   PRINT_DEVICE,
   PRINT_PARTMAP,
+  PRINT_PARTUUID,
   PRINT_ABSTRACTION,
   PRINT_CRYPTODISK_UUID,
   PRINT_HINT_STR,
@@ -85,6 +87,7 @@ static const char *targets[] =
     [PRINT_DRIVE]              = "drive",
     [PRINT_DEVICE]             = "device",
     [PRINT_PARTMAP]            = "partmap",
+    [PRINT_PARTUUID]           = "partuuid",
     [PRINT_ABSTRACTION]        = "abstraction",
     [PRINT_CRYPTODISK_UUID]    = "cryptodisk_uuid",
     [PRINT_HINT_STR]           = "hints_string",
@@ -178,6 +181,45 @@ probe_partmap (grub_disk_t disk, char delim)
       tmp = list->next;
       free (list);
       list = tmp;
+    }
+}
+
+static void
+probe_partuuid (grub_disk_t disk, char delim)
+{
+  grub_partition_t p = disk->partition;
+
+  /*
+   * Nested partitions not supported for now.
+   * Non-nested partitions must have disk->partition->parent == NULL
+   */
+  if (p && p->parent == NULL)
+    {
+      disk->partition = p->parent;
+
+      if (strcmp(p->partmap->name, "msdos") == 0)
+	{
+	    /*
+	     * The partition GUID for MSDOS is the partition number (starting
+	     * with 1) prepended with the NT disk signature.
+	     */
+	    grub_uint32_t nt_disk_sig;
+
+	    if (grub_disk_read (disk, 0, GRUB_BOOT_MACHINE_WINDOWS_NT_MAGIC,
+				sizeof(nt_disk_sig), &nt_disk_sig) == 0)
+	      grub_printf ("%08x-%02x",
+			   grub_le_to_cpu32(nt_disk_sig), 1 + p->number);
+	}
+      else if (strcmp(p->partmap->name, "gpt") == 0)
+	{
+	  struct grub_gpt_partentry gptdata;
+
+	  if (grub_disk_read (disk, p->offset, p->index,
+			      sizeof(gptdata), &gptdata) == 0)
+	    print_gpt_guid(gptdata.guid);
+	}
+
+      disk->partition = p;
     }
 }
 
@@ -634,6 +676,12 @@ probe (const char *path, char **device_names, char delim)
       else if (print == PRINT_PARTMAP)
 	/* Check if dev->disk itself is contained in a partmap.  */
 	probe_partmap (dev->disk, delim);
+
+      else if (print == PRINT_PARTUUID)
+	{
+	  probe_partuuid (dev->disk, delim);
+	  putchar (delim);
+	}
 
       else if (print == PRINT_MSDOS_PARTTYPE)
 	{
