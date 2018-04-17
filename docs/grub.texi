@@ -1214,10 +1214,11 @@ GRUB is configured using @file{grub.cfg}, usually located under
 need to write the whole thing by hand.
 
 @menu
-* Simple configuration::        Recommended for most users
-* Shell-like scripting::        For power users and developers
-* Multi-boot manual config::    For non-standard multi-OS scenarios
-* Embedded configuration::      Embedding a configuration file into GRUB
+* Simple configuration::            Recommended for most users
+* Root Identifcation Heuristics::   Summary on how the root file system is identified.
+* Shell-like scripting::            For power users and developers
+* Multi-boot manual config::        For non-standard multi-OS scenarios
+* Embedded configuration::          Embedding a configuration file into GRUB
 @end menu
 
 
@@ -1425,6 +1426,17 @@ the Linux kernel, using a @samp{root=UUID=...} kernel parameter.  This is
 usually more reliable, but in some cases it may not be appropriate.  To
 disable the use of UUIDs, set this option to @samp{true}.
 
+@item GRUB_DISABLE_LINUX_PARTUUID
+If @command{grub-mkconfig} cannot identify the root filesystem via its
+universally-unique indentifier (UUID), @command{grub-mkconfig} can use the UUID
+of the partition containing the filesystem to identify the root filesystem to
+the Linux kernel via a @samp{root=PARTUUID=...} kernel parameter.  This is not
+as reliable as using the filesystem UUID, but is more reliable than using the
+Linux device names. When @samp{GRUB_DISABLE_LINUX_PARTUUID} is set to
+@samp{false}, the Linux kernel version must be 2.6.37 (3.10 for systems using
+the MSDOS partition scheme) or newer.  This option defaults to @samp{true}.  To
+enable the use of partition UUIDs, set this option to @samp{false}.
+
 @item GRUB_DISABLE_RECOVERY
 If this option is set to @samp{true}, disable the generation of recovery
 mode menu entries.
@@ -1556,6 +1568,53 @@ edit the scripts in @file{/etc/grub.d} directly.
 menu entries; simply type the menu entries you want to add at the end of
 that file, making sure to leave at least the first two lines intact.
 
+@node Root Identifcation Heuristics
+@section Root Identifcation Heuristics
+If the target operating system uses the Linux kernel, @command{grub-mkconfig}
+attempts to identify the root file system via a heuristic algoirthm.  This
+algorithm selects the identification method of the root file system by
+considering three factors.  The first is if an initrd for the target operating
+system is also present.  The second is @samp{GRUB_DISABLE_LINUX_UUID} and if set
+to @samp{true}, prevents @command{grub-mkconfig} from identifying the root file
+system by its UUID.  The third is @samp{GRUB_DISABLE_LINUX_PARTUUID} and if set
+to @samp{true}, prevents @command{grub-mkconfig} from identifying the root file
+system via the UUID of its enclosing partition.  If the variables are assigned
+any other value, that value is considered equivalent to @samp{false}.  The
+variables are also considered to be set to @samp{false} if they are not set.
+
+When booting, the Linux kernel will delegate the task of mounting the root
+filesystem to the initrd.  Most initrd images determine the root file system by
+checking the Linux kernel's command-line for the @samp{root} key and use its
+value as the identification method of the root file system.  To improve the
+reliability of booting, most initrd images also allow the root file system to be
+identified by its UUID.  Because of this behavior, the @command{grub-mkconfig}
+command will set @samp{root} to @samp{root=UUID=...} to provide the initrd with
+the filesystem UUID of the root file system.
+
+If no initrd is detected or @samp{GRUB_DISABLE_LINUX_UUID} is set to @samp{true}
+then @command{grub-command} will identify the root filesystem by setting the
+kernel command-line variable @samp{root} to @samp{root=PARTUUID=...} unless
+@samp{GRUB_DISABLE_LINUX_PARTUUID} is also set to @samp{true}.  If
+@samp{GRUB_DISABLE_LINUX_PARTUUID} is also set to @samp{true},
+@command{grub-command} will identify by its Linux device name.
+
+The following table summarizes the behavior of the @command{grub-mkconfig}
+command.
+
+@multitable {detected} {GRUB_DISABLE_LINUX_PARTUUID} {GRUB_DISABLE_LINUX_UUID} {Linux Root}
+@headitem Initrd detected @tab GRUB_DISABLE_LINUX_PARTUUID Set To @tab GRUB_DISABLE_LINUX_UUID Set To @tab Linux Root ID Method
+@item false         @tab false                       @tab false                   @tab part UUID
+@item false         @tab false                       @tab true                    @tab part UUID
+@item false         @tab true                        @tab false                   @tab dev name
+@item false         @tab true                        @tab true                    @tab dev name
+@item true          @tab false                       @tab false                   @tab fs UUID
+@item true          @tab false                       @tab true                    @tab part UUID
+@item true          @tab true                        @tab false                   @tab fs UUID
+@item true          @tab true                        @tab true                    @tab dev name
+@end multitable
+
+Remember, @samp{GRUB_DISABLE_LINUX_PARTUUID} and @samp{GRUB_DISABLE_LINUX_UUID}
+are also considered to be set to @samp{false} when they are unset.
 
 @node Shell-like scripting
 @section Writing full configuration files directly

@@ -134,6 +134,7 @@ fi
 # Device containing our userland.  Typically used for root= parameter.
 GRUB_DEVICE="`${grub_probe} --target=device /`"
 GRUB_DEVICE_UUID="`${grub_probe} --device ${GRUB_DEVICE} --target=fs_uuid 2> /dev/null`" || true
+GRUB_DEVICE_PARTUUID="`${grub_probe} --device ${GRUB_DEVICE} --target=partuuid 2> /dev/null`" || true
 
 # Device containing our /boot partition.  Usually the same as GRUB_DEVICE.
 GRUB_DEVICE_BOOT="`${grub_probe} --target=device /boot`"
@@ -188,6 +189,7 @@ if [ "x${GRUB_ACTUAL_DEFAULT}" = "xsaved" ] ; then GRUB_ACTUAL_DEFAULT="`"${grub
 # override them.
 export GRUB_DEVICE \
   GRUB_DEVICE_UUID \
+  GRUB_DEVICE_PARTUUID \
   GRUB_DEVICE_BOOT \
   GRUB_DEVICE_BOOT_UUID \
   GRUB_FS \
@@ -223,6 +225,7 @@ export GRUB_DEFAULT \
   GRUB_TERMINAL_OUTPUT \
   GRUB_SERIAL_COMMAND \
   GRUB_DISABLE_LINUX_UUID \
+  GRUB_DISABLE_LINUX_PARTUUID \
   GRUB_DISABLE_RECOVERY \
   GRUB_VIDEO_BACKEND \
   GRUB_GFXMODE \
