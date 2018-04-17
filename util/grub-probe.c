@@ -129,6 +129,20 @@ get_targets_string (void)
   return str;
 }
 
+static int
+print_gpt_guid (grub_gpt_part_guid_t guid)
+{
+  guid.data1 = grub_le_to_cpu32 (guid.data1);
+  guid.data2 = grub_le_to_cpu16 (guid.data2);
+  guid.data3 = grub_le_to_cpu16 (guid.data3);
+
+  return grub_printf ("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		      guid.data1, guid.data2, guid.data3, guid.data4[0],
+		      guid.data4[1], guid.data4[2], guid.data4[3],
+		      guid.data4[4], guid.data4[5], guid.data4[6],
+		      guid.data4[7]);
+}
+
 static void
 do_print (const char *x, void *data)
 {
@@ -641,21 +655,7 @@ probe (const char *path, char **device_names, char delim)
 
               if (grub_disk_read (dev->disk, p->offset, p->index,
                                   sizeof (gptdata), &gptdata) == 0)
-                {
-                  grub_gpt_part_type_t gpttype;
-                  gpttype.data1 = grub_le_to_cpu32 (gptdata.type.data1);
-                  gpttype.data2 = grub_le_to_cpu16 (gptdata.type.data2);
-                  gpttype.data3 = grub_le_to_cpu16 (gptdata.type.data3);
-                  grub_memcpy (gpttype.data4, gptdata.type.data4, 8);
-
-                  grub_printf ("%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-                               gpttype.data1, gpttype.data2,
-                               gpttype.data3, gpttype.data4[0], 
-                               gpttype.data4[1], gpttype.data4[2],
-                               gpttype.data4[3], gpttype.data4[4],
-                               gpttype.data4[5], gpttype.data4[6],
-                               gpttype.data4[7]);
-                }
+		print_gpt_guid(gptdata.type);
               dev->disk->partition = p;
             }
           putchar (delim);
