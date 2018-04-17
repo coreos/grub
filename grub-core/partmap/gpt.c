@@ -33,10 +33,10 @@ static grub_uint8_t grub_gpt_magic[8] =
     0x45, 0x46, 0x49, 0x20, 0x50, 0x41, 0x52, 0x54
   };
 
-static const grub_gpt_part_type_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
+static const grub_gpt_part_guid_t grub_gpt_partition_type_empty = GRUB_GPT_PARTITION_TYPE_EMPTY;
 
 #ifdef GRUB_UTIL
-static const grub_gpt_part_type_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
+static const grub_gpt_part_guid_t grub_gpt_partition_type_bios_boot = GRUB_GPT_PARTITION_TYPE_BIOS_BOOT;
 #endif
 
 /* 512 << 7 = 65536 byte sectors.  */

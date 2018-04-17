@@ -135,7 +135,7 @@ msdos_has_ldm_partition (grub_disk_t dsk)
   return has_ldm;
 }
 
-static const grub_gpt_part_type_t ldm_type = GRUB_GPT_PARTITION_TYPE_LDM;
+static const grub_gpt_part_guid_t ldm_type = GRUB_GPT_PARTITION_TYPE_LDM;
 
 /* Helper for gpt_ldm_sector.  */
 static int

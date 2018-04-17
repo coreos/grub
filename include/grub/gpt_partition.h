@@ -22,14 +22,14 @@
 #include <grub/types.h>
 #include <grub/partition.h>
 
-struct grub_gpt_part_type
+struct grub_gpt_part_guid
 {
   grub_uint32_t data1;
   grub_uint16_t data2;
   grub_uint16_t data3;
   grub_uint8_t data4[8];
 } GRUB_PACKED;
-typedef struct grub_gpt_part_type grub_gpt_part_type_t;
+typedef struct grub_gpt_part_guid grub_gpt_part_guid_t;
 
 #define GRUB_GPT_PARTITION_TYPE_EMPTY \
   { 0x0, 0x0, 0x0, \
@@ -70,8 +70,8 @@ struct grub_gpt_header
 
 struct grub_gpt_partentry
 {
-  grub_gpt_part_type_t type;
-  grub_uint8_t guid[16];
+  grub_gpt_part_guid_t type;
+  grub_gpt_part_guid_t guid;
   grub_uint64_t start;
   grub_uint64_t end;
   grub_uint64_t attrib;

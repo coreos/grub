@@ -714,7 +714,7 @@ is_prep_partition (grub_device_t dev)
       if (grub_disk_read (dev->disk, p->offset, p->index,
 			  sizeof (gptdata), &gptdata) == 0)
 	{
-	  const grub_gpt_part_type_t template = {
+	  const grub_gpt_part_guid_t template = {
 	    grub_cpu_to_le32_compile_time (0x9e1a2d38),
 	    grub_cpu_to_le16_compile_time (0xc612),
 	    grub_cpu_to_le16_compile_time (0x4316),
