@@ -61,6 +61,13 @@ grub_bufio_open (grub_file_t io, int size)
     size = ((io->size > GRUB_BUFIO_MAX_SIZE) ? GRUB_BUFIO_MAX_SIZE :
             io->size);
 
+  /*
+   * Round up size to power of 2 which the binary math to
+   * calculate next_buf in grub_bufio_read() requires.
+   */
+  while (size & (size - 1))
+    size = (size | (size - 1)) + 1;
+
   bufio = grub_zalloc (sizeof (struct grub_bufio) + size);
   if (! bufio)
     {
