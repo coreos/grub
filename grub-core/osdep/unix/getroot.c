@@ -428,8 +428,11 @@ grub_find_device (const char *dir, dev_t dev)
 	{
 #ifdef __linux__
 	  /* Skip device names like /dev/dm-0, which are short-hand aliases
-	     to more descriptive device names, e.g. those under /dev/mapper */
-	  if (ent->d_name[0] == 'd' &&
+	     to more descriptive device names, e.g. those under /dev/mapper.
+	     Also, don't skip devices which names start with dm-[0-9] in
+	     directories below /dev, e.g. /dev/mapper/dm-0-luks. */
+	  if (strcmp (dir, "/dev") == 0 &&
+	      ent->d_name[0] == 'd' &&
 	      ent->d_name[1] == 'm' &&
 	      ent->d_name[2] == '-' &&
 	      ent->d_name[3] >= '0' &&
