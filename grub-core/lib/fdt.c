@@ -41,11 +41,6 @@ GRUB_MOD_LICENSE ("GPLv3+");
 	(2 * sizeof(grub_uint32_t)	\
 	+ ALIGN_UP (grub_strlen (name) + 1, sizeof(grub_uint32_t)))
 
-/* Size needed by a property entry: 1 token (FDT_PROPERTY), plus len and nameoff
-   fields, plus the property value, plus padding if needed. */
-#define prop_entry_size(prop_len)	\
-	(3 * sizeof(grub_uint32_t) + ALIGN_UP(prop_len, sizeof(grub_uint32_t)))
-
 #define SKIP_NODE_NAME(name, token, end)	\
   name = (char *) ((token) + 1);	\
   while (name < (char *) end)	\
@@ -86,7 +81,7 @@ static grub_uint32_t *get_next_node (const void *fdt, char *node_name)
       case FDT_PROP:
         /* Skip property token and following data (len, nameoff and property
            value). */
-        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+        token += grub_fdt_prop_entry_size(grub_be_to_cpu32(*(token + 1)))
                  / sizeof(*token);
         break;
       case FDT_NOP:
@@ -150,7 +145,7 @@ static int add_subnode (void *fdt, int parentoffset, const char *name)
     {
       case FDT_PROP:
         /* Skip len, nameoff and property value. */
-        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+        token += grub_fdt_prop_entry_size(grub_be_to_cpu32(*(token + 1)))
                  / sizeof(*token);
         break;
       case FDT_BEGIN_NODE:
@@ -249,12 +244,12 @@ static grub_uint32_t *find_prop (const void *fdt, unsigned int nodeoffset,
             && !grub_strcmp (name, (char *) fdt +
                              grub_fdt_get_off_dt_strings (fdt) + nameoff))
         {
-          if (prop + prop_entry_size(grub_be_to_cpu32(*(prop + 1)))
+          if (prop + grub_fdt_prop_entry_size(grub_be_to_cpu32(*(prop + 1)))
               / sizeof (*prop) >= end)
             return NULL;
           return prop;
         }
-        prop += prop_entry_size(grub_be_to_cpu32(*(prop + 1))) / sizeof (*prop);
+        prop += grub_fdt_prop_entry_size(grub_be_to_cpu32(*(prop + 1))) / sizeof (*prop);
       }
     else if (grub_be_to_cpu32(*prop) == FDT_NOP)
       prop++;
@@ -319,7 +314,7 @@ advance_token (const void *fdt, const grub_uint32_t *token, const grub_uint32_t 
            value). */
         if (token >= end - 1)
           return 0;
-        token += prop_entry_size(grub_be_to_cpu32(*(token + 1)))
+        token += grub_fdt_prop_entry_size(grub_be_to_cpu32(*(token + 1)))
                  / sizeof(*token);
         break;
       case FDT_NOP:
@@ -467,12 +462,12 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
     unsigned int needed_space = 0;
 
     if (!prop)
-      needed_space = prop_entry_size(len);
+      needed_space = grub_fdt_prop_entry_size(len);
     if (!prop_name_present)
       needed_space += grub_strlen (name) + 1;
     if (needed_space > get_free_space (fdt))
       return -1;
-    if (rearrange_blocks (fdt, !prop ? prop_entry_size(len) : 0) < 0)
+    if (rearrange_blocks (fdt, !prop ? grub_fdt_prop_entry_size(len) : 0) < 0)
       return -1;
   }
   if (!prop_name_present) {
@@ -489,10 +484,10 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
                                 + sizeof(grub_uint32_t));
 
     prop = (void *) (node_name + ALIGN_UP(grub_strlen(node_name) + 1, 4));
-    grub_memmove (prop + prop_entry_size(len) / sizeof(*prop), prop,
+    grub_memmove (prop + grub_fdt_prop_entry_size(len) / sizeof(*prop), prop,
                   struct_end(fdt) - (grub_addr_t) prop);
     grub_fdt_set_size_dt_struct (fdt, grub_fdt_get_size_dt_struct (fdt)
-                                 + prop_entry_size(len));
+                                 + grub_fdt_prop_entry_size(len));
     *prop = grub_cpu_to_be32_compile_time (FDT_PROP);
     *(prop + 2) = grub_cpu_to_be32 (nameoff);
   }
@@ -500,7 +495,7 @@ int grub_fdt_set_prop (void *fdt, unsigned int nodeoffset, const char *name,
 
   /* Insert padding bytes at the end of the value; if they are not needed, they
      will be overwritten by the following memcpy. */
-  *(prop + prop_entry_size(len) / sizeof(grub_uint32_t) - 1) = 0;
+  *(prop + grub_fdt_prop_entry_size(len) / sizeof(grub_uint32_t) - 1) = 0;
 
   grub_memcpy (prop + 3, val, len);
   return 0;
