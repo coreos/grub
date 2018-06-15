@@ -616,9 +616,8 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		    mkdir -p "$MNTPOINTRO"
 		    for i in $(range 0 $((NDEVICES-1)) 1); do
 			dd if=/dev/zero of="$FSIMAGEP${i}.img" count=1 bs=1 seek=$((DISKSIZE-1)) &> /dev/null
-			LODEVICE="$(losetup -f)"
+			LODEVICE=$(losetup --find --show "$FSIMAGEP${i}.img")
 			LODEVICES="$LODEVICES $LODEVICE"
-			losetup "$LODEVICE" "$FSIMAGEP${i}.img"
 			if test "$i" = 0; then
 			    MOUNTDEVICE="$LODEVICE"
 			fi
