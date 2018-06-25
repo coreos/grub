@@ -28,6 +28,7 @@
 #include <grub/xen_file.h>
 #include <grub/efi/pe32.h>
 #include <grub/arm/linux.h>
+#include <grub/arm64/linux.h>
 #include <grub/i386/linux.h>
 #include <grub/xnu.h>
 #include <grub/machoload.h>
@@ -405,13 +406,13 @@ grub_cmd_file (grub_extcmd_context_t ctxt, int argc, char **args)
       }
     case IS_ARM64_LINUX:
       {
-	grub_uint32_t sig;
+	struct linux_arm64_kernel_header lh;
 
-	if (grub_file_seek (file, 0x38) == (grub_size_t) -1)
+	if (grub_file_read (file, &lh, sizeof (lh)) != sizeof (lh))
 	  break;
-	if (grub_file_read (file, &sig, 4) != 4)
-	  break;
-	if (sig == grub_cpu_to_le32_compile_time (0x644d5241))
+
+	if (lh.magic ==
+	    grub_cpu_to_le32_compile_time (GRUB_LINUX_ARM64_MAGIC_SIGNATURE))
 	  {
 	    ret = 1;
 	    break;
