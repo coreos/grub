@@ -122,6 +122,9 @@ grub_efi_translate_key (grub_efi_input_key_t key)
       else
 	return key.unicode_char;
     }
+  /* Some devices send enter with scan_code 0x0d (F3) and unicode_char 0x0d. */
+  else if (key.scan_code == '\r' && key.unicode_char == '\r')
+    return key.unicode_char;
   else if (key.scan_code < ARRAY_SIZE (efi_codes))
     return efi_codes[key.scan_code];
 
