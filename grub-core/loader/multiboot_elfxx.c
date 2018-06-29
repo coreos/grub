@@ -127,7 +127,7 @@ CONCAT(grub_multiboot_load_elf, XX) (mbi_load_data_t *mld)
     mld->load_base_addr = mld->link_base_addr;
 
   grub_dprintf ("multiboot_loader", "relocatable=%d, link_base_addr=0x%x, "
-		"load_base_addr=0x%x\n", relocatable,
+		"load_base_addr=0x%x\n", mld->relocatable,
 		mld->link_base_addr, mld->load_base_addr);
 
   /* Load every loadable segment in memory.  */
