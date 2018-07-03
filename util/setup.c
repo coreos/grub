@@ -305,9 +305,8 @@ SETUP (const char *dir,
   bl.first_block = (struct grub_boot_blocklist *) (core_img
 						   + GRUB_DISK_SECTOR_SIZE
 						   - sizeof (*bl.block));
-  grub_util_info ("root is `%s', dest is `%s'", root, dest);
 
-  grub_util_info ("Opening dest");
+  grub_util_info ("Opening dest `%s'", dest);
   dest_dev = grub_device_open (dest);
   if (! dest_dev)
     grub_util_error ("%s", grub_errmsg);
