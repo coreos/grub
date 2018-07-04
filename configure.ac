@@ -341,6 +341,7 @@ gl_EARLY
 AC_PROG_CXX
 AM_PROG_CC_C_O
 AM_PROG_AS
+AM_PATH_PYTHON([2.6])
 
 # Must be GCC.
 test "x$GCC" = xyes || AC_MSG_ERROR([GCC is required])

@@ -128,11 +128,11 @@ BUILT_SOURCES =
 
 .PRECIOUS: $(top_srcdir)/Makefile.util.am
 $(top_srcdir)/Makefile.util.am: $(top_srcdir)/gentpl.py $(top_srcdir)/Makefile.util.def $(top_srcdir)/Makefile.utilgcry.def
-	python $^ > $@.new || (rm -f $@.new; exit 1)
+	$(PYTHON) $^ > $@.new || (rm -f $@.new; exit 1)
 	mv $@.new $@
 
 .PRECIOUS: $(top_srcdir)/grub-core/Makefile.core.am
 $(top_srcdir)/grub-core/Makefile.core.am: $(top_srcdir)/gentpl.py $(top_srcdir)/grub-core/Makefile.core.def $(top_srcdir)/grub-core/Makefile.gcry.def
 	if [ "x$$GRUB_CONTRIB" != x ]; then echo "You need to run ./autogen.sh manually." >&2; exit 1; fi
-	python $^ > $@.new || (rm -f $@.new; exit 1)
+	$(PYTHON) $^ > $@.new || (rm -f $@.new; exit 1)
 	mv $@.new $@
