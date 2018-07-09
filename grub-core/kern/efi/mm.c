@@ -286,6 +286,30 @@ grub_efi_finish_boot_services (grub_efi_uintn_t *outbuf_size, void *outbuf,
   return GRUB_ERR_NONE;
 }
 
+/*
+ * To obtain the UEFI memory map, we must pass a buffer of sufficient size
+ * to hold the entire map. This function returns a sane start value for
+ * buffer size.
+ */
+grub_efi_uintn_t
+grub_efi_find_mmap_size (void)
+{
+  grub_efi_uintn_t mmap_size = 0;
+  grub_efi_uintn_t desc_size;
+
+  if (grub_efi_get_memory_map (&mmap_size, NULL, NULL, &desc_size, 0) < 0)
+    {
+      grub_error (GRUB_ERR_IO, "cannot get EFI memory map size");
+      return 0;
+    }
+
+  /*
+   * Add an extra page, since UEFI can alter the memory map itself on
+   * callbacks or explicit calls, including console output.
+   */
+  return ALIGN_UP (mmap_size + GRUB_EFI_PAGE_SIZE, GRUB_EFI_PAGE_SIZE);
+}
+
 /* Get the memory map as defined in the EFI spec. Return 1 if successful,
    return 0 if partial, or return -1 if an error occurs.  */
 int

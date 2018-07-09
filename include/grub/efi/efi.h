@@ -49,6 +49,7 @@ void *
 EXPORT_FUNC(grub_efi_allocate_any_pages) (grub_efi_uintn_t pages);
 void EXPORT_FUNC(grub_efi_free_pages) (grub_efi_physical_address_t address,
 				       grub_efi_uintn_t pages);
+grub_efi_uintn_t EXPORT_FUNC(grub_efi_find_mmap_size) (void);
 int
 EXPORT_FUNC(grub_efi_get_memory_map) (grub_efi_uintn_t *memory_map_size,
 				      grub_efi_memory_descriptor_t *memory_map,
