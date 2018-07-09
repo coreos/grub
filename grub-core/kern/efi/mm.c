@@ -633,3 +633,34 @@ grub_efi_mm_init (void)
   grub_efi_free_pages ((grub_addr_t) memory_map,
 		       2 * BYTES_TO_PAGES (MEMORY_MAP_SIZE));
 }
+
+#if defined (__aarch64__)
+grub_err_t
+grub_efi_get_ram_base(grub_addr_t *base_addr)
+{
+  grub_efi_memory_descriptor_t *memory_map, *desc;
+  grub_efi_uintn_t memory_map_size, desc_size;
+  int ret;
+
+  memory_map_size = grub_efi_find_mmap_size();
+
+  memory_map = grub_malloc (memory_map_size);
+  if (! memory_map)
+    return GRUB_ERR_OUT_OF_MEMORY;
+  ret = grub_efi_get_memory_map (&memory_map_size, memory_map, NULL,
+				 &desc_size, NULL);
+
+  if (ret < 1)
+    return GRUB_ERR_BUG;
+
+  for (desc = memory_map, *base_addr = GRUB_UINT_MAX;
+       (grub_addr_t) desc < ((grub_addr_t) memory_map + memory_map_size);
+       desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
+    if (desc->attribute & GRUB_EFI_MEMORY_WB)
+      *base_addr = grub_min (*base_addr, desc->physical_start);
+
+  grub_free(memory_map);
+
+  return GRUB_ERR_NONE;
+}
+#endif
