@@ -193,6 +193,42 @@ grub_linux_unload (void)
   return GRUB_ERR_NONE;
 }
 
+/*
+ * As per linux/Documentation/arm/Booting
+ * ARM initrd needs to be covered by kernel linear mapping,
+ * so place it in the first 512MB of DRAM.
+ *
+ * As per linux/Documentation/arm64/booting.txt
+ * ARM64 initrd needs to be contained entirely within a 1GB aligned window
+ * of up to 32GB of size that covers the kernel image as well.
+ * Since the EFI stub loader will attempt to load the kernel near start of
+ * RAM, place the buffer in the first 32GB of RAM.
+ */
+#ifdef __arm__
+#define INITRD_MAX_ADDRESS_OFFSET (512U * 1024 * 1024)
+#else /* __aarch64__ */
+#define INITRD_MAX_ADDRESS_OFFSET (32ULL * 1024 * 1024 * 1024)
+#endif
+
+/*
+ * This function returns a pointer to a legally allocated initrd buffer,
+ * or NULL if unsuccessful
+ */
+static void *
+allocate_initrd_mem (int initrd_pages)
+{
+  grub_addr_t max_addr;
+
+  if (grub_efi_get_ram_base (&max_addr) != GRUB_ERR_NONE)
+    return NULL;
+
+  max_addr += INITRD_MAX_ADDRESS_OFFSET - 1;
+
+  return grub_efi_allocate_pages_real (max_addr, initrd_pages,
+				       GRUB_EFI_ALLOCATE_MAX_ADDRESS,
+				       GRUB_EFI_LOADER_DATA);
+}
+
 static grub_err_t
 grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 		 int argc, char *argv[])
@@ -221,7 +257,8 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   grub_dprintf ("linux", "Loading initrd\n");
 
   initrd_pages = (GRUB_EFI_BYTES_TO_PAGES (initrd_size));
-  initrd_mem = grub_efi_allocate_any_pages (initrd_pages);
+  initrd_mem = allocate_initrd_mem (initrd_pages);
+
   if (!initrd_mem)
     {
       grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
