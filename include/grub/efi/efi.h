@@ -95,6 +95,10 @@ void *EXPORT_FUNC(grub_efi_get_firmware_fdt)(void);
 #endif
 #if defined(__aarch64__)
 grub_err_t EXPORT_FUNC(grub_efi_get_ram_base)(grub_addr_t *);
+#include <grub/cpu/linux.h>
+grub_err_t grub_armxx_efi_linux_check_image(struct linux_armxx_kernel_header *lh);
+grub_err_t grub_armxx_efi_linux_boot_image(grub_addr_t addr, grub_size_t size,
+                                           char *args);
 #endif
 
 grub_addr_t grub_efi_modules_addr (void);
