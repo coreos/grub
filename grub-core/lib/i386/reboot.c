@@ -16,6 +16,8 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_MACHINE_EFI
+
 #include <grub/relocator.h>
 #include <grub/cpu/relocator.h>
 #include <grub/misc.h>
@@ -58,3 +60,5 @@ grub_reboot (void)
 
   while (1);
 }
+
+#endif /* GRUB_MACHINE_EFI */
