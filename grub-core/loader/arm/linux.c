@@ -290,15 +290,6 @@ linux_boot (void)
    */
   linuxmain = (kernel_entry_t) linux_addr;
 
-#ifdef GRUB_MACHINE_EFI
-  {
-    grub_err_t err;
-    err = grub_efi_prepare_platform();
-    if (err != GRUB_ERR_NONE)
-      return err;
-  }
-#endif
-
   grub_arm_disable_caches_mmu ();
 
   linuxmain (0, machine_type, target_fdt);
@@ -317,13 +308,7 @@ linux_load (const char *filename, grub_file_t file)
 
   size = grub_file_size (file);
 
-#ifdef GRUB_MACHINE_EFI
-  linux_addr = (grub_addr_t) grub_efi_allocate_loader_memory (LINUX_PHYS_OFFSET, size);
-  if (!linux_addr)
-    return grub_errno;
-#else
   linux_addr = LINUX_ADDRESS;
-#endif
   grub_dprintf ("loader", "Loading Linux to 0x%08x\n",
 		(grub_addr_t) linux_addr);
 
@@ -428,20 +413,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
 
   size = grub_get_initrd_size (&initrd_ctx);
 
-#ifdef GRUB_MACHINE_EFI
-  if (initrd_start)
-    grub_efi_free_pages (initrd_start,
-			 (initrd_end - initrd_start + 0xfff) >> 12);
-  initrd_start = (grub_addr_t) grub_efi_allocate_loader_memory (LINUX_INITRD_PHYS_OFFSET, size);
-
-  if (!initrd_start)
-    {
-      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("out of memory"));
-      goto fail;
-    }
-#else
   initrd_start = LINUX_INITRD_ADDRESS;
-#endif
 
   grub_dprintf ("loader", "Loading initrd to 0x%08x\n",
 		(grub_addr_t) initrd_start);

@@ -254,7 +254,6 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/fdtbus.h
 endif
 
 if COND_arm_efi
-KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arm/efi/loader.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/arm/system.h
