@@ -34,6 +34,11 @@ struct linux_arm_kernel_header {
   grub_uint32_t hdr_offset;
 };
 
+#if defined(__arm__)
+# define GRUB_LINUX_ARMXX_MAGIC_SIGNATURE GRUB_LINUX_ARM_MAGIC_SIGNATURE
+# define linux_armxx_kernel_header linux_arm_kernel_header
+#endif
+
 #if defined GRUB_MACHINE_UBOOT
 # include <grub/uboot/uboot.h>
 # define LINUX_ADDRESS        (start_of_ram + 0x8000)

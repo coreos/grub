@@ -229,7 +229,6 @@ kernel = {
   ia64_efi = kern/ia64/cache.c;
 
   arm_efi = kern/arm/efi/init.c;
-  arm_efi = kern/arm/efi/misc.c;
   arm_efi = kern/efi/fdt.c;
 
   arm64_efi = kern/arm64/efi/init.c;
@@ -1693,7 +1692,9 @@ module = {
   powerpc_ieee1275 = loader/powerpc/ieee1275/linux.c;
   sparc64_ieee1275 = loader/sparc64/ieee1275/linux.c;
   ia64_efi = loader/ia64/efi/linux.c;
-  arm = loader/arm/linux.c;
+  arm_coreboot = loader/arm/linux.c;
+  arm_efi = loader/arm64/linux.c;
+  arm_uboot = loader/arm/linux.c;
   arm64 = loader/arm64/linux.c;
   common = loader/linux.c;
   common = lib/cmdline.c;
@@ -1702,7 +1703,7 @@ module = {
 
 module = {
   name = fdt;
-  arm64 = loader/efi/fdt.c;
+  efi = loader/efi/fdt.c;
   common = lib/fdt.c;
   enable = fdt;
 };
