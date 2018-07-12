@@ -306,6 +306,12 @@ grub_linux_setup_video (struct linux_kernel_params *params)
   params->lfb_line_len = mode_info.pitch;
 
   params->lfb_base = (grub_size_t) framebuffer;
+
+#if defined (GRUB_MACHINE_EFI) && defined (__x86_64__)
+  params->ext_lfb_base = (grub_size_t) (((grub_uint64_t)(grub_size_t) framebuffer) >> 32);
+  params->capabilities |= VIDEO_CAPABILITY_64BIT_BASE;
+#endif
+
   params->lfb_size = ALIGN_UP (params->lfb_line_len * params->lfb_height, 65536);
 
   params->red_mask_size = mode_info.red_mask_size;

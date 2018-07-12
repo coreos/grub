@@ -43,6 +43,9 @@
 
 #define GRUB_LINUX_CL_MAGIC		0xA33F
 
+#define VIDEO_CAPABILITY_SKIP_QUIRKS	(1 << 0)
+#define VIDEO_CAPABILITY_64BIT_BASE	(1 << 1)	/* Frame buffer base is 64-bit. */
+
 #ifdef __x86_64__
 
 #define GRUB_LINUX_EFI_SIGNATURE	\
@@ -188,8 +191,9 @@ struct linux_kernel_params
   grub_uint16_t lfb_pages;		/* 32 */
   grub_uint16_t vesa_attrib;		/* 34 */
   grub_uint32_t capabilities;		/* 36 */
+  grub_uint32_t ext_lfb_base;		/* 3a */
 
-  grub_uint8_t padding3[0x40 - 0x3a];
+  grub_uint8_t padding3[0x40 - 0x3e];
 
   grub_uint16_t apm_version;		/* 40 */
   grub_uint16_t apm_code_segment;	/* 42 */
