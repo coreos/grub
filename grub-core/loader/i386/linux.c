@@ -101,55 +101,6 @@ page_align (grub_size_t size)
   return (size + (1 << 12) - 1) & (~((1 << 12) - 1));
 }
 
-#ifdef GRUB_MACHINE_EFI
-/* Find the optimal number of pages for the memory map. Is it better to
-   move this code to efi/mm.c?  */
-static grub_efi_uintn_t
-find_efi_mmap_size (void)
-{
-  static grub_efi_uintn_t mmap_size = 0;
-
-  if (mmap_size != 0)
-    return mmap_size;
-
-  mmap_size = (1 << 12);
-  while (1)
-    {
-      int ret;
-      grub_efi_memory_descriptor_t *mmap;
-      grub_efi_uintn_t desc_size;
-      grub_efi_uintn_t cur_mmap_size = mmap_size;
-
-      mmap = grub_malloc (cur_mmap_size);
-      if (! mmap)
-	return 0;
-
-      ret = grub_efi_get_memory_map (&cur_mmap_size, mmap, 0, &desc_size, 0);
-      grub_free (mmap);
-
-      if (ret < 0)
-	{
-	  grub_error (GRUB_ERR_IO, "cannot get memory map");
-	  return 0;
-	}
-      else if (ret > 0)
-	break;
-
-      if (mmap_size < cur_mmap_size)
-	mmap_size = cur_mmap_size;
-      mmap_size += (1 << 12);
-    }
-
-  /* Increase the size a bit for safety, because GRUB allocates more on
-     later, and EFI itself may allocate more.  */
-  mmap_size += (3 << 12);
-
-  mmap_size = page_align (mmap_size);
-  return mmap_size;
-}
-
-#endif
-
 /* Helper for find_mmap_size.  */
 static int
 count_hook (grub_uint64_t addr __attribute__ ((unused)),
@@ -566,7 +517,7 @@ grub_linux_boot (void)
   ctx.real_size = ALIGN_UP (cl_offset + maximal_cmdline_size, 4096);
 
 #ifdef GRUB_MACHINE_EFI
-  efi_mmap_size = find_efi_mmap_size ();
+  efi_mmap_size = grub_efi_find_mmap_size ();
   if (efi_mmap_size == 0)
     return grub_errno;
 #endif
