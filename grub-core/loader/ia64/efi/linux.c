@@ -133,48 +133,6 @@ query_fpswa (void)
     } 
 }
 
-/* Find the optimal number of pages for the memory map. Is it better to
-   move this code to efi/mm.c?  */
-static grub_efi_uintn_t
-find_mmap_size (void)
-{
-  static grub_efi_uintn_t mmap_size = 0;
-
-  if (mmap_size != 0)
-    return mmap_size;
-  
-  mmap_size = (1 << 12);
-  while (1)
-    {
-      int ret;
-      grub_efi_memory_descriptor_t *mmap;
-      grub_efi_uintn_t desc_size;
-      
-      mmap = grub_malloc (mmap_size);
-      if (! mmap)
-	return 0;
-
-      ret = grub_efi_get_memory_map (&mmap_size, mmap, 0, &desc_size, 0);
-      grub_free (mmap);
-      
-      if (ret < 0)
-	{
-	  grub_error (GRUB_ERR_IO, "cannot get memory map");
-	  return 0;
-	}
-      else if (ret > 0)
-	break;
-
-      mmap_size += (1 << 12);
-    }
-
-  /* Increase the size a bit for safety, because GRUB allocates more on
-     later, and EFI itself may allocate more.  */
-  mmap_size += (1 << 12);
-
-  return page_align (mmap_size);
-}
-
 static void
 free_pages (void)
 {
@@ -212,7 +170,7 @@ allocate_pages (grub_uint64_t align, grub_uint64_t size_pages,
 
   size = size_pages << 12;
 
-  mmap_size = find_mmap_size ();
+  mmap_size = grub_efi_find_mmap_size ();
   if (!mmap_size)
     return 0;
 
@@ -323,7 +281,7 @@ grub_linux_boot (void)
   /* MDT.
      Must be done after grub_machine_fini because map_key is used by
      exit_boot_services.  */
-  mmap_size = find_mmap_size ();
+  mmap_size = grub_efi_find_mmap_size ();
   if (! mmap_size)
     return grub_errno;
   mmap_buf = grub_efi_allocate_any_pages (page_align (mmap_size) >> 12);
