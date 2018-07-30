@@ -369,6 +369,13 @@ test -z "$debug" || echo "GRUB ROM directory: ${rom_directory}" >&2
 
 if test -z "$debug"; then
   qemuopts="${qemuopts} -nographic -monitor file:/dev/null"
+  # SeaBIOS 1.11.0 added support for VGA emulation over a serial port.  If
+  # this is configured in SeaBIOS, then -nographic causes some extra junk to
+  # end up on the serial console, which interferes with our tests.  This
+  # workaround unfortunately causes qemu to issue a warning 'externally
+  # provided fw_cfg item names should be prefixed with "opt/"', but there
+  # doesn't seem to be a better option.
+  qemuopts="${qemuopts} -fw_cfg name=etc/sercon-port,string=0"
 fi
 
 if [ x$boot != xnet ] && [ x$boot != xemu ]; then
