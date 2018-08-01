@@ -157,7 +157,7 @@ main (int argc, char **argv)
     if (strcmp(archs[arch].name, argv[2]) == 0)
       break;
   if (arch == ARRAY_SIZE(archs))
-    grub_util_error("unknown arch: %s", argv[2]);
+    grub_util_error("%s: unknown arch: %s", argv[1], argv[2]);
 
   for (whitelist = 0; whitelist < ARRAY_SIZE(whitelists); whitelist++)
     if (strcmp(whitelists[whitelist].arch, argv[2]) == 0
@@ -169,8 +169,8 @@ main (int argc, char **argv)
   module_size = grub_util_get_image_size (argv[1]);
   module_img = grub_util_read_image (argv[1]);
   if (archs[arch].voidp_sizeof == 8)
-    grub_module_verify64(module_img, module_size, &archs[arch], whitelist_empty);
+    grub_module_verify64(argv[1], module_img, module_size, &archs[arch], whitelist_empty);
   else
-    grub_module_verify32(module_img, module_size, &archs[arch], whitelist_empty);
+    grub_module_verify32(argv[1], module_img, module_size, &archs[arch], whitelist_empty);
   return 0;
 }

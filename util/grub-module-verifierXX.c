@@ -151,14 +151,15 @@ find_section (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e, const c
 }
 
 static void
-check_license (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
+check_license (const char * const filename,
+	       const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
 {
   Elf_Shdr *s = find_section (arch, e, ".module_license");
   if (s && (strcmp ((char *) e + grub_target_to_host(s->sh_offset), "LICENSE=GPLv3") == 0
 	    || strcmp ((char *) e + grub_target_to_host(s->sh_offset), "LICENSE=GPLv3+") == 0
 	    || strcmp ((char *) e + grub_target_to_host(s->sh_offset), "LICENSE=GPLv2+") == 0))
     return;
-  grub_util_error ("incompatible license");
+  grub_util_error ("%s: incompatible license", filename);
 }
 
 static Elf_Sym *
@@ -224,10 +225,10 @@ check_symbols (const struct grub_module_verifier_arch *arch,
       s = find_section (arch, e, ".moddeps");
 
       if (!s)
-	grub_util_error ("no symbol table and no .moddeps section");
+	grub_util_error ("%s: no symbol table and no .moddeps section", modname);
 
       if (!s->sh_size)
-	grub_util_error ("no symbol table and empty .moddeps section");
+	grub_util_error ("%s: no symbol table and empty .moddeps section", modname);
 
       return;
     }
@@ -248,7 +249,7 @@ check_symbols (const struct grub_module_verifier_arch *arch,
 	  break;
 
 	default:
-	  return grub_util_error ("unknown symbol type `%d'", (int) type);
+	  return grub_util_error ("%s: unknown symbol type `%d'", modname, (int) type);
 	}
     }
 }
@@ -274,7 +275,8 @@ is_symbol_local(Elf_Sym *sym)
 }
 
 static void
-section_check_relocations (const struct grub_module_verifier_arch *arch, void *ehdr,
+section_check_relocations (const char * const modname,
+			   const struct grub_module_verifier_arch *arch, void *ehdr,
 			   Elf_Shdr *s, size_t target_seg_size)
 {
   Elf_Rel *rel, *max;
@@ -283,7 +285,7 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
 
   symtab = get_symtab (arch, ehdr, &symtabsize, &symtabentsize);
   if (!symtab)
-    grub_util_error ("relocation without symbol table");
+    grub_util_error ("%s: relocation without symbol table", modname);
 
   for (rel = (Elf_Rel *) ((char *) ehdr + grub_target_to_host (s->sh_offset)),
 	 max = (Elf_Rel *) ((char *) rel + grub_target_to_host (s->sh_size));
@@ -294,7 +296,7 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
       unsigned i;
 
       if (target_seg_size < grub_target_to_host (rel->r_offset))
-	grub_util_error ("reloc offset is out of the segment");
+	grub_util_error ("%s: reloc offset is out of the segment", modname);
 
       grub_uint32_t type = ELF_R_TYPE (grub_target_to_host (rel->r_info));
 
@@ -307,17 +309,17 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
       if (arch->supported_relocations[i] != -1)
 	continue;
       if (!arch->short_relocations)
-	grub_util_error ("unsupported relocation 0x%x", type);
+	grub_util_error ("%s: unsupported relocation 0x%x", modname, type);
       for (i = 0; arch->short_relocations[i] != -1; i++)
 	if (type == arch->short_relocations[i])
 	  break;
       if (arch->short_relocations[i] == -1)
-	grub_util_error ("unsupported relocation 0x%x", type);
+	grub_util_error ("%s: unsupported relocation 0x%x", modname, type);
       sym = (Elf_Sym *) ((char *) symtab + symtabentsize * ELF_R_SYM (grub_target_to_host (rel->r_info)));
 
       if (is_symbol_local (sym))
 	continue;
-      grub_util_error ("relocation 0x%x is not module-local", type);
+      grub_util_error ("%s: relocation 0x%x is not module-local", modname, type);
     }
 #if defined(MODULEVERIFIER_ELF64)
   if (arch->machine == EM_AARCH64)
@@ -342,11 +344,11 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
 		    && ELF_R_TYPE (rel2->r_info) == R_AARCH64_LD64_GOT_LO12_NC)
 		  break;
 	      if (rel2 >= (Elf_Rela *) max)
-		grub_util_error ("ADR_GOT_PAGE without matching LD64_GOT_LO12_NC");
+		grub_util_error ("%s: ADR_GOT_PAGE without matching LD64_GOT_LO12_NC", modname);
 	      break;
 	    case R_AARCH64_LD64_GOT_LO12_NC:
 	      if (unmatched_adr_got_page == 0)
-		grub_util_error ("LD64_GOT_LO12_NC without matching ADR_GOT_PAGE");
+		grub_util_error ("%s: LD64_GOT_LO12_NC without matching ADR_GOT_PAGE", modname);
 	      unmatched_adr_got_page--;
 	      break;
 	    }
@@ -356,7 +358,8 @@ section_check_relocations (const struct grub_module_verifier_arch *arch, void *e
 }
 
 static void
-check_relocations (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
+check_relocations (const char * const modname,
+		   const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
 {
   Elf_Shdr *s;
   unsigned i;
@@ -369,21 +372,22 @@ check_relocations (const struct grub_module_verifier_arch *arch, Elf_Ehdr *e)
 	Elf_Shdr *ts;
 
 	if (grub_target_to_host32 (s->sh_type) == SHT_REL && !(arch->flags & GRUB_MODULE_VERIFY_SUPPORTS_REL))
-	  grub_util_error ("unsupported SHT_REL");
+	  grub_util_error ("%s: unsupported SHT_REL", modname);
 	if (grub_target_to_host32 (s->sh_type) == SHT_RELA && !(arch->flags & GRUB_MODULE_VERIFY_SUPPORTS_RELA))
-	  grub_util_error ("unsupported SHT_RELA");
+	  grub_util_error ("%s: unsupported SHT_RELA", modname);
 
 	/* Find the target segment.  */
 	if (grub_target_to_host32 (s->sh_info) >= grub_target_to_host16 (e->e_shnum))
-	  grub_util_error ("orphaned reloc section");
+	  grub_util_error ("%s: orphaned reloc section", modname);
 	ts = (Elf_Shdr *) ((char *) e + grub_target_to_host (e->e_shoff) + grub_target_to_host32 (s->sh_info) * grub_target_to_host16 (e->e_shentsize));
 
-	section_check_relocations (arch, e, s, grub_target_to_host (ts->sh_size));
+	section_check_relocations (modname, arch, e, s, grub_target_to_host (ts->sh_size));
       }
 }
 
 void
-SUFFIX(grub_module_verify) (void *module_img, size_t size,
+SUFFIX(grub_module_verify) (const char * const filename,
+			    void *module_img, size_t size,
 			    const struct grub_module_verifier_arch *arch,
 			    const char **whitelist_empty)
 {
@@ -391,7 +395,7 @@ SUFFIX(grub_module_verify) (void *module_img, size_t size,
 
   /* Check the header size.  */
   if (size < sizeof (Elf_Ehdr))
-    grub_util_error ("ELF header smaller than expected");
+    grub_util_error ("%s: ELF header smaller than expected", filename);
 
   /* Check the magic numbers.  */
   if (e->e_ident[EI_MAG0] != ELFMAG0
@@ -400,36 +404,36 @@ SUFFIX(grub_module_verify) (void *module_img, size_t size,
       || e->e_ident[EI_MAG3] != ELFMAG3
       || e->e_ident[EI_VERSION] != EV_CURRENT
       || grub_target_to_host32 (e->e_version) != EV_CURRENT)
-    grub_util_error ("invalid arch-independent ELF magic");
+    grub_util_error ("%s: invalid arch-independent ELF magic", filename);
 
   if (e->e_ident[EI_CLASS] != ELFCLASSXX
       || e->e_ident[EI_DATA] != (arch->bigendian ? ELFDATA2MSB : ELFDATA2LSB)
       || grub_target_to_host16 (e->e_machine) != arch->machine)
-    grub_util_error ("invalid arch-dependent ELF magic");
+    grub_util_error ("%s: invalid arch-dependent ELF magic", filename);
 
   if (grub_target_to_host16 (e->e_type) != ET_REL)
     {
-      grub_util_error ("this ELF file is not of the right type");
+      grub_util_error ("%s: this ELF file is not of the right type", filename);
     }
 
   /* Make sure that every section is within the core.  */
   if (size < grub_target_to_host (e->e_shoff)
       + (grub_uint32_t) grub_target_to_host16 (e->e_shentsize) * grub_target_to_host16(e->e_shnum))
     {
-      grub_util_error ("ELF sections outside core");
+      grub_util_error ("%s: ELF sections outside core", filename);
     }
 
-  check_license (arch, e);
+  check_license (filename, arch, e);
 
   Elf_Shdr *s;
   const char *modname;
 
   s = find_section (arch, e, ".modname");
   if (!s)
-    grub_util_error ("no module name found");
+    grub_util_error ("%s: no module name found", filename);
 
   modname = (const char *) e + grub_target_to_host (s->sh_offset);
 
   check_symbols(arch, e, modname, whitelist_empty);
-  check_relocations(arch, e);
+  check_relocations(modname, arch, e);
 }
