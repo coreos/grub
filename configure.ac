@@ -277,7 +277,7 @@ fi
 
 AC_SUBST(bootdirname)
 AC_DEFINE_UNQUOTED(GRUB_BOOT_DIR_NAME, "$bootdirname",
-    [Default boot directory name]")
+    [Default boot directory name])
 
 AC_ARG_WITH([grubdir],
             AS_HELP_STRING([--with-grubdir=DIR],
