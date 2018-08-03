@@ -5544,6 +5544,7 @@ environment variables and commands are listed in the same order.
 @menu
 * Authentication and authorisation:: Users and access control
 * Using digital signatures::         Booting digitally signed code
+* UEFI secure boot and shim::        Booting digitally signed PE files
 @end menu
 
 @node Authentication and authorisation
@@ -5705,6 +5706,20 @@ the machine from altering that machine's firmware (e.g., Coreboot
 or BIOS) configuration to cause the machine to boot from a different
 (attacker-controlled) device.  GRUB is at best only one link in a
 secure boot chain.
+
+@node UEFI secure boot and shim
+@section UEFI secure boot and shim support
+
+The GRUB, except the @command{chainloader} command, works with the UEFI secure
+boot and the shim. This functionality is provided by the shim_lock module. It
+is recommend to build in this and other required modules into the @file{core.img}.
+All modules not stored in the @file{core.img} and the ACPI tables for the
+@command{acpi} command have to be signed, e.g. using PGP. Additionally, the
+@command{iorw} and the @command{memrw} commands are prohibited if the UEFI
+secure boot is enabled. This is done due to security reasons. All above
+mentioned requirements are enforced by the shim_lock module. And itself it
+is a persistent module which means that it cannot be unloaded if it was
+loaded into the memory.
 
 @node Platform limitations
 @chapter Platform limitations
