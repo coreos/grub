@@ -576,7 +576,7 @@ grub_ahci_pciinit (grub_pci_device_t dev,
 	    grub_ahci_readwrite_real (dev, &parms2, 1, 1);*/
       }
 
-  endtime = grub_get_time_ms () + 10000;
+  endtime = grub_get_time_ms () + 32000;
 
   while (grub_get_time_ms () < endtime)
     {
