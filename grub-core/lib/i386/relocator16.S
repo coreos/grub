@@ -204,8 +204,9 @@ LOCAL(gate_a20_check_state):
 	ret
 
 LOCAL(gate_a20_done):
-	/* we are in real mode now
-	 * set up the real mode segment registers : DS, SS, ES
+	/*
+	 * We are in real mode now. Set up the real mode segment registers and
+	 * all the other general purpose registers. cs is updated with ljmp.
 	 */
 	/* movw imm16, %ax.  */
 	.byte	0xb8
@@ -298,7 +299,7 @@ LOCAL(gdt):
 	.byte	0, 0x92, 0xCF, 0
 
 	/* -- 16 bit real mode CS --
-	 * base = 0x00000000, limit 0x0FFFF (1 B Granularity), present
+	 * base = filled by code, limit 0x0FFFF (1 B Granularity), present
 	 * type = 16 bit code execute/read only/conforming, DPL = 0
 	 */
 	.word	0xFFFF
