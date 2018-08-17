@@ -20,6 +20,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
+sbindir=@sbindir@
 sysconfdir="@sysconfdir@"
 PACKAGE_NAME=@PACKAGE_NAME@
 PACKAGE_VERSION=@PACKAGE_VERSION@
@@ -32,6 +33,7 @@ fi
 self=`basename $0`
 
 grub_editenv=${bindir}/@grub_editenv@
+grub_probe=${sbindir}/@grub_probe@
 rootdir=
 bootdir=
 grubdir=`echo "/@bootdirname@/@grubdirname@" | sed 's,//*,/,g'`
@@ -56,6 +58,8 @@ submenus or sub-submenus require specifying the submenu components and then the
 menu item component. The titles should be separated using the greater-than
 character (>) with no extra spaces. Depending on your shell some characters including > may need escaping. More information about this is available
 in the GRUB Manual in the section about the 'default' command. "; echo
+    echo
+    gettext "NOTE: In cases where GRUB cannot write to the environment block, such as when it is stored on an MDRAID or LVM device, the chosen boot menu entry will remain the default even after reboot. "; echo
     echo
     gettext "Report bugs to <bug-grub@gnu.org>."; echo
 }
@@ -130,6 +134,18 @@ if [ -z "$bootdir" ]; then
 fi
 
 grubdir=`echo "${bootdir}/@grubdirname@" | sed 's,//*,/,g'`
+
+abstractions=`$grub_probe --target=abstraction ${grubdir}/grubenv`
+for abstraction in $abstractions; do
+    case "$abstraction" in
+	diskfilter | lvm)
+	    gettext_printf "\nWARNING: Detected GRUB environment block on $abstraction device\n"
+	    gettext_printf "%s will remain the default boot entry until manually cleared with:\n" "${entry}"
+	    gettext_printf "    grub-editenv ${grubdir}/grubenv unset next_entry\n\n"
+	    break
+	    ;;
+    esac
+done
 
 # Restore saved_entry if it was set by previous version
 prev_saved_entry=`$grub_editenv ${grubdir}/grubenv list | sed -n 's/^prev_saved_entry=//p'`
