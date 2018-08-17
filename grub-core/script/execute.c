@@ -962,6 +962,7 @@ grub_script_execute_cmdline (struct grub_script_cmd *cmd)
   {
       grub_tpm_measure ((unsigned char *)cmdstring, cmdlen-1, GRUB_ASCII_PCR,
 			    "grub_cmd", cmdstring);
+      grub_dprintf("tpm", "grub_cmd %s\n", cmdstring);
   }
   grub_print_error();
   grub_free(cmdstring);

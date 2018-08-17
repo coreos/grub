@@ -290,6 +290,7 @@ grub_initrd_load (struct grub_linux_initrd_context *initrd_ctx,
 	  return grub_errno;
 	}
       grub_tpm_measure (ptr, cursize, GRUB_BINARY_PCR, "grub_initrd", "Initrd");
+	  grub_dprintf("tpm", "grub_initrd %s\n", argv[i]);
       grub_print_error();
 
       ptr += cursize;

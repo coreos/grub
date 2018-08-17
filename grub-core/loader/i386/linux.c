@@ -720,6 +720,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
     }
 
   grub_tpm_measure (kernel, len, GRUB_BINARY_PCR, "grub_linux", "Kernel");
+  grub_dprintf("tpm", "grub_linux %s\n", argv[0]);
   grub_print_error();
 
   grub_memcpy (&lh, kernel, sizeof (lh));
