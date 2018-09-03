@@ -153,8 +153,8 @@ grub_ieee1275_parse_bootpath (const char *devpath, char *bootpath,
   char *comma_char = 0;
   char *equal_char = 0;
   grub_size_t field_counter = 0;
-  grub_net_network_level_address_t client_addr, gateway_addr, subnet_mask;
-  grub_net_link_level_address_t hw_addr;
+  grub_net_network_level_address_t client_addr = {}, gateway_addr = {}, subnet_mask = {};
+  grub_net_link_level_address_t hw_addr = {};
   grub_net_interface_flags_t flags = 0;
   struct grub_net_network_level_interface *inter = NULL;
   grub_uint16_t vlantag = 0;
