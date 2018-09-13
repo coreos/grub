@@ -175,9 +175,9 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	  e = mbr.entries + p.index;
 
 	  p.start = p.offset
-	    + (grub_le_to_cpu32 (e->start)
+	    + ((grub_disk_addr_t)grub_le_to_cpu32 (e->start)
 	       << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)) - delta;
-	  p.len = grub_le_to_cpu32 (e->length)
+	  p.len = (grub_uint64_t)grub_le_to_cpu32 (e->length)
 	    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS);
 	  p.msdostype = e->type;
 
@@ -210,7 +210,7 @@ grub_partition_msdos_iterate (grub_disk_t disk,
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
 	      p.offset = ext_offset
-		+ (grub_le_to_cpu32 (e->start)
+		+ ((grub_disk_addr_t)grub_le_to_cpu32 (e->start)
 		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = p.offset;
@@ -294,9 +294,9 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 
 	  if (!grub_msdos_partition_is_empty (e->type)
 	      && end > offset
-	      + (grub_le_to_cpu32 (e->start)
+	      + ((grub_disk_addr_t)grub_le_to_cpu32 (e->start)
 		 << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
-	    end = offset + (grub_le_to_cpu32 (e->start)
+	    end = offset + ((grub_disk_addr_t)grub_le_to_cpu32 (e->start)
 			    << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 
 	  /* If this is a GPT partition, this MBR is just a dummy.  */
@@ -312,7 +312,7 @@ pc_partition_map_embed (struct grub_disk *disk, unsigned int *nsectors,
 	  if (grub_msdos_partition_is_extended (e->type))
 	    {
 	      offset = ext_offset 
-		+ (grub_le_to_cpu32 (e->start) 
+		+ ((grub_disk_addr_t)grub_le_to_cpu32 (e->start)
 		   << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS));
 	      if (! ext_offset)
 		ext_offset = offset;
