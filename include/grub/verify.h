@@ -22,7 +22,9 @@
 enum grub_verify_flags
   {
     GRUB_VERIFY_FLAGS_SKIP_VERIFICATION	= 1,
-    GRUB_VERIFY_FLAGS_SINGLE_CHUNK	= 2
+    GRUB_VERIFY_FLAGS_SINGLE_CHUNK	= 2,
+    /* Defer verification to another authority. */
+    GRUB_VERIFY_FLAGS_DEFER_AUTH	= 4
   };
 
 enum grub_verify_string_type

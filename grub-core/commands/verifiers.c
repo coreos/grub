@@ -83,6 +83,7 @@ grub_verifiers_open (grub_file_t io, enum grub_file_type type)
   void *context;
   grub_file_t ret = 0;
   grub_err_t err;
+  int defer = 0;
 
   grub_dprintf ("verify", "file: %s type: %d\n", io->name, type);
 
@@ -102,13 +103,27 @@ grub_verifiers_open (grub_file_t io, enum grub_file_type type)
       err = ver->init (io, type, &context, &flags);
       if (err)
 	goto fail_noclose;
+      if (flags & GRUB_VERIFY_FLAGS_DEFER_AUTH)
+	{
+	  defer = 1;
+	  continue;
+	}
       if (!(flags & GRUB_VERIFY_FLAGS_SKIP_VERIFICATION))
 	break;
     }
 
   if (!ver)
-    /* No verifiers wanted to verify. Just return underlying file. */
-    return io;
+    {
+      if (defer)
+	{
+	  grub_error (GRUB_ERR_ACCESS_DENIED,
+		      N_("verification requested but nobody cares: %s"), io->name);
+	  goto fail_noclose;
+	}
+
+      /* No verifiers wanted to verify. Just return underlying file. */
+      return io;
+    }
 
   ret = grub_malloc (sizeof (*ret));
   if (!ret)
@@ -160,7 +175,9 @@ grub_verifiers_open (grub_file_t io, enum grub_file_type type)
       err = ver->init (io, type, &context, &flags);
       if (err)
 	goto fail_noclose;
-      if (flags & GRUB_VERIFY_FLAGS_SKIP_VERIFICATION)
+      if (flags & GRUB_VERIFY_FLAGS_SKIP_VERIFICATION ||
+	  /* Verification done earlier. So, we are happy here. */
+	  flags & GRUB_VERIFY_FLAGS_DEFER_AUTH)
 	continue;
       err = ver->write (context, verified->buf, ret->size);
       if (err)
