@@ -888,8 +888,8 @@ module = {
 };
 
 module = {
-  name = verify;
-  common = commands/verify.c;
+  name = pgp;
+  common = commands/pgp.c;
   cflags = '$(CFLAGS_POSIX)';
   cppflags = '-I$(srcdir)/lib/posix_wrap';
 };
