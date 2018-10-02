@@ -175,6 +175,7 @@ struct grub_dl
 {
   char *name;
   int ref_count;
+  int persistent;
   grub_dl_dep_t dep;
   grub_dl_segment_t segment;
   Elf_Sym *symtab;
@@ -238,6 +239,18 @@ grub_dl_get (const char *name)
       return l;
 
   return 0;
+}
+
+static inline void
+grub_dl_set_persistent (grub_dl_t mod)
+{
+  mod->persistent = 1;
+}
+
+static inline int
+grub_dl_is_persistent (grub_dl_t mod)
+{
+  return mod->persistent;
 }
 
 #endif

@@ -137,6 +137,9 @@ grub_mini_cmd_rmmod (struct grub_command *cmd __attribute__ ((unused)),
   if (! mod)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, "no such module");
 
+  if (grub_dl_is_persistent (mod))
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, "cannot unload persistent module");
+
   if (grub_dl_unref (mod) <= 0)
     grub_dl_unload (mod);
 
