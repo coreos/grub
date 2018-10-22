@@ -74,14 +74,26 @@ mod_255 (unsigned x)
 }
 
 static grub_err_t
-grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
-                    char *buf, grub_disk_addr_t sector, grub_size_t size)
+raid6_recover_read_node (void *data, int disknr,
+				    grub_uint64_t sector,
+				    void *buf, grub_size_t size)
+{
+    struct grub_diskfilter_segment *array = data;
+
+    return grub_diskfilter_read_node (&array->nodes[disknr],
+				      (grub_disk_addr_t)sector,
+				      size >> GRUB_DISK_SECTOR_BITS, buf);
+}
+
+grub_err_t
+grub_raid6_recover_gen (void *data, grub_uint64_t nstripes, int disknr, int p,
+			    char *buf, grub_uint64_t sector, grub_size_t size,
+			    int layout, raid_recover_read_t read_func)
 {
   int i, q, pos;
   int bad1 = -1, bad2 = -1;
   char *pbuf = 0, *qbuf = 0;
 
-  size <<= GRUB_DISK_SECTOR_BITS;
   pbuf = grub_zalloc (size);
   if (!pbuf)
     goto quit;
@@ -91,17 +103,17 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
     goto quit;
 
   q = p + 1;
-  if (q == (int) array->node_count)
+  if (q == (int) nstripes)
     q = 0;
 
   pos = q + 1;
-  if (pos == (int) array->node_count)
+  if (pos == (int) nstripes)
     pos = 0;
 
-  for (i = 0; i < (int) array->node_count - 2; i++)
+  for (i = 0; i < (int) nstripes - 2; i++)
     {
       int c;
-      if (array->layout & GRUB_RAID_LAYOUT_MUL_FROM_POS)
+      if (layout & GRUB_RAID_LAYOUT_MUL_FROM_POS)
 	c = pos;
       else
 	c = i;
@@ -109,8 +121,7 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
         bad1 = c;
       else
         {
-          if (! grub_diskfilter_read_node (&array->nodes[pos], sector,
-					   size >> GRUB_DISK_SECTOR_BITS, buf))
+	  if (!read_func (data, pos, sector, buf, size))
             {
               grub_crypto_xor (pbuf, pbuf, buf, size);
               grub_raid_block_mulx (c, buf, size);
@@ -128,7 +139,7 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
         }
 
       pos++;
-      if (pos == (int) array->node_count)
+      if (pos == (int) nstripes)
         pos = 0;
     }
 
@@ -139,16 +150,14 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
   if (bad2 < 0)
     {
       /* One bad device */
-      if ((! grub_diskfilter_read_node (&array->nodes[p], sector,
-					size >> GRUB_DISK_SECTOR_BITS, buf)))
+      if (!read_func (data, p, sector, buf, size))
         {
           grub_crypto_xor (buf, buf, pbuf, size);
           goto quit;
         }
 
       grub_errno = GRUB_ERR_NONE;
-      if (grub_diskfilter_read_node (&array->nodes[q], sector,
-				     size >> GRUB_DISK_SECTOR_BITS, buf))
+      if (read_func (data, q, sector, buf, size))
         goto quit;
 
       grub_crypto_xor (buf, buf, qbuf, size);
@@ -160,14 +169,12 @@ grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
       /* Two bad devices */
       unsigned c;
 
-      if (grub_diskfilter_read_node (&array->nodes[p], sector,
-				     size >> GRUB_DISK_SECTOR_BITS, buf))
+      if (read_func (data, p, sector, buf, size))
         goto quit;
 
       grub_crypto_xor (pbuf, pbuf, buf, size);
 
-      if (grub_diskfilter_read_node (&array->nodes[q], sector,
-				     size >> GRUB_DISK_SECTOR_BITS, buf))
+      if (read_func (data, q, sector, buf, size))
         goto quit;
 
       grub_crypto_xor (qbuf, qbuf, buf, size);
@@ -188,6 +195,15 @@ quit:
   grub_free (qbuf);
 
   return grub_errno;
+}
+
+static grub_err_t
+grub_raid6_recover (struct grub_diskfilter_segment *array, int disknr, int p,
+                    char *buf, grub_disk_addr_t sector, grub_size_t size)
+{
+  return grub_raid6_recover_gen (array, array->node_count, disknr, p, buf,
+				     sector, size << GRUB_DISK_SECTOR_BITS,
+				     array->layout, raid6_recover_read_node);
 }
 
 GRUB_MOD_INIT(raid6rec)
