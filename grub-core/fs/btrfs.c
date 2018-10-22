@@ -30,6 +30,7 @@
 #include <grub/i18n.h>
 #include <grub/btrfs.h>
 #include <grub/crypto.h>
+#include <grub/diskfilter.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -702,10 +703,35 @@ rebuild_raid5 (char *dest, struct raid56_buffer *buffers,
 }
 
 static grub_err_t
+raid6_recover_read_buffer (void *data, int disk_nr,
+			   grub_uint64_t addr __attribute__ ((unused)),
+			   void *dest, grub_size_t size)
+{
+    struct raid56_buffer *buffers = data;
+
+    if (!buffers[disk_nr].data_is_valid)
+	return grub_errno = GRUB_ERR_READ_ERROR;
+
+    grub_memcpy(dest, buffers[disk_nr].buf, size);
+
+    return grub_errno = GRUB_ERR_NONE;
+}
+
+static void
+rebuild_raid6 (struct raid56_buffer *buffers, grub_uint64_t nstripes,
+               grub_uint64_t csize, grub_uint64_t parities_pos, void *dest,
+               grub_uint64_t stripen)
+
+{
+  grub_raid6_recover_gen (buffers, nstripes, stripen, parities_pos,
+                          dest, 0, csize, 0, raid6_recover_read_buffer);
+}
+
+static grub_err_t
 raid56_read_retry (struct grub_btrfs_data *data,
 		   struct grub_btrfs_chunk_item *chunk,
-		   grub_uint64_t stripe_offset,
-		   grub_uint64_t csize, void *buf)
+		   grub_uint64_t stripe_offset, grub_uint64_t stripen,
+		   grub_uint64_t csize, void *buf, grub_uint64_t parities_pos)
 {
   struct raid56_buffer *buffers;
   grub_uint64_t nstripes = grub_le_to_cpu16 (chunk->nstripes);
@@ -777,6 +803,14 @@ raid56_read_retry (struct grub_btrfs_data *data,
       ret = GRUB_ERR_READ_ERROR;
       goto cleanup;
     }
+  else if (failed_devices > 2 && (chunk_type & GRUB_BTRFS_CHUNK_TYPE_RAID6))
+    {
+      grub_dprintf ("btrfs", "not enough disks for RAID 6: total %" PRIuGRUB_UINT64_T
+		    ", missing %" PRIuGRUB_UINT64_T "\n",
+		    nstripes, failed_devices);
+      ret = GRUB_ERR_READ_ERROR;
+      goto cleanup;
+    }
   else
     grub_dprintf ("btrfs", "enough disks for RAID 5: total %"
 		  PRIuGRUB_UINT64_T ", missing %" PRIuGRUB_UINT64_T "\n",
@@ -786,7 +820,7 @@ raid56_read_retry (struct grub_btrfs_data *data,
   if (chunk_type & GRUB_BTRFS_CHUNK_TYPE_RAID5)
     rebuild_raid5 (buf, buffers, nstripes, csize);
   else
-    grub_dprintf ("btrfs", "called rebuild_raid6(), NOT IMPLEMENTED\n");
+    rebuild_raid6 (buffers, nstripes, csize, parities_pos, buf, stripen);
 
   ret = GRUB_ERR_NONE;
  cleanup:
@@ -876,9 +910,11 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	unsigned redundancy = 1;
 	unsigned i, j;
 	int is_raid56;
+	grub_uint64_t parities_pos = 0;
 
-	is_raid56 = !!(grub_le_to_cpu64 (chunk->type) &
-		       GRUB_BTRFS_CHUNK_TYPE_RAID5);
+        is_raid56 = !!(grub_le_to_cpu64 (chunk->type) &
+		       (GRUB_BTRFS_CHUNK_TYPE_RAID5 |
+		        GRUB_BTRFS_CHUNK_TYPE_RAID6));
 
 	if (grub_le_to_cpu64 (chunk->size) <= off)
 	  {
@@ -1027,6 +1063,15 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	       */
 	      grub_divmod64 (high + stripen, nstripes, &stripen);
 
+	      /*
+	       * parities_pos is equal to ((high - nparities) % nstripes)
+	       * (see the diagram above). However, (high - nparities) can
+	       * be negative, e.g. when high == 0, leading to an incorrect
+	       * results. (high + nstripes - nparities) is always positive and
+	       * modulo nstripes is equal to ((high - nparities) % nstripes).
+	       */
+	      grub_divmod64 (high + nstripes - nparities, nstripes, &parities_pos);
+
 	      stripe_offset = chunk_stripe_length * high + low;
 	      csize = chunk_stripe_length - low;
 
@@ -1067,7 +1112,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 		grub_errno = GRUB_ERR_NONE;
 		if (err)
 		  err = raid56_read_retry (data, chunk, stripe_offset,
-					   csize, buf);
+					   stripen, csize, buf, parities_pos);
 	      }
 	    else
 	      for (i = 0; i < redundancy; i++)
