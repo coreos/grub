@@ -119,6 +119,8 @@ struct grub_btrfs_chunk_item
 #define GRUB_BTRFS_CHUNK_TYPE_RAID1         0x10
 #define GRUB_BTRFS_CHUNK_TYPE_DUPLICATED    0x20
 #define GRUB_BTRFS_CHUNK_TYPE_RAID10        0x40
+#define GRUB_BTRFS_CHUNK_TYPE_RAID5         0x80
+#define GRUB_BTRFS_CHUNK_TYPE_RAID6         0x100
   grub_uint8_t dummy2[0xc];
   grub_uint16_t nstripes;
   grub_uint16_t nsubstripes;
@@ -764,6 +766,77 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 	      stripe_offset = low + chunk_stripe_length
 		* high;
 	      csize = chunk_stripe_length - low;
+	      break;
+	    }
+	  case GRUB_BTRFS_CHUNK_TYPE_RAID5:
+	  case GRUB_BTRFS_CHUNK_TYPE_RAID6:
+	    {
+	      grub_uint64_t nparities, stripe_nr, high, low;
+
+	      redundancy = 1;	/* no redundancy for now */
+
+	      if (grub_le_to_cpu64 (chunk->type) & GRUB_BTRFS_CHUNK_TYPE_RAID5)
+		{
+		  grub_dprintf ("btrfs", "RAID5\n");
+		  nparities = 1;
+		}
+	      else
+		{
+		  grub_dprintf ("btrfs", "RAID6\n");
+		  nparities = 2;
+		}
+
+	      /*
+	       * RAID 6 layout consists of several stripes spread over
+	       * the disks, e.g.:
+	       *
+	       *   Disk_0  Disk_1  Disk_2  Disk_3
+	       *     A0      B0      P0      Q0
+	       *     Q1      A1      B1      P1
+	       *     P2      Q2      A2      B2
+	       *
+	       * Note: placement of the parities depend on row number.
+	       *
+	       * Pay attention that the btrfs terminology may differ from
+	       * terminology used in other RAID implementations, e.g. LVM,
+	       * dm or md. The main difference is that btrfs calls contiguous
+	       * block of data on a given disk, e.g. A0, stripe instead of chunk.
+	       *
+	       * The variables listed below have following meaning:
+	       *   - stripe_nr is the stripe number excluding the parities
+	       *     (A0 = 0, B0 = 1, A1 = 2, B1 = 3, etc.),
+	       *   - high is the row number (0 for A0...Q0, 1 for Q1...P1, etc.),
+	       *   - stripen is the disk number in a row (0 for A0, Q1, P2,
+	       *     1 for B0, A1, Q2, etc.),
+	       *   - off is the logical address to read,
+	       *   - chunk_stripe_length is the size of a stripe (typically 64 KiB),
+	       *   - nstripes is the number of disks in a row,
+	       *   - low is the offset of the data inside a stripe,
+	       *   - stripe_offset is the data offset in an array,
+	       *   - csize is the "potential" data to read; it will be reduced
+	       *     to size if the latter is smaller,
+	       *   - nparities is the number of parities (1 for RAID 5, 2 for
+	       *     RAID 6); used only in RAID 5/6 code.
+	       */
+	      stripe_nr = grub_divmod64 (off, chunk_stripe_length, &low);
+
+	      /*
+	       * stripen is computed without the parities
+	       * (0 for A0, A1, A2, 1 for B0, B1, B2, etc.).
+	       */
+	      high = grub_divmod64 (stripe_nr, nstripes - nparities, &stripen);
+
+	      /*
+	       * The stripes are spread over the disks. Every each row their
+	       * positions are shifted by 1 place. So, the real disks number
+	       * change. Hence, we have to take into account current row number
+	       * modulo nstripes (0 for A0, 1 for A1, 2 for A2, etc.).
+	       */
+	      grub_divmod64 (high + stripen, nstripes, &stripen);
+
+	      stripe_offset = chunk_stripe_length * high + low;
+	      csize = chunk_stripe_length - low;
+
 	      break;
 	    }
 	  default:
