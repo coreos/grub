@@ -588,7 +588,7 @@ find_device_iter (const char *name, void *data)
 }
 
 static grub_device_t
-find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
+find_device (struct grub_btrfs_data *data, grub_uint64_t id)
 {
   struct find_device_ctx ctx = {
     .data = data,
@@ -600,10 +600,9 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
   for (i = 0; i < data->n_devices_attached; i++)
     if (id == data->devices_attached[i].id)
       return data->devices_attached[i].dev;
-  if (do_rescan)
-    grub_device_iterate (find_device_iter, &ctx);
-  if (!ctx.dev_found)
-    return NULL;
+
+  grub_device_iterate (find_device_iter, &ctx);
+
   data->n_devices_attached++;
   if (data->n_devices_attached > data->n_devices_allocated)
     {
@@ -615,7 +614,8 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
 			* sizeof (data->devices_attached[0]));
       if (!data->devices_attached)
 	{
-	  grub_device_close (ctx.dev_found);
+	  if (ctx.dev_found)
+	    grub_device_close (ctx.dev_found);
 	  data->devices_attached = tmp;
 	  return NULL;
 	}
@@ -897,7 +897,7 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 			      " for laddr 0x%" PRIxGRUB_UINT64_T "\n", paddr,
 			      addr);
 
-		dev = find_device (data, stripe->device_id, j);
+		dev = find_device (data, stripe->device_id);
 		if (!dev)
 		  {
 		    grub_dprintf ("btrfs",
@@ -974,7 +974,8 @@ grub_btrfs_unmount (struct grub_btrfs_data *data)
   unsigned i;
   /* The device 0 is closed one layer upper.  */
   for (i = 1; i < data->n_devices_attached; i++)
-    grub_device_close (data->devices_attached[i].dev);
+    if (data->devices_attached[i].dev)
+        grub_device_close (data->devices_attached[i].dev);
   grub_free (data->devices_attached);
   grub_free (data->extent);
   grub_free (data);
