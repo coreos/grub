@@ -626,6 +626,46 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id)
 }
 
 static grub_err_t
+btrfs_read_from_chunk (struct grub_btrfs_data *data,
+		       struct grub_btrfs_chunk_item *chunk,
+		       grub_uint64_t stripen, grub_uint64_t stripe_offset,
+		       int redundancy, grub_uint64_t csize,
+		       void *buf)
+{
+    struct grub_btrfs_chunk_stripe *stripe;
+    grub_disk_addr_t paddr;
+    grub_device_t dev;
+    grub_err_t err;
+
+    stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
+    /* Right now the redundancy handling is easy.
+       With RAID5-like it will be more difficult.  */
+    stripe += stripen + redundancy;
+
+    paddr = grub_le_to_cpu64 (stripe->offset) + stripe_offset;
+
+    grub_dprintf ("btrfs", "stripe %" PRIxGRUB_UINT64_T
+		  " maps to 0x%" PRIxGRUB_UINT64_T "\n"
+		  "reading paddr 0x%" PRIxGRUB_UINT64_T "\n",
+		  stripen, stripe->offset, paddr);
+
+    dev = find_device (data, stripe->device_id);
+    if (!dev)
+      {
+	grub_dprintf ("btrfs",
+		      "couldn't find a necessary member device "
+		      "of multi-device filesystem\n");
+	grub_errno = GRUB_ERR_NONE;
+	return GRUB_ERR_READ_ERROR;
+      }
+
+    err = grub_disk_read (dev->disk, paddr >> GRUB_DISK_SECTOR_BITS,
+			  paddr & (GRUB_DISK_SECTOR_SIZE - 1),
+			  csize, buf);
+    return err;
+}
+
+static grub_err_t
 grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 			 void *buf, grub_size_t size, int recursion_depth)
 {
@@ -638,7 +678,6 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
       grub_err_t err = 0;
       struct grub_btrfs_key key_out;
       int challoc = 0;
-      grub_device_t dev;
       struct grub_btrfs_key key_in;
       grub_size_t chsize;
       grub_disk_addr_t chaddr;
@@ -884,36 +923,10 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 
 	    for (i = 0; i < redundancy; i++)
 	      {
-		struct grub_btrfs_chunk_stripe *stripe;
-		grub_disk_addr_t paddr;
-
-		stripe = (struct grub_btrfs_chunk_stripe *) (chunk + 1);
-		/* Right now the redundancy handling is easy.
-		   With RAID5-like it will be more difficult.  */
-		stripe += stripen + i;
-
-		paddr = grub_le_to_cpu64 (stripe->offset) + stripe_offset;
-
-		grub_dprintf ("btrfs", "stripe %" PRIxGRUB_UINT64_T
-			      " maps to 0x%" PRIxGRUB_UINT64_T "\n",
-			      stripen, stripe->offset);
-		grub_dprintf ("btrfs", "reading paddr 0x%" PRIxGRUB_UINT64_T "\n",
-			      paddr);
-
-		dev = find_device (data, stripe->device_id);
-		if (!dev)
-		  {
-		    grub_dprintf ("btrfs",
-				  "couldn't find a necessary member device "
-				  "of multi-device filesystem\n");
-		    err = grub_errno;
-		    grub_errno = GRUB_ERR_NONE;
-		    continue;
-		  }
-
-		err = grub_disk_read (dev->disk, paddr >> GRUB_DISK_SECTOR_BITS,
-				      paddr & (GRUB_DISK_SECTOR_SIZE - 1),
-				      csize, buf);
+		err = btrfs_read_from_chunk (data, chunk, stripen,
+					     stripe_offset,
+					     i,     /* redundancy */
+					     csize, buf);
 		if (!err)
 		  break;
 		grub_errno = GRUB_ERR_NONE;
