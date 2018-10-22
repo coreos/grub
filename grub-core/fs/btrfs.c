@@ -603,12 +603,7 @@ find_device (struct grub_btrfs_data *data, grub_uint64_t id, int do_rescan)
   if (do_rescan)
     grub_device_iterate (find_device_iter, &ctx);
   if (!ctx.dev_found)
-    {
-      grub_error (GRUB_ERR_BAD_FS,
-		  N_("couldn't find a necessary member device "
-		     "of multi-device filesystem"));
-      return NULL;
-    }
+    return NULL;
   data->n_devices_attached++;
   if (data->n_devices_attached > data->n_devices_allocated)
     {
@@ -905,6 +900,9 @@ grub_btrfs_read_logical (struct grub_btrfs_data *data, grub_disk_addr_t addr,
 		dev = find_device (data, stripe->device_id, j);
 		if (!dev)
 		  {
+		    grub_dprintf ("btrfs",
+				  "couldn't find a necessary member device "
+				  "of multi-device filesystem\n");
 		    err = grub_errno;
 		    grub_errno = GRUB_ERR_NONE;
 		    continue;
