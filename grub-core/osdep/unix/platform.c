@@ -85,7 +85,7 @@ grub_install_remove_efi_entries_by_distributor (const char *efi_distributor)
   pid_t pid = grub_util_exec_pipe ((const char * []){ "efibootmgr", NULL }, &fd);
   char *line = NULL;
   size_t len = 0;
-  int rc;
+  int rc = 0;
 
   if (!pid)
     {
