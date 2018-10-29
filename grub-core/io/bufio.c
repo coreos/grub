@@ -43,7 +43,7 @@ typedef struct grub_bufio *grub_bufio_t;
 static struct grub_fs grub_bufio_fs;
 
 grub_file_t
-grub_bufio_open (grub_file_t io, int size)
+grub_bufio_open (grub_file_t io, grub_size_t size)
 {
   grub_file_t file;
   grub_bufio_t bufio = 0;
@@ -57,7 +57,7 @@ grub_bufio_open (grub_file_t io, int size)
   else if (size > GRUB_BUFIO_MAX_SIZE)
     size = GRUB_BUFIO_MAX_SIZE;
 
-  if ((size < 0) || ((unsigned) size > io->size))
+  if (size > io->size)
     size = ((io->size > GRUB_BUFIO_MAX_SIZE) ? GRUB_BUFIO_MAX_SIZE :
             io->size);
 
@@ -88,7 +88,7 @@ grub_bufio_open (grub_file_t io, int size)
 }
 
 grub_file_t
-grub_buffile_open (const char *name, int size)
+grub_buffile_open (const char *name, grub_size_t size)
 {
   grub_file_t io, file;
 
