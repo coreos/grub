@@ -829,7 +829,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
   if (dtb_path)
     {
-      dtb_size = ALIGN_UP(grub_util_get_image_size (dtb_path), 4);
+      dtb_size = ALIGN_ADDR(grub_util_get_image_size (dtb_path));
       total_module_size += dtb_size + sizeof (struct grub_module_header);
     }
 
