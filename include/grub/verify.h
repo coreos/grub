@@ -16,6 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_VERIFY_HEADER
+#define GRUB_VERIFY_HEADER 1
+
 #include <grub/file.h>
 #include <grub/list.h>
 
@@ -76,3 +79,5 @@ grub_verifier_unregister (struct grub_file_verifier *ver)
 
 grub_err_t
 grub_verify_string (char *str, enum grub_verify_string_type type);
+
+#endif /* ! GRUB_VERIFY_HEADER */
