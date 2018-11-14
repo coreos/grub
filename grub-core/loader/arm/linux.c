@@ -363,7 +363,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_KERNEL);
   if (!file)
     goto fail;
 
@@ -408,7 +408,7 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   if (argc == 0)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_INITRD);
   if (!file)
     return grub_errno;
 
@@ -471,7 +471,7 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
   if (argc != 1)
     return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename expected"));
 
-  dtb = grub_file_open (argv[0]);
+  dtb = grub_file_open (argv[0], GRUB_FILE_TYPE_DEVICE_TREE_IMAGE);
   if (!dtb)
     return grub_errno;
 
