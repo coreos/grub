@@ -288,6 +288,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 {
   grub_file_t file = 0;
   struct linux_armxx_kernel_header lh;
+  grub_err_t err;
 
   grub_dl_ref (my_mod);
 
@@ -297,7 +298,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
       goto fail;
     }
 
-  file = grub_file_open (argv[0]);
+  file = grub_file_open (argv[0], GRUB_FILE_TYPE_LINUX_KERNEL);
   if (!file)
     goto fail;
 
