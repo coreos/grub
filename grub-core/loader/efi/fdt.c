@@ -123,7 +123,7 @@ grub_cmd_devicetree (grub_command_t cmd __attribute__ ((unused)),
       return GRUB_ERR_NONE;
     }
 
-  dtb = grub_file_open (argv[0]);
+  dtb = grub_file_open (argv[0], GRUB_FILE_TYPE_DEVICE_TREE_IMAGE);
   if (!dtb)
     goto out;
 
