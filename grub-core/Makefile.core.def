@@ -1272,6 +1272,21 @@ module = {
 };
 
 module = {
+  name = zstd;
+  common = lib/zstd/debug.c;
+  common = lib/zstd/entropy_common.c;
+  common = lib/zstd/error_private.c;
+  common = lib/zstd/fse_decompress.c;
+  common = lib/zstd/huf_decompress.c;
+  common = lib/zstd/module.c;
+  common = lib/zstd/xxhash.c;
+  common = lib/zstd/zstd_common.c;
+  common = lib/zstd/zstd_decompress.c;
+  cflags = '$(CFLAGS_POSIX) -Wno-undef';
+  cppflags = '-I$(srcdir)/lib/posix_wrap -I$(srcdir)/lib/zstd';
+};
+
+module = {
   name = btrfs;
   common = fs/btrfs.c;
   common = lib/crc.c;
