@@ -54,7 +54,7 @@ library = {
 library = {
   name = libgrubmods.a;
   cflags = '-fno-builtin -Wno-undef';
-  cppflags = '-I$(top_srcdir)/grub-core/lib/minilzo -I$(srcdir)/grub-core/lib/xzembed -DMINILZO_HAVE_CONFIG_H';
+  cppflags = '-I$(srcdir)/grub-core/lib/minilzo -I$(srcdir)/grub-core/lib/xzembed -I$(srcdir)/grub-core/lib/zstd -DMINILZO_HAVE_CONFIG_H';
 
   common_nodist = grub_script.tab.c;
   common_nodist = grub_script.yy.c;
@@ -165,6 +165,15 @@ library = {
   common = grub-core/lib/xzembed/xz_dec_bcj.c;
   common = grub-core/lib/xzembed/xz_dec_lzma2.c;
   common = grub-core/lib/xzembed/xz_dec_stream.c;
+  common = grub-core/lib/zstd/debug.c;
+  common = grub-core/lib/zstd/entropy_common.c;
+  common = grub-core/lib/zstd/error_private.c;
+  common = grub-core/lib/zstd/fse_decompress.c;
+  common = grub-core/lib/zstd/huf_decompress.c;
+  common = grub-core/lib/zstd/module.c;
+  common = grub-core/lib/zstd/xxhash.c;
+  common = grub-core/lib/zstd/zstd_common.c;
+  common = grub-core/lib/zstd/zstd_decompress.c;
 };
 
 program = {

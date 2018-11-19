@@ -18,6 +18,7 @@ fi
 "@builddir@/grub-fs-tester" btrfs
 "@builddir@/grub-fs-tester" btrfs_zlib
 "@builddir@/grub-fs-tester" btrfs_lzo
+"@builddir@/grub-fs-tester" btrfs_zstd
 "@builddir@/grub-fs-tester" btrfs_raid0
 "@builddir@/grub-fs-tester" btrfs_raid1
 "@builddir@/grub-fs-tester" btrfs_single

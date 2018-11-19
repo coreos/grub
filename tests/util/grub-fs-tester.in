@@ -629,7 +629,7 @@ for LOGSECSIZE in $(range "$MINLOGSECSIZE" "$MAXLOGSECSIZE" 1); do
 		    ;;
 		x"btrfs")
 		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${MOUNTDEVICE}" ;;
-		x"btrfs_zlib" | x"btrfs_lzo")
+		x"btrfs_zlib" | x"btrfs_lzo" | x"btrfs_zstd")
 		    "mkfs.btrfs" -s $SECSIZE -L "$FSLABEL" "${MOUNTDEVICE}"
 		    MOUNTOPTS="compress=${fs/btrfs_/},"
 		    MOUNTFS="btrfs"
