@@ -495,13 +495,12 @@ grub_verify_signature_init (struct grub_pubkey_context *ctxt, grub_file_t sig)
 
   grub_dprintf ("crypt", "alive\n");
 
-  ctxt->sig = sig;
-
   ctxt->hash_context = grub_zalloc (ctxt->hash->contextsize);
   if (!ctxt->hash_context)
     return grub_errno;
 
   ctxt->hash->init (ctxt->hash_context);
+  ctxt->sig = sig;
 
   return GRUB_ERR_NONE;
 }
@@ -684,16 +683,26 @@ grub_pubkey_close (void *ctxt)
 }
 
 grub_err_t
-grub_verify_signature (grub_file_t f, grub_file_t sig,
+grub_verify_signature (grub_file_t f, const char *fsig,
 		       struct grub_public_key *pkey)
 {
+  grub_file_t sig;
   grub_err_t err;
   struct grub_pubkey_context ctxt;
   grub_uint8_t *readbuf = NULL;
 
+  sig = grub_file_open (fsig,
+			GRUB_FILE_TYPE_SIGNATURE
+			| GRUB_FILE_TYPE_NO_DECOMPRESS);
+  if (!sig)
+    return grub_errno;
+
   err = grub_verify_signature_init (&ctxt, sig);
   if (err)
-    return err;
+    {
+      grub_file_close (sig);
+      return err;
+    }
 
   readbuf = grub_zalloc (READBUF_SIZE);
   if (!readbuf)
@@ -807,7 +816,7 @@ static grub_err_t
 grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
 			   int argc, char **args)
 {
-  grub_file_t f = NULL, sig = NULL;
+  grub_file_t f = NULL;
   grub_err_t err = GRUB_ERR_NONE;
   struct grub_public_key *pk = NULL;
 
@@ -845,19 +854,8 @@ grub_cmd_verify_signature (grub_extcmd_context_t ctxt,
       goto fail;
     }
 
-  sig = grub_file_open (args[1],
-			GRUB_FILE_TYPE_SIGNATURE
-			| GRUB_FILE_TYPE_NO_DECOMPRESS);
-  if (!sig)
-    {
-      err = grub_errno;
-      goto fail;
-    }
-
-  err = grub_verify_signature (f, sig, pk);
+  err = grub_verify_signature (f, args[1], pk);
  fail:
-  if (sig)
-    grub_file_close (sig);
   if (f)
     grub_file_close (f);
   if (pk)
@@ -902,7 +900,8 @@ grub_pubkey_init (grub_file_t io, enum grub_file_type type __attribute__ ((unuse
   err = grub_verify_signature_init (ctxt, sig);
   if (err)
     {
-      grub_pubkey_close (ctxt);
+      grub_free (ctxt);
+      grub_file_close (sig);
       return err;
     }
   *context = ctxt;

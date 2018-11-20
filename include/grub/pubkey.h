@@ -25,7 +25,7 @@ struct grub_public_key *
 grub_load_public_key (grub_file_t f);
 
 grub_err_t
-grub_verify_signature (grub_file_t f, grub_file_t sig,
+grub_verify_signature (grub_file_t f, const char *fsig,
 		       struct grub_public_key *pk);
 
 
