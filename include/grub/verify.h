@@ -34,6 +34,7 @@ enum grub_verify_string_type
   {
     GRUB_VERIFY_KERNEL_CMDLINE,
     GRUB_VERIFY_MODULE_CMDLINE,
+    GRUB_VERIFY_COMMAND,
   };
 
 struct grub_file_verifier
