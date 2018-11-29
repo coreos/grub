@@ -5545,6 +5545,7 @@ environment variables and commands are listed in the same order.
 * Authentication and authorisation:: Users and access control
 * Using digital signatures::         Booting digitally signed code
 * UEFI secure boot and shim::        Booting digitally signed PE files
+* Measured Boot::                    Measuring boot components
 @end menu
 
 @node Authentication and authorisation
@@ -5720,6 +5721,43 @@ secure boot is enabled. This is done due to security reasons. All above
 mentioned requirements are enforced by the shim_lock module. And itself it
 is a persistent module which means that it cannot be unloaded if it was
 loaded into the memory.
+
+@node Measured Boot
+@section Measuring boot components
+
+If the tpm module is loaded and the platform has a Trusted Platform Module
+installed, GRUB will log each command executed and each file loaded into the
+TPM event log and extend the PCR values in the TPM correspondingly. All events
+will be logged into the PCR described below with a type of EV_IPL and an
+event description as described below.
+
+@multitable @columnfractions 0.3 0.1 0.6
+@headitem Event type @tab PCR @tab Description
+@item Command
+@tab 8
+@tab All executed commands (including those from configuration files) will be
+logged and measured as entered with a prefix of ``grub_cmd: ``
+@item Kernel command line
+@tab 8
+@tab Any command line passed to a kernel will be logged and measured as entered
+with a prefix of ``kernel_cmdline: ''
+@item Module command line
+@tab 8
+@tab Any command line passed to a kernel module will be logged and measured as
+entered with a prefix of ``module_cmdline: ``
+@item Files
+@tab 9
+@tab Any file read by GRUB will be logged and measured with a descriptive text
+corresponding to the filename.
+@end multitable
+
+GRUB will not measure its own @file{core.img} - it is expected that firmware
+will carry this out. GRUB will also not perform any measurements until the
+tpm module is loaded. As such it is recommended that the tpm module be built
+into @file{core.img} in order to avoid a potential gap in measurement between
+@file{core.img} being loaded and the tpm module being loaded.
+
+Measured boot is currently only supported on EFI platforms.
 
 @node Platform limitations
 @chapter Platform limitations
