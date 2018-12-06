@@ -645,10 +645,10 @@ grub_cmd_xen (grub_command_t cmd __attribute__ ((unused)),
 
   grub_xen_reset ();
 
-  grub_create_loader_cmdline (argc - 1, argv + 1,
-			      (char *) xen_state.next_start.cmd_line,
-			      sizeof (xen_state.next_start.cmd_line) - 1);
-  err = grub_verify_string (xen_state.next_start.cmd_line, GRUB_VERIFY_MODULE_CMDLINE);
+  err = grub_create_loader_cmdline (argc - 1, argv + 1,
+				    (char *) xen_state.next_start.cmd_line,
+				    sizeof (xen_state.next_start.cmd_line) - 1,
+				    GRUB_VERIFY_KERNEL_CMDLINE);
   if (err)
     return err;
 
@@ -910,9 +910,9 @@ grub_cmd_module (grub_command_t cmd __attribute__ ((unused)),
   if (err)
     goto fail;
 
-  grub_create_loader_cmdline (argc - 1, argv + 1,
-			      get_virtual_current_address (ch), cmdline_len);
-  err = grub_verify_string (get_virtual_current_address (ch), GRUB_VERIFY_MODULE_CMDLINE);
+  err = grub_create_loader_cmdline (argc - 1, argv + 1,
+				    get_virtual_current_address (ch), cmdline_len,
+				    GRUB_VERIFY_MODULE_CMDLINE);
   if (err)
     goto fail;
 
