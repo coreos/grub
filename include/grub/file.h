@@ -42,6 +42,11 @@ enum grub_file_type
     /* Multiboot module.  */
     GRUB_FILE_TYPE_MULTIBOOT_MODULE,
 
+    /* Xen hypervisor - used on ARM only. */
+    GRUB_FILE_TYPE_XEN_HYPERVISOR,
+    /* Xen module - used on ARM only. */
+    GRUB_FILE_TYPE_XEN_MODULE,
+
     GRUB_FILE_TYPE_BSD_KERNEL,
     GRUB_FILE_TYPE_FREEBSD_ENV,
     GRUB_FILE_TYPE_FREEBSD_MODULE,
