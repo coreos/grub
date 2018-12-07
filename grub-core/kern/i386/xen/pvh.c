@@ -241,6 +241,30 @@ grub_xen_set_mmap (void)
 		      (grub_uint32_t) (&memmap), 0, 0, 0, 0);
 }
 
+static void
+grub_xen_mm_init_regions (void)
+{
+  grub_uint64_t modend, from, to;
+  unsigned int i;
+
+  modend = grub_modules_get_end ();
+
+  for (i = 0; i < nr_map_entries; i++)
+    {
+      if (map[i].type != GRUB_MEMORY_AVAILABLE)
+        continue;
+      from = map[i].addr;
+      to = from + map[i].len;
+      if (from < modend)
+        from = modend;
+      if (from >= to || from >= (1ULL << 32))
+        continue;
+      if (to > (1ULL << 32))
+        to = 1ULL << 32;
+      grub_mm_init_region ((void *) (grub_addr_t) from, to - from);
+    }
+}
+
 static grub_uint64_t
 grub_xen_find_page (grub_uint64_t start)
 {
@@ -325,10 +349,21 @@ grub_xen_setup_pvh (void)
 					       (void *) par);
   grub_xen_set_mmap ();
 
+  grub_xen_mm_init_regions ();
+
   grub_rsdp_addr = pvh_start_info->rsdp_paddr;
 }
 
 grub_err_t
 grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
 {
+  unsigned int i;
+
+  for (i = 0; i < nr_map_entries; i++)
+    {
+      if (map[i].len && hook (map[i].addr, map[i].len, map[i].type, hook_data))
+        break;
+    }
+
+  return GRUB_ERR_NONE;
 }
