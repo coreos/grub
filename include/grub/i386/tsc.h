@@ -54,7 +54,7 @@ grub_get_tsc (void)
 static __inline int
 grub_cpu_is_tsc_supported (void)
 {
-#ifndef GRUB_MACHINE_XEN
+#if !defined(GRUB_MACHINE_XEN) && !defined(GRUB_MACHINE_XEN_PVH)
   grub_uint32_t a,b,c,d;
   if (! grub_cpu_is_cpuid_supported ())
     return 0;

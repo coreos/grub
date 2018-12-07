@@ -26,7 +26,10 @@ EXPORT_FUNC (grub_xen_hypercall) (grub_uint32_t callno, grub_uint32_t a0,
 				  grub_uint32_t a1, grub_uint32_t a2,
 				  grub_uint32_t a3, grub_uint32_t a4,
 				  grub_uint32_t a5)
-__attribute__ ((regparm (3), cdecl));
+#ifdef GRUB_MACHINE_XEN
+  __attribute__ ((regparm (3), cdecl))
+#endif
+  ;
 
 static inline int
 grub_xen_sched_op (int cmd, void *arg)

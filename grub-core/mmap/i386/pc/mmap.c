@@ -42,14 +42,6 @@ extern grub_uint16_t grub_machine_mmaphook_kblow;
 extern grub_uint16_t grub_machine_mmaphook_kbin16mb;
 extern grub_uint16_t grub_machine_mmaphook_64kbin4gb;
 
-struct grub_e820_mmap_entry
-{
-  grub_uint64_t addr;
-  grub_uint64_t len;
-  grub_uint32_t type;
-} GRUB_PACKED;
-
-
 /* Helper for preboot.  */
 static int fill_hook (grub_uint64_t addr, grub_uint64_t size,
 		      grub_memory_type_t type, void *data)
