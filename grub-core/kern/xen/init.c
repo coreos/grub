@@ -41,9 +41,11 @@ grub_size_t grub_xen_n_allocated_shared_pages;
 static grub_xen_mfn_t
 grub_xen_ptr2mfn (void *ptr)
 {
+#ifdef GRUB_MACHINE_XEN
   grub_xen_mfn_t *mfn_list =
     (grub_xen_mfn_t *) grub_xen_start_page_addr->mfn_list;
   return mfn_list[(grub_addr_t) ptr >> GRUB_XEN_LOG_PAGE_SIZE];
+#endif
 }
 
 void *
@@ -103,18 +105,6 @@ grub_machine_get_bootlocation (char **device __attribute__ ((unused)),
 			       char **path __attribute__ ((unused)))
 {
 }
-
-static grub_uint8_t window[GRUB_XEN_PAGE_SIZE]
-  __attribute__ ((aligned (GRUB_XEN_PAGE_SIZE)));
-
-#ifdef __x86_64__
-#define NUMBER_OF_LEVELS 4
-#else
-#define NUMBER_OF_LEVELS 3
-#endif
-
-#define LOG_POINTERS_PER_PAGE 9
-#define POINTERS_PER_PAGE (1 << LOG_POINTERS_PER_PAGE)
 
 void
 grub_xen_store_send (const void *buf_, grub_size_t len)
@@ -337,6 +327,19 @@ grub_xen_setup_gnttab (void)
   grub_xen_grant_table_op (GNTTABOP_setup_table, &gnttab_setup, 1);
 }
 
+#ifdef GRUB_MACHINE_XEN
+static grub_uint8_t window[GRUB_XEN_PAGE_SIZE]
+  __attribute__ ((aligned (GRUB_XEN_PAGE_SIZE)));
+
+#ifdef __x86_64__
+#define NUMBER_OF_LEVELS 4
+#else
+#define NUMBER_OF_LEVELS 3
+#endif
+
+#define LOG_POINTERS_PER_PAGE 9
+#define POINTERS_PER_PAGE (1 << LOG_POINTERS_PER_PAGE)
+
 #define MAX_N_UNUSABLE_PAGES 4
 
 static int
@@ -529,13 +532,30 @@ map_all_pages (void)
   grub_mm_init_region ((void *) heap_start, heap_end - heap_start);
 }
 
+grub_err_t
+grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
+{
+  grub_uint64_t total_pages = grub_xen_start_page_addr->nr_pages;
+  grub_uint64_t usable_pages = grub_xen_start_page_addr->pt_base >> 12;
+  if (hook (0, page2offset (usable_pages), GRUB_MEMORY_AVAILABLE, hook_data))
+    return GRUB_ERR_NONE;
+
+  hook (page2offset (usable_pages), page2offset (total_pages - usable_pages),
+	GRUB_MEMORY_RESERVED, hook_data);
+
+  return GRUB_ERR_NONE;
+}
+#endif
+
 extern char _end[];
 
 void
 grub_machine_init (void)
 {
+#ifdef GRUB_MACHINE_XEN
 #ifdef __i386__
   grub_xen_vm_assist (VMASST_CMD_enable, VMASST_TYPE_pae_extended_cr3);
+#endif
 #endif
 
   grub_modbase = ALIGN_UP ((grub_addr_t) _end
@@ -544,7 +564,9 @@ grub_machine_init (void)
 
   grub_xen_setup_gnttab ();
 
+#ifdef GRUB_MACHINE_XEN
   map_all_pages ();
+#endif
 
   grub_console_init ();
 
@@ -570,18 +592,4 @@ grub_machine_fini (int flags __attribute__ ((unused)))
 {
   grub_xendisk_fini ();
   grub_boot_fini ();
-}
-
-grub_err_t
-grub_machine_mmap_iterate (grub_memory_hook_t hook, void *hook_data)
-{
-  grub_uint64_t total_pages = grub_xen_start_page_addr->nr_pages;
-  grub_uint64_t usable_pages = grub_xen_start_page_addr->pt_base >> 12;
-  if (hook (0, page2offset (usable_pages), GRUB_MEMORY_AVAILABLE, hook_data))
-    return GRUB_ERR_NONE;
-
-  hook (page2offset (usable_pages), page2offset (total_pages - usable_pages),
-	GRUB_MEMORY_RESERVED, hook_data);
-
-  return GRUB_ERR_NONE;
 }
