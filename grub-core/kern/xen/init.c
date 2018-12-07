@@ -318,6 +318,25 @@ grub_xenstore_dir (const char *dir,
 
 unsigned long gntframe = 0;
 
+static void
+grub_xen_setup_gnttab (void)
+{
+  struct gnttab_set_version gnttab_setver;
+  struct gnttab_setup_table gnttab_setup;
+
+  grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
+
+  gnttab_setver.version = 1;
+  grub_xen_grant_table_op (GNTTABOP_set_version, &gnttab_setver, 1);
+
+  grub_memset (&gnttab_setup, 0, sizeof (gnttab_setup));
+  gnttab_setup.dom = DOMID_SELF;
+  gnttab_setup.nr_frames = 1;
+  gnttab_setup.frame_list.p = &gntframe;
+
+  grub_xen_grant_table_op (GNTTABOP_setup_table, &gnttab_setup, 1);
+}
+
 #define MAX_N_UNUSABLE_PAGES 4
 
 static int
@@ -357,25 +376,11 @@ map_all_pages (void)
     (grub_xen_mfn_t *) grub_xen_start_page_addr->mfn_list;
   grub_uint64_t *pg = (grub_uint64_t *) window;
   grub_uint64_t oldpgstart, oldpgend;
-  struct gnttab_setup_table gnttab_setup;
-  struct gnttab_set_version gnttab_setver;
   grub_size_t n_unusable_pages = 0;
   struct mmu_update m2p_updates[2 * MAX_N_UNUSABLE_PAGES];
 
   if (total_pages > MAX_TOTAL_PAGES - 4)
     total_pages = MAX_TOTAL_PAGES - 4;
-
-  grub_memset (&gnttab_setver, 0, sizeof (gnttab_setver));
-
-  gnttab_setver.version = 1;
-  grub_xen_grant_table_op (GNTTABOP_set_version, &gnttab_setver, 1);
-
-  grub_memset (&gnttab_setup, 0, sizeof (gnttab_setup));
-  gnttab_setup.dom = DOMID_SELF;
-  gnttab_setup.nr_frames = 1;
-  gnttab_setup.frame_list.p = &gntframe;
-
-  grub_xen_grant_table_op (GNTTABOP_setup_table, &gnttab_setup, 1);
 
   for (j = 0; j < total_pages - n_unusable_pages; j++)
     while (!grub_xen_is_page_usable (mfn_list[j]))
@@ -536,6 +541,8 @@ grub_machine_init (void)
   grub_modbase = ALIGN_UP ((grub_addr_t) _end
 			   + GRUB_KERNEL_MACHINE_MOD_GAP,
 			   GRUB_KERNEL_MACHINE_MOD_ALIGN);
+
+  grub_xen_setup_gnttab ();
 
   map_all_pages ();
 
