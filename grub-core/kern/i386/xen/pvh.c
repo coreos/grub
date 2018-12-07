@@ -24,7 +24,12 @@
 #include <grub/i386/io.h>
 #include <grub/xen.h>
 #include <xen/hvm/start_info.h>
+#include <grub/i386/linux.h>
 #include <grub/machine/kernel.h>
+#include <grub/machine/memory.h>
+#include <xen/memory.h>
+
+#define XEN_MEMORY_MAP_SIZE   128
 
 grub_uint64_t grub_rsdp_addr;
 
@@ -32,6 +37,8 @@ static char hypercall_page[GRUB_XEN_PAGE_SIZE]
   __attribute__ ((aligned (GRUB_XEN_PAGE_SIZE)));
 
 static grub_uint32_t xen_cpuid_base;
+static struct grub_e820_mmap_entry map[XEN_MEMORY_MAP_SIZE];
+static unsigned int nr_map_entries;
 
 static void
 grub_xen_cons_msg (const char *msg)
@@ -104,11 +111,98 @@ grub_xen_hypercall (grub_uint32_t callno, grub_uint32_t a0,
   return res;
 }
 
+static void
+grub_xen_sort_mmap (void)
+{
+  grub_uint64_t from, to;
+  unsigned int i;
+  struct grub_e820_mmap_entry tmp;
+
+  /* Align map entries to page boundaries. */
+  for (i = 0; i < nr_map_entries; i++)
+    {
+      from = map[i].addr;
+      to = from + map[i].len;
+      if (map[i].type == GRUB_MEMORY_AVAILABLE)
+	{
+	  from = ALIGN_UP (from, GRUB_XEN_PAGE_SIZE);
+	  to = ALIGN_DOWN (to, GRUB_XEN_PAGE_SIZE);
+	}
+      else
+	{
+	  from = ALIGN_DOWN (from, GRUB_XEN_PAGE_SIZE);
+	  to = ALIGN_UP (to, GRUB_XEN_PAGE_SIZE);
+	}
+      map[i].addr = from;
+      map[i].len = to - from;
+    }
+
+ again:
+  /* Sort entries by start address. */
+  for (i = 1; i < nr_map_entries; i++)
+    {
+      if (map[i].addr >= map[i - 1].addr)
+	continue;
+      tmp = map[i];
+      map[i] = map[i - 1];
+      map[i - 1] = tmp;
+      i = 0;
+    }
+
+  /* Detect overlapping areas. */
+  for (i = 1; i < nr_map_entries; i++)
+    {
+      if (map[i].addr >= map[i - 1].addr + map[i - 1].len)
+	continue;
+      tmp = map[i - 1];
+      map[i - 1].len = map[i].addr - map[i - 1].addr;
+      if (map[i].addr + map[i].len >= tmp.addr + tmp.len)
+	continue;
+      if (nr_map_entries < ARRAY_SIZE (map))
+	{
+	  map[nr_map_entries].addr = map[i].addr + map[i].len;
+	  map[nr_map_entries].len = tmp.addr + tmp.len - map[nr_map_entries].addr;
+	  map[nr_map_entries].type = tmp.type;
+	  nr_map_entries++;
+	  goto again;
+	}
+    }
+
+  /* Merge adjacent entries. */
+  for (i = 1; i < nr_map_entries; i++)
+    {
+      if (map[i].type == map[i - 1].type &&
+	  map[i].addr == map[i - 1].addr + map[i - 1].len)
+	{
+	  map[i - 1].len += map[i].len;
+	  map[i] = map[nr_map_entries - 1];
+	  nr_map_entries--;
+	  goto again;
+	}
+    }
+}
+
+static void
+grub_xen_get_mmap (void)
+{
+  struct xen_memory_map memmap;
+
+  memmap.nr_entries = ARRAY_SIZE (map);
+  set_xen_guest_handle (memmap.buffer, map);
+  if (grub_xen_hypercall (__HYPERVISOR_memory_op, XENMEM_memory_map,
+			  (grub_uint32_t) (&memmap), 0, 0, 0, 0))
+    grub_xen_panic ("Could not get memory map from Xen!\n");
+  nr_map_entries = memmap.nr_entries;
+
+  grub_xen_sort_mmap ();
+}
+
 void
 grub_xen_setup_pvh (void)
 {
   grub_xen_cpuid_base ();
   grub_xen_setup_hypercall_page ();
+  grub_xen_get_mmap ();
 }
 
 grub_err_t
