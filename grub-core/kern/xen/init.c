@@ -45,6 +45,8 @@ grub_xen_ptr2mfn (void *ptr)
   grub_xen_mfn_t *mfn_list =
     (grub_xen_mfn_t *) grub_xen_start_page_addr->mfn_list;
   return mfn_list[(grub_addr_t) ptr >> GRUB_XEN_LOG_PAGE_SIZE];
+#else
+  return (grub_addr_t) ptr >> GRUB_XEN_LOG_PAGE_SIZE;
 #endif
 }
 
