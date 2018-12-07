@@ -48,6 +48,8 @@
 #include <grub/util/install.h>
 #include <grub/util/mkimage.h>
 
+#include <xen/elfnote.h>
+
 #pragma GCC diagnostic ignored "-Wcast-align"
 
 #define GRUB_MKIMAGEXX
@@ -341,7 +343,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
       note_ptr = (Elf_Nhdr *) ptr;
       note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
       note_ptr->n_descsz = grub_host_to_target32 (sizeof (PACKAGE_NAME));
-      note_ptr->n_type = grub_host_to_target32 (6);
+      note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_GUEST_OS);
       ptr += sizeof (Elf_Nhdr);
       memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
       ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
@@ -352,7 +354,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
       note_ptr = (Elf_Nhdr *) ptr;
       note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
       note_ptr->n_descsz = grub_host_to_target32 (sizeof ("generic"));
-      note_ptr->n_type = grub_host_to_target32 (8);
+      note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_LOADER);
       ptr += sizeof (Elf_Nhdr);
       memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
       ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
@@ -363,7 +365,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
       note_ptr = (Elf_Nhdr *) ptr;
       note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
       note_ptr->n_descsz = grub_host_to_target32 (sizeof ("xen-3.0"));
-      note_ptr->n_type = grub_host_to_target32 (5);
+      note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_XEN_VERSION);
       ptr += sizeof (Elf_Nhdr);
       memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
       ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
@@ -374,7 +376,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
       note_ptr = (Elf_Nhdr *) ptr;
       note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
       note_ptr->n_descsz = grub_host_to_target32 (image_target->voidp_sizeof);
-      note_ptr->n_type = grub_host_to_target32 (1);
+      note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_ENTRY);
       ptr += sizeof (Elf_Nhdr);
       memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
       ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
@@ -385,7 +387,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
       note_ptr = (Elf_Nhdr *) ptr;
       note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
       note_ptr->n_descsz = grub_host_to_target32 (image_target->voidp_sizeof);
-      note_ptr->n_type = grub_host_to_target32 (3);
+      note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_VIRT_BASE);
       ptr += sizeof (Elf_Nhdr);
       memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
       ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
@@ -398,7 +400,7 @@ SUFFIX (grub_mkimage_generate_elf) (const struct grub_install_image_target_desc 
 	  note_ptr = (Elf_Nhdr *) ptr;
 	  note_ptr->n_namesz = grub_host_to_target32 (sizeof (GRUB_XEN_NOTE_NAME));
 	  note_ptr->n_descsz = grub_host_to_target32 (sizeof ("yes,bimodal"));
-	  note_ptr->n_type = grub_host_to_target32 (9);
+	  note_ptr->n_type = grub_host_to_target32 (XEN_ELFNOTE_PAE_MODE);
 	  ptr += sizeof (Elf_Nhdr);
 	  memcpy (ptr, GRUB_XEN_NOTE_NAME, sizeof (GRUB_XEN_NOTE_NAME));
 	  ptr += ALIGN_UP (sizeof (GRUB_XEN_NOTE_NAME), 4);
