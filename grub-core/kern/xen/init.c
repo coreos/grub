@@ -564,6 +564,10 @@ grub_machine_init (void)
 			   + GRUB_KERNEL_MACHINE_MOD_GAP,
 			   GRUB_KERNEL_MACHINE_MOD_ALIGN);
 
+#ifdef GRUB_MACHINE_XEN_PVH
+  grub_xen_setup_pvh ();
+#endif
+
   grub_xen_setup_gnttab ();
 
 #ifdef GRUB_MACHINE_XEN

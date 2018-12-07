@@ -95,6 +95,11 @@ typedef grub_uint64_t grub_xen_mfn_t;
 typedef grub_uint32_t grub_xen_mfn_t;
 #endif
 typedef unsigned int grub_xen_evtchn_t;
+
+#ifdef GRUB_MACHINE_XEN_PVH
+extern struct hvm_start_info *pvh_start_info;
+void grub_xen_setup_pvh (void);
+#endif
 #endif
 
 #endif

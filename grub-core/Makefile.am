@@ -102,6 +102,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_i386_efi
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
@@ -111,6 +112,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/pmtimer.h
 endif
 
 if COND_i386_coreboot
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/coreboot/lbio.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/video.h
@@ -122,6 +124,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
 endif
 
 if COND_i386_multiboot
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/acpi.h
 endif
@@ -132,6 +135,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_i386_ieee1275
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/ieee1275/ieee1275.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
@@ -140,6 +144,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
 if COND_i386_xen
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/xen.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/xen/hypercall.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
@@ -158,6 +163,7 @@ KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
 endif
 
 if COND_x86_64_efi
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/disk.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
