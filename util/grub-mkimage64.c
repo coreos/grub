@@ -17,7 +17,9 @@
 # define ELF_R_SYM(val)		ELF64_R_SYM(val)
 # define ELF_R_TYPE(val)		ELF64_R_TYPE(val)
 # define ELF_ST_TYPE(val)		ELF64_ST_TYPE(val)
-#define XEN_NOTE_SIZE 120
+
+#define XEN_NOTE_SIZE		120
+#define XEN_PVH_NOTE_SIZE	24
 
 #ifndef GRUB_MKIMAGEXX
 #include "grub-mkimagexx.c"
