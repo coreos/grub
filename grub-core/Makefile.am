@@ -101,6 +101,18 @@ KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/int.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
 endif
 
+if COND_i386_xen_pvh
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
+KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/int.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/tsc.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/terminfo.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/extcmd.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/loader.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/lib/arg.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/xen.h
+KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/i386/xen/hypercall.h
+endif
+
 if COND_i386_efi
 KERNEL_HEADER_FILES += $(top_builddir)/include/grub/machine/kernel.h
 KERNEL_HEADER_FILES += $(top_srcdir)/include/grub/efi/efi.h
