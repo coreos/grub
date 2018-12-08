@@ -139,9 +139,13 @@ EOF
   if test -n "${initrd}" ; then
     # TRANSLATORS: ramdisk isn't identifier. Should be translated.
     message="$(gettext_printf "Loading initial ramdisk ...")"
+    initrd_path=
+    for i in ${initrd}; do
+       initrd_path="${initrd_path} ${rel_dirname}/${i}"
+    done
     sed "s/^/$submenu_indentation/" << EOF
 	echo	'$(echo "$message" | grub_quote)'
-	${module_loader}	--nounzip   ${rel_dirname}/${initrd}
+	${module_loader}	--nounzip   $(echo $initrd_path)
 EOF
   fi
   sed "s/^/$submenu_indentation/" << EOF
@@ -228,6 +232,15 @@ while [ "x${xen_list}" != "x" ] ; do
 	    module_loader="module"
         fi
     fi
+
+    initrd_early=
+    for i in ${GRUB_EARLY_INITRD_LINUX_STOCK} \
+             ${GRUB_EARLY_INITRD_LINUX_CUSTOM}; do
+       if test -e "${xen_dirname}/${i}" ; then
+          initrd_early="${initrd_early} ${i}"
+       fi
+    done
+
     while [ "x$list" != "x" ] ; do
 	linux=`version_find_latest $list`
 	gettext_printf "Found linux image: %s\n" "$linux" >&2
@@ -238,7 +251,7 @@ while [ "x${xen_list}" != "x" ] ; do
 	alt_version=`echo $version | sed -e "s,\.old$,,g"`
 	linux_root_device_thisversion="${LINUX_ROOT_DEVICE}"
 
-	initrd=
+	initrd_real=
 	for i in "initrd.img-${version}" "initrd-${version}.img" "initrd-${version}.gz" \
 	   "initrd-${version}" "initramfs-${version}.img" \
 	   "initrd.img-${alt_version}" "initrd-${alt_version}.img" \
@@ -248,13 +261,23 @@ while [ "x${xen_list}" != "x" ] ; do
 	   "initramfs-genkernel-${GENKERNEL_ARCH}-${version}" \
 	   "initramfs-genkernel-${GENKERNEL_ARCH}-${alt_version}" ; do
 	    if test -e "${dirname}/${i}" ; then
-		initrd="$i"
+		initrd_real="$i"
 		break
 	    fi
 	done
-	if test -n "${initrd}" ; then
-	    gettext_printf "Found initrd image: %s\n" "${dirname}/${initrd}" >&2
-	else
+
+	initrd=
+	if test -n "${initrd_early}" || test -n "${initrd_real}"; then
+	    initrd="${initrd_early} ${initrd_real}"
+
+	    initrd_display=
+	    for i in ${initrd}; do
+		initrd_display="${initrd_display} ${dirname}/${i}"
+	    done
+	    gettext_printf "Found initrd image: %s\n" "$(echo $initrd_display)" >&2
+	fi
+
+	if test -z "${initrd_real}"; then
     # "UUID=" magic is parsed by initrds.  Since there's no initrd, it can't work here.
 	    if [ "x${GRUB_DEVICE_PARTUUID}" = "x" ] \
 		|| [ "x${GRUB_DISABLE_LINUX_PARTUUID}" = "xtrue" ]; then
