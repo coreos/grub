@@ -66,7 +66,7 @@ grub_fdt_load (grub_size_t additional_size)
 
   if (raw_fdt)
     {
-      grub_memmove (fdt, raw_fdt, size);
+      grub_memmove (fdt, raw_fdt, size - additional_size);
       grub_fdt_set_totalsize (fdt, size);
     }
   else
