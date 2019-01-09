@@ -949,7 +949,7 @@ struct grub_file_verifier grub_pubkey_verifier =
 static grub_extcmd_t cmd, cmd_trust;
 static grub_command_t cmd_distrust, cmd_list;
 
-GRUB_MOD_INIT(verify)
+GRUB_MOD_INIT(pgp)
 {
   const char *val;
   struct grub_module_header *header;
@@ -1008,7 +1008,7 @@ GRUB_MOD_INIT(verify)
   grub_verifier_register (&grub_pubkey_verifier);
 }
 
-GRUB_MOD_FINI(verify)
+GRUB_MOD_FINI(pgp)
 {
   grub_verifier_unregister (&grub_pubkey_verifier);
   grub_unregister_extcmd (cmd);

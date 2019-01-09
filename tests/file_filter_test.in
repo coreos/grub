@@ -19,7 +19,7 @@ grubshell=@builddir@/grub-shell
 
 . "@builddir@/grub-core/modinfo.sh"
 
-filters="gzio xzio lzopio verify"
+filters="gzio xzio lzopio pgp"
 modules="cat mpi"
 
 for mod in $(cut -d ' ' -f 2 "@builddir@/grub-core/crypto.lst"  | sort -u); do
