@@ -89,7 +89,7 @@ grub_tpm_handle_find (grub_efi_handle_t *tpm_handle,
 
   if (grub_tpm_handle != NULL)
     {
-      *tpm_handle = &grub_tpm_handle;
+      *tpm_handle = grub_tpm_handle;
       *protocol_version = grub_tpm_version;
       return 1;
     }
