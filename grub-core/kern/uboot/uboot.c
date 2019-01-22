@@ -244,6 +244,22 @@ grub_uboot_dev_read (struct device_info *dev, void *buf, grub_size_t blocks,
 }
 
 int
+grub_uboot_dev_write (struct device_info *dev, const void *buf,
+		      grub_size_t blocks, grub_uint32_t start)
+{
+  int retval;
+
+  if (!OPEN_DEV (dev))
+    return -1;
+
+  if (!grub_uboot_syscall (API_DEV_WRITE, &retval, dev, buf,
+			   &blocks, &start))
+    return -1;
+
+  return retval;
+}
+
+int
 grub_uboot_dev_recv (struct device_info *dev, void *buf,
 		     int size, int *real_size)
 {

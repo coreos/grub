@@ -72,7 +72,8 @@ int EXPORT_FUNC (grub_uboot_dev_enum) (void);
 struct device_info * EXPORT_FUNC (grub_uboot_dev_get) (int index);
 int EXPORT_FUNC (grub_uboot_dev_open) (struct device_info *dev);
 int EXPORT_FUNC (grub_uboot_dev_close) (struct device_info *dev);
-int grub_uboot_dev_write (struct device_info *dev, void *buf, int *len);
+int grub_uboot_dev_write (struct device_info *dev, const void *buf,
+			  grub_size_t blocks, grub_uint32_t start);
 int grub_uboot_dev_read (struct device_info *dev, void *buf, grub_size_t blocks,
 			 grub_uint32_t start, grub_size_t * real_blocks);
 int EXPORT_FUNC (grub_uboot_dev_recv) (struct device_info *dev, void *buf,

@@ -264,13 +264,23 @@ uboot_disk_read (struct grub_disk *disk,
 }
 
 static grub_err_t
-uboot_disk_write (struct grub_disk *disk __attribute__ ((unused)),
-		  grub_disk_addr_t sector __attribute__ ((unused)),
-		  grub_size_t size __attribute__ ((unused)),
-		  const char *buf __attribute__ ((unused)))
+uboot_disk_write (struct grub_disk *disk,
+		  grub_disk_addr_t offset, grub_size_t numblocks, const char *buf)
 {
-  return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
-		     "attempt to write (not supported)");
+  struct ubootdisk_data *d;
+  int retval;
+
+  d = disk->data;
+
+  retval = grub_uboot_dev_write (d->dev, buf, numblocks, offset);
+  grub_dprintf ("ubootdisk",
+		"retval=%d, numblocks=%d, sector=%llu\n",
+		retval, numblocks, (grub_uint64_t) offset);
+
+  if (retval != 0)
+    return grub_error (GRUB_ERR_IO, "U-Boot disk write error");
+
+  return GRUB_ERR_NONE;
 }
 
 static struct grub_disk_dev grub_ubootdisk_dev = {
