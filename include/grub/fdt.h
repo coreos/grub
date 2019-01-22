@@ -22,6 +22,9 @@
 #include <grub/types.h>
 #include <grub/symbol.h>
 
+/* Space required when preparing the /chosen node after boot has been called. */
+#define GRUB_EFI_LINUX_FDT_EXTRA_SPACE 0x400
+
 #define FDT_MAGIC 0xD00DFEED
 
 typedef struct {

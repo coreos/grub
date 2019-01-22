@@ -71,7 +71,7 @@ finalize_params_linux (void)
 
   void *fdt;
 
-  fdt = grub_fdt_load (0x400);
+  fdt = grub_fdt_load (GRUB_EFI_LINUX_FDT_EXTRA_SPACE);
 
   if (!fdt)
     goto failure;
