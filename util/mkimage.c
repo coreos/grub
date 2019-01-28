@@ -602,12 +602,7 @@ static const struct grub_install_image_target_desc image_targets[] =
       .decompressor_uncompressed_size = TARGET_NO_FIELD,
       .decompressor_uncompressed_addr = TARGET_NO_FIELD,
       .section_align = GRUB_PE32_SECTION_ALIGNMENT,
-      .vaddr_offset = ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE
-                                + GRUB_PE32_SIGNATURE_SIZE
-                                + sizeof (struct grub_pe32_coff_header)
-                                + sizeof (struct grub_pe32_optional_header)
-                                + 4 * sizeof (struct grub_pe32_section_table),
-                                GRUB_PE32_SECTION_ALIGNMENT),
+      .vaddr_offset = EFI32_HEADER_SIZE,
       .pe_target = GRUB_PE32_MACHINE_ARMTHUMB_MIXED,
       .elf_target = EM_ARM,
     },
