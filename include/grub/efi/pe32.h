@@ -20,6 +20,7 @@
 #define GRUB_EFI_PE32_HEADER	1
 
 #include <grub/types.h>
+#include <grub/efi/memory.h>
 
 /* The MSDOS compatibility stub. This was copied from the output of
    objcopy, and it is not necessary to care about what this means.  */
@@ -50,8 +51,14 @@
 /* According to the spec, the minimal alignment is 512 bytes...
    But some examples (such as EFI drivers in the Intel
    Sample Implementation) use 32 bytes (0x20) instead, and it seems
-   to be working. For now, GRUB uses 512 bytes for safety.  */
-#define GRUB_PE32_SECTION_ALIGNMENT	0x200
+   to be working.
+
+   However, there is firmware showing up in the field now with
+   page alignment constraints to guarantee that page protection
+   bits take effect. Because currently existing GRUB code can not
+   properly distinguish between in-memory and in-file layout, let's
+   bump all alignment to GRUB_EFI_PAGE_SIZE. */
+#define GRUB_PE32_SECTION_ALIGNMENT	GRUB_EFI_PAGE_SIZE
 #define GRUB_PE32_FILE_ALIGNMENT	GRUB_PE32_SECTION_ALIGNMENT
 
 struct grub_pe32_coff_header
