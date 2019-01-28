@@ -66,14 +66,14 @@
 				    + sizeof (struct grub_pe32_coff_header) \
 				    + sizeof (struct grub_pe32_optional_header) \
 				    + 4 * sizeof (struct grub_pe32_section_table), \
-				    GRUB_PE32_SECTION_ALIGNMENT)
+				    GRUB_PE32_FILE_ALIGNMENT)
 
 #define EFI64_HEADER_SIZE ALIGN_UP (GRUB_PE32_MSDOS_STUB_SIZE		\
 				    + GRUB_PE32_SIGNATURE_SIZE		\
 				    + sizeof (struct grub_pe32_coff_header) \
 				    + sizeof (struct grub_pe64_optional_header) \
 				    + 4 * sizeof (struct grub_pe32_section_table), \
-				    GRUB_PE32_SECTION_ALIGNMENT)
+				    GRUB_PE32_FILE_ALIGNMENT)
 
 static const struct grub_install_image_target_desc image_targets[] =
   {
@@ -1227,10 +1227,10 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	  header_size = EFI64_HEADER_SIZE;
 
 	reloc_addr = ALIGN_UP (header_size + core_size,
-			       image_target->section_align);
+			       GRUB_PE32_FILE_ALIGNMENT);
 
 	pe_size = ALIGN_UP (reloc_addr + layout.reloc_size,
-			    image_target->section_align);
+			    GRUB_PE32_FILE_ALIGNMENT);
 	pe_img = xmalloc (reloc_addr + layout.reloc_size);
 	memset (pe_img, 0, header_size);
 	memcpy ((char *) pe_img + header_size, core_img, core_size);
@@ -1280,7 +1280,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 
 	    o->image_base = 0;
 	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
-	    o->file_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->file_alignment = grub_host_to_target32 (GRUB_PE32_FILE_ALIGNMENT);
 	    o->image_size = grub_host_to_target32 (pe_size);
 	    o->header_size = grub_host_to_target32 (header_size);
 	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
@@ -1315,7 +1315,7 @@ grub_install_generate_image (const char *dir, const char *prefix,
 	    o->code_base = grub_cpu_to_le32 (header_size);
 	    o->image_base = 0;
 	    o->section_alignment = grub_host_to_target32 (image_target->section_align);
-	    o->file_alignment = grub_host_to_target32 (image_target->section_align);
+	    o->file_alignment = grub_host_to_target32 (GRUB_PE32_FILE_ALIGNMENT);
 	    o->image_size = grub_host_to_target32 (pe_size);
 	    o->header_size = grub_host_to_target32 (header_size);
 	    o->subsystem = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);
