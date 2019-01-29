@@ -48,7 +48,7 @@ static const void *current_fdt;
 typedef void (*kernel_entry_t) (int, unsigned long, void *);
 
 #define LINUX_PHYS_OFFSET        (0x00008000)
-#define LINUX_INITRD_PHYS_OFFSET (LINUX_PHYS_OFFSET + 0x02000000)
+#define LINUX_INITRD_PHYS_OFFSET (LINUX_PHYS_OFFSET + 0x03000000)
 #define LINUX_FDT_PHYS_OFFSET    (LINUX_INITRD_PHYS_OFFSET - 0x10000)
 
 static grub_size_t
