@@ -698,7 +698,8 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 
       c = grub_getkey_noblock ();
 
-      if (c != GRUB_TERM_NO_KEY)
+      /* Negative values are returned on error. */
+      if ((c != GRUB_TERM_NO_KEY) && (c > 0))
 	{
 	  if (timeout >= 0)
 	    {
