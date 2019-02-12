@@ -74,8 +74,6 @@ enum grub_file_type
 
     GRUB_FILE_TYPE_EFI_CHAINLOADED_IMAGE,
 
-    GRUB_FILE_TYPE_DEVICE_TREE_IMAGE,
-
     /* File holding signature.  */
     GRUB_FILE_TYPE_SIGNATURE,
     /* File holding public key to verify signature once.  */
@@ -100,6 +98,8 @@ enum grub_file_type
     GRUB_FILE_TYPE_FILE_ID,
     /* File holding ACPI table.  */
     GRUB_FILE_TYPE_ACPI_TABLE,
+    /* File holding Device Tree.  */
+    GRUB_FILE_TYPE_DEVICE_TREE_IMAGE,
     /* File we intend show to user.  */
     GRUB_FILE_TYPE_CAT,
     GRUB_FILE_TYPE_HEXCAT,
