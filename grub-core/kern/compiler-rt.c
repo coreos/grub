@@ -417,3 +417,45 @@ __aeabi_llsl (grub_uint64_t u, int b)
   __attribute__ ((alias ("__ashldi3")));
 
 #endif
+
+#ifdef __riscv
+
+/* Based on libgcc from gcc suite. */
+int
+__clzsi2 (grub_uint32_t val)
+{
+  int i = 32;
+  int j = 16;
+  int temp;
+
+  for (; j; j >>= 1)
+    {
+      if ((temp = val) >> j)
+        {
+          if (j == 1)
+            {
+              return (i - 2);
+            }
+          else
+            {
+              i -= j;
+              val = temp;
+            }
+        }
+    }
+  return (i - val);
+}
+
+int
+__clzdi2 (grub_uint64_t val)
+{
+  if (val >> 32)
+    {
+      return __clzsi2 (val >> 32);
+    }
+  else
+    {
+      return __clzsi2 (val) + 32;
+    }
+}
+#endif
