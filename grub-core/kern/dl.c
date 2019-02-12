@@ -225,7 +225,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
   unsigned i;
   const Elf_Shdr *s;
   grub_size_t tsize = 0, talign = 1;
-#if !defined (__i386__) && !defined (__x86_64__)
+#if !defined (__i386__) && !defined (__x86_64__) && !defined(__riscv)
   grub_size_t tramp;
   grub_size_t got;
   grub_err_t err;
@@ -241,7 +241,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	talign = s->sh_addralign;
     }
 
-#if !defined (__i386__) && !defined (__x86_64__)
+#if !defined (__i386__) && !defined (__x86_64__) && !defined(__riscv)
   err = grub_arch_dl_get_tramp_got_size (e, &tramp, &got);
   if (err)
     return err;
@@ -304,7 +304,7 @@ grub_dl_load_segments (grub_dl_t mod, const Elf_Ehdr *e)
 	  mod->segment = seg;
 	}
     }
-#if !defined (__i386__) && !defined (__x86_64__)
+#if !defined (__i386__) && !defined (__x86_64__) && !defined(__riscv)
   ptr = (char *) ALIGN_UP ((grub_addr_t) ptr, GRUB_ARCH_DL_TRAMP_ALIGN);
   mod->tramp = ptr;
   mod->trampptr = ptr;

@@ -292,12 +292,14 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 				 grub_size_t *got);
 #endif
 
-#if defined (__powerpc__) || defined (__mips__) || defined (__arm__)
+#if defined (__powerpc__) || defined (__mips__) || defined (__arm__) || \
+    (defined(__riscv) && (__riscv_xlen == 32))
 #define GRUB_ARCH_DL_TRAMP_ALIGN 4
 #define GRUB_ARCH_DL_GOT_ALIGN 4
 #endif
 
-#if defined (__aarch64__) || defined (__sparc__)
+#if defined (__aarch64__) || defined (__sparc__) || \
+    (defined(__riscv) && (__riscv_xlen == 64))
 #define GRUB_ARCH_DL_TRAMP_ALIGN 8
 #define GRUB_ARCH_DL_GOT_ALIGN 8
 #endif
