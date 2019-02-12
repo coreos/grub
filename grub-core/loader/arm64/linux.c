@@ -49,7 +49,7 @@ static grub_addr_t initrd_start;
 static grub_addr_t initrd_end;
 
 grub_err_t
-grub_armxx_efi_linux_check_image (struct linux_armxx_kernel_header * lh)
+grub_arch_efi_linux_check_image (struct linux_arch_kernel_header * lh)
 {
   if (lh->magic != GRUB_LINUX_ARMXX_MAGIC_SIGNATURE)
     return grub_error(GRUB_ERR_BAD_OS, "invalid magic number");
@@ -110,7 +110,7 @@ failure:
 }
 
 grub_err_t
-grub_armxx_efi_linux_boot_image (grub_addr_t addr, grub_size_t size, char *args)
+grub_arch_efi_linux_boot_image (grub_addr_t addr, grub_size_t size, char *args)
 {
   grub_efi_memory_mapped_device_path_t *mempath;
   grub_efi_handle_t image_handle;
@@ -173,7 +173,7 @@ grub_linux_boot (void)
   if (finalize_params_linux () != GRUB_ERR_NONE)
     return grub_errno;
 
-  return (grub_armxx_efi_linux_boot_image((grub_addr_t)kernel_addr,
+  return (grub_arch_efi_linux_boot_image((grub_addr_t)kernel_addr,
                                           kernel_size, linux_args));
 }
 
@@ -287,7 +287,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
 		int argc, char *argv[])
 {
   grub_file_t file = 0;
-  struct linux_armxx_kernel_header lh;
+  struct linux_arch_kernel_header lh;
   grub_err_t err;
 
   grub_dl_ref (my_mod);
@@ -307,7 +307,7 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   if (grub_file_read (file, &lh, sizeof (lh)) < (long) sizeof (lh))
     return grub_errno;
 
-  if (grub_armxx_efi_linux_check_image (&lh) != GRUB_ERR_NONE)
+  if (grub_arch_efi_linux_check_image (&lh) != GRUB_ERR_NONE)
     goto fail;
 
   grub_loader_unset();

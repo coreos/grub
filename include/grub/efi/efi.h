@@ -94,8 +94,8 @@ extern void (*EXPORT_VAR(grub_efi_net_config)) (grub_efi_handle_t hnd,
 void *EXPORT_FUNC(grub_efi_get_firmware_fdt)(void);
 grub_err_t EXPORT_FUNC(grub_efi_get_ram_base)(grub_addr_t *);
 #include <grub/cpu/linux.h>
-grub_err_t grub_armxx_efi_linux_check_image(struct linux_armxx_kernel_header *lh);
-grub_err_t grub_armxx_efi_linux_boot_image(grub_addr_t addr, grub_size_t size,
+grub_err_t grub_arch_efi_linux_check_image(struct linux_arch_kernel_header *lh);
+grub_err_t grub_arch_efi_linux_boot_image(grub_addr_t addr, grub_size_t size,
                                            char *args);
 #endif
 

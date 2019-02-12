@@ -265,7 +265,7 @@ xen_boot (void)
   if (err)
     return err;
 
-  return grub_armxx_efi_linux_boot_image (xen_hypervisor->start,
+  return grub_arch_efi_linux_boot_image (xen_hypervisor->start,
 					  xen_hypervisor->size,
 					  xen_hypervisor->cmdline);
 }
@@ -469,8 +469,8 @@ grub_cmd_xen_hypervisor (grub_command_t cmd __attribute__ ((unused)),
 
   if (grub_file_read (file, &sh, sizeof (sh)) != (long) sizeof (sh))
     goto fail;
-  if (grub_armxx_efi_linux_check_image
-      ((struct linux_armxx_kernel_header *) &sh) != GRUB_ERR_NONE)
+  if (grub_arch_efi_linux_check_image
+      ((struct linux_arch_kernel_header *) &sh) != GRUB_ERR_NONE)
     goto fail;
   grub_file_seek (file, 0);
 
