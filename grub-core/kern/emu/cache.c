@@ -25,5 +25,11 @@ grub_arch_sync_caches (void *address, grub_size_t len)
   return _flush_cache (address, len, 0);
 }
 
+#elif defined(__riscv)
+void
+grub_arch_sync_caches (void *address, grub_size_t len)
+{
+}
+
 #endif
 

@@ -340,7 +340,8 @@ grub_uint64_t EXPORT_FUNC(grub_divmod64) (grub_uint64_t n,
 					  grub_uint64_t *r);
 
 /* Must match softdiv group in gentpl.py.  */
-#if !defined(GRUB_MACHINE_EMU) && (defined(__arm__) || defined(__ia64__))
+#if !defined(GRUB_MACHINE_EMU) && (defined(__arm__) || defined(__ia64__) || \
+    (defined(__riscv) && (__riscv_xlen == 32)))
 #define GRUB_DIVISION_IN_SOFTWARE 1
 #else
 #define GRUB_DIVISION_IN_SOFTWARE 0

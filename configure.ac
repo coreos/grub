@@ -104,6 +104,12 @@ case "$target_cpu" in
   aarch64*)
 		target_cpu=arm64
 		;;
+  riscv32*)
+		target_cpu=riscv32
+		;;
+  riscv64*)
+		target_cpu=riscv64
+		;;
 esac
 
 # Specify the platform (such as firmware).
@@ -127,6 +133,8 @@ if test "x$with_platform" = x; then
     ia64-*) platform=efi ;;
     arm-*) platform=uboot ;;
     arm64-*) platform=efi ;;
+    riscv32-*) platform=efi ;;
+    riscv64-*) platform=efi ;;
     *)
       AC_MSG_WARN([unsupported CPU: "$target_cpu" - only building utilities])
       platform=none
@@ -175,6 +183,8 @@ case "$target_cpu"-"$platform" in
   arm-coreboot) ;;
   arm-efi) ;;
   arm64-efi) ;;
+  riscv32-efi) ;;
+  riscv64-efi) ;;
   *-emu) ;;
   *-none) ;;
   *) AC_MSG_ERROR([platform "$platform" is not supported for target CPU "$target_cpu"]) ;;
@@ -828,6 +838,16 @@ if test x"$platform" != xemu ; then
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		         [grub_cv_target_cc_soft_float="-mgeneral-regs-only"], [])
     fi
+    if test "x$target_cpu" = xriscv32; then
+       CFLAGS="$TARGET_CFLAGS -march=rv32imac -mabi=ilp32 -Werror"
+       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		         [grub_cv_target_cc_soft_float="-march=rv32imac -mabi=ilp32"], [])
+    fi
+    if test "x$target_cpu" = xriscv64; then
+       CFLAGS="$TARGET_CFLAGS -march=rv64imac -mabi=lp64 -Werror"
+       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+		         [grub_cv_target_cc_soft_float="-march=rv64imac -mabi=lp64"], [])
+    fi
     if test "x$target_cpu" = xia64; then
        CFLAGS="$TARGET_CFLAGS -mno-inline-float-divide -mno-inline-sqrt -Werror"
        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
@@ -1143,7 +1163,7 @@ AC_SUBST(TARGET_LDFLAGS_OLDMAGIC)
 
 LDFLAGS="$TARGET_LDFLAGS"
 
-if test "$target_cpu" = x86_64 || test "$target_cpu" = sparc64 ; then
+if test "$target_cpu" = x86_64 || test "$target_cpu" = sparc64 || test "$target_cpu" = riscv64 ; then
   # Use large model to support 4G memory
   AC_CACHE_CHECK([whether option -mcmodel=large works], grub_cv_cc_mcmodel, [
     CFLAGS="$TARGET_CFLAGS -mcmodel=large"
@@ -1153,7 +1173,7 @@ if test "$target_cpu" = x86_64 || test "$target_cpu" = sparc64 ; then
   ])
   if test "x$grub_cv_cc_mcmodel" = xyes; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=large"
-  elif test "$target_cpu" = sparc64; then
+  elif test "$target_cpu" = sparc64 || test "$target_cpu" = riscv64; then
     TARGET_CFLAGS="$TARGET_CFLAGS -mcmodel=medany"
   fi
 fi
@@ -1916,6 +1936,10 @@ AM_CONDITIONAL([COND_arm_coreboot], [test x$target_cpu = xarm -a x$platform = xc
 AM_CONDITIONAL([COND_arm_efi], [test x$target_cpu = xarm -a x$platform = xefi])
 AM_CONDITIONAL([COND_arm64], [test x$target_cpu = xarm64 ])
 AM_CONDITIONAL([COND_arm64_efi], [test x$target_cpu = xarm64 -a x$platform = xefi])
+AM_CONDITIONAL([COND_riscv32], [test x$target_cpu = xriscv32 ])
+AM_CONDITIONAL([COND_riscv64], [test x$target_cpu = xriscv64 ])
+AM_CONDITIONAL([COND_riscv32_efi], [test x$target_cpu = xriscv32 -a x$platform = xefi])
+AM_CONDITIONAL([COND_riscv64_efi], [test x$target_cpu = xriscv64 -a x$platform = xefi])
 
 AM_CONDITIONAL([COND_HOST_HURD], [test x$host_kernel = xhurd])
 AM_CONDITIONAL([COND_HOST_LINUX], [test x$host_kernel = xlinux])

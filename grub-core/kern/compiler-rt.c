@@ -237,7 +237,8 @@ union component64
   };
 };
 
-#if defined (__powerpc__) || defined (__arm__) || defined(__mips__)
+#if defined (__powerpc__) || defined (__arm__) || defined(__mips__) || \
+    (defined(__riscv) && (__riscv_xlen == 32))
 
 /* Based on libgcc2.c from gcc suite.  */
 grub_uint64_t
@@ -343,7 +344,8 @@ __ucmpdi2 (grub_uint64_t a, grub_uint64_t b)
 
 #endif
 
-#if defined (__powerpc__) || defined(__mips__) || defined(__sparc__) || defined(__arm__)
+#if defined (__powerpc__) || defined(__mips__) || defined(__sparc__) || \
+    defined(__arm__) || defined(__riscv)
 
 /* Based on libgcc2.c from gcc suite.  */
 grub_uint32_t

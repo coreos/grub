@@ -53,13 +53,15 @@ EXPORT_FUNC (__umoddi3) (grub_uint64_t a, grub_uint64_t b);
 
 #endif
 
-#if defined (__sparc__) || defined (__powerpc__) || defined (__mips__) || defined (__arm__)
+#if defined (__sparc__) || defined (__powerpc__) || defined (__mips__) || \
+    defined (__arm__) || defined(__riscv)
 unsigned
 EXPORT_FUNC (__ctzdi2) (grub_uint64_t x);
 #define NEED_CTZDI2 1
 #endif
 
-#if defined (__mips__) || defined (__arm__)
+#if defined (__mips__) || defined (__arm__) || \
+    (defined(__riscv) && (__riscv_xlen == 32))
 unsigned
 EXPORT_FUNC (__ctzsi2) (grub_uint32_t x);
 #define NEED_CTZSI2 1
@@ -157,7 +159,8 @@ void EXPORT_FUNC (_savegpr_31) (void);
 
 #endif
 
-#if defined (__powerpc__) || defined(__mips__) || defined (__arm__)
+#if defined (__powerpc__) || defined(__mips__) || defined (__arm__) || \
+    (defined(__riscv) && (__riscv_xlen == 32))
 
 int
 EXPORT_FUNC(__ucmpdi2) (grub_uint64_t a, grub_uint64_t b);
@@ -172,7 +175,8 @@ grub_uint64_t
 EXPORT_FUNC (__lshrdi3) (grub_uint64_t u, int b);
 #endif
 
-#if defined (__powerpc__) || defined(__mips__) || defined(__sparc__) || defined (__arm__)
+#if defined (__powerpc__) || defined(__mips__) || defined(__sparc__) || \
+    defined (__arm__) || defined(__riscv)
 grub_uint32_t
 EXPORT_FUNC(__bswapsi2) (grub_uint32_t u);
 

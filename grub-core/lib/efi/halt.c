@@ -29,7 +29,8 @@ void
 grub_halt (void)
 {
   grub_machine_fini (GRUB_LOADER_FLAG_NORETURN);
-#if !defined(__ia64__) && !defined(__arm__) && !defined(__aarch64__)
+#if !defined(__ia64__) && !defined(__arm__) && !defined(__aarch64__) && \
+    !defined(__riscv)
   grub_acpi_halt ();
 #endif
   efi_call_4 (grub_efi_system_table->runtime_services->reset_system,

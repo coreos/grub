@@ -24,6 +24,8 @@
 #elif defined(__aarch64__)
 #include "../arm64/dl_helper.c"
 #include "../arm64/dl.c"
+#elif defined(__riscv)
+#include "../riscv/dl.c"
 #else
 #error "No target cpu type is defined"
 #endif

@@ -32,7 +32,7 @@ GRUB_PLATFORMS = [ "emu", "i386_pc", "i386_efi", "i386_qemu", "i386_coreboot",
                    "mips_loongson", "sparc64_ieee1275",
                    "powerpc_ieee1275", "mips_arc", "ia64_efi",
                    "mips_qemu_mips", "arm_uboot", "arm_efi", "arm64_efi",
-                   "arm_coreboot"]
+                   "arm_coreboot", "riscv32_efi", "riscv64_efi" ]
 
 GROUPS = {}
 
@@ -47,9 +47,12 @@ GROUPS["sparc64"]  = [ "sparc64_ieee1275" ]
 GROUPS["powerpc"]  = [ "powerpc_ieee1275" ]
 GROUPS["arm"]      = [ "arm_uboot", "arm_efi", "arm_coreboot" ]
 GROUPS["arm64"]    = [ "arm64_efi" ]
+GROUPS["riscv32"]  = [ "riscv32_efi" ]
+GROUPS["riscv64"]  = [ "riscv64_efi" ]
 
 # Groups based on firmware
-GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi", "arm_efi", "arm64_efi" ]
+GROUPS["efi"]  = [ "i386_efi", "x86_64_efi", "ia64_efi", "arm_efi", "arm64_efi",
+		   "riscv32_efi", "riscv64_efi" ]
 GROUPS["ieee1275"]   = [ "i386_ieee1275", "sparc64_ieee1275", "powerpc_ieee1275" ]
 GROUPS["uboot"] = [ "arm_uboot" ]
 GROUPS["xen"]  = [ "i386_xen", "x86_64_xen" ]
@@ -76,11 +79,11 @@ GROUPS["terminfomodule"]   = GRUB_PLATFORMS[:];
 for i in GROUPS["terminfoinkernel"]: GROUPS["terminfomodule"].remove(i)
 
 # Flattened Device Trees (FDT)
-GROUPS["fdt"] = [ "arm64_efi", "arm_uboot", "arm_efi" ]
+GROUPS["fdt"] = [ "arm64_efi", "arm_uboot", "arm_efi", "riscv32_efi", "riscv64_efi" ]
 
 # Needs software helpers for division
 # Must match GRUB_DIVISION_IN_SOFTWARE in misc.h
-GROUPS["softdiv"] = GROUPS["arm"] + ["ia64_efi"]
+GROUPS["softdiv"] = GROUPS["arm"] + ["ia64_efi"] + GROUPS["riscv32"]
 GROUPS["no_softdiv"]   = GRUB_PLATFORMS[:]
 for i in GROUPS["softdiv"]: GROUPS["no_softdiv"].remove(i)
 
