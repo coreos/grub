@@ -653,7 +653,7 @@ grub_efi_get_ram_base(grub_addr_t *base_addr)
   if (ret < 1)
     return GRUB_ERR_BUG;
 
-  for (desc = memory_map, *base_addr = GRUB_UINT_MAX;
+  for (desc = memory_map, *base_addr = GRUB_EFI_MAX_USABLE_ADDRESS;
        (grub_addr_t) desc < ((grub_addr_t) memory_map + memory_map_size);
        desc = NEXT_MEMORY_DESCRIPTOR (desc, desc_size))
     if (desc->attribute & GRUB_EFI_MEMORY_WB)
