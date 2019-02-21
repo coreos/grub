@@ -319,7 +319,7 @@ get_default_platform (void)
 #elif defined (__ia64__)
    return "ia64-efi";
 #elif defined (__arm__)
-   return "arm-uboot";
+   return grub_install_get_default_arm_platform ();
 #elif defined (__aarch64__)
    return "arm64-efi";
 #elif defined (__amd64__) || defined (__x86_64__) || defined (__i386__)

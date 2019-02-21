@@ -97,15 +97,16 @@ read_platform_size (void)
   return ret;
 }
 
-const char *
-grub_install_get_default_x86_platform (void)
-{ 
+/* Are we running on an EFI-based system? */
+static int
+is_efi_system (void)
+{
   /*
-     On Linux, we need the efivars kernel modules.
-     If no EFI is available this module just does nothing
-     besides a small hello and if we detect efi we'll load it
-     anyway later. So it should be safe to
-     try to load it here.
+   * Linux uses efivarfs (mounted on /sys/firmware/efi/efivars) to access the
+   * EFI variable store. Some legacy systems may still use the deprecated
+   * efivars interface (accessed through /sys/firmware/efi/vars). Where both
+   * are present, libefivar will use the former in preference, so attempting
+   * to load efivars will not interfere with later operations.
    */
   grub_util_exec_redirect_all ((const char * []){ "modprobe", "efivars", NULL },
 			       NULL, NULL, "/dev/null");
@@ -114,13 +115,36 @@ grub_install_get_default_x86_platform (void)
   if (is_not_empty_directory ("/sys/firmware/efi"))
     {
       grub_util_info ("...found");
+      return 1;
+    }
+  else
+    {
+      grub_util_info ("... not found");
+      return 0;
+    }
+}
+
+const char *
+grub_install_get_default_arm_platform (void)
+{
+  if (is_efi_system())
+    return "arm-efi";
+  else
+    return "arm-uboot";
+}
+
+const char *
+grub_install_get_default_x86_platform (void)
+{
+  if (is_efi_system())
+    {
       if (read_platform_size() == 64)
 	return "x86_64-efi";
       else
 	return "i386-efi";
     }
 
-  grub_util_info ("... not found. Looking for /proc/device-tree ..");
+  grub_util_info ("Looking for /proc/device-tree ..");
   if (is_not_empty_directory ("/proc/device-tree"))
     {
       grub_util_info ("...found");
