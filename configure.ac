@@ -45,8 +45,8 @@ save_program_prefix="${program_prefix}"
 AC_CANONICAL_TARGET
 program_prefix="${save_program_prefix}"
 
-AM_INIT_AUTOMAKE([1.10.1])
-AC_PREREQ(2.60)
+AM_INIT_AUTOMAKE([1.11])
+AC_PREREQ(2.63)
 AC_CONFIG_SRCDIR([include/grub/dl.h])
 AC_CONFIG_HEADER([config-util.h])
 
@@ -362,6 +362,7 @@ AC_CHECK_PROG(HAVE_CXX, $CXX, yes, no)
 
 AC_GNU_SOURCE
 AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.18.3])
 AC_SYS_LARGEFILE
 
 # Identify characteristics of the host architecture.
@@ -2014,7 +2015,7 @@ fi
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([grub-core/Makefile])
-AC_CONFIG_FILES([grub-core/gnulib/Makefile])
+AC_CONFIG_FILES([grub-core/lib/gnulib/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([util/bash-completion.d/Makefile])

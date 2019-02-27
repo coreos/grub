@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = subdir-objects -Wno-portability
 
 DEPDIR = .deps-util
-SUBDIRS = grub-core/gnulib .
+SUBDIRS = grub-core/lib/gnulib .
 if COND_real_platform
 SUBDIRS += grub-core
 endif

@@ -69,7 +69,7 @@
 #define DEFAULT_CORE_FILE	"core.img"
 
 /* Non-printable "keys" for arguments with no short form.
- * See grub-core/gnulib/argp.h for details. */
+ * See grub-core/lib/gnulib/argp.h for details. */
 enum {
   NO_RS_CODES_KEY = 0x100,
 };

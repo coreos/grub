@@ -60,8 +60,8 @@ If you use a development snapshot or want to hack on GRUB you may
 need the following.
 
 * Python 2.6 or later
-* Autoconf 2.60 or later
-* Automake 1.10.1 or later
+* Autoconf 2.63 or later
+* Automake 1.11 or later
 
 Prerequisites for make-check:
 
@@ -102,10 +102,11 @@ The simplest way to compile this package is:
   2. Skip this and following step if you use release tarball and proceed to
      step 4. If you want translations type `./linguas.sh'.
   
-  3. Type `./autogen.sh'.
+  3. Type `./bootstrap'.
 
-     * autogen.sh uses python. By default invocation is "python" but can be
-       overriden by setting variable $PYTHON.
+     * autogen.sh (called by bootstrap) uses python. By default the
+       invocation is "python", but it can be overridden by setting the
+       variable $PYTHON.
 
   4. Type `./configure' to configure the package for your system.
      If you're using `csh' on an old version of System V, you might

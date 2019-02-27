@@ -77,6 +77,7 @@ This edition documents version @value{VERSION}.
 * Coding style::
 * Finding your way around::
 * Contributing Changes::
+* Updating External Code::
 * Porting::
 * Error Handling::
 * Stack and heap size::
@@ -466,6 +467,35 @@ If your intention is to just get started, please do not submit a inclusion
 request. Instead, please subscribe to the mailing list, and communicate first
 (e.g. sending a patch, asking a question, commenting on another message...).
 
+@node Updating External Code
+@chapter Updating external code
+
+GRUB includes some code from other projects, and it is sometimes necessary
+to update it.
+
+@menu
+* Gnulib::
+@end menu
+
+@node Gnulib
+@section Gnulib
+
+Gnulib is a source code library that provides basic functionality to
+programs and libraries.  Many software packages make use of Gnulib
+to avoid reinventing the portability wheel.
+
+GRUB imports Gnulib using its @command{bootstrap} utility, identifying a
+particular Git commit in @file{bootstrap.conf}.  To upgrade to a new Gnulib
+commit, set @code{GNULIB_REVISION} in @file{bootstrap.conf} to the new commit
+ID, then run @kbd{./bootstrap} and whatever else you need to make sure it
+works.  Check for changes to Gnulib's @file{NEWS} file between the old and new
+commits; in some cases it will be necessary to adjust GRUB to match.  You may
+also need to update the patches in @file{grub-core/lib/gnulib-patches/}.
+
+To add a new Gnulib module or remove one that is no longer needed, change
+@code{gnulib_modules} in @file{bootstrap.conf}.  Again, run @kbd{./bootstrap}
+and whatever else you need to make sure it works.
+
 @node Porting
 @chapter Porting
 
@@ -672,7 +702,7 @@ is already present and you'll need to make it follow the existant code paths
 for your platform adding adjustments if necessary. When done compile:
 
 @example
-./autogen.sh
+./bootstrap
 ./configure --target=$cpu --with-platform=$platform TARGET_CC=.. OBJCOPY=... STRIP=...
 make > /dev/null
 @end example
