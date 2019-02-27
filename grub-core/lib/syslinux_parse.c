@@ -807,6 +807,10 @@ print_file (struct output_buffer *outbuf,
   return print_escaped (outbuf, from, to);
 }
 
+/*
+ * Makefile.am mimics this when generating tests/syslinux/ubuntu10.04_grub.cfg,
+ * so changes here may need to be reflected there too.
+ */
 static void
 simplify_filename (char *str)
 {

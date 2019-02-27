@@ -476,6 +476,11 @@ EXTRA_DIST += ChangeLog ChangeLog-2015
 
 syslinux_test: $(top_builddir)/config.status tests/syslinux/ubuntu10.04_grub.cfg
 
+# Mimic simplify_filename from grub-core/lib/syslinux_parse.c, so that we
+# can predict its behaviour in tests.  We have to pre-substitute this before
+# calling config.status, as config.status offers no reliable way to hook in
+# a command between setting ac_abs_top_srcdir and emitting output files.
 tests/syslinux/ubuntu10.04_grub.cfg: $(top_builddir)/config.status tests/syslinux/ubuntu10.04_grub.cfg.in
-	(for x in tests/syslinux/ubuntu10.04_grub.cfg.in ; do cat $(srcdir)/"$$x"; done) | $(top_builddir)/config.status --file=$@:-
+	simplified_abs_top_srcdir=`echo "$(abs_top_srcdir)" | sed 's,//,/,g; s,/\./,/,g; :loop; s,/[^/][^/]*/\.\.\(/\|$$\),\1,; t loop'`; \
+	sed "s,@simplified_abs_top_srcdir@,$$simplified_abs_top_srcdir,g" $(srcdir)/tests/syslinux/ubuntu10.04_grub.cfg.in | $(top_builddir)/config.status --file=$@:-
 CLEANFILES += tests/syslinux/ubuntu10.04_grub.cfg
