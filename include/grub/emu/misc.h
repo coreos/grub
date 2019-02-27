@@ -73,6 +73,6 @@ FILE *
 grub_util_fopen (const char *path, const char *mode);
 #endif
 
-void grub_util_file_sync (FILE *f);
+int grub_util_file_sync (FILE *f);
 
 #endif /* GRUB_EMU_MISC_H */

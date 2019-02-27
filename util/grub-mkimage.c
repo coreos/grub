@@ -311,8 +311,12 @@ main (int argc, char *argv[])
 			       arguments.image_target, arguments.note,
 			       arguments.comp, arguments.dtb);
 
-  grub_util_file_sync  (fp);
-  fclose (fp);
+  if (grub_util_file_sync (fp) < 0)
+    grub_util_error (_("cannot sync `%s': %s"), arguments.output ? : "stdout",
+		     strerror (errno));
+  if (fclose (fp) == EOF)
+    grub_util_error (_("cannot close `%s': %s"), arguments.output ? : "stdout",
+		     strerror (errno));
 
   for (i = 0; i < arguments.nmodules; i++)
     free (arguments.modules[i]);

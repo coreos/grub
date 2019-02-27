@@ -728,8 +728,10 @@ unable_to_embed:
       != GRUB_DISK_SECTOR_SIZE * 2)
     grub_util_error (_("cannot write to `%s': %s"),
 		     core_path, strerror (errno));
-  grub_util_fd_sync (fp);
-  grub_util_fd_close (fp);
+  if (grub_util_fd_sync (fp) < 0)
+    grub_util_error (_("cannot sync `%s': %s"), core_path, strerror (errno));
+  if (grub_util_fd_close (fp) < 0)
+    grub_util_error (_("cannot close `%s': %s"), core_path, strerror (errno));
   grub_util_biosdisk_flush (root_dev->disk);
 
   grub_disk_cache_invalidate_all ();

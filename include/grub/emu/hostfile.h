@@ -47,11 +47,11 @@ grub_util_fd_t
 EXPORT_FUNC(grub_util_fd_open) (const char *os_dev, int flags);
 const char *
 EXPORT_FUNC(grub_util_fd_strerror) (void);
-void
+int
 grub_util_fd_sync (grub_util_fd_t fd);
 void
 grub_util_disable_fd_syncs (void);
-void
+int
 EXPORT_FUNC(grub_util_fd_close) (grub_util_fd_t fd);
 
 grub_uint64_t

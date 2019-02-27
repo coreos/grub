@@ -275,11 +275,18 @@ grub_util_fd_write (grub_util_fd_t fd, const char *buf, size_t len)
 
 static int allow_fd_syncs = 1;
 
-void
+int
 grub_util_fd_sync (grub_util_fd_t fd)
 {
   if (allow_fd_syncs)
-    FlushFileBuffers (fd);
+    {
+      if (!FlushFileBuffers (fd))
+	{
+	  grub_util_info ("flush err %x", (int) GetLastError ());
+	  return -1;
+	}
+    }
+  return 0;
 }
 
 void
@@ -288,10 +295,15 @@ grub_util_disable_fd_syncs (void)
   allow_fd_syncs = 0;
 }
 
-void
+int
 grub_util_fd_close (grub_util_fd_t fd)
 {
-  CloseHandle (fd);
+  if (!CloseHandle (fd))
+    {
+      grub_util_info ("close err %x", (int) GetLastError ());
+      return -1;
+    }
+  return 0;
 }
 
 const char *
@@ -620,16 +632,25 @@ grub_util_fopen (const char *path, const char *mode)
   return ret;
 }
 
-void
+int
 grub_util_file_sync (FILE *f)
 {
   HANDLE hnd;
 
-  fflush (f);
+  if (fflush (f) != 0)
+    {
+      grub_util_info ("fflush err %x", (int) GetLastError ());
+      return -1;
+    }
   if (!allow_fd_syncs)
-    return;
+    return 0;
   hnd = (HANDLE) _get_osfhandle (fileno (f));
-  FlushFileBuffers (hnd);
+  if (!FlushFileBuffers (hnd))
+    {
+      grub_util_info ("flush err %x", (int) GetLastError ());
+      return -1;
+    }
+  return 0;
 }
 
 int

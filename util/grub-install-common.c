@@ -112,11 +112,16 @@ grub_install_copy_file (const char *src,
       r = grub_util_fd_read (in, grub_install_copy_buffer, GRUB_INSTALL_COPY_BUFFER_SIZE);
       if (r <= 0)
 	break;
-      grub_util_fd_write (out, grub_install_copy_buffer, r);
+      r = grub_util_fd_write (out, grub_install_copy_buffer, r);
+      if (r <= 0)
+	break;
     }
-  grub_util_fd_sync (out);
-  grub_util_fd_close (in);
-  grub_util_fd_close (out);
+  if (grub_util_fd_sync (out) < 0)
+    r = -1;
+  if (grub_util_fd_close (in) < 0)
+    r = -1;
+  if (grub_util_fd_close (out) < 0)
+    r = -1;
 
   if (r < 0)
     grub_util_error (_("cannot copy `%s' to `%s': %s"),
@@ -526,7 +531,8 @@ grub_install_make_image_wrap (const char *dir, const char *prefix,
   grub_install_make_image_wrap_file (dir, prefix, fp, outname,
 				     memdisk_path, config_path,
 				     mkimage_target, note);
-  grub_util_file_sync (fp);
+  if (grub_util_file_sync (fp) < 0)
+    grub_util_error (_("cannot sync `%s': %s"), outname, strerror (errno));
   fclose (fp);
 }
 

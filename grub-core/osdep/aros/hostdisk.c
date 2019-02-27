@@ -439,36 +439,44 @@ grub_util_get_fd_size (grub_util_fd_t fd,
   return -1;
 }
 
-void
+int
 grub_util_fd_close (grub_util_fd_t fd)
 {
   switch (fd->type)
     {
     case GRUB_UTIL_FD_FILE:
-      close (fd->fd);
-      return;
+      return close (fd->fd);
     case GRUB_UTIL_FD_DISK:
       CloseDevice ((struct IORequest *) fd->ioreq);
       DeleteIORequest((struct IORequest *) fd->ioreq);
       DeleteMsgPort (fd->mp);
-      return;
+      return 0;
     }
+  return 0;
 }
 
 static int allow_fd_syncs = 1;
 
-static void
+static int
 grub_util_fd_sync_volume (grub_util_fd_t fd)
 {
+  LONG err;
+
   fd->ioreq->iotd_Req.io_Command = CMD_UPDATE;
   fd->ioreq->iotd_Req.io_Length = 0;
   fd->ioreq->iotd_Req.io_Data = 0;
   fd->ioreq->iotd_Req.io_Offset = 0;
   fd->ioreq->iotd_Req.io_Actual = 0;
-  DoIO ((struct IORequest *) fd->ioreq);
+  err = DoIO ((struct IORequest *) fd->ioreq);
+  if (err)
+    {
+      grub_util_info ("I/O failed with error %d, IoErr=%d", (int)err, (int) IoErr ());
+      return -1;
+    }
+  return 0;
 }
 
-void
+int
 grub_util_fd_sync (grub_util_fd_t fd)
 {
   if (allow_fd_syncs)
@@ -476,22 +484,22 @@ grub_util_fd_sync (grub_util_fd_t fd)
       switch (fd->type)
 	{
 	case GRUB_UTIL_FD_FILE:
-	  fsync (fd->fd);
-	  return;
+	  return fsync (fd->fd);
 	case GRUB_UTIL_FD_DISK:
-	  grub_util_fd_sync_volume (fd);
-	  return;
+	  return grub_util_fd_sync_volume (fd);
 	}
     }
+  return 0;
 }
 
-void
+int
 grub_util_file_sync (FILE *f)
 {
-  fflush (f);
+  if (fflush (f) != 0)
+    return -1;
   if (!allow_fd_syncs)
-    return;
-  fsync (fileno (f));
+    return 0;
+  return fsync (fileno (f));
 }
 
 void
