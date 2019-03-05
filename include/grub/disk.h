@@ -49,6 +49,7 @@ enum grub_disk_dev_id
     GRUB_DISK_DEVICE_CBFSDISK_ID,
     GRUB_DISK_DEVICE_UBOOTDISK_ID,
     GRUB_DISK_DEVICE_XEN,
+    GRUB_DISK_DEVICE_OBDISK_ID,
   };
 
 struct grub_disk;

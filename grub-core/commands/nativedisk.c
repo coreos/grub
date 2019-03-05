@@ -66,6 +66,7 @@ get_uuid (const char *name, char **uuid, int getnative)
       /* Firmware disks.  */
     case GRUB_DISK_DEVICE_BIOSDISK_ID:
     case GRUB_DISK_DEVICE_OFDISK_ID:
+    case GRUB_DISK_DEVICE_OBDISK_ID:
     case GRUB_DISK_DEVICE_EFIDISK_ID:
     case GRUB_DISK_DEVICE_NAND_ID:
     case GRUB_DISK_DEVICE_ARCDISK_ID:

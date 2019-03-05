@@ -30,6 +30,9 @@
 #include <grub/time.h>
 #include <grub/ieee1275/console.h>
 #include <grub/ieee1275/ofdisk.h>
+#ifdef __sparc__
+#include <grub/ieee1275/obdisk.h>
+#endif
 #include <grub/ieee1275/ieee1275.h>
 #include <grub/net.h>
 #include <grub/offsets.h>
@@ -280,8 +283,11 @@ grub_machine_init (void)
   grub_console_init_early ();
   grub_claim_heap ();
   grub_console_init_lately ();
+#ifdef __sparc__
+  grub_obdisk_init ();
+#else
   grub_ofdisk_init ();
-
+#endif
   grub_parse_cmdline ();
 
 #ifdef __i386__
@@ -296,7 +302,11 @@ grub_machine_fini (int flags)
 {
   if (flags & GRUB_LOADER_FLAG_NORETURN)
     {
+#ifdef __sparc__
+      grub_obdisk_fini ();
+#else
       grub_ofdisk_fini ();
+#endif
       grub_console_fini ();
     }
 }

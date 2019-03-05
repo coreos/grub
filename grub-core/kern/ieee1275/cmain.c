@@ -108,6 +108,9 @@ grub_ieee1275_find_options (void)
   if (rc >= 0)
     {
       char *ptr;
+
+      if (grub_strncmp (tmp, "sun4v", 5) == 0)
+        grub_ieee1275_set_flag (GRUB_IEEE1275_FLAG_RAW_DEVNAMES);
       for (ptr = tmp; ptr - tmp < actual; ptr += grub_strlen (ptr) + 1)
 	{
 	  if (grub_memcmp (ptr, "MacRISC", sizeof ("MacRISC") - 1) == 0

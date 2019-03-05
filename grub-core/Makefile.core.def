@@ -317,6 +317,7 @@ kernel = {
   sparc64_ieee1275 = kern/sparc64/cache.S;
   sparc64_ieee1275 = kern/sparc64/dl.c;
   sparc64_ieee1275 = kern/sparc64/ieee1275/ieee1275.c;
+  sparc64_ieee1275 = disk/ieee1275/obdisk.c;
 
   arm = kern/arm/dl.c;
   arm = kern/arm/dl_helper.c;
