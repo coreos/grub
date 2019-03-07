@@ -161,35 +161,6 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (!inter)
     return 0;
 
-#if 0
-  /* This is likely based on misunderstanding. gateway_ip refers to
-     address of BOOTP relay and should not be used after BOOTP transaction
-     is complete.
-     See RFC1542, 3.4 Interpretation of the 'giaddr' field
-   */
-  if (bp->gateway_ip)
-    {
-      grub_net_network_level_netaddress_t target;
-      grub_net_network_level_address_t gw;
-      char *rname;
-	  
-      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      target.ipv4.base = bp->server_ip;
-      target.ipv4.masksize = 32;
-      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      gw.ipv4 = bp->gateway_ip;
-      rname = grub_xasprintf ("%s:gw", name);
-      if (rname)
-	grub_net_add_route_gw (rname, target, gw);
-      grub_free (rname);
-
-      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-      target.ipv4.base = bp->gateway_ip;
-      target.ipv4.masksize = 32;
-      grub_net_add_route (name, target, inter);
-    }
-#endif
-
   if (size > OFFSET_OF (boot_file, bp))
     grub_env_set_net_property (name, "boot_file", bp->boot_file,
                                sizeof (bp->boot_file));
