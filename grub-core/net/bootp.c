@@ -31,6 +31,8 @@ enum
   GRUB_DHCP_OPT_OVERLOAD_SNAME = 2,
 };
 
+#define GRUB_BOOTP_MAX_OPTIONS_SIZE 64
+
 static const void *
 find_dhcp_option (const struct grub_net_bootp_packet *bp, grub_size_t size,
 		  grub_uint8_t opt_code, grub_uint8_t *opt_len)
@@ -322,6 +324,77 @@ grub_net_configure_by_dhcp_ack (const char *name,
   return inter;
 }
 
+static grub_err_t
+send_dhcp_packet (struct grub_net_network_level_interface *iface)
+{
+  grub_err_t err;
+  struct grub_net_bootp_packet *pack;
+  struct grub_datetime date;
+  grub_int32_t t = 0;
+  struct grub_net_buff *nb;
+  struct udphdr *udph;
+  grub_net_network_level_address_t target;
+  grub_net_link_level_address_t ll_target;
+
+  nb = grub_netbuff_alloc (sizeof (*pack) + GRUB_BOOTP_MAX_OPTIONS_SIZE + 128);
+  if (!nb)
+    return grub_errno;
+
+  err = grub_netbuff_reserve (nb, sizeof (*pack) + GRUB_BOOTP_MAX_OPTIONS_SIZE + 128);
+  if (err)
+    goto out;
+
+  err = grub_netbuff_push (nb, GRUB_BOOTP_MAX_OPTIONS_SIZE);
+  if (err)
+    goto out;
+
+  grub_memset (nb->data, 0, GRUB_BOOTP_MAX_OPTIONS_SIZE);
+
+  err = grub_netbuff_push (nb, sizeof (*pack));
+  if (err)
+    goto out;
+
+  pack = (void *) nb->data;
+  grub_memset (pack, 0, sizeof (*pack));
+  pack->opcode = 1;
+  pack->hw_type = 1;
+  pack->hw_len = 6;
+  err = grub_get_datetime (&date);
+  if (err || !grub_datetime2unixtime (&date, &t))
+    {
+      grub_errno = GRUB_ERR_NONE;
+      t = 0;
+    }
+  pack->seconds = grub_cpu_to_be16 (t);
+  pack->ident = grub_cpu_to_be32 (t);
+
+  grub_memcpy (&pack->mac_addr, &iface->hwaddress.mac, 6);
+
+  grub_netbuff_push (nb, sizeof (*udph));
+
+  udph = (struct udphdr *) nb->data;
+  udph->src = grub_cpu_to_be16_compile_time (68);
+  udph->dst = grub_cpu_to_be16_compile_time (67);
+  udph->chksum = 0;
+  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
+  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+  target.ipv4 = 0xffffffff;
+  err = grub_net_link_layer_resolve (iface, &target, &ll_target);
+  if (err)
+    goto out;
+
+  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
+						 &iface->address,
+						 &target);
+
+  err = grub_net_send_ip_packet (iface, &target, &ll_target, nb,
+				 GRUB_NET_IP_UDP);
+
+out:
+  grub_netbuff_free (nb);
+  return err;
+}
+
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,
 		       struct grub_net_card *card)
@@ -478,6 +551,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   unsigned j = 0;
   int interval;
   grub_err_t err;
+  unsigned i;
 
   FOR_NET_CARDS (card)
   {
@@ -506,7 +580,6 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
     card->num_ifaces++;
     if (!ifaces[j].name)
       {
-	unsigned i;
 	for (i = 0; i < j; i++)
 	  grub_free (ifaces[i].name);
 	grub_free (ifaces);
@@ -524,78 +597,21 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   ifaces[0].prev = &grub_net_network_level_interfaces;
   for (interval = 200; interval < 10000; interval *= 2)
     {
-      int done = 0;
+      int need_poll = 0;
       for (j = 0; j < ncards; j++)
 	{
-	  struct grub_net_bootp_packet *pack;
-	  struct grub_datetime date;
-	  grub_int32_t t = 0;
-	  struct grub_net_buff *nb;
-	  struct udphdr *udph;
-	  grub_net_network_level_address_t target;
-	  grub_net_link_level_address_t ll_target;
-
 	  if (!ifaces[j].prev)
 	    continue;
-	  nb = grub_netbuff_alloc (sizeof (*pack) + 64 + 128);
-	  if (!nb)
-	    {
-	      grub_netbuff_free (nb);
-	      return grub_errno;
-	    }
-	  err = grub_netbuff_reserve (nb, sizeof (*pack) + 64 + 128);
+
+	  err = send_dhcp_packet (&ifaces[j]);
 	  if (err)
 	    {
-	      grub_netbuff_free (nb);
-	      return err;
+	      grub_print_error ();
+	      continue;
 	    }
-	  err = grub_netbuff_push (nb, sizeof (*pack) + 64);
-	  if (err)
-	    {
-	      grub_netbuff_free (nb);
-	      return err;
-	    }
-	  pack = (void *) nb->data;
-	  done = 1;
-	  grub_memset (pack, 0, sizeof (*pack) + 64);
-	  pack->opcode = 1;
-	  pack->hw_type = 1;
-	  pack->hw_len = 6;
-	  err = grub_get_datetime (&date);
-	  if (err || !grub_datetime2unixtime (&date, &t))
-	    {
-	      grub_errno = GRUB_ERR_NONE;
-	      t = 0;
-	    }
-	  pack->ident = grub_cpu_to_be32 (t);
-	  pack->seconds = grub_cpu_to_be16 (t);
-
-	  grub_memcpy (&pack->mac_addr, &ifaces[j].hwaddress.mac, 6); 
-
-	  grub_netbuff_push (nb, sizeof (*udph));
-
-	  udph = (struct udphdr *) nb->data;
-	  udph->src = grub_cpu_to_be16_compile_time (68);
-	  udph->dst = grub_cpu_to_be16_compile_time (67);
-	  udph->chksum = 0;
-	  udph->len = grub_cpu_to_be16 (nb->tail - nb->data);
-	  target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	  target.ipv4 = 0xffffffff;
-	  err = grub_net_link_layer_resolve (&ifaces[j], &target, &ll_target);
-	  if (err)
-	    return err;
-
-	  udph->chksum = grub_net_ip_transport_checksum (nb, GRUB_NET_IP_UDP,
-							 &ifaces[j].address,
-							 &target);
-
-	  err = grub_net_send_ip_packet (&ifaces[j], &target, &ll_target, nb,
-					 GRUB_NET_IP_UDP);
-	  grub_netbuff_free (nb);
-	  if (err)
-	    return err;
+	  need_poll = 1;
 	}
-      if (!done)
+      if (!need_poll)
 	break;
       grub_net_poll_cards (interval, 0);
     }
