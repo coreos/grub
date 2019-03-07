@@ -292,6 +292,8 @@ struct grub_net_network_level_interface
   struct grub_net_bootp_packet *dhcp_ack;
   grub_size_t dhcp_acklen;
   grub_uint16_t vlantag;
+  unsigned dhcp_tmo_left; /* DHCPv4 running retransmission timeout */
+  unsigned dhcp_tmo;      /* DHCPv4 current retransmission timeout */
   void *data;
 };
 

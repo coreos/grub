@@ -33,6 +33,9 @@ enum
 
 #define GRUB_BOOTP_MAX_OPTIONS_SIZE 64
 
+/* Max timeout when waiting for BOOTP/DHCP reply */
+#define GRUB_DHCP_MAX_PACKET_TIMEOUT 32
+
 static const void *
 find_dhcp_option (const struct grub_net_bootp_packet *bp, grub_size_t size,
 		  grub_uint8_t opt_code, grub_uint8_t *opt_len)
@@ -548,7 +551,6 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   struct grub_net_network_level_interface *ifaces;
   grub_size_t ncards = 0;
   unsigned j = 0;
-  int interval;
   grub_err_t err;
   unsigned i;
 
@@ -587,6 +589,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
     ifaces[j].address.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_DHCP_RECV;
     grub_memcpy (&ifaces[j].hwaddress, &card->default_address, 
 		 sizeof (ifaces[j].hwaddress));
+    ifaces[j].dhcp_tmo = ifaces[j].dhcp_tmo_left = 1;
     j++;
   }
   ifaces[ncards - 1].next = grub_net_network_level_interfaces;
@@ -594,25 +597,52 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
     grub_net_network_level_interfaces->prev = & ifaces[ncards - 1].next;
   grub_net_network_level_interfaces = &ifaces[0];
   ifaces[0].prev = &grub_net_network_level_interfaces;
-  for (interval = 200; interval < 10000; interval *= 2)
+
+  /*
+   * Running DHCP restransmission timer is kept per interface in dhcp_tmo_left.
+   * When it runs off, dhcp_tmo is increased exponentionally and dhcp_tmo_left
+   * initialized to it. Max value is 32 which gives approximately 12s total per
+   * packet timeout assuming 200ms poll tick. Timeout is reset when DHCP OFFER
+   * is received, so total timeout is 25s in the worst case.
+   *
+   * DHCP NAK also resets timer and transaction starts again.
+   *
+   * Total wait time is limited to ~25s to prevent endless loop in case of
+   * permanent NAK
+   */
+  for (i = 0; i < GRUB_DHCP_MAX_PACKET_TIMEOUT * 4; i++)
     {
       int need_poll = 0;
       for (j = 0; j < ncards; j++)
 	{
-	  if (!ifaces[j].prev)
+	  if (!ifaces[j].prev ||
+             ifaces[j].dhcp_tmo > GRUB_DHCP_MAX_PACKET_TIMEOUT)
+	    continue;
+
+	  if (--ifaces[j].dhcp_tmo_left)
+	    {
+	      need_poll = 1;
+	      continue;
+	    }
+
+	  ifaces[j].dhcp_tmo *= 2;
+	  if (ifaces[j].dhcp_tmo > GRUB_DHCP_MAX_PACKET_TIMEOUT)
 	    continue;
 
 	  err = send_dhcp_packet (&ifaces[j]);
 	  if (err)
 	    {
 	      grub_print_error ();
+	      /* To ignore it during next poll */
+	      ifaces[j].dhcp_tmo = GRUB_DHCP_MAX_PACKET_TIMEOUT + 1;
 	      continue;
 	    }
+	  ifaces[j].dhcp_tmo_left = ifaces[j].dhcp_tmo;
 	  need_poll = 1;
 	}
       if (!need_poll)
 	break;
-      grub_net_poll_cards (interval, 0);
+      grub_net_poll_cards (200, 0);
     }
 
   err = GRUB_ERR_NONE;
