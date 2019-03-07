@@ -30,6 +30,21 @@ enum
   GRUB_DHCP_OPT_OVERLOAD_FILE = 1,
   GRUB_DHCP_OPT_OVERLOAD_SNAME = 2,
 };
+enum
+{
+  GRUB_DHCP_MESSAGE_UNKNOWN,
+  GRUB_DHCP_MESSAGE_DISCOVER,
+  GRUB_DHCP_MESSAGE_OFFER,
+  GRUB_DHCP_MESSAGE_REQUEST,
+  GRUB_DHCP_MESSAGE_DECLINE,
+  GRUB_DHCP_MESSAGE_ACK,
+  GRUB_DHCP_MESSAGE_NAK,
+  GRUB_DHCP_MESSAGE_RELEASE,
+  GRUB_DHCP_MESSAGE_INFORM,
+};
+
+/* Max timeout when waiting for BOOTP/DHCP reply */
+#define GRUB_DHCP_MAX_PACKET_TIMEOUT 32
 
 #define GRUB_BOOTP_MAX_OPTIONS_SIZE 64
 
@@ -443,22 +458,59 @@ grub_net_process_dhcp (struct grub_net_buff *nb,
   struct grub_net_card *card = iface->card;
   const struct grub_net_bootp_packet *bp = (const struct grub_net_bootp_packet *) nb->data;
   grub_size_t size = nb->tail - nb->data;
+  const grub_uint8_t *opt;
+  grub_uint8_t opt_len, type;
+  grub_uint32_t srv_id = 0;
 
-  name = grub_xasprintf ("%s:dhcp", card->name);
-  if (!name)
-    {
-      grub_print_error ();
-      return;
-    }
-  grub_net_configure_by_dhcp_ack (name, card, 0, bp, size, 0, 0, 0);
-  grub_free (name);
-  if (grub_errno)
-    grub_print_error ();
+  opt = find_dhcp_option (bp, size, GRUB_NET_DHCP_MESSAGE_TYPE, &opt_len);
+  if (opt && opt_len == 1)
+    type = *opt;
   else
-    if (grub_memcmp (iface->name, card->name, grub_strlen (card->name)) == 0 &&
-	grub_memcmp (iface->name + grub_strlen (card->name),
-			  ":dhcp_tmp", sizeof (":dhcp_tmp") - 1) == 0)
-      grub_net_network_level_interface_unregister (iface);
+    type = GRUB_DHCP_MESSAGE_UNKNOWN;
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_DHCP_SERVER_IDENTIFIER, &opt_len);
+  if (opt && opt_len == sizeof (srv_id))
+    srv_id = grub_get_unaligned32 (opt);
+
+  /*
+   * If we received BOOTP reply or DHCPACK, proceed with configuration.
+   * Otherwise store offered address and server id for later processing
+   * of DHCPACK.
+   * xid and srv_id are stored in network order so do not need conversion.
+   */
+  if ((!iface->srv_id && type == GRUB_DHCP_MESSAGE_UNKNOWN)
+      || (iface->srv_id && type == GRUB_DHCP_MESSAGE_ACK
+	  && bp->ident == iface->xid
+	  && srv_id == iface->srv_id))
+    {
+      name = grub_xasprintf ("%s:dhcp", card->name);
+      if (!name)
+	{
+	  grub_print_error ();
+	  return;
+	}
+      grub_net_configure_by_dhcp_ack (name, card, 0, bp, size, 0, 0, 0);
+      grub_free (name);
+      if (grub_errno)
+	grub_print_error ();
+      else
+	grub_net_network_level_interface_unregister (iface);
+    }
+  else if (!iface->srv_id && type == GRUB_DHCP_MESSAGE_OFFER && srv_id)
+    {
+      iface->srv_id = srv_id;
+      iface->my_ip = bp->your_ip;
+      /* Reset retransmission timer */
+      iface->dhcp_tmo = iface->dhcp_tmo_left = 1;
+    }
+  else if (iface->srv_id && type == GRUB_DHCP_MESSAGE_NAK
+	   && bp->ident == iface->xid
+	   && srv_id == iface->srv_id)
+    {
+      iface->xid = iface->srv_id = iface->my_ip = 0;
+      /* Reset retransmission timer */
+      iface->dhcp_tmo = iface->dhcp_tmo_left = 1;
+    }
 }
 
 static char
