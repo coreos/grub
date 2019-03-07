@@ -168,7 +168,9 @@ grub_net_configure_by_dhcp_ack (const char *name,
   int mask = -1;
   char server_ip[sizeof ("xxx.xxx.xxx.xxx")];
   const grub_uint8_t *opt;
-  grub_uint8_t opt_len;
+  grub_uint8_t opt_len, overload = 0;
+  const char *boot_file = 0, *server_name = 0;
+  grub_size_t boot_file_len, server_name_len;
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
@@ -187,9 +189,36 @@ grub_net_configure_by_dhcp_ack (const char *name,
   if (!inter)
     return 0;
 
-  if (size > OFFSET_OF (boot_file, bp))
-    grub_env_set_net_property (name, "boot_file", bp->boot_file,
-                               sizeof (bp->boot_file));
+  opt = find_dhcp_option (bp, size, GRUB_NET_DHCP_OVERLOAD, &opt_len);
+  if (opt && opt_len == 1)
+    overload = *opt;
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_DHCP_TFTP_SERVER_NAME, &opt_len);
+  if (opt && opt_len)
+    {
+      server_name = (const char *) opt;
+      server_name_len = opt_len;
+    }
+  else if (size > OFFSET_OF (server_name, bp) && !(overload & GRUB_DHCP_OPT_OVERLOAD_SNAME) &&
+          bp->server_name[0])
+    {
+      server_name = bp->server_name;
+      server_name_len = sizeof (bp->server_name);
+    }
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_DHCP_BOOTFILE_NAME, &opt_len);
+  if (opt && opt_len)
+    {
+      boot_file = (const char *) opt;
+      boot_file_len = opt_len;
+    }
+  else if (size > OFFSET_OF (boot_file, bp) && !(overload && GRUB_DHCP_OPT_OVERLOAD_FILE) &&
+          bp->boot_file[0])
+    {
+      boot_file = bp->boot_file;
+      boot_file_len = sizeof (bp->boot_file);
+    }
+
   if (bp->server_ip)
     {
       grub_snprintf (server_ip, sizeof (server_ip), "%d.%d.%d.%d",
@@ -220,35 +249,38 @@ grub_net_configure_by_dhcp_ack (const char *name,
       *device = grub_xasprintf ("tftp,%s", server_ip);
       grub_print_error ();
     }
-  if (size > OFFSET_OF (server_name, bp)
-      && bp->server_name[0])
+
+  if (server_name)
     {
-      grub_env_set_net_property (name, "dhcp_server_name", bp->server_name,
-                                 sizeof (bp->server_name));
+      grub_env_set_net_property (name, "dhcp_server_name", server_name, server_name_len);
       if (is_def && !grub_net_default_server)
 	{
-	  grub_net_default_server = grub_strdup (bp->server_name);
+	  grub_net_default_server = grub_strdup (server_name);
 	  grub_print_error ();
 	}
       if (device && !*device)
 	{
-	  *device = grub_xasprintf ("tftp,%s", bp->server_name);
+	  *device = grub_xasprintf ("tftp,%s", server_name);
 	  grub_print_error ();
 	}
     }
 
-  if (size > OFFSET_OF (boot_file, bp) && path)
+  if (boot_file)
     {
-      *path = grub_strndup (bp->boot_file, sizeof (bp->boot_file));
-      grub_print_error ();
-      if (*path)
+      grub_env_set_net_property (name, "boot_file", boot_file, boot_file_len);
+      if (path)
 	{
-	  char *slash;
-	  slash = grub_strrchr (*path, '/');
-	  if (slash)
-	    *slash = 0;
-	  else
-	    **path = 0;
+	  *path = grub_strndup (boot_file, boot_file_len);
+	  grub_print_error ();
+	  if (*path)
+	    {
+	      char *slash;
+	      slash = grub_strrchr (*path, '/');
+	      if (slash)
+		*slash = 0;
+	      else
+		**path = 0;
+	    }
 	}
     }
 
