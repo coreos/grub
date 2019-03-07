@@ -279,7 +279,7 @@ handle_dgram (struct grub_net_buff *nb,
 	      && grub_memcmp (inf->hwaddress.mac, &bootp->mac_addr,
 			      sizeof (inf->hwaddress.mac)) == 0)
 	    {
-	      grub_net_process_dhcp (nb, inf->card);
+	      grub_net_process_dhcp (nb, inf);
 	      grub_netbuff_free (nb);
 	      return GRUB_ERR_NONE;
 	    }

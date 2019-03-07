@@ -395,12 +395,19 @@ out:
   return err;
 }
 
+/*
+ * This is called directly from net/ip.c:handle_dgram(), because those
+ * BOOTP/DHCP packets are a bit special due to their improper
+ * sender/receiver IP fields.
+ */
 void
 grub_net_process_dhcp (struct grub_net_buff *nb,
-		       struct grub_net_card *card)
+		       struct grub_net_network_level_interface *iface)
 {
   char *name;
-  struct grub_net_network_level_interface *inf;
+  struct grub_net_card *card = iface->card;
+  const struct grub_net_bootp_packet *bp = (const struct grub_net_bootp_packet *) nb->data;
+  grub_size_t size = nb->tail - nb->data;
 
   name = grub_xasprintf ("%s:dhcp", card->name);
   if (!name)
@@ -408,23 +415,15 @@ grub_net_process_dhcp (struct grub_net_buff *nb,
       grub_print_error ();
       return;
     }
-  grub_net_configure_by_dhcp_ack (name, card,
-				  0, (const struct grub_net_bootp_packet *) nb->data,
-				  (nb->tail - nb->data), 0, 0, 0);
+  grub_net_configure_by_dhcp_ack (name, card, 0, bp, size, 0, 0, 0);
   grub_free (name);
   if (grub_errno)
     grub_print_error ();
   else
-    {
-      FOR_NET_NETWORK_LEVEL_INTERFACES(inf)
-	if (grub_memcmp (inf->name, card->name, grub_strlen (card->name)) == 0
-	    && grub_memcmp (inf->name + grub_strlen (card->name),
-			    ":dhcp_tmp", sizeof (":dhcp_tmp") - 1) == 0)
-	  {
-	    grub_net_network_level_interface_unregister (inf);
-	    break;
-	  }
-    }
+    if (grub_memcmp (iface->name, card->name, grub_strlen (card->name)) == 0 &&
+	grub_memcmp (iface->name + grub_strlen (card->name),
+			  ":dhcp_tmp", sizeof (":dhcp_tmp") - 1) == 0)
+      grub_net_network_level_interface_unregister (iface);
 }
 
 static char
