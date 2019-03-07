@@ -25,6 +25,48 @@
 #include <grub/net/udp.h>
 #include <grub/datetime.h>
 
+struct grub_dhcp_discover_options
+{
+  grub_uint8_t magic[4];
+  struct
+  {
+    grub_uint8_t code;
+    grub_uint8_t len;
+    grub_uint8_t data;
+  } GRUB_PACKED  message_type;
+  grub_uint8_t end;
+} GRUB_PACKED;
+
+struct grub_dhcp_request_options
+{
+  grub_uint8_t magic[4];
+  struct
+  {
+    grub_uint8_t code;
+    grub_uint8_t len;
+    grub_uint8_t data;
+  } GRUB_PACKED  message_type;
+  struct
+  {
+    grub_uint8_t type;
+    grub_uint8_t len;
+    grub_uint32_t data;
+  } GRUB_PACKED 	server_identifier;
+  struct
+  {
+    grub_uint8_t type;
+    grub_uint8_t len;
+    grub_uint32_t data;
+  } GRUB_PACKED 	requested_ip;
+  struct
+  {
+    grub_uint8_t type;
+    grub_uint8_t len;
+    grub_uint8_t data[7];
+  } GRUB_PACKED 	parameter_request;
+  grub_uint8_t end;
+} GRUB_PACKED;
+
 enum
 {
   GRUB_DHCP_OPT_OVERLOAD_FILE = 1,
@@ -42,6 +84,8 @@ enum
   GRUB_DHCP_MESSAGE_RELEASE,
   GRUB_DHCP_MESSAGE_INFORM,
 };
+
+#define GRUB_BOOTP_MAX_OPTIONS_SIZE 64
 
 /* Max timeout when waiting for BOOTP/DHCP reply */
 #define GRUB_DHCP_MAX_PACKET_TIMEOUT 32
@@ -386,6 +430,64 @@ send_dhcp_packet (struct grub_net_network_level_interface *iface)
   grub_net_network_level_address_t target;
   grub_net_link_level_address_t ll_target;
 
+  static struct grub_dhcp_discover_options discover_options =
+    {
+      {
+	GRUB_NET_BOOTP_RFC1048_MAGIC_0,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_1,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_2,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_3,
+      },
+      {
+	GRUB_NET_DHCP_MESSAGE_TYPE,
+	sizeof (discover_options.message_type.data),
+	GRUB_DHCP_MESSAGE_DISCOVER,
+      },
+      GRUB_NET_BOOTP_END,
+    };
+
+  static struct grub_dhcp_request_options request_options =
+    {
+      {
+	GRUB_NET_BOOTP_RFC1048_MAGIC_0,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_1,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_2,
+	GRUB_NET_BOOTP_RFC1048_MAGIC_3,
+      },
+      {
+	GRUB_NET_DHCP_MESSAGE_TYPE,
+	sizeof (request_options.message_type.data),
+	GRUB_DHCP_MESSAGE_REQUEST,
+      },
+      {
+	GRUB_NET_DHCP_SERVER_IDENTIFIER,
+	sizeof (request_options.server_identifier.data),
+	0,
+      },
+      {
+	GRUB_NET_DHCP_REQUESTED_IP_ADDRESS,
+	sizeof (request_options.requested_ip.data),
+	0,
+      },
+      {
+	GRUB_NET_DHCP_PARAMETER_REQUEST_LIST,
+	sizeof (request_options.parameter_request.data),
+	{
+	  GRUB_NET_BOOTP_NETMASK,
+	  GRUB_NET_BOOTP_ROUTER,
+	  GRUB_NET_BOOTP_DNS,
+	  GRUB_NET_BOOTP_DOMAIN,
+	  GRUB_NET_BOOTP_HOSTNAME,
+	  GRUB_NET_BOOTP_ROOT_PATH,
+	  GRUB_NET_BOOTP_EXTENSIONS_PATH,
+	},
+      },
+      GRUB_NET_BOOTP_END,
+    };
+
+  COMPILE_TIME_ASSERT (sizeof (discover_options) <= GRUB_BOOTP_MAX_OPTIONS_SIZE);
+  COMPILE_TIME_ASSERT (sizeof (request_options) <= GRUB_BOOTP_MAX_OPTIONS_SIZE);
+
   nb = grub_netbuff_alloc (sizeof (*pack) + GRUB_BOOTP_MAX_OPTIONS_SIZE + 128);
   if (!nb)
     return grub_errno;
@@ -399,6 +501,19 @@ send_dhcp_packet (struct grub_net_network_level_interface *iface)
     goto out;
 
   grub_memset (nb->data, 0, GRUB_BOOTP_MAX_OPTIONS_SIZE);
+  if (!iface->srv_id)
+    {
+      grub_memcpy (nb->data, &discover_options, sizeof (discover_options));
+    }
+  else
+    {
+      struct grub_dhcp_request_options *ro = (struct grub_dhcp_request_options *) nb->data;
+
+      grub_memcpy (nb->data, &request_options, sizeof (request_options));
+      /* my_ip and srv_id are stored in network order so do not need conversion. */
+      grub_set_unaligned32 (&ro->server_identifier.data, iface->srv_id);
+      grub_set_unaligned32 (&ro->requested_ip.data, iface->my_ip);
+    }
 
   err = grub_netbuff_push (nb, sizeof (*pack));
   if (err)
@@ -416,7 +531,10 @@ send_dhcp_packet (struct grub_net_network_level_interface *iface)
       t = 0;
     }
   pack->seconds = grub_cpu_to_be16 (t);
-  pack->ident = grub_cpu_to_be32 (t);
+  if (!iface->srv_id)
+    iface->xid = pack->ident = grub_cpu_to_be32 (t);
+  else
+    pack->ident = iface->xid;
 
   grub_memcpy (&pack->mac_addr, &iface->hwaddress.mac, 6);
 
