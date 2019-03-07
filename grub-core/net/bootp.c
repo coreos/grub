@@ -25,25 +25,41 @@
 #include <grub/net/udp.h>
 #include <grub/datetime.h>
 
-static void
-parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
+static const void *
+find_dhcp_option (const struct grub_net_bootp_packet *bp, grub_size_t size,
+		  grub_uint8_t opt_code, grub_uint8_t *opt_len)
 {
-  const grub_uint8_t *ptr, *ptr0;
+  const grub_uint8_t *ptr;
+  grub_size_t i;
 
-  ptr = ptr0 = vend;
+  if (opt_len)
+    *opt_len = 0;
+
+  /* Is the packet big enough to hold at least the magic cookie? */
+  if (size < sizeof (*bp) + sizeof (grub_uint32_t))
+    return NULL;
+
+  /*
+   * Pointer arithmetic to point behind the common stub packet, where
+   * the options start.
+   */
+  ptr = (grub_uint8_t *) (bp + 1);
 
   if (ptr[0] != GRUB_NET_BOOTP_RFC1048_MAGIC_0
       || ptr[1] != GRUB_NET_BOOTP_RFC1048_MAGIC_1
       || ptr[2] != GRUB_NET_BOOTP_RFC1048_MAGIC_2
       || ptr[3] != GRUB_NET_BOOTP_RFC1048_MAGIC_3)
-    return;
-  ptr = ptr + sizeof (grub_uint32_t);
-  while (ptr - ptr0 < limit)
+    return NULL;
+
+  size -= sizeof (*bp);
+  i = sizeof (grub_uint32_t);
+
+  while (i < size)
     {
       grub_uint8_t tagtype;
       grub_uint8_t taglength;
 
-      tagtype = *ptr++;
+      tagtype = ptr[i++];
 
       /* Pad tag.  */
       if (tagtype == GRUB_NET_BOOTP_PAD)
@@ -51,81 +67,27 @@ parse_dhcp_vendor (const char *name, const void *vend, int limit, int *mask)
 
       /* End tag.  */
       if (tagtype == GRUB_NET_BOOTP_END)
-	return;
+	break;
 
-      taglength = *ptr++;
+      if (i >= size)
+	return NULL;
 
-      switch (tagtype)
+      taglength = ptr[i++];
+      if (i + taglength >= size)
+	return NULL;
+
+      /* FIXME RFC 3396 options concatentation */
+      if (tagtype == opt_code)
 	{
-	case GRUB_NET_BOOTP_NETMASK:
-	  if (taglength == 4)
-	    {
-	      int i;
-	      for (i = 0; i < 32; i++)
-		if (!(ptr[i / 8] & (1 << (7 - (i % 8)))))
-		  break;
-	      *mask = i;
-	    }
-	  break;
-
-	case GRUB_NET_BOOTP_ROUTER:
-	  if (taglength == 4)
-	    {
-	      grub_net_network_level_netaddress_t target;
-	      grub_net_network_level_address_t gw;
-	      char *rname;
-	      
-	      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	      target.ipv4.base = 0;
-	      target.ipv4.masksize = 0;
-	      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-	      grub_memcpy (&gw.ipv4, ptr, sizeof (gw.ipv4));
-	      rname = grub_xasprintf ("%s:default", name);
-	      if (rname)
-		grub_net_add_route_gw (rname, target, gw, NULL);
-	      grub_free (rname);
-	    }
-	  break;
-	case GRUB_NET_BOOTP_DNS:
-	  {
-	    int i;
-	    for (i = 0; i < taglength / 4; i++)
-	      {
-		struct grub_net_network_level_address s;
-		s.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
-		s.ipv4 = grub_get_unaligned32 (ptr);
-		s.option = DNS_OPTION_PREFER_IPV4;
-		grub_net_add_dns_server (&s);
-		ptr += 4;
-	      }
-	  }
-	  continue;
-	case GRUB_NET_BOOTP_HOSTNAME:
-          grub_env_set_net_property (name, "hostname", (const char *) ptr,
-                                     taglength);
-          break;
-
-	case GRUB_NET_BOOTP_DOMAIN:
-          grub_env_set_net_property (name, "domain", (const char *) ptr,
-                                     taglength);
-          break;
-
-	case GRUB_NET_BOOTP_ROOT_PATH:
-          grub_env_set_net_property (name, "rootpath", (const char *) ptr,
-                                     taglength);
-          break;
-
-	case GRUB_NET_BOOTP_EXTENSIONS_PATH:
-          grub_env_set_net_property (name, "extensionspath", (const char *) ptr,
-                                     taglength);
-          break;
-
-	  /* If you need any other options please contact GRUB
-	     development team.  */
+	  if (opt_len)
+	    *opt_len = taglength;
+	  return &ptr[i];
 	}
 
-      ptr += taglength;
+      i += taglength;
     }
+
+  return NULL;
 }
 
 #define OFFSET_OF(x, y) ((grub_size_t)((grub_uint8_t *)((y)->x) - (grub_uint8_t *)(y)))
@@ -143,6 +105,8 @@ grub_net_configure_by_dhcp_ack (const char *name,
   struct grub_net_network_level_interface *inter;
   int mask = -1;
   char server_ip[sizeof ("xxx.xxx.xxx.xxx")];
+  const grub_uint8_t *opt;
+  grub_uint8_t opt_len;
 
   addr.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
   addr.ipv4 = bp->your_ip;
@@ -225,9 +189,69 @@ grub_net_configure_by_dhcp_ack (const char *name,
 	    **path = 0;
 	}
     }
-  if (size > OFFSET_OF (vendor, bp))
-    parse_dhcp_vendor (name, &bp->vendor, size - OFFSET_OF (vendor, bp), &mask);
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_NETMASK, &opt_len);
+  if (opt && opt_len == 4)
+    {
+      int i;
+      for (i = 0; i < 32; i++)
+	if (!(opt[i / 8] & (1 << (7 - (i % 8)))))
+	  break;
+      mask = i;
+    }
   grub_net_add_ipv4_local (inter, mask);
+
+  /* We do not implement dead gateway detection and the first entry SHOULD
+     be preferred one */
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_ROUTER, &opt_len);
+  if (opt && opt_len && !(opt_len & 3))
+    {
+      grub_net_network_level_netaddress_t target;
+      grub_net_network_level_address_t gw;
+      char *rname;
+
+      target.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      target.ipv4.base = 0;
+      target.ipv4.masksize = 0;
+      gw.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+      gw.ipv4 = grub_get_unaligned32 (opt);
+      rname = grub_xasprintf ("%s:default", name);
+      if (rname)
+	grub_net_add_route_gw (rname, target, gw, 0);
+      grub_free (rname);
+    }
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_DNS, &opt_len);
+  if (opt && opt_len && !(opt_len & 3))
+    {
+      int i;
+      for (i = 0; i < opt_len / 4; i++)
+	{
+	  struct grub_net_network_level_address s;
+
+	  s.type = GRUB_NET_NETWORK_LEVEL_PROTOCOL_IPV4;
+	  s.ipv4 = grub_get_unaligned32 (opt);
+	  s.option = DNS_OPTION_PREFER_IPV4;
+	  grub_net_add_dns_server (&s);
+	  opt += 4;
+	}
+    }
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_HOSTNAME, &opt_len);
+  if (opt && opt_len)
+    grub_env_set_net_property (name, "hostname", (const char *) opt, opt_len);
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_DOMAIN, &opt_len);
+  if (opt && opt_len)
+    grub_env_set_net_property (name, "domain", (const char *) opt, opt_len);
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_ROOT_PATH, &opt_len);
+  if (opt && opt_len)
+    grub_env_set_net_property (name, "rootpath", (const char *) opt, opt_len);
+
+  opt = find_dhcp_option (bp, size, GRUB_NET_BOOTP_EXTENSIONS_PATH, &opt_len);
+  if (opt && opt_len)
+    grub_env_set_net_property (name, "extensionspath", (const char *) opt, opt_len);
   
   inter->dhcp_ack = grub_malloc (size);
   if (inter->dhcp_ack)
@@ -286,8 +310,8 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
 		  int argc, char **args)
 {
   struct grub_net_network_level_interface *inter;
-  int num;
-  grub_uint8_t *ptr;
+  unsigned num;
+  const grub_uint8_t *ptr;
   grub_uint8_t taglength;
 
   if (argc < 4)
@@ -305,44 +329,27 @@ grub_cmd_dhcpopt (struct grub_command *cmd __attribute__ ((unused)),
   if (!inter->dhcp_ack)
     return grub_error (GRUB_ERR_IO, N_("no DHCP info found"));
 
-  if (inter->dhcp_acklen <= OFFSET_OF (vendor, inter->dhcp_ack))
+  ptr = inter->dhcp_ack->vendor;
+
+  /* This duplicates check in find_dhcp_option to preserve previous error return */
+  if (inter->dhcp_acklen < OFFSET_OF (vendor, inter->dhcp_ack) + sizeof (grub_uint32_t)
+      || ptr[0] != GRUB_NET_BOOTP_RFC1048_MAGIC_0
+      || ptr[1] != GRUB_NET_BOOTP_RFC1048_MAGIC_1
+      || ptr[2] != GRUB_NET_BOOTP_RFC1048_MAGIC_2
+      || ptr[3] != GRUB_NET_BOOTP_RFC1048_MAGIC_3)
     return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
 
   num = grub_strtoul (args[2], 0, 0);
   if (grub_errno)
     return grub_errno;
 
-  ptr = inter->dhcp_ack->vendor;
+  /* Exclude PAD (0) and END (255) option codes */
+  if (num == 0 || num > 254)
+    return grub_error (GRUB_ERR_BAD_ARGUMENT, N_("invalid DHCP option code"));
 
-  if (ptr[0] != GRUB_NET_BOOTP_RFC1048_MAGIC_0
-      || ptr[1] != GRUB_NET_BOOTP_RFC1048_MAGIC_1
-      || ptr[2] != GRUB_NET_BOOTP_RFC1048_MAGIC_2
-      || ptr[3] != GRUB_NET_BOOTP_RFC1048_MAGIC_3)
-    return grub_error (GRUB_ERR_IO, N_("no DHCP options found"));
-  ptr = ptr + sizeof (grub_uint32_t);
-  while (1)
-    {
-      grub_uint8_t tagtype;
-
-      if (ptr >= ((grub_uint8_t *) inter->dhcp_ack) + inter->dhcp_acklen)
-	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
-
-      tagtype = *ptr++;
-
-      /* Pad tag.  */
-      if (tagtype == 0)
-	continue;
-
-      /* End tag.  */
-      if (tagtype == 0xff)
-	return grub_error (GRUB_ERR_IO, N_("no DHCP option %d found"), num);
-
-      taglength = *ptr++;
-	
-      if (tagtype == num)
-	break;
-      ptr += taglength;
-    }
+  ptr = find_dhcp_option (inter->dhcp_ack, inter->dhcp_acklen, num, &taglength);
+  if (!ptr)
+    return grub_error (GRUB_ERR_IO, N_("no DHCP option %u found"), num);
 
   if (grub_strcmp (args[3], "string") == 0)
     {
