@@ -864,7 +864,7 @@ grub_cmd_bootp (struct grub_command *cmd __attribute__ ((unused)),
   return err;
 }
 
-static grub_command_t cmd_getdhcp, cmd_bootp;
+static grub_command_t cmd_getdhcp, cmd_bootp, cmd_dhcp;
 
 void
 grub_bootp_init (void)
@@ -872,6 +872,9 @@ grub_bootp_init (void)
   cmd_bootp = grub_register_command ("net_bootp", grub_cmd_bootp,
 				     N_("[CARD]"),
 				     N_("perform a bootp autoconfiguration"));
+  cmd_dhcp = grub_register_command ("net_dhcp", grub_cmd_bootp,
+				     N_("[CARD]"),
+				     N_("perform a DHCP autoconfiguration"));
   cmd_getdhcp = grub_register_command ("net_get_dhcp_option", grub_cmd_dhcpopt,
 				       N_("VAR INTERFACE NUMBER DESCRIPTION"),
 				       N_("retrieve DHCP option and save it into VAR. If VAR is - then print the value."));
@@ -882,4 +885,5 @@ grub_bootp_fini (void)
 {
   grub_unregister_command (cmd_getdhcp);
   grub_unregister_command (cmd_bootp);
+  grub_unregister_command (cmd_dhcp);
 }
