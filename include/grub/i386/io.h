@@ -28,7 +28,7 @@ grub_inb (unsigned short int port)
 {
   unsigned char _v;
 
-  __asm__ __volatile__ ("inb %w1,%0":"=a" (_v):"Nd" (port));
+  asm volatile ("inb %w1,%0":"=a" (_v):"Nd" (port));
   return _v;
 }
 
@@ -37,7 +37,7 @@ grub_inw (unsigned short int port)
 {
   unsigned short _v;
 
-  __asm__ __volatile__ ("inw %w1,%0":"=a" (_v):"Nd" (port));
+  asm volatile ("inw %w1,%0":"=a" (_v):"Nd" (port));
   return _v;
 }
 
@@ -46,27 +46,27 @@ grub_inl (unsigned short int port)
 {
   unsigned int _v;
 
-  __asm__ __volatile__ ("inl %w1,%0":"=a" (_v):"Nd" (port));
+  asm volatile ("inl %w1,%0":"=a" (_v):"Nd" (port));
   return _v;
 }
 
 static __inline void
 grub_outb (unsigned char value, unsigned short int port)
 {
-  __asm__ __volatile__ ("outb %b0,%w1": :"a" (value), "Nd" (port));
+  asm volatile ("outb %b0,%w1": :"a" (value), "Nd" (port));
 }
 
 static __inline void
 grub_outw (unsigned short int value, unsigned short int port)
 {
-  __asm__ __volatile__ ("outw %w0,%w1": :"a" (value), "Nd" (port));
+  asm volatile ("outw %w0,%w1": :"a" (value), "Nd" (port));
 
 }
 
 static __inline void
 grub_outl (unsigned int value, unsigned short int port)
 {
-  __asm__ __volatile__ ("outl %0,%w1": :"a" (value), "Nd" (port));
+  asm volatile ("outl %0,%w1": :"a" (value), "Nd" (port));
 }
 
 #endif /* _SYS_IO_H */

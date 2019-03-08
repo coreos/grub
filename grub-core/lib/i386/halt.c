@@ -66,7 +66,7 @@ grub_halt (void)
 #endif
 
   /* Disable interrupts.  */
-  __asm__ __volatile__ ("cli");
+  asm volatile ("cli");
 
   /* Bochs, QEMU, etc. Removed in newer QEMU releases.  */
   for (i = 0; i < sizeof (bochs_shutdown) - 1; i++)

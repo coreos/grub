@@ -174,17 +174,17 @@ efiemu_memset (grub_uint8_t *a, grub_uint8_t b, grub_size_t n)
 static inline void
 write_cmos (grub_uint8_t addr, grub_uint8_t val)
 {
-  __asm__ __volatile__ ("outb %%al,$0x70\n"
-			"mov %%cl, %%al\n"
-			"outb %%al,$0x71": :"a" (addr), "c" (val));
+  asm volatile ("outb %%al,$0x70\n"
+		"mov %%cl, %%al\n"
+		"outb %%al,$0x71": :"a" (addr), "c" (val));
 }
 
 static inline grub_uint8_t
 read_cmos (grub_uint8_t addr)
 {
   grub_uint8_t ret;
-  __asm__ __volatile__ ("outb %%al, $0x70\n"
-			"inb $0x71, %%al": "=a"(ret) :"a" (addr));
+  asm volatile ("outb %%al, $0x70\n"
+		"inb $0x71, %%al": "=a"(ret) :"a" (addr));
   return ret;
 }
 
