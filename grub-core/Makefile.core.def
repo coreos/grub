@@ -2485,3 +2485,13 @@ module = {
   common = loader/i386/xen_file64.c;
   extra_dist = loader/i386/xen_fileXX.c;
 };
+module = {
+  name = rdmsr;
+  common = commands/i386/rdmsr.c;
+  enable = x86;
+};
+module = {
+  name = wrmsr;
+  common = commands/i386/wrmsr.c;
+  enable = x86;
+};

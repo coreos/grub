@@ -43,7 +43,7 @@ static grub_efi_guid_t shim_lock_guid = GRUB_EFI_SHIM_LOCK_GUID;
 static grub_efi_shim_lock_protocol_t *sl;
 
 /* List of modules which cannot be loaded if UEFI secure boot mode is enabled. */
-static const char * const disabled_mods[] = {"iorw", "memrw", NULL};
+static const char * const disabled_mods[] = {"iorw", "memrw", "wrmsr", NULL};
 
 static grub_err_t
 shim_lock_init (grub_file_t io, enum grub_file_type type,
