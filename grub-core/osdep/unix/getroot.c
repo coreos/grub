@@ -34,6 +34,7 @@
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
+
 #include <grub/util/misc.h>
 #include <grub/emu/exec.h>
 
@@ -112,6 +113,8 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #endif
+
+#include "save-cwd.h"
 
 #if !defined (__GNU__)
 static void
@@ -352,7 +355,7 @@ char *
 grub_find_device (const char *dir, dev_t dev)
 {
   DIR *dp;
-  char *saved_cwd;
+  struct saved_cwd saved_cwd;
   struct dirent *ent;
 
   if (! dir)
@@ -362,12 +365,17 @@ grub_find_device (const char *dir, dev_t dev)
   if (! dp)
     return 0;
 
-  saved_cwd = xgetcwd ();
+  if (save_cwd (&saved_cwd) < 0)
+    {
+      grub_util_error ("%s", _("cannot save the original directory"));
+      closedir (dp);
+      return 0;
+    }
 
   grub_util_info ("changing current directory to %s", dir);
   if (chdir (dir) < 0)
     {
-      free (saved_cwd);
+      free_cwd (&saved_cwd);
       closedir (dp);
       return 0;
     }
@@ -410,11 +418,11 @@ grub_find_device (const char *dir, dev_t dev)
 
 	  if (res)
 	    {
-	      if (chdir (saved_cwd) < 0)
+	      if (restore_cwd (&saved_cwd) < 0)
 		grub_util_error ("%s",
 				 _("cannot restore the original directory"));
 
-	      free (saved_cwd);
+	      free_cwd (&saved_cwd);
 	      closedir (dp);
 	      return res;
 	    }
@@ -468,19 +476,19 @@ grub_find_device (const char *dir, dev_t dev)
 	      continue;
 	    }
 
-	  if (chdir (saved_cwd) < 0)
+	  if (restore_cwd (&saved_cwd) < 0)
 	    grub_util_error ("%s", _("cannot restore the original directory"));
 
-	  free (saved_cwd);
+	  free_cwd (&saved_cwd);
 	  closedir (dp);
 	  return res;
 	}
     }
 
-  if (chdir (saved_cwd) < 0)
+  if (restore_cwd (&saved_cwd) < 0)
     grub_util_error ("%s", _("cannot restore the original directory"));
 
-  free (saved_cwd);
+  free_cwd (&saved_cwd);
   closedir (dp);
   return 0;
 }
