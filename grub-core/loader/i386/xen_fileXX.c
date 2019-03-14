@@ -347,6 +347,23 @@ grub_xen_get_infoXX (grub_elf_t elf, struct grub_xen_file_info *xi)
   for (s = s0; s < (Elf_Shdr *) ((char *) s0 + shnum * shentsize);
        s = (Elf_Shdr *) ((char *) s + shentsize))
     {
+      if (s->sh_type == SHT_NOTE)
+	{
+	  err = parse_note (elf, xi, s->sh_offset, s->sh_size);
+	  if (err)
+	    goto cleanup;
+	}
+    }
+
+  if (xi->has_note)
+    {
+      err = GRUB_ERR_NONE;
+      goto cleanup;
+    }
+
+  for (s = s0; s < (Elf_Shdr *) ((char *) s0 + shnum * shentsize);
+       s = (Elf_Shdr *) ((char *) s + shentsize))
+    {
       char name[sizeof("__xen_guest")];
       grub_memset (name, 0, sizeof (name));
       if (grub_file_seek (elf->file, stroff + s->sh_name) == (grub_off_t) -1)
