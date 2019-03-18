@@ -110,10 +110,12 @@ EXPORT_FUNC (__aeabi_llsr) (grub_uint64_t u, int b);
 
 #endif
 
-#ifdef __riscv
+#if defined(__mips__) || defined(__riscv)
 int
 EXPORT_FUNC (__clzsi2) (grub_uint32_t val);
+#endif
 
+#ifdef __riscv
 int
 EXPORT_FUNC (__clzdi2) (grub_uint64_t val);
 #endif

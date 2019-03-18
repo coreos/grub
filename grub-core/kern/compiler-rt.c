@@ -420,8 +420,7 @@ __aeabi_llsl (grub_uint64_t u, int b)
 
 #endif
 
-#ifdef __riscv
-
+#if defined(__mips__) || defined(__riscv)
 /* Based on libgcc from gcc suite. */
 int
 __clzsi2 (grub_uint32_t val)
@@ -447,7 +446,9 @@ __clzsi2 (grub_uint32_t val)
     }
   return (i - val);
 }
+#endif
 
+#ifdef __riscv
 int
 __clzdi2 (grub_uint64_t val)
 {
