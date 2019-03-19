@@ -130,23 +130,26 @@ typedef grub_int32_t	grub_ssize_t;
 # define PRIdGRUB_SSIZE	"d"
 #endif
 
+#define GRUB_SCHAR_MAX 127
+#define GRUB_SCHAR_MIN (-GRUB_SCHAR_MAX - 1)
 #define GRUB_UCHAR_MAX 0xFF
 #define GRUB_USHRT_MAX 65535
 #define GRUB_SHRT_MAX 0x7fff
+#define GRUB_SHRT_MIN (-GRUB_SHRT_MAX - 1)
 #define GRUB_UINT_MAX 4294967295U
 #define GRUB_INT_MAX 0x7fffffff
-#define GRUB_INT32_MIN (-2147483647 - 1)
+#define GRUB_INT_MIN (-GRUB_INT_MAX - 1)
 #define GRUB_INT32_MAX 2147483647
+#define GRUB_INT32_MIN (-GRUB_INT32_MAX - 1)
 
 #if GRUB_CPU_SIZEOF_LONG == 8
 # define GRUB_ULONG_MAX 18446744073709551615UL
 # define GRUB_LONG_MAX 9223372036854775807L
-# define GRUB_LONG_MIN (-9223372036854775807L - 1)
 #else
 # define GRUB_ULONG_MAX 4294967295UL
 # define GRUB_LONG_MAX 2147483647L
-# define GRUB_LONG_MIN (-2147483647L - 1)
 #endif
+# define GRUB_LONG_MIN (-GRUB_LONG_MAX - 1)
 
 typedef grub_uint64_t grub_properly_aligned_t;
 
