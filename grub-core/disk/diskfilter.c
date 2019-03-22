@@ -228,9 +228,9 @@ scan_devices (const char *arname)
   for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; p; p = p->next)
       if (p->id != GRUB_DISK_DEVICE_DISKFILTER_ID
-	  && p->iterate)
+	  && p->disk_iterate)
 	{
-	  if ((p->iterate) (scan_disk_hook, NULL, pull))
+	  if ((p->disk_iterate) (scan_disk_hook, NULL, pull))
 	    return;
 	  if (arname && is_lv_readable (find_lv (arname), 1))
 	    return;
@@ -311,9 +311,9 @@ grub_diskfilter_memberlist (grub_disk_t disk)
   for (pull = 0; pv && pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; pv && p; p = p->next)
       if (p->id != GRUB_DISK_DEVICE_DISKFILTER_ID
-	  && p->iterate)
+	  && p->disk_iterate)
 	{
-	  (p->iterate) (scan_disk_hook, NULL, pull);
+	  (p->disk_iterate) (scan_disk_hook, NULL, pull);
 	  while (pv && pv->disk)
 	    pv = pv->next;
 	}
@@ -1325,14 +1325,14 @@ static struct grub_disk_dev grub_diskfilter_dev =
   {
     .name = "diskfilter",
     .id = GRUB_DISK_DEVICE_DISKFILTER_ID,
-    .iterate = grub_diskfilter_iterate,
-    .open = grub_diskfilter_open,
-    .close = grub_diskfilter_close,
-    .read = grub_diskfilter_read,
-    .write = grub_diskfilter_write,
+    .disk_iterate = grub_diskfilter_iterate,
+    .disk_open = grub_diskfilter_open,
+    .disk_close = grub_diskfilter_close,
+    .disk_read = grub_diskfilter_read,
+    .disk_write = grub_diskfilter_write,
 #ifdef GRUB_UTIL
-    .memberlist = grub_diskfilter_memberlist,
-    .raidname = grub_diskfilter_getname,
+    .disk_memberlist = grub_diskfilter_memberlist,
+    .disk_raidname = grub_diskfilter_getname,
 #endif
     .next = 0
   };

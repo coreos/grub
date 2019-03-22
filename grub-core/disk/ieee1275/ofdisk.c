@@ -615,11 +615,11 @@ static struct grub_disk_dev grub_ofdisk_dev =
   {
     .name = "ofdisk",
     .id = GRUB_DISK_DEVICE_OFDISK_ID,
-    .iterate = grub_ofdisk_iterate,
-    .open = grub_ofdisk_open,
-    .close = grub_ofdisk_close,
-    .read = grub_ofdisk_read,
-    .write = grub_ofdisk_write,
+    .disk_iterate = grub_ofdisk_iterate,
+    .disk_open = grub_ofdisk_open,
+    .disk_close = grub_ofdisk_close,
+    .disk_read = grub_ofdisk_read,
+    .disk_write = grub_ofdisk_write,
     .next = 0
   };
 

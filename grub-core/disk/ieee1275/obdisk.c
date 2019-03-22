@@ -1047,10 +1047,10 @@ static struct grub_disk_dev grub_obdisk_dev =
   {
     .name    = "obdisk",
     .id      = GRUB_DISK_DEVICE_OBDISK_ID,
-    .iterate = grub_obdisk_iterate,
-    .open    = grub_obdisk_open,
-    .close   = grub_obdisk_close,
-    .read    = grub_obdisk_read,
+    .disk_iterate = grub_obdisk_iterate,
+    .disk_open    = grub_obdisk_open,
+    .disk_close   = grub_obdisk_close,
+    .disk_read    = grub_obdisk_read,
   };
 
 void

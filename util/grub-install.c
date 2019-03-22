@@ -446,8 +446,8 @@ probe_mods (grub_disk_t disk)
   if (raid_level >= 0)
     {
       grub_install_push_module ("diskfilter");
-      if (disk->dev->raidname)
-	grub_install_push_module (disk->dev->raidname (disk));
+      if (disk->dev->disk_raidname)
+	grub_install_push_module (disk->dev->disk_raidname (disk));
     }
   if (raid_level == 5)
     grub_install_push_module ("raid5rec");
@@ -455,8 +455,8 @@ probe_mods (grub_disk_t disk)
     grub_install_push_module ("raid6rec");
 
   /* In case of LVM/RAID, check the member devices as well.  */
-  if (disk->dev->memberlist)
-    list = disk->dev->memberlist (disk);
+  if (disk->dev->disk_memberlist)
+    list = disk->dev->disk_memberlist (disk);
   while (list)
     {
       probe_mods (list->disk);
@@ -514,9 +514,9 @@ probe_cryptodisk_uuid (grub_disk_t disk)
   grub_disk_memberlist_t list = NULL, tmp;
 
   /* In case of LVM/RAID, check the member devices as well.  */
-  if (disk->dev->memberlist)
+  if (disk->dev->disk_memberlist)
     {
-      list = disk->dev->memberlist (disk);
+      list = disk->dev->disk_memberlist (disk);
     }
   while (list)
     {

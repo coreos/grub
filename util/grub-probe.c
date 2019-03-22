@@ -171,9 +171,9 @@ probe_partmap (grub_disk_t disk, char delim)
     grub_diskfilter_get_partmap (disk, do_print, &delim);
 
   /* In case of LVM/RAID, check the member devices as well.  */
-  if (disk->dev->memberlist)
+  if (disk->dev->disk_memberlist)
     {
-      list = disk->dev->memberlist (disk);
+      list = disk->dev->disk_memberlist (disk);
     }
   while (list)
     {
@@ -229,9 +229,9 @@ probe_cryptodisk_uuid (grub_disk_t disk, char delim)
   grub_disk_memberlist_t list = NULL, tmp;
 
   /* In case of LVM/RAID, check the member devices as well.  */
-  if (disk->dev->memberlist)
+  if (disk->dev->disk_memberlist)
     {
-      list = disk->dev->memberlist (disk);
+      list = disk->dev->disk_memberlist (disk);
     }
   while (list)
     {
@@ -272,8 +272,8 @@ probe_abstraction (grub_disk_t disk, char delim)
   grub_disk_memberlist_t list = NULL, tmp;
   int raid_level;
 
-  if (disk->dev->memberlist)
-    list = disk->dev->memberlist (disk);
+  if (disk->dev->disk_memberlist)
+    list = disk->dev->disk_memberlist (disk);
   while (list)
     {
       probe_abstraction (list->disk, delim);
@@ -299,8 +299,8 @@ probe_abstraction (grub_disk_t disk, char delim)
   if (raid_level >= 0)
     {
       printf ("diskfilter%c", delim);
-      if (disk->dev->raidname)
-	printf ("%s%c", disk->dev->raidname (disk), delim);
+      if (disk->dev->disk_raidname)
+	printf ("%s%c", disk->dev->disk_raidname (disk), delim);
     }
   if (raid_level == 5)
     printf ("raid5rec%c", delim);

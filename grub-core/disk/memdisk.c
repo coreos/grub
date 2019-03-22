@@ -77,11 +77,11 @@ static struct grub_disk_dev grub_memdisk_dev =
   {
     .name = "memdisk",
     .id = GRUB_DISK_DEVICE_MEMDISK_ID,
-    .iterate = grub_memdisk_iterate,
-    .open = grub_memdisk_open,
-    .close = grub_memdisk_close,
-    .read = grub_memdisk_read,
-    .write = grub_memdisk_write,
+    .disk_iterate = grub_memdisk_iterate,
+    .disk_open = grub_memdisk_open,
+    .disk_close = grub_memdisk_close,
+    .disk_read = grub_memdisk_read,
+    .disk_write = grub_memdisk_write,
     .next = 0
   };
 

@@ -747,11 +747,11 @@ static struct grub_disk_dev grub_scsi_dev =
   {
     .name = "scsi",
     .id = GRUB_DISK_DEVICE_SCSI_ID,
-    .iterate = grub_scsi_iterate,
-    .open = grub_scsi_open,
-    .close = grub_scsi_close,
-    .read = grub_scsi_read,
-    .write = grub_scsi_write,
+    .disk_iterate = grub_scsi_iterate,
+    .disk_open = grub_scsi_open,
+    .disk_close = grub_scsi_close,
+    .disk_read = grub_scsi_read,
+    .disk_write = grub_scsi_write,
     .next = 0
   };
 

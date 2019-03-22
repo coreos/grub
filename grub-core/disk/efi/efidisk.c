@@ -627,11 +627,11 @@ static struct grub_disk_dev grub_efidisk_dev =
   {
     .name = "efidisk",
     .id = GRUB_DISK_DEVICE_EFIDISK_ID,
-    .iterate = grub_efidisk_iterate,
-    .open = grub_efidisk_open,
-    .close = grub_efidisk_close,
-    .read = grub_efidisk_read,
-    .write = grub_efidisk_write,
+    .disk_iterate = grub_efidisk_iterate,
+    .disk_open = grub_efidisk_open,
+    .disk_close = grub_efidisk_close,
+    .disk_read = grub_efidisk_read,
+    .disk_write = grub_efidisk_write,
     .next = 0
   };
 

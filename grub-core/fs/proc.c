@@ -172,11 +172,11 @@ grub_procfs_open (struct grub_file *file, const char *path)
 static struct grub_disk_dev grub_procfs_dev = {
   .name = "proc",
   .id = GRUB_DISK_DEVICE_PROCFS_ID,
-  .iterate = grub_procdev_iterate,
-  .open = grub_procdev_open,
-  .close = grub_procdev_close,
-  .read = grub_procdev_read,
-  .write = grub_procdev_write,
+  .disk_iterate = grub_procdev_iterate,
+  .disk_open = grub_procdev_open,
+  .disk_close = grub_procdev_close,
+  .disk_read = grub_procdev_read,
+  .disk_write = grub_procdev_write,
   .next = 0
 };
 

@@ -84,11 +84,11 @@ static struct grub_disk_dev grub_host_dev =
     /* The only important line in this file :-) */
     .name = "host",
     .id = GRUB_DISK_DEVICE_HOST_ID,
-    .iterate = grub_host_iterate,
-    .open = grub_host_open,
-    .close = grub_host_close,
-    .read = grub_host_read,
-    .write = grub_host_write,
+    .disk_iterate = grub_host_iterate,
+    .disk_open = grub_host_open,
+    .disk_close = grub_host_close,
+    .disk_read = grub_host_read,
+    .disk_write = grub_host_write,
     .next = 0
   };
 

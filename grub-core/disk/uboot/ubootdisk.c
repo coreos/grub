@@ -286,11 +286,11 @@ uboot_disk_write (struct grub_disk *disk,
 static struct grub_disk_dev grub_ubootdisk_dev = {
   .name = "ubootdisk",
   .id = GRUB_DISK_DEVICE_UBOOTDISK_ID,
-  .iterate = uboot_disk_iterate,
-  .open = uboot_disk_open,
-  .close = uboot_disk_close,
-  .read = uboot_disk_read,
-  .write = uboot_disk_write,
+  .disk_iterate = uboot_disk_iterate,
+  .disk_open = uboot_disk_open,
+  .disk_close = uboot_disk_close,
+  .disk_read = uboot_disk_read,
+  .disk_write = uboot_disk_write,
   .next = 0
 };
 

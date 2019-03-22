@@ -1015,13 +1015,13 @@ grub_cmd_cryptomount (grub_extcmd_context_t ctxt, int argc, char **args)
 static struct grub_disk_dev grub_cryptodisk_dev = {
   .name = "cryptodisk",
   .id = GRUB_DISK_DEVICE_CRYPTODISK_ID,
-  .iterate = grub_cryptodisk_iterate,
-  .open = grub_cryptodisk_open,
-  .close = grub_cryptodisk_close,
-  .read = grub_cryptodisk_read,
-  .write = grub_cryptodisk_write,
+  .disk_iterate = grub_cryptodisk_iterate,
+  .disk_open = grub_cryptodisk_open,
+  .disk_close = grub_cryptodisk_close,
+  .disk_read = grub_cryptodisk_read,
+  .disk_write = grub_cryptodisk_write,
 #ifdef GRUB_UTIL
-  .memberlist = grub_cryptodisk_memberlist,
+  .disk_memberlist = grub_cryptodisk_memberlist,
 #endif
   .next = 0
 };

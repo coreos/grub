@@ -223,7 +223,7 @@ grub_disk_open (const char *name)
 
   for (dev = grub_disk_dev_list; dev; dev = dev->next)
     {
-      if ((dev->open) (raw, disk) == GRUB_ERR_NONE)
+      if ((dev->disk_open) (raw, disk) == GRUB_ERR_NONE)
 	break;
       else if (grub_errno == GRUB_ERR_UNKNOWN_DEVICE)
 	grub_errno = GRUB_ERR_NONE;
@@ -294,8 +294,8 @@ grub_disk_close (grub_disk_t disk)
   grub_partition_t part;
   grub_dprintf ("disk", "Closing `%s'.\n", disk->name);
 
-  if (disk->dev && disk->dev->close)
-    (disk->dev->close) (disk);
+  if (disk->dev && disk->dev->disk_close)
+    (disk->dev->disk_close) (disk);
 
   /* Reset the timer.  */
   grub_last_time = grub_get_time_ms ();
@@ -341,10 +341,10 @@ grub_disk_read_small_real (grub_disk_t disk, grub_disk_addr_t sector,
       < (disk->total_sectors << (disk->log_sector_size - GRUB_DISK_SECTOR_BITS)))
     {
       grub_err_t err;
-      err = (disk->dev->read) (disk, transform_sector (disk, sector),
-			       1U << (GRUB_DISK_CACHE_BITS
-				      + GRUB_DISK_SECTOR_BITS
-				      - disk->log_sector_size), tmp_buf);
+      err = (disk->dev->disk_read) (disk, transform_sector (disk, sector),
+				    1U << (GRUB_DISK_CACHE_BITS
+					   + GRUB_DISK_SECTOR_BITS
+					   - disk->log_sector_size), tmp_buf);
       if (!err)
 	{
 	  /* Copy it and store it in the disk cache.  */
@@ -377,8 +377,8 @@ grub_disk_read_small_real (grub_disk_t disk, grub_disk_addr_t sector,
     if (!tmp_buf)
       return grub_errno;
     
-    if ((disk->dev->read) (disk, transform_sector (disk, aligned_sector),
-			   num, tmp_buf))
+    if ((disk->dev->disk_read) (disk, transform_sector (disk, aligned_sector),
+				num, tmp_buf))
       {
 	grub_error_push ();
 	grub_dprintf ("disk", "%s read failed\n", disk->name);
@@ -483,11 +483,11 @@ grub_disk_read (grub_disk_t disk, grub_disk_addr_t sector,
 	{
 	  grub_disk_addr_t i;
 
-	  err = (disk->dev->read) (disk, transform_sector (disk, sector),
-				   agglomerate << (GRUB_DISK_CACHE_BITS
-						   + GRUB_DISK_SECTOR_BITS
-						   - disk->log_sector_size),
-				   buf);
+	  err = (disk->dev->disk_read) (disk, transform_sector (disk, sector),
+					agglomerate << (GRUB_DISK_CACHE_BITS
+							+ GRUB_DISK_SECTOR_BITS
+							- disk->log_sector_size),
+					buf);
 	  if (err)
 	    return err;
 	  

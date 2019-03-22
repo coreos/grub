@@ -77,26 +77,26 @@ struct grub_disk_dev
   enum grub_disk_dev_id id;
 
   /* Call HOOK with each device name, until HOOK returns non-zero.  */
-  int (*iterate) (grub_disk_dev_iterate_hook_t hook, void *hook_data,
+  int (*disk_iterate) (grub_disk_dev_iterate_hook_t hook, void *hook_data,
 		  grub_disk_pull_t pull);
 
   /* Open the device named NAME, and set up DISK.  */
-  grub_err_t (*open) (const char *name, struct grub_disk *disk);
+  grub_err_t (*disk_open) (const char *name, struct grub_disk *disk);
 
   /* Close the disk DISK.  */
-  void (*close) (struct grub_disk *disk);
+  void (*disk_close) (struct grub_disk *disk);
 
   /* Read SIZE sectors from the sector SECTOR of the disk DISK into BUF.  */
-  grub_err_t (*read) (struct grub_disk *disk, grub_disk_addr_t sector,
+  grub_err_t (*disk_read) (struct grub_disk *disk, grub_disk_addr_t sector,
 		      grub_size_t size, char *buf);
 
   /* Write SIZE sectors from BUF into the sector SECTOR of the disk DISK.  */
-  grub_err_t (*write) (struct grub_disk *disk, grub_disk_addr_t sector,
+  grub_err_t (*disk_write) (struct grub_disk *disk, grub_disk_addr_t sector,
 		       grub_size_t size, const char *buf);
 
 #ifdef GRUB_UTIL
-  struct grub_disk_memberlist *(*memberlist) (struct grub_disk *disk);
-  const char * (*raidname) (struct grub_disk *disk);
+  struct grub_disk_memberlist *(*disk_memberlist) (struct grub_disk *disk);
+  const char * (*disk_raidname) (struct grub_disk *disk);
 #endif
 
   /* The next disk device.  */
@@ -187,7 +187,7 @@ grub_disk_dev_iterate (grub_disk_dev_iterate_hook_t hook, void *hook_data)
 
   for (pull = 0; pull < GRUB_DISK_PULL_MAX; pull++)
     for (p = grub_disk_dev_list; p; p = p->next)
-      if (p->iterate && (p->iterate) (hook, hook_data, pull))
+      if (p->disk_iterate && (p->disk_iterate) (hook, hook_data, pull))
 	return 1;
 
   return 0;

@@ -296,11 +296,11 @@ static struct grub_disk_dev grub_arcdisk_dev =
   {
     .name = "arcdisk",
     .id = GRUB_DISK_DEVICE_ARCDISK_ID,
-    .iterate = grub_arcdisk_iterate,
-    .open = grub_arcdisk_open,
-    .close = grub_arcdisk_close,
-    .read = grub_arcdisk_read,
-    .write = grub_arcdisk_write,
+    .disk_iterate = grub_arcdisk_iterate,
+    .disk_open = grub_arcdisk_open,
+    .disk_close = grub_arcdisk_close,
+    .disk_read = grub_arcdisk_read,
+    .disk_write = grub_arcdisk_write,
     .next = 0
   };
 

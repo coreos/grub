@@ -222,10 +222,10 @@ static struct grub_disk_dev grub_loopback_dev =
   {
     .name = "loopback",
     .id = GRUB_DISK_DEVICE_LOOPBACK_ID,
-    .iterate = grub_loopback_iterate,
-    .open = grub_loopback_open,
-    .read = grub_loopback_read,
-    .write = grub_loopback_write,
+    .disk_iterate = grub_loopback_iterate,
+    .disk_open = grub_loopback_open,
+    .disk_read = grub_loopback_read,
+    .disk_write = grub_loopback_write,
     .next = 0
   };
 

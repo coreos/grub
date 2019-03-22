@@ -223,11 +223,11 @@ static struct grub_disk_dev grub_nand_dev =
   {
     .name = "nand",
     .id = GRUB_DISK_DEVICE_NAND_ID,
-    .iterate = grub_nand_iterate,
-    .open = grub_nand_open,
-    .close = grub_nand_close,
-    .read = grub_nand_read,
-    .write = grub_nand_write,
+    .disk_iterate = grub_nand_iterate,
+    .disk_open = grub_nand_open,
+    .disk_close = grub_nand_close,
+    .disk_read = grub_nand_read,
+    .disk_write = grub_nand_write,
     .next = 0
   };
 

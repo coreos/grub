@@ -510,11 +510,11 @@ static struct grub_disk_dev grub_atadisk_dev =
   {
     .name = "ATA",
     .id = GRUB_DISK_DEVICE_ATA_ID,
-    .iterate = grub_ata_iterate,
-    .open = grub_ata_open,
-    .close = grub_ata_close,
-    .read = grub_ata_read,
-    .write = grub_ata_write,
+    .disk_iterate = grub_ata_iterate,
+    .disk_open = grub_ata_open,
+    .disk_close = grub_ata_close,
+    .disk_read = grub_ata_read,
+    .disk_write = grub_ata_write,
     .next = 0
   };
 
