@@ -1298,7 +1298,7 @@ SUFFIX (relocate_addrs) (Elf_Ehdr *e, struct section_metadata *smd,
 		       grub_uint32_t hi20, lo12;
 
 		       if (off != (grub_int32_t)off)
-			 grub_util_error ("target %lx not reachable from pc=%lx", (long)sym_addr, (long)target);
+			 grub_util_error ("target %lx not reachable from pc=%lx", (long)sym_addr, (long)((char *)target - (char *)e));
 
 		       hi20 = (off + 0x800) & 0xfffff000;
 		       lo12 = (off - hi20) & 0xfff;
@@ -1337,7 +1337,7 @@ SUFFIX (relocate_addrs) (Elf_Ehdr *e, struct section_metadata *smd,
 		       grub_int32_t hi20;
 
 		       if (off != (grub_int32_t)off)
-			 grub_util_error ("target %lx not reachable from pc=%lx", (long)sym_addr, (long)target);
+			 grub_util_error ("target %lx not reachable from pc=%lx", (long)sym_addr, (long)((char *)target - (char *)e));
 
 		       hi20 = (off + 0x800) & 0xfffff000;
 		       *t32 = grub_host_to_target32 ((grub_target_to_host32 (*t32) & 0xfff) | hi20);
