@@ -21,6 +21,7 @@
 #define GRUB_ERR_HEADER	1
 
 #include <grub/symbol.h>
+#include <grub/compiler.h>
 
 #define GRUB_MAX_ERRMSG		256
 
@@ -91,6 +92,6 @@ int EXPORT_FUNC(grub_error_pop) (void);
 void EXPORT_FUNC(grub_print_error) (void);
 extern int EXPORT_VAR(grub_err_printed_errors);
 int grub_err_printf (const char *fmt, ...)
-     __attribute__ ((format (__printf__, 1, 2)));
+     __attribute__ ((format (GNU_PRINTF, 1, 2)));
 
 #endif /* ! GRUB_ERR_HEADER */
