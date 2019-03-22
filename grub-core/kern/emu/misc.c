@@ -16,7 +16,9 @@
  *  along with GRUB.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef GRUB_BUILD
 #include <config-util.h>
+#endif
 #include <config.h>
 
 #include <errno.h>
