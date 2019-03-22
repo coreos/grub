@@ -245,7 +245,7 @@ grub_tpm1_log_event (grub_efi_handle_t tpm_handle, unsigned char *buf,
   grub_memcpy (event->Event, description, event->EventSize);
 
   algorithm = TCG_ALG_SHA;
-  status = efi_call_7 (tpm->log_extend_event, tpm, buf, (grub_uint64_t) size,
+  status = efi_call_7 (tpm->log_extend_event, tpm, (grub_addr_t) buf, (grub_uint64_t) size,
 		       algorithm, event, &eventnum, &lastevent);
 
   switch (status)
@@ -295,7 +295,7 @@ grub_tpm2_log_event (grub_efi_handle_t tpm_handle, unsigned char *buf,
     sizeof (*event) - sizeof (event->Event) + grub_strlen (description) + 1;
   grub_memcpy (event->Event, description, grub_strlen (description) + 1);
 
-  status = efi_call_5 (tpm->hash_log_extend_event, tpm, 0, buf,
+  status = efi_call_5 (tpm->hash_log_extend_event, tpm, 0, (grub_addr_t) buf,
 		       (grub_uint64_t) size, event);
 
   switch (status)
