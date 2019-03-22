@@ -29,6 +29,7 @@ struct grub_module_verifier_arch archs[] = {
       GRUB_ELF_R_PPC_ADDR16_HA,
       GRUB_ELF_R_PPC_ADDR32,
       GRUB_ELF_R_PPC_REL32,
+      GRUB_ELF_R_PPC_PLTREL24,
       -1
     } },
   { "sparc64", 8, 1, EM_SPARCV9, GRUB_MODULE_VERIFY_SUPPORTS_RELA, (int[]){

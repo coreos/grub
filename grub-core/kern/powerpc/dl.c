@@ -79,7 +79,8 @@ grub_arch_dl_get_tramp_got_size (const void *ehdr, grub_size_t *tramp,
 	       max = rel + s->sh_size / s->sh_entsize;
 	     rel < max;
 	     rel++)
-	  if (ELF_R_TYPE (rel->r_info) == GRUB_ELF_R_PPC_REL24)
+	  if (ELF_R_TYPE (rel->r_info) == GRUB_ELF_R_PPC_REL24
+	      || ELF_R_TYPE (rel->r_info) == GRUB_ELF_R_PPC_PLTREL24)
 	    (*tramp)++;
 	
       }
@@ -122,6 +123,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  *(Elf_Half *) addr = value;
 	  break;
 
+	case GRUB_ELF_R_PPC_PLTREL24:
 	case GRUB_ELF_R_PPC_REL24:
 	  {
 	    Elf_Sword delta = value - (Elf_Word) addr;
