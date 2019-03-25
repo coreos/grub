@@ -1395,7 +1395,7 @@ AC_SUBST(TARGET_NMFLAGS_DEFINED_ONLY)
 if test "$platform" != emu; then
 AC_CACHE_CHECK([whether -nostdinc -isystem works], [grub_cv_cc_isystem], [
   SAVED_CPPFLAGS="$CPPFLAGS"
-  CPPFLAGS="$TARGET_CPPFLAGS -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
+  CPPFLAGS="$TARGET_CPPFLAGS -nostdlib -nostdinc -isystem `$TARGET_CC -print-file-name=include`"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdarg.h>
 #include <stddef.h>
 int va_arg_func (int fixed, va_list args);]], [[]])],
