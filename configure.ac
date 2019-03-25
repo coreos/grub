@@ -1228,12 +1228,12 @@ if test "x$target_cpu" = xarm; then
 fi
 
 AC_CACHE_CHECK([whether option -Qn works], grub_cv_target_cc_qn, [
-  CFLAGS="$TARGET_CFLAGS -Qn -Werror"
+  CFLAGS="$TARGET_CFLAGS -Qn -Qunused-arguments -Werror"
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
 		    [grub_cv_target_cc_qn=yes],
 		    [grub_cv_target_cc_qn=no])])
 if test "x$grub_cv_target_cc_qn" = xyes; then
-  TARGET_CFLAGS="$TARGET_CFLAGS -Qn"
+  TARGET_CFLAGS="$TARGET_CFLAGS -Qn -Qunused-arguments"
 fi
 
 #
