@@ -173,6 +173,9 @@ grub_hostfs_label (grub_device_t device __attribute ((unused)),
   return GRUB_ERR_NONE;
 }
 
+#undef open
+#undef close
+
 static struct grub_fs grub_hostfs_fs =
   {
     .name = "hostfs",
