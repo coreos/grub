@@ -48,7 +48,7 @@ pic_base:
 
 #ifndef CDBOOT
 	/* The offsets to these locations are defined by the
-	 * GRUB_BOOT_MACHINE_foo macros in include/grub/sparc/ieee1275/boot.h,
+	 * GRUB_BOOT_MACHINE_foo macros in include/grub/sparc64/ieee1275/boot.h,
 	 * and grub-setup uses this to patch these next three values as needed.
 	 *
 	 * The boot_path will be the OF device path of the partition where the
