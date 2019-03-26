@@ -118,7 +118,16 @@ LOCAL (codestart):
 
 #include "../../../kern/i386/realmode.S"
 
+/*
+ *
+ * This is a workaround for clang adding a section containing only .addrsig
+ * Since clang itself is unable to assemble this pseudo-opcode, just replace
+ * it with .text
+ *
+ */
+#define addrsig text
 #include <rs_decoder.h>
+#undef addrsig
 
 	.text
 
