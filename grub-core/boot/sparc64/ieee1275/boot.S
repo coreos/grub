@@ -21,6 +21,24 @@
 
 	.text
 	.align	4
+	/*
+	 * We're writing the a.out header ourselves as newer
+	 * upstream versions of binutils no longer support
+	 * the a.out format on sparc64.
+	 *
+	 * The boot loader fits into 512 bytes with 32 bytes
+	 * used for the a.out header, hence the text segment
+	 * size is 512 - 32. There is no data segment and no
+	 * code relocation, thus those fields remain zero.
+	 */
+	.word	0x1030107                        /* Magic number. */
+	.word	512 - GRUB_BOOT_AOUT_HEADER_SIZE /* Size of text segment. */
+	.word	0                                /* Size of initialized data. */
+	.word	0                                /* Size of uninitialized data. */
+	.word	0                                /* Size of symbol table || checksum. */
+	.word	_start                           /* Entry point. */
+	.word	0                                /* Size of text relocation. */
+	.word	0                                /* Size of data relocation. */
 	.globl	_start
 _start:
 	/* OF CIF entry point arrives in %o4 */
@@ -40,10 +58,14 @@ pic_base:
 	 *
 	 * After loading in that block we will execute it by jumping to the
 	 * load address plus the size of the prepended A.OUT header (32 bytes).
+	 *
+	 * Since this assembly code includes the 32 bytes long a.out header,
+	 * we need to move the actual code entry point forward by the size
+	 * of the a.out header, i.e. += GRUB_BOOT_AOUT_HEADER_SIZE.
 	 */
-	.org GRUB_BOOT_MACHINE_BOOT_DEVPATH
+	.org GRUB_BOOT_MACHINE_BOOT_DEVPATH + GRUB_BOOT_AOUT_HEADER_SIZE
 boot_path:
-	.org GRUB_BOOT_MACHINE_KERNEL_BYTE
+	.org GRUB_BOOT_MACHINE_KERNEL_BYTE + GRUB_BOOT_AOUT_HEADER_SIZE
 boot_path_end:
 kernel_byte:		.xword (2 << 9)
 kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
@@ -52,7 +74,7 @@ kernel_address:		.word  GRUB_BOOT_MACHINE_KERNEL_ADDR
 #define boot_path_end (_start + 1024)
 #include <grub/offsets.h>
 
-	.org 8
+	.org 8 + GRUB_BOOT_AOUT_HEADER_SIZE
 kernel_byte:		.xword (2 << 9)
 kernel_size:	        .word  512
 kernel_address:		.word  GRUB_BOOT_SPARC64_IEEE1275_IMAGE_ADDRESS

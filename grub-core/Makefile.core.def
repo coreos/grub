@@ -425,8 +425,14 @@ image = {
   i386_qemu_ldflags = '$(TARGET_IMG_BASE_LDOPT),$(GRUB_BOOT_MACHINE_LINK_ADDR)';
   i386_qemu_ccasflags = '-DGRUB_BOOT_MACHINE_LINK_ADDR=$(GRUB_BOOT_MACHINE_LINK_ADDR)';
 
-  sparc64_ieee1275_objcopyflags = '-O a.out-sunos-big';
-  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x4000';
+  /* The entry point for a.out binaries on sparc64 starts
+     at 0x4000. Since we are writing the 32 bytes long a.out
+     header in the assembly code ourselves, we need to tell
+     the linker to adjust the start of the text segment to
+     0x4000 - 0x20 = 0x3fe0.
+   */
+  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x3fe0';
+  sparc64_ieee1275_objcopyflags = '-O binary';
 
   objcopyflags = '-O binary';
   enable = i386_pc;
@@ -455,8 +461,10 @@ image = {
   i386_pc_ldflags = '$(TARGET_IMG_BASE_LDOPT),0x7C00';
 
   sparc64_ieee1275 = boot/sparc64/ieee1275/boot.S;
-  sparc64_ieee1275_objcopyflags = '-O a.out-sunos-big';
-  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x4000';
+
+  /* See comment for sparc64_ieee1275_ldflags above. */
+  sparc64_ieee1275_ldflags = ' -Wl,-Ttext=0x3fe0';
+  sparc64_ieee1275_objcopyflags = '-O binary';
   sparc64_ieee1275_cppflags = '-DCDBOOT=1';
 
   objcopyflags = '-O binary';
