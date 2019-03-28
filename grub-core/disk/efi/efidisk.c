@@ -162,6 +162,9 @@ is_child (struct grub_efidisk_data *child,
     return 0;
 
   ldp = grub_efi_find_last_device_path (dp);
+  if (! ldp)
+    return 0;
+
   ldp->type = GRUB_EFI_END_DEVICE_PATH_TYPE;
   ldp->subtype = GRUB_EFI_END_ENTIRE_DEVICE_PATH_SUBTYPE;
   ldp->length = sizeof (*ldp);
