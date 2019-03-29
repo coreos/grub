@@ -183,38 +183,44 @@ If a macro is global, its name must be prefixed with GRUB_ and must consist of o
 @section Comments
 
 All comments shall be C-style comments, of the form @samp{/* @dots{} */}.
-
-Comments shall be placed only on a line by themselves.  They shall not be placed together with code, variable declarations, or other non-comment entities.  A comment should be placed immediately preceding the entity it describes.
+A comment can be placed immediately preceding the entity it describes or it
+can be placed together with code, variable declarations, or other non-comment
+entities. However, it is recommended to not mix various forms especially in
+types/structs descriptions.
 
 Acceptable:
 @example
-/* The page # that is the front buffer.  */
+/* The page # that is the front buffer. */
 int displayed_page;
-/* The page # that is the back buffer.  */
-int render_page;
 @end example
 
-Unacceptable:
 @example
-int displayed_page;           /* The page # that is the front buffer. */
-int render_page;              /* The page # that is the back buffer. */
+int render_page; /* The page # that is the back buffer. */
 @end example
 
 @node Multi-Line Comments
 @section Multi-Line Comments
 
-Comments spanning multiple lines shall be formatted with all lines after the first aligned with the first line.  
-
-Asterisk characters should not be repeated a the start of each subsequent line.
+Comments spanning multiple lines shall be formatted with all lines after the
+first aligned with the first line. Asterisk characters should be repeated at
+the start of each subsequent line.
 
 Acceptable:
 @example
-/* This is a comment
-   which spans multiple lines.
-   It is long.  */
+/*
+ * This is a comment
+ * which spans multiple lines.
+ * It is long.
+ */
 @end example
 
 Unacceptable:
+@example
+/* This is a comment
+   which spans multiple lines.
+   It is long. */
+@end example
+
 @example
 /*
  * This is a comment
@@ -222,7 +228,16 @@ Unacceptable:
  * It is long. */
 @end example
 
-The opening @samp{/*} and closing @samp{*/} should be placed together on a line with text.
+@example
+/* This is a comment
+ * which spans multiple lines.
+ * It is long.
+ */
+@end example
+
+In particular first unacceptable form makes comment difficult to distinguish
+from the code itself. Especially if it contains the code snippets and/or is
+long. So, its usage is disallowed.
 
 @node Finding your way around
 @chapter Finding your way around
