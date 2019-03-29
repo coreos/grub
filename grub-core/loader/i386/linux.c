@@ -767,7 +767,21 @@ grub_cmd_linux (grub_command_t cmd __attribute__ ((unused)),
   linux_params.kernel_alignment = (1 << align);
   linux_params.ps_mouse = linux_params.padding10 =  0;
 
-  len = sizeof (linux_params) - sizeof (lh);
+  /*
+   * The Linux 32-bit boot protocol defines the setup header end
+   * to be at 0x202 + the byte value at 0x201.
+   */
+  len = 0x202 + *((char *) &linux_params.jump + 1);
+
+  /* Verify the struct is big enough so we do not write past the end. */
+  if (len > (char *) &linux_params.edd_mbr_sig_buffer - (char *) &linux_params) {
+    grub_error (GRUB_ERR_BAD_OS, "Linux setup header too big");
+    goto fail;
+  }
+
+  /* We've already read lh so there is no need to read it second time. */
+  len -= sizeof(lh);
+
   if (grub_file_read (file, (char *) &linux_params + sizeof (lh), len) != len)
     {
       if (!grub_errno)
