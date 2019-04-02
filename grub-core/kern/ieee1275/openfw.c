@@ -479,6 +479,9 @@ grub_ieee1275_encode_devname (const char *path)
   char *optr;
   const char *iptr;
 
+  if (! device)
+    return 0;
+
   encoding = grub_malloc (sizeof ("ieee1275/") + 2 * grub_strlen (device)
 			  + sizeof (",XXXXXXXXXXXX"));
   if (!encoding)
