@@ -741,11 +741,11 @@ grub_sfs_label (grub_device_t device, char **label)
 static struct grub_fs grub_sfs_fs =
   {
     .name = "sfs",
-    .dir = grub_sfs_dir,
-    .open = grub_sfs_open,
-    .read = grub_sfs_read,
-    .close = grub_sfs_close,
-    .label = grub_sfs_label,
+    .fs_dir = grub_sfs_dir,
+    .fs_open = grub_sfs_open,
+    .fs_read = grub_sfs_read,
+    .fs_close = grub_sfs_close,
+    .fs_label = grub_sfs_label,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
     .blocklist_install = 1,

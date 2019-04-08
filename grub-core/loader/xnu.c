@@ -1102,7 +1102,7 @@ grub_xnu_scan_dir_for_kexts (char *dirname, const char *osbundlerequired,
 	path++;
 
       if (fs)
-	(fs->dir) (dev, path, grub_xnu_scan_dir_for_kexts_load, &ctx);
+	(fs->fs_dir) (dev, path, grub_xnu_scan_dir_for_kexts_load, &ctx);
       grub_device_close (dev);
     }
   grub_free (device_name);
@@ -1201,7 +1201,7 @@ grub_xnu_load_kext_from_dir (char *dirname, const char *osbundlerequired,
 
       /* Look at the directory. */
       if (fs)
-	(fs->dir) (dev, path, grub_xnu_load_kext_from_dir_load, &ctx);
+	(fs->fs_dir) (dev, path, grub_xnu_load_kext_from_dir_load, &ctx);
 
       if (ctx.plistname && grub_xnu_check_os_bundle_required
 	  (ctx.plistname, osbundlerequired, &binsuffix))

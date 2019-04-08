@@ -687,10 +687,10 @@ static struct grub_fs grub_minix_fs =
     .name = "minix",
 #endif
 #endif
-    .dir = grub_minix_dir,
-    .open = grub_minix_open,
-    .read = grub_minix_read,
-    .close = grub_minix_close,
+    .fs_dir = grub_minix_dir,
+    .fs_open = grub_minix_open,
+    .fs_read = grub_minix_read,
+    .fs_close = grub_minix_close,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

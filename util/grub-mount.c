@@ -190,7 +190,7 @@ fuse_getattr (const char *path, struct stat *st)
     }
 
   /* It's the whole device. */
-  (fs->dir) (dev, path2, fuse_getattr_find_file, &ctx);
+  (fs->fs_dir) (dev, path2, fuse_getattr_find_file, &ctx);
 
   grub_free (path2);
   if (!ctx.file_exists)
@@ -352,7 +352,7 @@ fuse_readdir (const char *path, void *buf,
 	 && pathname[grub_strlen (pathname) - 1] == '/')
     pathname[grub_strlen (pathname) - 1] = 0;
 
-  (fs->dir) (dev, pathname, fuse_readdir_call_fill, &ctx);
+  (fs->fs_dir) (dev, pathname, fuse_readdir_call_fill, &ctx);
   free (pathname);
   grub_errno = GRUB_ERR_NONE;
   return 0;

@@ -221,9 +221,9 @@ grub_ls_list_files (char *dirname, int longlist, int all, int human)
       };
 
       if (longlist)
-	(fs->dir) (dev, path, print_files_long, &ctx);
+	(fs->fs_dir) (dev, path, print_files_long, &ctx);
       else
-	(fs->dir) (dev, path, print_files, &ctx);
+	(fs->fs_dir) (dev, path, print_files, &ctx);
 
       if (grub_errno == GRUB_ERR_BAD_FILE_TYPE
 	  && path[grub_strlen (path) - 1] != '/')

@@ -1078,13 +1078,13 @@ grub_hfsplus_uuid (grub_device_t device, char **uuid)
 static struct grub_fs grub_hfsplus_fs =
   {
     .name = "hfsplus",
-    .dir = grub_hfsplus_dir,
-    .open = grub_hfsplus_open,
-    .read = grub_hfsplus_read,
-    .close = grub_hfsplus_close,
-    .label = grub_hfsplus_label,
-    .mtime = grub_hfsplus_mtime,
-    .uuid = grub_hfsplus_uuid,
+    .fs_dir = grub_hfsplus_dir,
+    .fs_open = grub_hfsplus_open,
+    .fs_read = grub_hfsplus_read,
+    .fs_close = grub_hfsplus_close,
+    .fs_label = grub_hfsplus_label,
+    .fs_mtime = grub_hfsplus_mtime,
+    .fs_uuid = grub_hfsplus_uuid,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

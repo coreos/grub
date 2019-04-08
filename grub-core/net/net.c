@@ -1706,13 +1706,13 @@ grub_net_fs_read (grub_file_t file, char *buf, grub_size_t len)
 static struct grub_fs grub_net_fs =
   {
     .name = "netfs",
-    .dir = grub_net_fs_dir,
-    .open = grub_net_fs_open,
-    .read = grub_net_fs_read,
-    .close = grub_net_fs_close,
-    .label = NULL,
-    .uuid = NULL,
-    .mtime = NULL,
+    .fs_dir = grub_net_fs_dir,
+    .fs_open = grub_net_fs_open,
+    .fs_read = grub_net_fs_read,
+    .fs_close = grub_net_fs_close,
+    .fs_label = NULL,
+    .fs_uuid = NULL,
+    .fs_mtime = NULL,
   };
 
 static grub_err_t

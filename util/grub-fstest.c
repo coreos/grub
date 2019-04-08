@@ -470,9 +470,9 @@ fstest (int n)
 	fs = grub_fs_probe (dev);
 	if (!fs)
 	  grub_util_error ("%s", grub_errmsg);
-	if (!fs->uuid)
+	if (!fs->fs_uuid)
 	  grub_util_error ("%s", _("couldn't retrieve UUID"));
-	if (fs->uuid (dev, &uuid))
+	if (fs->fs_uuid (dev, &uuid))
 	  grub_util_error ("%s", grub_errmsg);
 	if (!uuid)
 	  grub_util_error ("%s", _("couldn't retrieve UUID"));

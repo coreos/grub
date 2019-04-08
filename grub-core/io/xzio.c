@@ -327,11 +327,11 @@ grub_xzio_close (grub_file_t file)
 
 static struct grub_fs grub_xzio_fs = {
   .name = "xzio",
-  .dir = 0,
-  .open = 0,
-  .read = grub_xzio_read,
-  .close = grub_xzio_close,
-  .label = 0,
+  .fs_dir = 0,
+  .fs_open = 0,
+  .fs_read = grub_xzio_read,
+  .fs_close = grub_xzio_close,
+  .fs_label = 0,
   .next = 0
 };
 

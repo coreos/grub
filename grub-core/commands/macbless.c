@@ -159,12 +159,12 @@ grub_mac_bless_file (grub_device_t dev, const char *path_in, int intel)
       *tail = 0;
       ctx.dirname = tail + 1;
 
-      (fs->dir) (dev, *path == 0 ? "/" : path, find_inode, &ctx);
+      (fs->fs_dir) (dev, *path == 0 ? "/" : path, find_inode, &ctx);
     }
   else
     {
       ctx.dirname = path + 1;
-      (fs->dir) (dev, "/", find_inode, &ctx);
+      (fs->fs_dir) (dev, "/", find_inode, &ctx);
     }
   if (!ctx.found)
     {

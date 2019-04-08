@@ -4348,15 +4348,15 @@ grub_zfs_embed (grub_device_t device __attribute__ ((unused)),
 
 static struct grub_fs grub_zfs_fs = {
   .name = "zfs",
-  .dir = grub_zfs_dir,
-  .open = grub_zfs_open,
-  .read = grub_zfs_read,
-  .close = grub_zfs_close,
-  .label = zfs_label,
-  .uuid = zfs_uuid,
-  .mtime = zfs_mtime,
+  .fs_dir = grub_zfs_dir,
+  .fs_open = grub_zfs_open,
+  .fs_read = grub_zfs_read,
+  .fs_close = grub_zfs_close,
+  .fs_label = zfs_label,
+  .fs_uuid = zfs_uuid,
+  .fs_mtime = zfs_mtime,
 #ifdef GRUB_UTIL
-  .embed = grub_zfs_embed,
+  .fs_embed = grub_zfs_embed,
   .reserved_first_sector = 1,
   .blocklist_install = 0,
 #endif

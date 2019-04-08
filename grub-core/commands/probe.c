@@ -113,10 +113,10 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
   if (state[4].set)
     {
       char *uuid;
-      if (! fs->uuid)
+      if (! fs->fs_uuid)
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			   N_("%s does not support UUIDs"), fs->name);
-      err = fs->uuid (dev, &uuid);
+      err = fs->fs_uuid (dev, &uuid);
       if (err)
 	return err;
       if (! uuid)
@@ -134,11 +134,11 @@ grub_cmd_probe (grub_extcmd_context_t ctxt, int argc, char **args)
   if (state[5].set)
     {
       char *label;
-      if (! fs->label)
+      if (! fs->fs_label)
 	return grub_error (GRUB_ERR_NOT_IMPLEMENTED_YET,
 			   N_("filesystem `%s' does not support labels"),
 			   fs->name);
-      err = fs->label (dev, &label);
+      err = fs->fs_label (dev, &label);
       if (err)
 	return err;
       if (! label)

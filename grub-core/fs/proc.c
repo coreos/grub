@@ -183,10 +183,10 @@ static struct grub_disk_dev grub_procfs_dev = {
 static struct grub_fs grub_procfs_fs =
   {
     .name = "procfs",
-    .dir = grub_procfs_dir,
-    .open = grub_procfs_open,
-    .read = grub_procfs_read,
-    .close = grub_procfs_close,
+    .fs_dir = grub_procfs_dir,
+    .fs_open = grub_procfs_open,
+    .fs_read = grub_procfs_read,
+    .fs_close = grub_procfs_close,
     .next = 0
   };
 

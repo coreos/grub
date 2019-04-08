@@ -685,12 +685,12 @@ grub_affs_mtime (grub_device_t device, grub_int32_t *t)
 static struct grub_fs grub_affs_fs =
   {
     .name = "affs",
-    .dir = grub_affs_dir,
-    .open = grub_affs_open,
-    .read = grub_affs_read,
-    .close = grub_affs_close,
-    .label = grub_affs_label,
-    .mtime = grub_affs_mtime,
+    .fs_dir = grub_affs_dir,
+    .fs_open = grub_affs_open,
+    .fs_read = grub_affs_read,
+    .fs_close = grub_affs_close,
+    .fs_label = grub_affs_label,
+    .fs_mtime = grub_affs_mtime,
 
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,

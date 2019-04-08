@@ -1345,12 +1345,12 @@ grub_udf_uuid (grub_device_t device, char **uuid)
 
 static struct grub_fs grub_udf_fs = {
   .name = "udf",
-  .dir = grub_udf_dir,
-  .open = grub_udf_open,
-  .read = grub_udf_read,
-  .close = grub_udf_close,
-  .label = grub_udf_label,
-  .uuid = grub_udf_uuid,
+  .fs_dir = grub_udf_dir,
+  .fs_open = grub_udf_open,
+  .fs_read = grub_udf_read,
+  .fs_close = grub_udf_close,
+  .fs_label = grub_udf_label,
+  .fs_uuid = grub_udf_uuid,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
   .blocklist_install = 1,

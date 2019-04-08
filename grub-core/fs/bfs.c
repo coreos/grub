@@ -1082,13 +1082,13 @@ static struct grub_fs grub_bfs_fs = {
 #else
   .name = "bfs",
 #endif
-  .dir = grub_bfs_dir,
-  .open = grub_bfs_open,
-  .read = grub_bfs_read,
-  .close = grub_bfs_close,
-  .label = grub_bfs_label,
+  .fs_dir = grub_bfs_dir,
+  .fs_open = grub_bfs_open,
+  .fs_read = grub_bfs_read,
+  .fs_close = grub_bfs_close,
+  .fs_label = grub_bfs_label,
 #ifndef MODE_AFS
-  .uuid = grub_bfs_uuid,
+  .fs_uuid = grub_bfs_uuid,
 #endif
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,

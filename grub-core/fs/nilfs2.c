@@ -1192,13 +1192,13 @@ grub_nilfs2_mtime (grub_device_t device, grub_int32_t * tm)
 
 static struct grub_fs grub_nilfs2_fs = {
   .name = "nilfs2",
-  .dir = grub_nilfs2_dir,
-  .open = grub_nilfs2_open,
-  .read = grub_nilfs2_read,
-  .close = grub_nilfs2_close,
-  .label = grub_nilfs2_label,
-  .uuid = grub_nilfs2_uuid,
-  .mtime = grub_nilfs2_mtime,
+  .fs_dir = grub_nilfs2_dir,
+  .fs_open = grub_nilfs2_open,
+  .fs_read = grub_nilfs2_read,
+  .fs_close = grub_nilfs2_close,
+  .fs_label = grub_nilfs2_label,
+  .fs_uuid = grub_nilfs2_uuid,
+  .fs_mtime = grub_nilfs2_mtime,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
   .blocklist_install = 0,

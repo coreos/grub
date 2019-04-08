@@ -1072,13 +1072,13 @@ grub_ext2_mtime (grub_device_t device, grub_int32_t *tm)
 static struct grub_fs grub_ext2_fs =
   {
     .name = "ext2",
-    .dir = grub_ext2_dir,
-    .open = grub_ext2_open,
-    .read = grub_ext2_read,
-    .close = grub_ext2_close,
-    .label = grub_ext2_label,
-    .uuid = grub_ext2_uuid,
-    .mtime = grub_ext2_mtime,
+    .fs_dir = grub_ext2_dir,
+    .fs_open = grub_ext2_open,
+    .fs_read = grub_ext2_read,
+    .fs_close = grub_ext2_close,
+    .fs_label = grub_ext2_label,
+    .fs_uuid = grub_ext2_uuid,
+    .fs_mtime = grub_ext2_mtime,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

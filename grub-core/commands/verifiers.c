@@ -71,8 +71,8 @@ verified_close (struct grub_file *file)
 struct grub_fs verified_fs =
 {
   .name = "verified_read",
-  .read = verified_read,
-  .close = verified_close
+  .fs_read = verified_read,
+  .fs_close = verified_close
 };
 
 static grub_file_t

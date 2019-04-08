@@ -107,7 +107,7 @@ grub_file_open (const char *name, enum grub_file_type type)
 	goto fail;
     }
 
-  if ((file->fs->open) (file, file_name) != GRUB_ERR_NONE)
+  if ((file->fs->fs_open) (file, file_name) != GRUB_ERR_NONE)
     goto fail;
 
   file->name = grub_strdup (name);
@@ -177,7 +177,7 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
       file->read_hook_data = file;
       file->progress_offset = file->offset;
     }
-  res = (file->fs->read) (file, buf, len);
+  res = (file->fs->fs_read) (file, buf, len);
   file->read_hook = read_hook;
   file->read_hook_data = read_hook_data;
   if (res > 0)
@@ -189,8 +189,8 @@ grub_file_read (grub_file_t file, void *buf, grub_size_t len)
 grub_err_t
 grub_file_close (grub_file_t file)
 {
-  if (file->fs->close)
-    (file->fs->close) (file);
+  if (file->fs->fs_close)
+    (file->fs->fs_close) (file);
 
   if (file->device)
     grub_device_close (file->device);

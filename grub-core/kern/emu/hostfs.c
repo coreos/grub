@@ -176,11 +176,11 @@ grub_hostfs_label (grub_device_t device __attribute ((unused)),
 static struct grub_fs grub_hostfs_fs =
   {
     .name = "hostfs",
-    .dir = grub_hostfs_dir,
-    .open = grub_hostfs_open,
-    .read = grub_hostfs_read,
-    .close = grub_hostfs_close,
-    .label = grub_hostfs_label,
+    .fs_dir = grub_hostfs_dir,
+    .fs_open = grub_hostfs_open,
+    .fs_read = grub_hostfs_read,
+    .fs_close = grub_hostfs_close,
+    .fs_label = grub_hostfs_label,
     .next = 0
   };
 

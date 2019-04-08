@@ -155,7 +155,7 @@ grub_core_cmd_ls (struct grub_command *cmd __attribute__ ((unused)),
 	}
       else if (fs)
 	{
-	  (fs->dir) (dev, path, grub_mini_print_files, NULL);
+	  (fs->fs_dir) (dev, path, grub_mini_print_files, NULL);
 	  grub_xputs ("\n");
 	  grub_refresh ();
 	}

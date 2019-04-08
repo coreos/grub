@@ -109,7 +109,7 @@ get_uuid (const char *name, char **uuid, int getnative)
       grub_device_close (dev);
       return grub_errno;
     }
-  if (!fs->uuid || fs->uuid (dev, uuid) || !*uuid)
+  if (!fs->fs_uuid || fs->fs_uuid (dev, uuid) || !*uuid)
     {
       grub_device_close (dev);
 

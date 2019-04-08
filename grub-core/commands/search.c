@@ -103,9 +103,9 @@ iterate_device (const char *name, void *data)
 	  fs = grub_fs_probe (dev);
 
 #ifdef DO_SEARCH_FS_UUID
-#define read_fn uuid
+#define read_fn fs_uuid
 #else
-#define read_fn label
+#define read_fn fs_label
 #endif
 
 	  if (fs && fs->read_fn)

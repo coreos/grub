@@ -580,9 +580,9 @@ freebsd_get_zfs (void)
   fs = grub_fs_probe (dev);
   if (!fs)
     return;
-  if (!fs->uuid || grub_strcmp (fs->name, "zfs") != 0)
+  if (!fs->fs_uuid || grub_strcmp (fs->name, "zfs") != 0)
     return;
-  err = fs->uuid (dev, &uuid);
+  err = fs->fs_uuid (dev, &uuid);
   if (err)
     return;
   if (!uuid)

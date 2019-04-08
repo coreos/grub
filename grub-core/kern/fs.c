@@ -64,13 +64,13 @@ grub_fs_probe (grub_device_t device)
 	  if (grub_strcmp (p->name, "btrfs") == 0)
 	    {
 	      char *label = 0;
-	      p->uuid (device, &label);
+	      p->fs_uuid (device, &label);
 	      if (label)
 		grub_free (label);
 	    }
 	  else
 #endif
-	    (p->dir) (device, "/", probe_dummy_iter, NULL);
+	    (p->fs_dir) (device, "/", probe_dummy_iter, NULL);
 	  if (grub_errno == GRUB_ERR_NONE)
 	    return p;
 
@@ -94,7 +94,7 @@ grub_fs_probe (grub_device_t device)
 	    {
 	      p = grub_fs_list;
 
-	      (p->dir) (device, "/", probe_dummy_iter, NULL);
+	      (p->fs_dir) (device, "/", probe_dummy_iter, NULL);
 	      if (grub_errno == GRUB_ERR_NONE)
 		{
 		  count--;
@@ -243,9 +243,9 @@ grub_fs_blocklist_read (grub_file_t file, char *buf, grub_size_t len)
 struct grub_fs grub_fs_blocklist =
   {
     .name = "blocklist",
-    .dir = 0,
-    .open = grub_fs_blocklist_open,
-    .read = grub_fs_blocklist_read,
-    .close = 0,
+    .fs_dir = 0,
+    .fs_open = grub_fs_blocklist_open,
+    .fs_read = grub_fs_blocklist_read,
+    .fs_close = 0,
     .next = 0
   };

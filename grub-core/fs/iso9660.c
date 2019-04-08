@@ -1099,13 +1099,13 @@ grub_iso9660_mtime (grub_device_t device, grub_int32_t *timebuf)
 static struct grub_fs grub_iso9660_fs =
   {
     .name = "iso9660",
-    .dir = grub_iso9660_dir,
-    .open = grub_iso9660_open,
-    .read = grub_iso9660_read,
-    .close = grub_iso9660_close,
-    .label = grub_iso9660_label,
-    .uuid = grub_iso9660_uuid,
-    .mtime = grub_iso9660_mtime,
+    .fs_dir = grub_iso9660_dir,
+    .fs_open = grub_iso9660_open,
+    .fs_read = grub_iso9660_read,
+    .fs_close = grub_iso9660_close,
+    .fs_label = grub_iso9660_label,
+    .fs_uuid = grub_iso9660_uuid,
+    .fs_mtime = grub_iso9660_mtime,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

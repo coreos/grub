@@ -1378,8 +1378,8 @@ main (int argc, char *argv[])
 	{
 	  char *uuid = NULL;
 	  /*  generic method (used on coreboot and ata mod).  */
-	  if (!force_file_id && grub_fs->uuid && grub_fs->uuid (grub_dev,
-								&uuid))
+	  if (!force_file_id
+	      && grub_fs->fs_uuid && grub_fs->fs_uuid (grub_dev, &uuid))
 	    {
 	      grub_print_error ();
 	      grub_errno = 0;

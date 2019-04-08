@@ -205,10 +205,10 @@ grub_bufio_close (grub_file_t file)
 static struct grub_fs grub_bufio_fs =
   {
     .name = "bufio",
-    .dir = 0,
-    .open = 0,
-    .read = grub_bufio_read,
-    .close = grub_bufio_close,
-    .label = 0,
+    .fs_dir = 0,
+    .fs_open = 0,
+    .fs_read = grub_bufio_read,
+    .fs_close = grub_bufio_close,
+    .fs_label = 0,
     .next = 0
   };

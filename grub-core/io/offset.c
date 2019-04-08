@@ -52,11 +52,11 @@ grub_offset_close (grub_file_t file)
 
 static struct grub_fs grub_offset_fs = {
   .name = "offset",
-  .dir = 0,
-  .open = 0,
-  .read = grub_offset_read,
-  .close = grub_offset_close,
-  .label = 0,
+  .fs_dir = 0,
+  .fs_open = 0,
+  .fs_read = grub_offset_read,
+  .fs_close = grub_offset_close,
+  .fs_label = 0,
   .next = 0
 };
 

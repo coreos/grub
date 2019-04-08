@@ -875,13 +875,13 @@ static struct grub_fs grub_ufs_fs =
     .name = "ufs1",
 #endif
 #endif
-    .dir = grub_ufs_dir,
-    .open = grub_ufs_open,
-    .read = grub_ufs_read,
-    .close = grub_ufs_close,
-    .label = grub_ufs_label,
-    .uuid = grub_ufs_uuid,
-    .mtime = grub_ufs_mtime,
+    .fs_dir = grub_ufs_dir,
+    .fs_open = grub_ufs_open,
+    .fs_read = grub_ufs_read,
+    .fs_close = grub_ufs_close,
+    .fs_label = grub_ufs_label,
+    .fs_uuid = grub_ufs_uuid,
+    .fs_mtime = grub_ufs_mtime,
     /* FIXME: set reserved_first_sector.  */
 #ifdef GRUB_UTIL
     .blocklist_install = 1,

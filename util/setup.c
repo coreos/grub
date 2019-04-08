@@ -491,7 +491,7 @@ SETUP (const char *dir,
 	goto unable_to_embed;
       }
 
-    if (fs && !fs->embed)
+    if (fs && !fs->fs_embed)
       {
 	grub_util_warn (_("File system `%s' doesn't support embedding"),
 			fs->name);
@@ -529,8 +529,8 @@ SETUP (const char *dir,
       err = ctx.dest_partmap->embed (dest_dev->disk, &nsec, maxsec,
 				     GRUB_EMBED_PCBIOS, &sectors);
     else
-      err = fs->embed (dest_dev, &nsec, maxsec,
-		       GRUB_EMBED_PCBIOS, &sectors);
+      err = fs->fs_embed (dest_dev, &nsec, maxsec,
+			  GRUB_EMBED_PCBIOS, &sectors);
     if (!err && nsec < core_sectors)
       {
 	err = grub_error (GRUB_ERR_OUT_OF_RANGE,

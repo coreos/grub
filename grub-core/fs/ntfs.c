@@ -1212,12 +1212,12 @@ grub_ntfs_uuid (grub_device_t device, char **uuid)
 static struct grub_fs grub_ntfs_fs =
   {
     .name = "ntfs",
-    .dir = grub_ntfs_dir,
-    .open = grub_ntfs_open,
-    .read = grub_ntfs_read,
-    .close = grub_ntfs_close,
-    .label = grub_ntfs_label,
-    .uuid = grub_ntfs_uuid,
+    .fs_dir = grub_ntfs_dir,
+    .fs_open = grub_ntfs_open,
+    .fs_read = grub_ntfs_read,
+    .fs_close = grub_ntfs_close,
+    .fs_label = grub_ntfs_label,
+    .fs_uuid = grub_ntfs_uuid,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

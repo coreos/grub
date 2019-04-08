@@ -375,10 +375,10 @@ fini_cbfsdisk (void)
 
 static struct grub_fs grub_cbfs_fs = {
   .name = "cbfs",
-  .dir = grub_cbfs_dir,
-  .open = grub_cbfs_open,
-  .read = grub_cbfs_read,
-  .close = grub_cbfs_close,
+  .fs_dir = grub_cbfs_dir,
+  .fs_open = grub_cbfs_open,
+  .fs_read = grub_cbfs_read,
+  .fs_close = grub_cbfs_close,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 0,
   .blocklist_install = 0,

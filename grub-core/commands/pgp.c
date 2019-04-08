@@ -934,7 +934,7 @@ pseudo_read (struct grub_file *file, char *buf, grub_size_t len)
 struct grub_fs pseudo_fs = 
   {
     .name = "pseudo",
-    .read = pseudo_read
+    .fs_read = pseudo_read
   };
 
 struct grub_file_verifier grub_pubkey_verifier =

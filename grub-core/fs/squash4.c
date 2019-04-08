@@ -995,11 +995,11 @@ grub_squash_mtime (grub_device_t dev, grub_int32_t *tm)
 static struct grub_fs grub_squash_fs =
   {
     .name = "squash4",
-    .dir = grub_squash_dir,
-    .open = grub_squash_open,
-    .read = grub_squash_read,
-    .close = grub_squash_close,
-    .mtime = grub_squash_mtime,
+    .fs_dir = grub_squash_dir,
+    .fs_open = grub_squash_open,
+    .fs_read = grub_squash_read,
+    .fs_close = grub_squash_close,
+    .fs_mtime = grub_squash_mtime,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
     .blocklist_install = 0,

@@ -1389,11 +1389,11 @@ grub_deflate_decompress (char *inbuf, grub_size_t insize, grub_off_t off,
 static struct grub_fs grub_gzio_fs =
   {
     .name = "gzio",
-    .dir = 0,
-    .open = 0,
-    .read = grub_gzio_read,
-    .close = grub_gzio_close,
-    .label = 0,
+    .fs_dir = 0,
+    .fs_open = 0,
+    .fs_read = grub_gzio_read,
+    .fs_close = grub_gzio_close,
+    .fs_label = 0,
     .next = 0
   };
 

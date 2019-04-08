@@ -1402,12 +1402,12 @@ grub_reiserfs_uuid (grub_device_t device, char **uuid)
 static struct grub_fs grub_reiserfs_fs =
   {
     .name = "reiserfs",
-    .dir = grub_reiserfs_dir,
-    .open = grub_reiserfs_open,
-    .read = grub_reiserfs_read,
-    .close = grub_reiserfs_close,
-    .label = grub_reiserfs_label,
-    .uuid = grub_reiserfs_uuid,
+    .fs_dir = grub_reiserfs_dir,
+    .fs_open = grub_reiserfs_open,
+    .fs_read = grub_reiserfs_read,
+    .fs_close = grub_reiserfs_close,
+    .fs_label = grub_reiserfs_label,
+    .fs_uuid = grub_reiserfs_uuid,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 1,
     .blocklist_install = 1,

@@ -446,10 +446,10 @@ probe (const char *path, char **device_names, char delim)
       else if (print == PRINT_FS_UUID)
 	{
 	  char *uuid;
-	  if (! fs->uuid)
+	  if (! fs->fs_uuid)
 	    grub_util_error (_("%s does not support UUIDs"), fs->name);
 
-	  if (fs->uuid (dev, &uuid) != GRUB_ERR_NONE)
+	  if (fs->fs_uuid (dev, &uuid) != GRUB_ERR_NONE)
 	    grub_util_error ("%s", grub_errmsg);
 
 	  printf ("%s", uuid);
@@ -458,11 +458,11 @@ probe (const char *path, char **device_names, char delim)
       else if (print == PRINT_FS_LABEL)
 	{
 	  char *label;
-	  if (! fs->label)
+	  if (! fs->fs_label)
 	    grub_util_error (_("filesystem `%s' does not support labels"),
 			     fs->name);
 
-	  if (fs->label (dev, &label) != GRUB_ERR_NONE)
+	  if (fs->fs_label (dev, &label) != GRUB_ERR_NONE)
 	    grub_util_error ("%s", grub_errmsg);
 
 	  printf ("%s", label);

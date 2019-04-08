@@ -287,7 +287,7 @@ complete_file (void)
       dirfile[1] = '\0';
 
       /* Iterate the directory.  */
-      (fs->dir) (dev, dir, iterate_dir, NULL);
+      (fs->fs_dir) (dev, dir, iterate_dir, NULL);
 
       grub_free (dir);
 

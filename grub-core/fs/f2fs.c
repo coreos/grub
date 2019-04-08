@@ -1289,12 +1289,12 @@ grub_f2fs_uuid (grub_device_t device, char **uuid)
 
 static struct grub_fs grub_f2fs_fs = {
   .name                  = "f2fs",
-  .dir                   = grub_f2fs_dir,
-  .open                  = grub_f2fs_open,
-  .read                  = grub_f2fs_read,
-  .close                 = grub_f2fs_close,
-  .label                 = grub_f2fs_label,
-  .uuid                  = grub_f2fs_uuid,
+  .fs_dir                   = grub_f2fs_dir,
+  .fs_open                  = grub_f2fs_open,
+  .fs_read                  = grub_f2fs_read,
+  .fs_close                 = grub_f2fs_close,
+  .fs_label                 = grub_f2fs_label,
+  .fs_uuid                  = grub_f2fs_uuid,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 1,
   .blocklist_install     = 0,

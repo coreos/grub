@@ -24,6 +24,7 @@
 #ifndef XZ_H
 #define XZ_H
 
+#include <config.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>

@@ -461,11 +461,11 @@ grub_romfs_label (grub_device_t device, char **label)
 static struct grub_fs grub_romfs_fs =
   {
     .name = "romfs",
-    .dir = grub_romfs_dir,
-    .open = grub_romfs_open,
-    .read = grub_romfs_read,
-    .close = grub_romfs_close,
-    .label = grub_romfs_label,
+    .fs_dir = grub_romfs_dir,
+    .fs_open = grub_romfs_open,
+    .fs_read = grub_romfs_read,
+    .fs_close = grub_romfs_close,
+    .fs_label = grub_romfs_label,
 #ifdef GRUB_UTIL
     .reserved_first_sector = 0,
     .blocklist_install = 0,

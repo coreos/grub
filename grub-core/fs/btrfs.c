@@ -2172,14 +2172,14 @@ grub_btrfs_embed (grub_device_t device __attribute__ ((unused)),
 
 static struct grub_fs grub_btrfs_fs = {
   .name = "btrfs",
-  .dir = grub_btrfs_dir,
-  .open = grub_btrfs_open,
-  .read = grub_btrfs_read,
-  .close = grub_btrfs_close,
-  .uuid = grub_btrfs_uuid,
-  .label = grub_btrfs_label,
+  .fs_dir = grub_btrfs_dir,
+  .fs_open = grub_btrfs_open,
+  .fs_read = grub_btrfs_read,
+  .fs_close = grub_btrfs_close,
+  .fs_uuid = grub_btrfs_uuid,
+  .fs_label = grub_btrfs_label,
 #ifdef GRUB_UTIL
-  .embed = grub_btrfs_embed,
+  .fs_embed = grub_btrfs_embed,
   .reserved_first_sector = 1,
   .blocklist_install = 0,
 #endif

@@ -1229,12 +1229,12 @@ static struct grub_fs grub_fat_fs =
 #else
     .name = "fat",
 #endif
-    .dir = grub_fat_dir,
-    .open = grub_fat_open,
-    .read = grub_fat_read,
-    .close = grub_fat_close,
-    .label = grub_fat_label,
-    .uuid = grub_fat_uuid,
+    .fs_dir = grub_fat_dir,
+    .fs_open = grub_fat_open,
+    .fs_read = grub_fat_read,
+    .fs_close = grub_fat_close,
+    .fs_label = grub_fat_label,
+    .fs_uuid = grub_fat_uuid,
 #ifdef GRUB_UTIL
 #ifdef MODE_EXFAT
     /* ExFAT BPB is 30 larger than FAT32 one.  */

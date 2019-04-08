@@ -324,10 +324,10 @@ grub_cpio_close (grub_file_t file)
 
 static struct grub_fs grub_cpio_fs = {
   .name = "tarfs",
-  .dir = grub_cpio_dir,
-  .open = grub_cpio_open,
-  .read = grub_cpio_read,
-  .close = grub_cpio_close,
+  .fs_dir = grub_cpio_dir,
+  .fs_open = grub_cpio_open,
+  .fs_read = grub_cpio_read,
+  .fs_close = grub_cpio_close,
 #ifdef GRUB_UTIL
   .reserved_first_sector = 0,
   .blocklist_install = 0,
