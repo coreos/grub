@@ -29,7 +29,7 @@ struct grub_hfs_extent
   /* The first physical block.  */
   grub_uint16_t first_block;
   grub_uint16_t count;
-};
+} GRUB_PACKED;
 
 /* HFS stores extents in groups of 3.  */
 typedef struct grub_hfs_extent grub_hfs_datarecord_t[3];
