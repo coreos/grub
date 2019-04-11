@@ -505,6 +505,10 @@ le_to_cpu16_copy (grub_uint16_t *out, grub_uint16_t *in, grub_size_t len)
     *out++ = grub_le_to_cpu16 (*in++);
 }
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
 
 /* Read in the next dirent from the directory described by DIRO.  */
 static grub_err_t
@@ -582,6 +586,9 @@ grub_jfs_getent (struct grub_jfs_diropen *diro)
   return 0;
 }
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic pop
+#endif
 
 /* Read LEN bytes from the file described by DATA starting with byte
    POS.  Return the amount of read bytes in READ.  */
