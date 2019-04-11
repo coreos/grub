@@ -110,21 +110,27 @@ static void
 copy_file_path (grub_efi_file_path_device_path_t *fp,
 		const char *str, grub_efi_uint16_t len)
 {
-  grub_efi_char16_t *p;
+  grub_efi_char16_t *p, *path_name;
   grub_efi_uint16_t size;
 
   fp->header.type = GRUB_EFI_MEDIA_DEVICE_PATH_TYPE;
   fp->header.subtype = GRUB_EFI_FILE_PATH_DEVICE_PATH_SUBTYPE;
 
-  size = grub_utf8_to_utf16 (fp->path_name, len * GRUB_MAX_UTF16_PER_UTF8,
+  path_name = grub_malloc (len * GRUB_MAX_UTF16_PER_UTF8 * sizeof (*path_name));
+  if (!path_name)
+    return;
+
+  size = grub_utf8_to_utf16 (path_name, len * GRUB_MAX_UTF16_PER_UTF8,
 			     (const grub_uint8_t *) str, len, 0);
-  for (p = fp->path_name; p < fp->path_name + size; p++)
+  for (p = path_name; p < path_name + size; p++)
     if (*p == '/')
       *p = '\\';
 
+  grub_memcpy (fp->path_name, path_name, size * sizeof (*fp->path_name));
   /* File Path is NULL terminated */
   fp->path_name[size++] = '\0';
   fp->header.length = size * sizeof (grub_efi_char16_t) + sizeof (*fp);
+  grub_free (path_name);
 }
 
 static grub_efi_device_path_t *
