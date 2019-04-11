@@ -36,6 +36,11 @@ struct grub_archelp_data
   grub_off_t size;
 };
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
+
 static grub_err_t
 grub_cpio_find_file (struct grub_archelp_data *data, char **name,
 		     grub_int32_t *mtime, grub_uint32_t *mode)
@@ -95,6 +100,10 @@ grub_cpio_find_file (struct grub_archelp_data *data, char **name,
   data->next_hofs = data->dofs + ALIGN_CPIO (data->size);
   return GRUB_ERR_NONE;
 }
+
+#if __GNUC__ >= 9
+#pragma GCC diagnostic pop
+#endif
 
 static char *
 grub_cpio_get_link_target (struct grub_archelp_data *data)
