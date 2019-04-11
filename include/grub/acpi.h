@@ -93,7 +93,7 @@ struct grub_acpi_madt
   grub_uint32_t lapic_addr;
   grub_uint32_t flags;
   struct grub_acpi_madt_entry_header entries[0];
-};
+} GRUB_PACKED;
 
 enum
   {
