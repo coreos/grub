@@ -63,6 +63,11 @@ static const char *usb_devspeed[] =
     "High"
   };
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
+
 static grub_usb_err_t
 grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index, int langid,
 		     char **string)
@@ -107,6 +112,10 @@ grub_usb_get_string (grub_usb_device_t dev, grub_uint8_t index, int langid,
 
   return GRUB_USB_ERR_NONE;
 }
+
+#if __GNUC__ >= 9
+#pragma GCC diagnostic pop
+#endif
 
 static void
 usb_print_str (const char *description, grub_usb_device_t dev, int idx)
