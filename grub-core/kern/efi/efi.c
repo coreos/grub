@@ -327,6 +327,9 @@ grub_efi_get_filename (grub_efi_device_path_t *dp0)
   grub_size_t filesize = 0;
   grub_efi_device_path_t *dp;
 
+  if (!dp0)
+    return NULL;
+
   dp = dp0;
 
   while (1)
