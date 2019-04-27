@@ -815,7 +815,7 @@ main (int argc, char *argv[])
 	grub_util_error ("`%s` invocation failed\n", "mformat");
       rv = grub_util_exec ((const char * []) { "mcopy", "-s", "-i", efiimgfat, efidir_efi, "::/", NULL });
       if (rv != 0)
-	grub_util_error ("`%s` invocation failed\n", "mformat");
+	grub_util_error ("`%s` invocation failed\n", "mcopy");
       xorriso_push ("--efi-boot");
       xorriso_push ("efi.img");
       xorriso_push ("-efi-boot-part");
