@@ -663,6 +663,8 @@ grub_video_set_mode (const char *modestring,
 
 	      return GRUB_ERR_NONE;
 	    }
+	  else
+	    continue;
 	}
 
       err = parse_modespec (current_mode, &width, &height, &depth);
