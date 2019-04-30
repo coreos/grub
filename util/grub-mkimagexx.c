@@ -2197,6 +2197,21 @@ SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
 	  }
       }
 
+#ifdef MKIMAGE_ELF32
+  if (image_target->elf_target == EM_ARM)
+    {
+      grub_size_t tramp;
+
+      layout->kernel_size = ALIGN_UP (layout->kernel_size, 16);
+
+      tramp = arm_get_trampoline_size (e, smd->sections, smd->section_entsize,
+				       smd->num_sections, image_target);
+
+      layout->tramp_off = layout->kernel_size;
+      layout->kernel_size += ALIGN_UP (tramp, 16);
+    }
+#endif
+
   layout->kernel_size = ALIGN_UP (layout->kernel_size + image_target->vaddr_offset,
 			      image_target->section_align)
     - image_target->vaddr_offset;
@@ -2209,23 +2224,6 @@ SUFFIX (locate_sections) (Elf_Ehdr *e, const char *kernel_path,
     if (SUFFIX (is_data_section) (s, image_target))
       layout->kernel_size = SUFFIX (put_section) (s, i, layout->kernel_size, smd,
 						  image_target);
-
-#ifdef MKIMAGE_ELF32
-  if (image_target->elf_target == EM_ARM)
-    {
-      grub_size_t tramp;
-      layout->kernel_size = ALIGN_UP (layout->kernel_size + image_target->vaddr_offset,
-				      image_target->section_align) - image_target->vaddr_offset;
-
-      layout->kernel_size = ALIGN_UP (layout->kernel_size, 16);
-
-      tramp = arm_get_trampoline_size (e, smd->sections, smd->section_entsize,
-				       smd->num_sections, image_target);
-
-      layout->tramp_off = layout->kernel_size;
-      layout->kernel_size += ALIGN_UP (tramp, 16);
-    }
-#endif
 
   layout->bss_start = layout->kernel_size;
   layout->end = layout->kernel_size;
