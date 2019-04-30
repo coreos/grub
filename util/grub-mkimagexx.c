@@ -1137,7 +1137,7 @@ SUFFIX (relocate_addrs) (Elf_Ehdr *e, struct section_metadata *smd,
 				       (int) sym_addr, (int) sym_addr);
 		       /* Data will be naturally aligned */
 		       if (image_target->id == IMAGE_EFI)
-			 sym_addr += 0x400;
+			 sym_addr += GRUB_PE32_SECTION_ALIGNMENT;
 		       *target = grub_host_to_target32 (grub_target_to_host32 (*target) + sym_addr);
 		     }
 		     break;
