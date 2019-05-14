@@ -145,7 +145,7 @@ GRUB_DEVICE_BOOT_UUID="`${grub_probe} --device ${GRUB_DEVICE_BOOT} --target=fs_u
 GRUB_FS="`${grub_probe} --device ${GRUB_DEVICE} --target=fs 2> /dev/null || echo unknown`"
 
 if [ x"$GRUB_FS" = xunknown ]; then
-    GRUB_FS="$(stat -f --printf=%T / || echo unknown)"
+    GRUB_FS="$(stat -f -c %T / || echo unknown)"
 fi
 
 # Provide a default set of stock linux early initrd images.
