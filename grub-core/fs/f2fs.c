@@ -1240,6 +1240,11 @@ grub_f2fs_utf16_to_utf8 (grub_uint16_t *in_buf_le)
   return out_buf;
 }
 
+#if __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
+#endif
+
 static grub_err_t
 grub_f2fs_label (grub_device_t device, char **label)
 {
@@ -1259,6 +1264,10 @@ grub_f2fs_label (grub_device_t device, char **label)
 
   return grub_errno;
 }
+
+#if __GNUC__ >= 9
+#pragma GCC diagnostic pop
+#endif
 
 static grub_err_t
 grub_f2fs_uuid (grub_device_t device, char **uuid)
