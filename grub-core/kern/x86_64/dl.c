@@ -70,6 +70,7 @@ grub_arch_dl_relocate_symbols (grub_dl_t mod, void *ehdr,
 	  break;
 
 	case R_X86_64_PC32:
+	case R_X86_64_PLT32:
 	  {
 	    grub_int64_t value;
 	    value = ((grub_int32_t) *addr32) + rel->r_addend + sym->st_value -
