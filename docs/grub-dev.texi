@@ -511,6 +511,40 @@ To add a new Gnulib module or remove one that is no longer needed, change
 @code{gnulib_modules} in @file{bootstrap.conf}.  Again, run @kbd{./bootstrap}
 and whatever else you need to make sure it works.
 
+Bootstrapping from an older distribution containing gettext version < 0.18.3,
+will require a patch similar to this to be applied first before running the
+@command{./bootstrap} utility:
+
+@example
+diff --git a/bootstrap.conf b/bootstrap.conf
+index 988dda0..a3193a9 100644
+--- a/bootstrap.conf
++++ b/bootstrap.conf
+@@ -67,7 +67,7 @@ SKIP_PO=t
+buildreq="\
+autoconf   2.63
+automake   1.11
+-gettext    0.18.3
++gettext    0.17
+git        1.5.5
+tar        -
+"
+diff --git a/configure.ac b/configure.ac
+index 08b518f..99f5b36 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -362,7 +362,7 @@ AC_CHECK_PROG(HAVE_CXX, $CXX, yes, no)
+
+AC_GNU_SOURCE
+AM_GNU_GETTEXT([external])
+-AM_GNU_GETTEXT_VERSION([0.18.3])
++AM_GNU_GETTEXT_VERSION([0.17])
+AC_SYS_LARGEFILE
+
+# Identify characteristics of the host architecture.
+
+@end example
+
 @node Porting
 @chapter Porting
 
