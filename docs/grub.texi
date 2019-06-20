@@ -6131,6 +6131,7 @@ Required files are:
 
 @menu
 * GRUB only offers a rescue shell::
+* Firmware stalls instead of booting GRUB::
 @end menu
 
 
@@ -6199,6 +6200,17 @@ containing @file{/boot/grub}.  It will not be able to read from encrypted
 devices with unsupported encryption scheme, nor from file systems for which
 support has not yet been added to GRUB.
 @end itemize
+
+
+@node Firmware stalls instead of booting GRUB
+@section Firmware stalls instead of booting GRUB
+
+The EFI implementation of some older MacBook laptops stalls when it gets
+presented a grub-mkrescue ISO image for x86_64-efi target on an USB stick.
+Affected are models of year 2010 or earlier. Workaround is to zeroize the
+bytes 446 to 461 of the EFI partition, where mformat has put a partition table
+entry which claims partition start at block 0. This change will not hamper
+bootability on other machines.
 
 
 @node Invoking grub-install
