@@ -1,3 +1,21 @@
+New in 2.04:
+
+* GCC 8 and 9 support.
+* Gnulib integration overhaul.
+* RISC-V support.
+* Xen PVH support.
+* Native UEFI secure boot support.
+* UEFI TPM driver.
+* New IEEE 1275 obdisk driver.
+* Btrfs RAID 5 and RIAD 6 support.
+* PARTUUID support.
+* VLAN support.
+* Native DHCP support.
+* Many ARM and ARM64 fixes.
+* Many SPARC fixes.
+* Many IEEE 1275 fixes.
+* ...and tons of other fixes and cleanups...
+
 New in 2.02:
 
 * New/improved filesystem and disk support:
