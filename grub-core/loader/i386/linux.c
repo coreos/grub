@@ -1152,7 +1152,65 @@ grub_cmd_initrd (grub_command_t cmd __attribute__ ((unused)),
   return grub_errno;
 }
 
+static grub_err_t
+grub_cmd_measure (grub_command_t cmd __attribute__ ((unused)),
+		int argc, char *argv[])
+{
+  grub_file_t file = 0;
+  grub_ssize_t len;
+  grub_uint8_t index;
+  grub_uint8_t *read_data = NULL;
+
+  if (argc != 2)
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename and PCR expected"));
+      goto fail;
+    }
+
+  index = grub_strtoul(argv[1], NULL, 10 );
+
+  /* if index is invalid */
+  if( grub_errno != GRUB_ERR_NONE )
+    {
+      grub_error (GRUB_ERR_BAD_ARGUMENT, N_("filename and PCR expected"));
+      goto fail;
+    }
+
+  file = grub_file_open (argv[0]);
+  if (! file)
+    goto fail;
+
+  len = grub_file_size (file);
+  read_data = grub_malloc (len);
+
+  if (!read_data)
+    {
+      grub_error (GRUB_ERR_OUT_OF_MEMORY, N_("cannot allocate data buffer"));
+      goto fail;
+    }
+
+  if (grub_file_read (file, read_data, len) != len)
+    {
+      if (!grub_errno)
+	grub_error (GRUB_ERR_BAD_OS, N_("premature end of file %s"),
+		    argv[0]);
+      goto fail;
+    }
+
+  grub_tpm_measure (read_data, len, index, "grub_measure", "Measure file");
+  grub_print_error();
+
+ fail:
+
+  if (file)
+    grub_file_close (file);
+
+  return grub_errno;
+}
+
+
 static grub_command_t cmd_linux, cmd_initrd;
+static grub_command_t cmd_measure;
 
 GRUB_MOD_INIT(linux)
 {
@@ -1160,6 +1218,8 @@ GRUB_MOD_INIT(linux)
 				     0, N_("Load Linux."));
   cmd_initrd = grub_register_command ("initrd", grub_cmd_initrd,
 				      0, N_("Load initrd."));
+  cmd_measure = grub_register_command ("measure", grub_cmd_measure,
+				     N_("FILE pcrindex"), N_("Measure file."));
   my_mod = mod;
 }
 
@@ -1167,4 +1227,5 @@ GRUB_MOD_FINI(linux)
 {
   grub_unregister_command (cmd_linux);
   grub_unregister_command (cmd_initrd);
+  grub_unregister_command (cmd_measure);
 }
