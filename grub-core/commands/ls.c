@@ -32,6 +32,7 @@
 #include <grub/datetime.h>
 #include <grub/i18n.h>
 #include <grub/net.h>
+#include <grub/env.h>
 
 GRUB_MOD_LICENSE ("GPLv3+");
 
@@ -43,10 +44,22 @@ static const struct grub_arg_option options[] =
     {0, 0, 0, 0, 0, 0}
   };
 
+static void
+grub_lshook_set_env (const char *name)
+{
+  const char *val = grub_env_get ("lshook");
+  if (!val)
+	grub_env_set ("lshook", grub_xasprintf ("%s", name));
+  else
+	if (name) grub_env_set ("lshook", grub_xasprintf ("%s %s", val, name));
+}
+
 /* Helper for grub_ls_list_devices.  */
 static int
 grub_ls_print_devices (const char *name, void *data)
 {
+  grub_lshook_set_env (name);
+
   int *longlist = data;
 
   if (*longlist)
@@ -60,6 +73,8 @@ grub_ls_print_devices (const char *name, void *data)
 static grub_err_t
 grub_ls_list_devices (int longlist)
 {
+  grub_env_unset ("lshook");
+
   grub_device_iterate (grub_ls_print_devices, &longlist);
   grub_xputs ("\n");
 
